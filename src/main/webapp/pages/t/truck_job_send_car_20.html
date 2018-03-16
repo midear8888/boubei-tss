@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -98,7 +99,7 @@ var BASEURL = 'http://t.boubei.com',
 	]],//主表columns
 	jobcode,
 	NEEDOIL = false,
-	// CARINFO = [],
+	CARINFO = [],
 	IFDATA = [{value: '是'}, {value: '否'}],
 	STATUSDATA = [{value:'待派'},{value:'已派'},{value:'在途'},{value:'到达'},{value:'待确认'},{value:'终止'}],
 	JOBTYPEDATA = [{text:'全部',value:'',selected:true},{text:'临时',value:'0'},{text:'固定',value:'1'}],//任务单类型
@@ -137,12 +138,15 @@ $(function() {
 		}],
 		loadFilter: function(data) {
 			var list = getComboboxList(data, 'license');
+			CARINFO = data;
 			return list
 		},
 		onChange: function(newValue, oldValue) {
 			if (newValue) {
-				getCarInfo(newValue)
-				getPayInfo(newValue)
+				tempCar(CARINFO,newValue)
+				clearCombobox()
+				carInfo(newValue)
+				payInfo(newValue)
 				getOilCard()
 			}
 		}
@@ -185,30 +189,34 @@ $(function() {
 
 	jobQuery()
 });
-// confirm 运单状态变化
-function confirm(){
-	$("#status").combobox({
-		onChange:function(newValue,oldValue){
-			if (newValue == '终止') {
-				$("#license_plate").combobox({required: false})
-				$("#oil_ib").combobox({required: false})
-				$("#driver").combobox({required: false})
-				$("#driver_phrone").combobox({required: false})
-				$("#send_truck_type").combobox({required: false})
-				$("#temp_car").combobox({required: false})
-			} else {
-				$("#license_plate").combobox({required: true})
-				$("#oil_ib").combobox({required: true})
-				$("#driver").combobox({required: true})
-				$("#driver_phrone").combobox({required: true})
-				$("#send_truck_type").combobox({required: true})
-				$("#temp_car").combobox({required: true})
-			}
+// 判断是否为外请车
+function tempCar(data,value){
+	var temp = false;
+	for (var i = 0; i < data.length; i++) {
+		if (data[i].license == value && data[i].nature == '外请') {
+			temp = true;
+			break;
 		}
-	})
+	}
+	if (temp) {
+		$('#temp_car').combobox('setValue','是')
+	} else {
+		$('#temp_car').combobox('setValue','否')
+	}
+}
+// clear combobox 
+function clearCombobox(){
+	$('#trailer_plate').combobox('clear');
+	$('#send_truck_type').combobox('clear');
+	$('#driver').combobox('clear');
+	$('#driver_phrone').combobox('clear');
+	$('#payee').combobox('clear');
+	$('#payee_id').combobox('clear');
+	$('#bank_no').combobox('clear');
+	$('#open_bank').combobox('clear');
 }
 // get pay info
-function getPayInfo(value) {
+function payInfo(value) {
 	var params = {
 		plate_no: value
 	};
@@ -218,7 +226,7 @@ function getPayInfo(value) {
 	onchangeInfo(record_urls(GD['t_temp_payee'].recordName).QUERY, params, 'open_bank', '#open_bank')
 }
 // get car info
-function getCarInfo(value) {
+function carInfo(value) {
 	var params = {
 		license: value
 	};
@@ -294,27 +302,31 @@ function getOilCard() {
 		limitToList: true
 	})
 }
-// 获取运单信息
-function jobQuery() {
-	var a, b;
+// get params
+function getParams() {
+	var a, b, params;
 	a = new Date($("#pstart_s").datebox("getValue").replace('-', '/'));
 	b = new Date($("#pstart_e").datebox("getValue").replace('-', '/'));
+	params = {
+		job_code: $("#jcode").textbox("getValue"),
+		client: $("#cname").textbox("getValue"),
+		plan_start_time: '[' + a.format('yyyy-MM-dd hh:mm') + ',' + b.format('yyyy-MM-dd hh:mm') + ']',
+		plan_route: $('#route').textbox('getValue'),
+		normal: $("#jobtype").combobox('getValue')
+	};
+	return params
+}
+// 获取运单信息
+function jobQuery() {
 	tssJS.ajax({
 		url: record_urls(GD['t_truck_job'].recordName).QUERY + '?noCache=true',
-		params: {
-			job_code: $("#jcode").textbox("getValue"),
-			client: $("#cname").textbox("getValue"),
-			plan_start_time: '[' + a.format('yyyy-MM-dd hh:mm') + ',' + b.format('yyyy-MM-dd hh:mm') + ']',
-			plan_route: $('#route').textbox('getValue'),
-			normal: $("#jobtype").combobox('getValue')
-		},
+		params: getParams(),
 		method: 'post',
 		type: 'json',
 		waiting: true,
 		ondata: function(data) {
 			data = this.getResponseJSON();
 			data && drawTable(data);
-			// console.log(data)
 		}
 	})
 }
@@ -509,17 +521,6 @@ function saveRecord(recordId) {
 		}
 	});
 }
-// 外请车导入
-function batchImport() {
-	function checkFileWrong(subfix) {
-		return subfix != ".csv";
-	};
-	var recordId = GD[7].recordName;
-		url = "/tss/auth/file/upload?afterUploadClass=com.boubei.tss.dm.record.file.ImportCSV",
-		url += "&recordId=" + recordId,
-		importDiv = createImportDiv("运单导入", checkFileWrong, url);
-	$(importDiv).show();
-}
 </script>
 
 <body class="easyui-layout">
@@ -541,7 +542,7 @@ function batchImport() {
 						计划发车时间从:&nbsp;<input id="pstart_s" class="easyui-datetimebox" style="width:150px" data-options="showSeconds: false">
 						&emsp;&emsp;&emsp;&emsp;到:&nbsp;<input id="pstart_e" class="easyui-datetimebox" style="width:150px" data-options="showSeconds: false">
 						<a href="#" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="jobQuery()">查询</a>
-						<a href="#" id="eb" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="updateOld(record_urls(GD['t_truck_job'].recordName).GET,'dg','#fm','#dlg','任务单派车')">修改</a>
+						<a href="#" id="eb" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="updateOld(record_urls(GD['t_truck_job'].recordName).GET,'dg','#fm','#dlg','任务单派车')">派车</a>
 					</div>
             	</div>
 	        </div>
@@ -626,7 +627,7 @@ function batchImport() {
 				<tr>
 					<td class="label">车头车牌:</td>
 					<td>
-						<input id="license_plate" name="license_plate" class="easyui-combobox" style="width: 180px">
+						<input id="license_plate" name="license_plate" class="easyui-combobox" style="width: 180px" required/>
 					</td>
 					<td class="label">挂车车牌:</td>
 					<td>

@@ -1,0 +1,329 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+	<meta charset="utf-8">
+	<title>运单管理发到车</title>
+	<meta name="author" content="陈荣沙；20180315"/>
+	<meta name="keywords" content="xxx"/>
+	<meta name="description" content="xxx"/>
+	<meta name="application" content="xxxx"/>
+	<meta name="datasource" content="xxxx"/>
+	<meta name="version" content="1.0 20180315"/>
+	<meta name="viewport" content="width=device-width"/>
+	<link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
+	<link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
+	<link rel="stylesheet" href="../../css/easyui.css">
+	<script src="../../tools/tssJS/tssJS.all.js"></script>
+	<script src="../../tools/easyui/jquery.min.js"></script>
+	<script src="../../tools/easyui/jquery.easyui.min.js"></script>
+	<script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
+	<script src="../../tools/easyui/datagrid-filter.js"></script>
+	<script src="../../tools/easyui.js"></script>
+	<script src="truck.js"></script>
+</head>
+<style type="text/css">
+	.floatLeft{
+		float: left;
+		height:100%;
+	}
+	.floatBigDiv{
+		width: 40%;
+	}
+	.floatSmallDiv{
+		width: 20%;
+		background-color: #eee;
+		position:relative;
+	}
+
+	.op_bnt_r {
+		margin: 8%;
+		width:90%;
+		position: absolute;
+		top: 40%;
+		transform: translateY(-50%);
+	}
+
+	.op_bnt_l {
+		margin: 8%;
+		width:90%;
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+	}
+
+	.op_bnt_s {
+		margin: 8%;
+		width:90%;
+		position: absolute;
+		top: 60%;
+		transform: translateY(-50%);
+	}
+</style>
+
+<script type="text/javascript">
+
+var BASEURL = 'http://t.boubei.com',
+	FIELDURL = record_urls('t_field_code'),
+	REPORTURL = record_urls('t_report_format'),
+	GD = {
+		'truck_job':{reportId:152,reportName:'运单管理发到车',uri:'/tss/data/json/'},//运单表
+		'table_format':{recordId:144,recordName:'t_report_format',uri:'/tss/auth/xdata/json/'},//展示格式后台表
+		'job':{recordId:98,recordName:'t_truck_job',uri:'/tss/auth/xdata/json/'}
+	},D,
+	USER,FIELDDATA;
+$(function() {
+	D = new Date().format('yyyy-MM-dd hh:mm');
+	$("#pstart_s").datetimebox('setValue', new Date().format('yyyy-MM-dd'));
+	$("#pstart_e").datetimebox('setValue', new Date().format('yyyy-MM-dd 23:59'));
+	loginInfo(function(data) {
+		USER = data.login_code; //当前登录人信息
+		GetField(FIELDURL.QUERY, {
+			table_code: GD['truck_job'].recordName
+		}, 'field,title', function(AD) { //获取allfield
+			FIELDDATA = cloneObj(AD);
+			GetField(REPORTURL.QUERY, {
+				table_name: GD['truck_job'].recordName,
+				user: USER,//使用人
+				showtable: '运单管理发到车'//应用场景
+			}, 'field,title', function(SD) { //获取showfield
+				if (SD.length == 0) { //当前没有可展示的格式，展示全部字段
+					drawFieldTable(AD, '#allfield');
+					drawFieldTable(SD, '#showfield');
+					jobQuery()
+				} else {
+					for (var i = AD.length - 1; i >= 0; i--) {
+						for (var j = 0; j < SD.length; j++) {
+							if (SD[j].field == AD[i].field || AD[i].field == 'job_code') {
+								AD.splice(i, 1)
+							}
+						}
+					}
+					drawFieldTable(AD, '#allfield');
+					drawFieldTable(SD, '#showfield');
+					jobQuery()
+				}
+			})
+		})
+	})
+})
+// 获取运单数据
+function jobQuery() {
+	var showf = $("#showfield").datagrid('getData').rows;
+	var c = manageCol(FIELDDATA, showf);
+	tssJS.getJSON(BASEURL + GD['truck_job'].uri + GD['truck_job'].reportId + '?noCache=true', getParams(), function(data) {
+		data && drawTable(data, c)
+	})
+}
+// draw table
+function drawTable(data, columns) {
+	$("#dg").datagrid({
+		data: data,
+		frozenColumns: [
+			[{
+				field: 'ck',
+				checkbox: true
+			}]
+		],
+		columns: [columns],
+		fit: true,
+		rownumbers: true,
+		singleSelect: false
+	});
+}
+// 红色已派，橙色在途，绿色到达，黑色停开,
+function styler3(value) {
+	if (value == '已派') {
+		return "color:red";
+	} else if (value == '在途') {
+		return "color:orange"
+	} else if (value == '到达') {
+		return "color:green"
+	} else if (value == '停开') {
+		return "color:black"
+	} else if (value == '待派') {
+		return "color:blue"
+	} else {
+		return "color:#F0F8FF"
+	}
+}
+// get params
+function getParams(){
+	var a, b, params;
+	a = new Date($("#pstart_s").datebox("getValue").replace('-', '/'));
+	b = new Date($("#pstart_e").datebox("getValue").replace('-', '/'));
+	params = {
+		param1: a.format('yyyy-MM-dd hh:mm'),
+		param2: b.format('yyyy-MM-dd hh:mm'),
+		param3: $("#jcode").textbox("getValue"),
+		param4: $("#clientname").textbox("getValue")
+	};
+	return params
+}
+// 画报表展示前后的格式
+function drawFieldTable(data, id) {
+	$(id).datagrid({
+		data: data,
+		columns: [
+			[{
+				field: 'field',
+				title: 'code',
+				align: 'center',
+				hidden: true
+			}, {
+				field: 'title',
+				title: '字段名',
+				align: 'center',
+				width:'100%'
+			}]
+		],
+		fit: true
+	})
+}
+// 处理报表的format、width、align等属性
+function manageCol(ad, sd) {
+	if (sd.length != 0) {
+		var str = '';
+		for (var i = 0; i < sd.length; i++) {
+			str += sd[i].field + ','
+		}
+		for (var i = 0; i < ad.length; i++) {
+			for (var j = 0; j < sd.length; j++) {
+				if (sd[j].field != ad[i].field && str.indexOf(ad[i].field + ',') == -1) {
+					ad[i].hidden = true
+				} else {
+					ad[i].hidden = false
+				}
+			}
+		}
+	}
+	for (var i = 0; i < ad.length; i++) {
+		ad[i].align = 'center';
+		ad[i].width = '120px';
+		ad[i].formatter = function(value, row, index) {
+			var d = styler3(row.status);
+			if (!value) return;
+			return "<span title='" + value + "' style=" + d + ";>" + value + "</span>";
+		}
+	}
+	return ad
+}
+//保存展示格式数据
+function saveFormatter(tab, user,str) {
+	var newData = $('#showfield').datagrid('getData').rows;
+	var parmas = {
+		table_name: tab,
+		user: user,
+		showtable:str
+	};
+	tssJS.getJSON(REPORTURL.QUERY, parmas, function(data) {
+		var thisdata;
+		thisdata = dataSum(newData, data, 'field,title');
+		for (var i = 0; i < thisdata.length; i++) {
+			if (thisdata[i].handle == -1) {
+				// 删除该条数据
+				$.ajax({
+					url: BASE_RECORD_URL + GD['table_format'].recordId + (thisdata[i].id ? '/' + thisdata[i].id : ''),
+					method: 'DELETE',
+					error: function () {
+						$.messager.alert('提示', '数据保存失败！请重新操作！谢谢！');
+					}
+				})
+			} else if (thisdata[i].handle == 1) {
+				// 新增该条数据
+				$.ajax({
+					url: BASE_RECORD_URL + GD['table_format'].recordId + (thisdata[i].id ? '/' + thisdata[i].id : ''),
+					method: 'post',
+					type: 'json',
+					data: {
+						table_name: GD['truck_job'].recordName,
+						field: thisdata[i].field,
+						title: thisdata[i].title,
+						user: USER,
+						showtable: str
+					},
+					error: function() {
+						$.messager.alert('提示', '数据保存失败！请重新操作！谢谢！')
+					}
+				})
+			}
+		}
+		closeDlg('#fielddlg')
+	})
+}
+// 
+function batchUpdate(tid, field, value, recordId, str) {
+	var result = [];
+	var rows = $('#' + tid).datagrid('getSelections');
+	if (rows.length == 0) {
+		$.messager.alert('提示', "你没有选中任何记录，请勾选后再进行批量操作。");
+	} else if (rows.length >= 1000) {
+		$.messager.alert('提示', "单次批量操作行数不能超过999行。")
+	} else {
+		for (var i = 0; i < rows.length; i++) {
+			if (rows[i].status == str) {
+				$.messager.alert('提示', "已经" + str + "车辆不能做" + str + '处理！');
+				break;
+			} else if (rows[i].status == '到达' && str == '在途') {
+				$.messager.alert('提示', "已经到达车辆不能做" + str + '处理！');
+				break;
+			} else {
+				result.push("id," + field);
+				for (var j = 0; j < rows.length; j++) {
+					result.push(rows[j].id + ',' + value)
+				}
+				$.post(record_urls(recordId).CUD, {
+					"csv": result.join("\n")
+				}, function(data) {
+					if (data.created || data.updated) {
+						$.messager.show({
+							title: '提示',
+							msg: '批量处理成功！'
+						});
+						jobQuery()
+					}
+				});
+			}
+		}
+	}
+}
+
+</script>
+<body class="easyui-layout">
+	<table id="dg" data-options="toolbar:'#tb'"></table>
+	<div id="tb" style="padding:5px;height:auto">
+		<div style="margin-bottom:5px">
+			计划发车时间从:&nbsp;
+			<input id="pstart_s" class="easyui-datetimebox" style="width:130px" data-options="showSeconds: false">&nbsp;
+			&emsp;&emsp;&emsp;到:&nbsp;
+			<input id="pstart_e" class="easyui-datetimebox" style="width:130px" data-options="showSeconds: false">&nbsp;
+			<a href="#" class="easyui-linkbutton" iconCls="icon-tss-record-0" plain="true" onclick="openDlg('#fielddlg')">设置</a>
+		</div>
+		<div>
+			任&emsp;务&emsp;单&emsp;号:&nbsp;
+			<input id="jcode" class="easyui-textbox" style="width:130px">&nbsp;
+			客户名称:&nbsp;
+			<input id="clientname" class="easyui-textbox" style="width:130px">&nbsp;
+			<a href="#" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="jobQuery()">查询</a>
+			<a href="#" id="send" class="easyui-linkbutton" iconCls="icon-more" plain="true" onclick="batchUpdate('dg','status,actual_start_time','在途'+','+D,GD['job'].recordId,'在途')">发车</a>
+			<a href="#" id="arl" class="easyui-linkbutton" iconCls="icon-more" plain="true" onclick="batchUpdate('dg','status,actual_end_time','到达'+','+D,GD['job'].recordId,'到达')">到达</a>
+		</div>
+	</div>
+	<div id="fielddlg" title="设置报表显示格式" class="easyui-dialog" border="false" style="width:40%;height:550px;" closed=true>
+		<div class="floatLeft floatBigDiv">
+    		<table id = "allfield" title = "未展示字段" class = "easyui-datagrid" fit = "true">
+			</table>
+    	</div> 	
+    	<div class="floatLeft floatSmallDiv">
+			<a class = "easyui-linkbutton op_bnt_r" iconCls="icon-redo" onclick = "removeAdd('#allfield','#showfield',true)">&nbsp;右移&nbsp;</a>
+			<a class = "easyui-linkbutton op_bnt_l" iconCls="icon-undo" onclick = "removeAdd($('#showfield'),'#allfield')" >&nbsp;左移&nbsp;</a>
+			<a class = "easyui-linkbutton op_bnt_s" iconCls="icon-save" onclick = "saveFormatter(GD['truck_job'].recordName,USER,'运单管理发到车')" >&nbsp;保存&nbsp;</a>
+	    </div>
+	    <div class="floatLeft floatBigDiv">
+    		<table id = "showfield" title = "已展示字段" class = "easyui-datagrid" fit = "true">
+			</table>
+    	</div>
+	</div>
+</body>
+</html>

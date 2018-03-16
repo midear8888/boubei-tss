@@ -1,5 +1,8 @@
 
 
+
+
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -13,7 +16,7 @@
 	<meta name="datasource" content="xxxx"/>
 	<meta name="version" content="2.0 20180112；3.0 20180201"/>
 	<meta name="viewport" content="width=device-width"/>
-	<link rel="stylesheet" href="../../tools/tssJS/css/boubei.css">
+	<!-- <link rel="stylesheet" href="../../tools/tssJS/css/boubei.css"> -->
 	<link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
 	<link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
 	<link rel="stylesheet" href="../../css/easyui.css">
@@ -36,7 +39,7 @@
 
 <script type="text/javascript">
 
-var BASEURL = '',
+var BASEURL = 'http://t.boubei.com',
 	GD = [
 		{id:0,recordId:98,recordName:'t_truck_job',uri:'/tss/auth/xdata/json/'},//运单基础信息
 		{id:1,recordId:127,recordName:'t_temp_client',uri:'/tss/auth/xdata/json/'},//临时客户信息
@@ -44,24 +47,26 @@ var BASEURL = '',
 		{id:3,recordId:87,recordName:"t_trucks_job_income",uri:'/tss/auth/xdata/json/'},//运单收入明细
 		{id:4,reportId:82,reportName:'运单收入项目',uri:'/tss/data/json/'},//运单收入项目明细
 		{id:5,reportId:115,reportName:'客户信息',uri:'/tss/data/json/'},//客户信息
+		{id:6,reportId:146,reportName:'route_name',uri:'/tss/data/json/'},//历史线路
 	],
 	ROUTETYPEDATA = [{value:'单边'},{value:'往返'},{value:'对开'}],//线路属性
 	RECEIPTDATA = [{value:'是'},{value:'否'}],//回单状态
-	STATUSDATA = [{value:'待派'},{value:'待确认'}],//运单状态
+	STATUSDATA = [{value:'待派'},{value:'终止'},{value:'待确认'}],//运单状态
 	JOBCODE,
 	COL = [[
 		{field: 'ck',checkbox: true}, 
 		{field: 'income_type',title: '收入类型',align: 'center',width: '90px'},
-		{field: 'price',title: '金额',align: 'center',width: '90px'}, 
+		{field: 'price',title: '应收金额',align: 'center',width: '90px'}, 
 		{field:'due_date',title:'应收日期',align:'center',width:'90px'},
-		{field: 'ifpay',title: '是否已付',align: 'center',width: '90px'}, 
+		{field: 'ifpay',title: '是否已付',align: 'center',width: '90px'},
+		{field:'real_due_price',title:'实收金额',align:'center',width:'90px'},
 		{field:'real_due_date',title:'实收日期',align:'center',width:'90px'},
 		{field: 'remark',title: '备注',align: 'center',width: '90px'}
 	]],
 	JOBTYPEDATA = [{text:'全部',value:''},{text:'临时',value:'0',selected:true},{text:'固定',value:'1'}];
 
 $(function(){
-	// fix safari FireFox日期问题
+	// fix safari FireFox日期问题 todo
 	// $.fn.datebox.defaults.formatter = function(date) {
 	// 	var y = date.getFullYear();
 	// 	var m = date.getMonth() + 1;
@@ -77,7 +82,7 @@ $(function(){
 	// 	return y + '/' + M + '/' + d + '' + 'h' + ':' + 'm';
 	// }
 	$("#pstart_s").datetimebox('setValue',getCurrentMonthFirst().format('yyyy-MM-dd'));
-	$("#pstart_e").datetimebox('setValue',new Date().format('yyyy-MM-dd 23:59'));
+	$("#pstart_e").datetimebox('setValue',AddDays(new Date(),10).format('yyyy-MM-dd 23:59'));
 	$("#jobtype").combobox({
 		data:JOBTYPEDATA,
 		valueField:'value',
@@ -96,8 +101,14 @@ $(function(){
 				$('#real_due_date').datebox({
 					required: true
 				});
+				$('#real_due_price').datebox({
+					required: true
+				});
 			} else {
 				$('#real_due_date').datebox({
+					required: false
+				});
+				$('#real_due_price').datebox({
 					required: false
 				});
 			}
@@ -131,33 +142,19 @@ $(function(){
 	})
 	getClient()
 	$("#plan_end_time").datetimebox({
-		showSeconds: false,
+		showSeconds: false
+	})
+	$("#aging").textbox({
+		prompt: '例：25小时20分钟',
 		required: true,
-		onChange: function(newValue, oldValue) {
-			if (newValue) {
-				var a = $("#plan_start_time").datetimebox('getValue'),
-					b = $("#plan_end_time").datetimebox('getValue');
-				if (a && b && a >= b) {
-					$.messager.alert('提示', '计划到达时间不能早于或等于计划发车时间，请修改！')
-				} else {
-					$("#aging").textbox('setValue', dateDiffer(a, b))
-				}
-			}
+		onChange: function(nv, ov) {
+			calEndTime(nv,true)
 		}
 	})
 	$("#plan_start_time").datetimebox({
 		showSeconds: false,
-		required: true,
-		onChange: function(newValue, oldValue) {
-			if (newValue) {
-				var a = $("#plan_start_time").datetimebox('getValue'),
-					b = $("#plan_end_time").datetimebox('getValue');
-				if (a && b && a >= b) {
-					$.messager.alert('提示', '计划到达时间不能早于或等于计划发车时间，请修改！')
-				} else {
-					$("#aging").textbox('setValue', dateDiffer(a, b))
-				}
-			}
+		onChange: function(nv, ov) {
+			calEndTime(nv)
 		}
 	})
 	$("#addjob").click(function(){
@@ -172,7 +169,28 @@ $(function(){
 		textField:'value',
 		panelHeight:'auto'
 	})
+	$("#plan_route").combobox({
+		url:BASEURL+GD[6].uri+GD[6].reportId,
+		valueField:'plan_route',
+		textField:'plan_route',
+		panelHeight:'150px'
+	})
+	
 });
+function calEndTime(nv,b) {
+	var st = $("#plan_start_time").datetimebox("getValue");
+	var val = $("#aging").textbox("getValue");
+	var h = val.substring(0, val.indexOf('小时'));
+	var m = val.substring(val.indexOf('时') + 1, val.indexOf('分钟'));
+	if (val || nv) {
+		if (isNaN(parseInt(h)) || isNaN(parseInt(m))) {
+			if (b) $.messager.alert('提示', '请输入正确时长格式!');
+		} else if (st) {
+			var d = new Date(st);
+			$("#plan_end_time").datetimebox('setValue', new Date(d - 0 + h * 60 * 60 * 1000 + m * 60 * 1000).format('yyyy-MM-dd hh:mm'))
+		}
+	}
+}
 function jobQuery() {
 	tssJS.ajax({
 		url: record_urls(GD[0].recordName).QUERY + '?noCache=true',
@@ -229,7 +247,6 @@ function drawTable(data){
 			{field: 'route_type',title: '线路类型',align: 'center',width:'100px'},
 			{field: 'load_type',title: '额载',align: 'center',width:'100px'},
 			{field: 'bulk_type',title: '体积',align: 'center',width:'100px'},
-			// {field: 'payment_type',title: '付款方式',align: 'center',width:'100px'},
 			{field: 'receipt',title: '回单是否回收',align: 'center',width:'100px'},
 			{field: 'arr_port_time',title: '靠台时间',align: 'center',width:'110px',formatter:function(value){
 				if (!value) {
@@ -331,7 +348,7 @@ function getClientInfo(comboboxid,url,params,value,text,str){
 // 获取客户信息
 function getClient() {
 	var url = BASEURL + GD[5].uri + GD[5].reportId + '?noCache=true';
-	console.log(url)
+	// console.log(url)
 	$("#client").combobox({
 		url: url,
 		queryParams: {},
@@ -358,11 +375,13 @@ function getClient() {
 		}],
 		onChange: function(newValue, oldValue) {
 			if (newValue) {
-				var params = {param1:newValue};
-				console.log(params)
-				getClientInfo('#client_phone',url,params,'client_phone');
-				getClientInfo('#shipment_site',url,params,'shipment_site');
-				getClientInfo('#shipment_phone',url,params,'shipment_phone');
+				var params = {
+					param1: newValue
+				};
+				// console.log(params)
+				getClientInfo('#client_phone', url, params, 'client_phone');
+				getClientInfo('#shipment_site', url, params, 'shipment_site');
+				getClientInfo('#shipment_phone', url, params, 'shipment_phone');
 			}
 		}
 	})
@@ -525,7 +544,7 @@ function saveRecord(recordId){
 					</td>
 					<td class="label">线路:</td>
 					<td>
-						<input id="plan_route" name="plan_route" class="easyui-textbox" style="width: 180px" required/>
+						<input id="plan_route" name="plan_route" class="easyui-combobox" style="width: 180px" required/>
 					</td>
 				</tr>
 				<tr>
@@ -543,25 +562,26 @@ function saveRecord(recordId){
 					<td>
 						<input id="plan_start_time" name="plan_start_time" class="easyui-datetimebox" style="width: 180px" required/>
 					</td>
-					<td class="label">计划到达时间:</td>
-					<td>
-						<input id="plan_end_time" name="plan_end_time" class="easyui-datetimebox" style="width: 180px" required/>
-					</td>
-				</tr>
-				<tr>
 					<td class="label">在途时效:</td>
 					<td>
 						<input id="aging" name="aging" class="easyui-textbox" style="width: 180px" />
 					</td>
+				</tr>
+				<tr>
+					
+					<td class="label">计划到达时间:</td>
+					<td>
+						<input id="plan_end_time" name="plan_end_time" class="easyui-datetimebox" style="width: 180px">
+					</td>
 					<td class="label">额载:</td>
 					<td>
-						<input id="load_type" name="load_type" class="easyui-textbox" style="width: 180px" >
+						<input id="load_type" name="load_type" class="easyui-numberbox" data-options="prompt:'单位：吨'" style="width: 180px" >
 					</td>
 				</tr>
 				<tr>
 					<td class="label">体积:</td>
 					<td>
-						<input id="bulk_type" name="bulk_type" class="easyui-textbox" style="width: 180px" >
+						<input id="bulk_type" name="bulk_type" class="easyui-numberbox" data-options="prompt:'单位：方'" style="width: 180px" >
 					</td>
 					<td class="label">回单是否需要回收:</td>
 					<td>
@@ -618,9 +638,9 @@ function saveRecord(recordId){
 	        		</td>
 	        	</tr>
 	        	<tr>
-	        		<td class="label">金额:</td>
+	        		<td class="label">应收金额:</td>
 	        		<td>
-	        			<input name="price" id="price" class="easyui-textbox" style="width: 180px" required/>
+	        			<input name="price" id="price" class="easyui-numberbox" style="width: 180px" required/>
 	        		</td>
 	        		<td class="label">应收日期:</td>
 	        		<td>
@@ -632,12 +652,16 @@ function saveRecord(recordId){
 	        		<td>
 	        			<input name="ifpay" id="ifpay" class="easyui-combobox" style="width: 180px" required/>
 	        		</td>
+	        		<td class="label">实收金额:</td>
+	        		<td>
+	        			<input id="real_due_price" name="real_due_price" class="easyui-numberbox" style="width: 180px">
+	        		</td>
+	        	</tr>
+	        	<tr>
 	        		<td class="label">实收日期:</td>
 	        		<td>
 	        			<input name="real_due_date" id="real_due_date" class="easyui-datebox" style="width: 180px">
 	        		</td>
-	        	</tr>
-	        	<tr>
 	        		<td class="label">备注:</td>
 	        		<td>
 	        			<input name="remark" id="remark2" class="easyui-textbox" style="width: 180px">

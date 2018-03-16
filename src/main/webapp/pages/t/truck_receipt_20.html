@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -76,22 +78,22 @@ var BASEURL = 'http://t.boubei.com',
 	USER,FIELDDATA;
 $(function() {
 	// fix safari FireFox日期问题
-	$.fn.datebox.defaults.formatter = function(date) {
-		var y = date.getFullYear();
-		var m = date.getMonth() + 1;
-		var d = date.getDate();
-		// return m + '/' + d + '/' + y;
-		return y + '/' + m + '/' + d;
-	}
-	$.fn.datetimebox.defaults.formatter = function(date) {
-		var y = date.getFullYear();
-		var M = date.getMonth() + 1;
-		var d = date.getDate();
-		var h = date.getHours();
-		var m = date.getMinutes();
-		// return M + '/' + d + '/' + y;
-		return y + '/' + M + '/' + d + '' + 'h' + ':' + 'm';
-	}
+	// $.fn.datebox.defaults.formatter = function(date) {
+	// 	var y = date.getFullYear();
+	// 	var m = date.getMonth() + 1;
+	// 	var d = date.getDate();
+	// 	// return m + '/' + d + '/' + y;
+	// 	return y + '/' + m + '/' + d;
+	// }
+	// $.fn.datetimebox.defaults.formatter = function(date) {
+	// 	var y = date.getFullYear();
+	// 	var M = date.getMonth() + 1;
+	// 	var d = date.getDate();
+	// 	var h = date.getHours();
+	// 	var m = date.getMinutes();
+	// 	// return M + '/' + d + '/' + y;
+	// 	return y + '/' + M + '/' + d + '' + 'h' + ':' + 'm';
+	// }
 	$("#pstart_s").datetimebox('setValue', getCurrentMonthFirst().format('yyyy-MM-dd'));
 	$("#pstart_e").datetimebox('setValue', new Date().format('yyyy-MM-dd 23:59'));
 	loginInfo(function(data) {
@@ -112,15 +114,16 @@ $(function() {
 						sdata && drawTable(sdata, manageCol(FIELDDATA, SD));
 					})
 				} else {
-					for (var i = 0; i < AD.length; i++) {
+					for (var i = AD.length - 1; i >= 0; i--) {
 						for (var j = 0; j < SD.length; j++) {
 							if (SD[j].field == AD[i].field) {
-								AD.splice(i, 1)
+								AD.splice(i, 1,)
 							}
 						}
 					}
 					drawFieldTable(AD, '#allfield');
 					drawFieldTable(SD, '#showfield');
+					// console.log(AD,SD)
 					queryJob(function(sdata) {
 						sdata && drawTable(sdata, manageCol(FIELDDATA, SD));
 					})
@@ -209,16 +212,17 @@ function getJobData(){
 }
 
 //保存展示格式数据
-function saveFormatter(tab, user) {
+function saveFormatter(tab, user,str) {
 	var newData = $('#showfield').datagrid('getData').rows;
 	var parmas = {
 		table_name: tab,
-		user: user
+		user: user,
+		showtable:str
 	};
 	tssJS.getJSON(REPORTURL.QUERY, parmas, function(data) {
 		var thisdata;
 		thisdata = dataSum(newData, data, 'field,title');
-		console.log(thisdata)
+		// console.log(thisdata)
 		for (var i = 0; i < thisdata.length; i++) {
 			if (thisdata[i].handle == -1) {
 				// 删除该条数据
@@ -240,7 +244,7 @@ function saveFormatter(tab, user) {
 						field: thisdata[i].field,
 						title: thisdata[i].title,
 						user: USER,
-						showtable: '回单'
+						showtable: str
 					},
 					error: function() {
 						$.messager.alert('提示', '数据保存失败！请重新操作！谢谢！')
@@ -361,7 +365,7 @@ function save(recordId) {
     	<div class="floatLeft floatSmallDiv">
 			<a class = "easyui-linkbutton op_bnt_r" iconCls="icon-redo" onclick = "removeAdd('#allfield','#showfield',true)">&nbsp;右移&nbsp;</a>
 			<a class = "easyui-linkbutton op_bnt_l" iconCls="icon-undo" onclick = "removeAdd($('#showfield'),'#allfield')" >&nbsp;左移&nbsp;</a>
-			<a class = "easyui-linkbutton op_bnt_s" iconCls="icon-save" onclick = "saveFormatter(GD[1].recordName,USER)" >&nbsp;保存&nbsp;</a>
+			<a class = "easyui-linkbutton op_bnt_s" iconCls="icon-save" onclick = "saveFormatter(GD[1].recordName,USER,'回单')" >&nbsp;保存&nbsp;</a>
 	    </div>
 	    <div class="floatLeft floatBigDiv">
     		<table id = "showfield" title = "已展示字段" class = "easyui-datagrid" fit = "true">
