@@ -3,26 +3,65 @@ package com.boubei.tssx.ftl;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.Column;
 import javax.persistence.Table;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.boubei.tss.dm.ddl._Database;
+import com.boubei.tss.dm.ddl._Field;
+import com.boubei.tss.dm.record.RecordService;
 import com.boubei.tss.framework.persistence.IEntity;
 import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
+import com.boubei.tss.util.FileHelper;
+import com.boubei.tss.util.URLUtil;
 
 /**
  * 生成各类模板
  */
 @Controller
-@RequestMapping("/ftl")
-public class FTL {
+@RequestMapping("/_ftl")
+public class _FTL {
+	
+	@Autowired RecordService recordService;
+	
+	@RequestMapping(value = "/table/{id}")
+	@ResponseBody
+	public Object recordDef2Def(@PathVariable("id") Long id) {
+		_Database _db = recordService.getDB(id);
+        List<Map<Object, Object>> fields = _db.getFields();
+        
+        String java = FileHelper.readFile(URLUtil.getResourceFileUrl("freemarker/entity.ftl").getPath());
+        Map<String, Object> dataMap = new HashMap<String, Object>();
+        dataMap.put("tableName", _db.table);
+        
+        // def fields ---> java fileds
+        Map<String, String> m = new HashMap<String, String>();
+        m.put(_Field.TYPE_DATE, "Date");
+        m.put(_Field.TYPE_DATETIME, "Date");
+        m.put(_Field.TYPE_INT, "Long");
+        m.put(_Field.TYPE_NUMBER, "Double");
+        
+        List<String> list = new ArrayList<String>();
+        for(Map<Object, Object> f : fields) {
+        	String type = (String) f.get("type");
+        	type = (String) EasyUtils.checkNull( m.get(type), "String");
+        	
+        	list.add( "    private " + " "  + f.get("code"));
+        }
+        dataMap.put("fields", EasyUtils.list2Str(list, ";\n"));
+		
+        return EasyUtils.fmParse(java, dataMap);
+	}
 
 	@RequestMapping(value = "/model/{cn}")
 	@ResponseBody
