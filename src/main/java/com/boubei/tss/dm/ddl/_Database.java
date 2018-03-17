@@ -118,7 +118,7 @@ public abstract class _Database {
 			
 			String pattern = (String) fDefs.get("pattern");
 			if( _Field.TYPE_NUMBER.equalsIgnoreCase(type) ) {
-				pattern = (String) EasyUtils.checkNull(pattern, "##,###.00");  //  类GridNode会对数据进行格式化
+				pattern = (String) EasyUtils.checkNull(pattern, "##,##0.00");  //  类GridNode会对数据进行格式化
             }
 			this.fieldPatterns.add( pattern ); 
 			cpm.put(code, pattern);

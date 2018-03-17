@@ -367,7 +367,7 @@ function loadDetailData(rowID, version) {
             // 自动取号
             if( isCreateRow && (f.defaultValue||'').indexOf("yyMMddxxxx") > 0 ) {
                 var precode = f.defaultValue.replace("yyMMddxxxx", "");
-                tssJS.getJSON("/tss/serialno/" +precode+ "/1", function(result) {
+                tssJS.getJSON("/tss/sn/" +precode+ "/1", function(result) {
                     var sn = result[0];
                     updateField(f.code, sn);
                     forbid(f.code);

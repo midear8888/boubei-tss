@@ -20,7 +20,7 @@ import com.boubei.tss.util.EasyUtils;
  *	配合数据表字段使用，在字段定义默认值填入：XX-yyMMddxxxx，则在界面新增或导入数据时自动调用本取号器
  */
 @Controller
-@RequestMapping("/serialno")
+@RequestMapping("/sn")
 public class SerialNOer {
 
 	@RequestMapping(value = "/{precode}/{count}")
