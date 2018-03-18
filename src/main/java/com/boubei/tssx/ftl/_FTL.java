@@ -34,13 +34,13 @@ public class _FTL {
 	
 	@Autowired RecordService recordService;
 	
-	@RequestMapping(value = "/table/{id}")
+	@RequestMapping(value = "/table/{id}", produces = "text/plain;charset=utf-8")
 	@ResponseBody
 	public Object recordDef2Def(@PathVariable("id") Long id) {
 		_Database _db = recordService.getDB(id);
         List<Map<Object, Object>> fields = _db.getFields();
         
-        String java = FileHelper.readFile(URLUtil.getResourceFileUrl("freemarker/entity.ftl").getPath());
+        String java = FileHelper.readFile(URLUtil.getResourceFileUrl("tss/entity.ftl").getPath());
         Map<String, Object> dataMap = new HashMap<String, Object>();
         dataMap.put("tableName", _db.table);
         
@@ -56,7 +56,7 @@ public class _FTL {
         	String type = (String) f.get("type");
         	type = (String) EasyUtils.checkNull( m.get(type), "String");
         	
-        	list.add( "    private " + " "  + f.get("code"));
+        	list.add( "    private " + type + " "  + f.get("code"));
         }
         dataMap.put("fields", EasyUtils.list2Str(list, ";\n"));
 		

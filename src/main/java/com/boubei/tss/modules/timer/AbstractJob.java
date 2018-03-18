@@ -38,7 +38,8 @@ public abstract class AbstractJob implements Job {
 	 * 任务执行人
 	 */
 	protected IOperator jobRobot() {
-        return new OperatorDTO(UMConstants.ROBOT_USER_ID, "Job.Robot"); 
+        return new OperatorDTO(UMConstants.ROBOT_USER_ID, UMConstants.ROBOT_USER_NAME); 
+
 	}
 	
 	protected boolean needSuccessLog() {

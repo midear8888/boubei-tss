@@ -570,7 +570,7 @@ public abstract class _Database {
 		fields = DMUtil.checkSQLInject( fields );
 		
 		// 增加权限控制，针对有編輯权限的允許查看他人录入数据, '000' <> ? <==> 忽略创建人这个查询条件
-		boolean visible = Environment.isAdmin();
+		boolean visible = Environment.isAdmin() || Environment.isRobot();
 		try {
 			List<String> permissions = PermissionHelper.getInstance().getOperationsByResource(recordId,
 	                RecordPermission.class.getName(), RecordResource.class);

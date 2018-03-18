@@ -58,6 +58,7 @@ public final class UMConstants {
 	public static final Long ADMIN_USER_ID     = new Long(-1);     //系统管理员的ID(初始化数据库时写死的)
 	public static final Long ANONYMOUS_USER_ID = new Long(-10000); //匿名用户的ID(初始化数据库时写死的)
 	public static final Long ROBOT_USER_ID     = new Long(-997);   //机器人用户：用于JOB执行等，虚拟账号，实际不存在
+	public static final String ROBOT_USER_NAME = "Job.Robot";
     
 	public static final Long DEFAULT_ROOT_ID          = 0L;  /** 默认根结点ID */
 	public static final Long MAIN_GROUP_ID            = -2L; //主用户组的ID (初始化数据库时写死的)
