@@ -160,6 +160,7 @@ public interface ILoginService {
      * @param field
      * @return
      */
+    @Cached(cyclelife = CacheLife.SHORT)
     List<?> getUsersByDomain(String domain, String field);
     
 	/**

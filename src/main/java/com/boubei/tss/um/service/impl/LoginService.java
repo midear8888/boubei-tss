@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.http.HttpSession;
+
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,6 +51,7 @@ import com.boubei.tss.um.helper.dto.GroupDTO;
 import com.boubei.tss.um.helper.dto.OperatorDTO;
 import com.boubei.tss.um.permission.PermissionHelper;
 import com.boubei.tss.um.service.ILoginService;
+import com.boubei.tss.um.sso.FetchPermissionAfterLogin;
 import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
@@ -207,11 +210,18 @@ public class LoginService implements ILoginService {
     
     public String mockLogin(String userCode, String uToken) {
     	IOperator user = getOperatorDTOByLoginName(userCode);
-		String token = TokenUtil.createToken(uToken, user.getId());
+		Long userId = user.getId();
+		
+		// 设置令牌到Session，使Environment生效
+		String token = TokenUtil.createToken(uToken, userId);
 		IdentityCard card = new IdentityCard(token, user);
 		Context.initIdentityInfo(card); 
 		
-		saveUserRolesAfterLogin(user.getId());
+		// saveUserRolesAfterLogin 及 设置session信息，获取用户域、组织、角色等信息
+		FetchPermissionAfterLogin obj = new FetchPermissionAfterLogin();
+        HttpSession session = obj.loadRights(userId); 
+        obj.loadGroups(userId, session);
+		
 		return token;
     }
     
@@ -430,7 +440,7 @@ public class LoginService implements ILoginService {
 		
 		// 把用户的MD5密码也作为令牌，如果和uToken对的上，给予通过（适用于开放数据表链接给第三方用户录入，此时不宜逐个给用户发放令牌）
 		OperatorDTO user = getOperatorDTOByLoginName(uName);
-		Object uToken = EasyUtils.checkNull(user.getAttribute("uToken"), user.getAttribute("password"));
+		Object uToken = EasyUtils.checkNull(user.getAttribute("authToken"), user.getAttribute("password"));
 		tokens.add( (String) uToken );
 		
 		return tokens;

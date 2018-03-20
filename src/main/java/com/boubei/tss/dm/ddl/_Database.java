@@ -574,8 +574,7 @@ public abstract class _Database {
 		try {
 			List<String> permissions = PermissionHelper.getInstance().getOperationsByResource(recordId,
 	                RecordPermission.class.getName(), RecordResource.class);
-			visible = visible || permissions.contains(Record.OPERATION_VDATA) 
-					|| permissions.contains(Record.OPERATION_EDATA);
+			visible = visible || permissions.contains(Record.OPERATION_VDATA) || permissions.contains(Record.OPERATION_EDATA);
 		} 
 		catch(Exception e) { }
 		
