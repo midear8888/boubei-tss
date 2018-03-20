@@ -42,6 +42,7 @@ import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.modules.log.IBusinessLogger;
 import com.boubei.tss.modules.log.Log;
 import com.boubei.tss.modules.param.ParamConstants;
+import com.boubei.tss.modules.sn.SerialNOer;
 import com.boubei.tss.um.permission.PermissionHelper;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.XMLDocUtil;
@@ -394,6 +395,14 @@ public abstract class _Database {
 		int index = 0;
 		for(String field : this.fieldCodes) {
 			Object value = DMUtil.preTreatValue(valuesMap.get(field), fieldTypes.get(index));
+			
+			// 检查值为空的字段，是否配置自动取号规则
+			String defaultVal = this.fieldValues.get(index);
+			if( EasyUtils.isNullOrEmpty(value) && (defaultVal+"").endsWith("yyMMddxxxx")) {
+				String preCode = defaultVal.replaceAll("yyMMddxxxx", "");
+				value = new SerialNOer().create(preCode, 1).get(0);
+			}
+			
 			paramsMap.put(++index, value);
 		}
 		paramsMap.put(++index, new Timestamp(new Date().getTime())); 

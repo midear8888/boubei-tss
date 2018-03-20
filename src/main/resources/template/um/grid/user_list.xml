@@ -8,7 +8,9 @@
 		<column caption="姓名" name="userName" width="80px"/>
         <column caption="电子邮件" name="email" width="120px"/>
         <column caption="手机" name="telephone" width="80px"/>
+        <!--
         <column caption="性别" name="sex" values="0|1" texts="女|男" width="50px"/>
+        -->
         <column caption="出生年月" name="birthday" mode="date" width="80px"/>
 		<column caption="所属组织" name="groupName" width="100px"/>
 		<column caption="所属组织ID" name="groupId" display="none"/>
