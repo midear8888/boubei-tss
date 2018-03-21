@@ -75,16 +75,16 @@ var BASEURL = 'http://t.boubei.com',
 	USER,FIELDDATA;
 $(function() {
 	D = new Date().format('yyyy-MM-dd hh:mm');
-	$("#pstart_s").datetimebox('setValue', new Date().format('yyyy-MM-dd 00:00:00'));
-	$("#pstart_e").datetimebox('setValue', new Date().format('yyyy-MM-dd 23:59:59'));
+	$("#pstart_s").datetimebox('setValue', new Date().format('yyyy-MM-dd'));
+	$("#pstart_e").datetimebox('setValue', new Date().format('yyyy-MM-dd 23:59'));
 	loginInfo(function(data) {
 		USER = data.login_code; //当前登录人信息
 		GetField(FIELDURL.QUERY, {
-			table_code: GD['job'].recordName
+			table_code: GD['truck_job'].recordName
 		}, 'field,title', function(AD) { //获取allfield
 			FIELDDATA = cloneObj(AD);
 			GetField(REPORTURL.QUERY, {
-				table_name: GD['job'].recordName,
+				table_name: GD['truck_job'].recordName,
 				user: USER,//使用人
 				showtable: '运单管理发到车'//应用场景
 			}, 'field,title', function(SD) { //获取showfield
@@ -96,8 +96,7 @@ $(function() {
 					for (var i = AD.length - 1; i >= 0; i--) {
 						for (var j = 0; j < SD.length; j++) {
 							if (SD[j].field == AD[i].field || AD[i].field == 'job_code') {
-								AD.splice(i, 1);
-								break;
+								AD.splice(i, 1)
 							}
 						}
 					}
@@ -107,13 +106,6 @@ $(function() {
 				}
 			})
 		})
-	})
-	$("#jobstatus").combobox({
-		data:[{value:'',text:'全部'},{value:'待派',text:'待派'},{value:'已派',text:'已派'},{value:'在途',text:'在途'},{value:'到达',text:'到达'},{value:'待确认',text:'待确认'},{value:'终止',text:'终止'}],
-		valueField: 'value',
-		textField: 'text',
-		panelHeight: 'auto',
-		limitToList: true
 	})
 })
 // 获取运单数据
@@ -140,7 +132,7 @@ function drawTable(data, columns) {
 		singleSelect: false
 	});
 }
-// 红色已派，橙色在途，绿色到达，灰色终止,待确认和待派黑色
+// 红色已派，橙色在途，绿色到达，黑色停开,
 function styler3(value) {
 	if (value == '已派') {
 		return "color:red";
@@ -148,24 +140,24 @@ function styler3(value) {
 		return "color:orange"
 	} else if (value == '到达') {
 		return "color:green"
-	} else if (value == '终止') {
-		return "color:grey"
-	} else {
+	} else if (value == '停开') {
 		return "color:black"
+	} else if (value == '待派') {
+		return "color:blue"
+	} else {
+		return "color:#F0F8FF"
 	}
 }
 // get params
 function getParams(){
 	var a, b, params;
-	a = new Date($("#pstart_s").datetimebox("getValue").replace('-', '/'));
-	b = new Date($("#pstart_e").datetimebox("getValue").replace('-', '/'));
+	a = new Date($("#pstart_s").datebox("getValue").replace('-', '/'));
+	b = new Date($("#pstart_e").datebox("getValue").replace('-', '/'));
 	params = {
-		param1: a.format('yyyy-MM-dd hh:mm:ss'),
-		param2: b.format('yyyy-MM-dd hh:mm:ss'),
+		param1: a.format('yyyy-MM-dd hh:mm'),
+		param2: b.format('yyyy-MM-dd hh:mm'),
 		param3: $("#jcode").textbox("getValue"),
-		param4: $("#clientname").textbox("getValue"),
-		param5: $("#jobstatus").combobox("getValue"),
-		param6: $("#routename").textbox("getValue")
+		param4: $("#clientname").textbox("getValue")
 	};
 	return params
 }
@@ -263,7 +255,6 @@ function saveFormatter(tab, user,str) {
 // 
 function batchUpdate(tid, field, value, recordId, str) {
 	var result = [];
-	var ifsave = false;
 	var rows = $('#' + tid).datagrid('getSelections');
 	if (rows.length == 0) {
 		$.messager.alert('提示', "你没有选中任何记录，请勾选后再进行批量操作。");
@@ -273,40 +264,28 @@ function batchUpdate(tid, field, value, recordId, str) {
 		for (var i = 0; i < rows.length; i++) {
 			if (rows[i].status == str) {
 				$.messager.alert('提示', "已经" + str + "车辆不能做" + str + '处理！');
-				ifsave = false;
 				break;
 			} else if (rows[i].status == '到达' && str == '在途') {
 				$.messager.alert('提示', "已经到达车辆不能做" + str + '处理！');
-				ifsave = false;
 				break;
-			} else if (rows[i].status == '待派' || rows[i].status == '待确认') {
-				$.messager.alert('提示', '待派或待确认任务需要先做派车处理！');
-				ifsave = false;
-				break;
-			} else if (rows[i].status == '停开') {
-				$.messager.alert('提示', '停开任务无法做发车或到达处理！');
-				ifsave = false;
-				break;
-			}
-			ifsave = true;
-		}
-	}
-	if (ifsave) {
-		result.push("id," + field);
-		for (var j = 0; j < rows.length; j++) {
-			result.push(rows[j].id + ',' + value)
-		}
-		$.post(record_urls(recordId).CUD, {
-			"csv": result.join("\n")
-		}, function(data) {
-			if (data.created || data.updated) {
-				$.messager.show({
-					title: '提示',
-					msg: '批量处理成功！'
+			} else {
+				result.push("id," + field);
+				for (var j = 0; j < rows.length; j++) {
+					result.push(rows[j].id + ',' + value)
+				}
+				$.post(record_urls(recordId).CUD, {
+					"csv": result.join("\n")
+				}, function(data) {
+					if (data.created || data.updated) {
+						$.messager.show({
+							title: '提示',
+							msg: '批量处理成功！'
+						});
+						jobQuery()
+					}
 				});
-				jobQuery()
 			}
-		});
+		}
 	}
 }
 
@@ -316,22 +295,16 @@ function batchUpdate(tid, field, value, recordId, str) {
 	<div id="tb" style="padding:5px;height:auto">
 		<div style="margin-bottom:5px">
 			计划发车时间从:&nbsp;
-			<input id="pstart_s" class="easyui-datetimebox" style="width:140px">&nbsp;
+			<input id="pstart_s" class="easyui-datetimebox" style="width:130px" data-options="showSeconds: false">&nbsp;
 			&emsp;&emsp;&emsp;到:&nbsp;
-			<input id="pstart_e" class="easyui-datetimebox" style="width:140px">&nbsp;
+			<input id="pstart_e" class="easyui-datetimebox" style="width:130px" data-options="showSeconds: false">&nbsp;
 			<a href="#" class="easyui-linkbutton" iconCls="icon-tss-record-0" plain="true" onclick="openDlg('#fielddlg')">设置</a>
 		</div>
-		<div style="margin-bottom:5px">
-			任&emsp;务&emsp;单&emsp;号:&nbsp;
-			<input id="jcode" class="easyui-textbox" style="width:140px">&nbsp;
-			客户名称:&nbsp;
-			<input id="clientname" class="easyui-textbox" style="width:140px">&nbsp;
-		</div>
 		<div>
-			任&ensp;务&ensp;单&ensp;状&ensp;态:&nbsp;
-			<input id="jobstatus" class="easyui-combobox" style="width: 140px">&nbsp;
-			线&emsp;&emsp;路:&nbsp;
-			<input id="routename" class="easyui-textbox" style="width: 140px">&nbsp;
+			任&emsp;务&emsp;单&emsp;号:&nbsp;
+			<input id="jcode" class="easyui-textbox" style="width:130px">&nbsp;
+			客户名称:&nbsp;
+			<input id="clientname" class="easyui-textbox" style="width:130px">&nbsp;
 			<a href="#" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="jobQuery()">查询</a>
 			<a href="#" id="send" class="easyui-linkbutton" iconCls="icon-more" plain="true" onclick="batchUpdate('dg','status,actual_start_time','在途'+','+D,GD['job'].recordId,'在途')">发车</a>
 			<a href="#" id="arl" class="easyui-linkbutton" iconCls="icon-more" plain="true" onclick="batchUpdate('dg','status,actual_end_time','到达'+','+D,GD['job'].recordId,'到达')">到达</a>
@@ -345,7 +318,7 @@ function batchUpdate(tid, field, value, recordId, str) {
     	<div class="floatLeft floatSmallDiv">
 			<a class = "easyui-linkbutton op_bnt_r" iconCls="icon-redo" onclick = "removeAdd('#allfield','#showfield',true)">&nbsp;右移&nbsp;</a>
 			<a class = "easyui-linkbutton op_bnt_l" iconCls="icon-undo" onclick = "removeAdd($('#showfield'),'#allfield')" >&nbsp;左移&nbsp;</a>
-			<a class = "easyui-linkbutton op_bnt_s" iconCls="icon-save" onclick = "saveFormatter(GD['job'].recordName,USER,'运单管理发到车')" >&nbsp;保存&nbsp;</a>
+			<a class = "easyui-linkbutton op_bnt_s" iconCls="icon-save" onclick = "saveFormatter(GD['truck_job'].recordName,USER,'运单管理发到车')" >&nbsp;保存&nbsp;</a>
 	    </div>
 	    <div class="floatLeft floatBigDiv">
     		<table id = "showfield" title = "已展示字段" class = "easyui-datagrid" fit = "true">

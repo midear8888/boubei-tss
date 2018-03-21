@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -93,8 +94,8 @@ $(function() {
 	// 	// return M + '/' + d + '/' + y;
 	// 	return y + '/' + M + '/' + d + '' + 'h' + ':' + 'm';
 	// }
-	$("#pstart_s").datetimebox('setValue', getCurrentMonthFirst().format('yyyy-MM-dd 00:00:00'));
-	$("#pstart_e").datetimebox('setValue', new Date().format('yyyy-MM-dd 23:59:59'));
+	$("#pstart_s").datetimebox('setValue', getCurrentMonthFirst().format('yyyy-MM-dd'));
+	$("#pstart_e").datetimebox('setValue', new Date().format('yyyy-MM-dd 23:59'));
 	loginInfo(function(data) {
 		USER = data.login_code; //当前登录人信息
 		GetField(FIELDURL.QUERY, {
@@ -116,8 +117,7 @@ $(function() {
 					for (var i = AD.length - 1; i >= 0; i--) {
 						for (var j = 0; j < SD.length; j++) {
 							if (SD[j].field == AD[i].field) {
-								AD.splice(i, 1,);
-								break;
+								AD.splice(i, 1,)
 							}
 						}
 					}
@@ -177,17 +177,9 @@ function manageCol(ad, sd) {
 }
 // 获取运单数据
 function queryJob(callback) {
-	var parmas = getParams();
-	parmas['param7'] = 0;
-	tssJS.getJSON(BASEURL + GD[0].uri + GD[0].reportId, parmas, function(data) {
-		callback && callback(data)
-	})
-}
-
-function getParams(){
-	var a, b;
-	a = new Date($("#pstart_s").datetimebox("getValue").replace('-', '/')).format('yyyy-MM-dd hh:mm:ss');
-	b = new Date($("#pstart_e").datetimebox("getValue").replace('-', '/')).format('yyyy-MM-dd hh:mm:ss');
+	var a, b, queryParams;
+	a = new Date($("#pstart_s").datetimebox("getValue").replace('-', '/')).format('yyyy-MM-dd hh:mm');
+	b = new Date($("#pstart_e").datetimebox("getValue").replace('-', '/')).format('yyyy-MM-dd hh:mm');
 	parmas = {
 		param1: a,
 		param2: b,
@@ -195,9 +187,10 @@ function getParams(){
 		param4: $("#licenseplate").textbox("getValue"),
 		param5: $("#planroute").textbox("getValue"),
 		param6: $("#adjustroute").textbox("getValue")
-		// param7: '0'
 	};
-	return parmas
+	tssJS.getJSON(BASEURL + GD[0].uri + GD[0].reportId, parmas, function(data) {
+		callback && callback(data)
+	})
 }
 // 画表
 function drawTable(data, COL) {
@@ -338,37 +331,30 @@ function save(recordId) {
 		}
 	});
 }
-
-function expert(){
-	var parmas = getParams();
-	parmas['param7'] = 1;
-	exportCSV(GD[0].reportId,parmas)
-}
 </script>
 <body class="easyui-layout">
 	<table id="dg" class="easyui-datagrid" data-options="toolbar:'#tb'"></table>
 	<div id="tb" style="padding:5px;height:auto">
 		<div style="margin-bottom:5px">
 			计划发车时间从:&nbsp;
-			<input id="pstart_s" class="easyui-datetimebox" style="width:140px">
+			<input id="pstart_s" class="easyui-datetimebox" style="width:130px" data-options="showSeconds: false">
 			&emsp;&emsp;&emsp;到:&nbsp;
-			<input id="pstart_e" class="easyui-datetimebox" style="width:140px">
+			<input id="pstart_e" class="easyui-datetimebox" style="width:130px" data-options="showSeconds: false">
 			<a href="#" class="easyui-linkbutton" iconCls="icon-tss-record-0" plain="true" onclick="openDlg('#fielddlg')">设置</a>
 		</div>
 		<div style="margin-bottom:5px">
 			任&emsp;务&emsp;单&emsp;号:&nbsp;
-			<input id="jobcode" class="easyui-textbox" style="width:140px">
+			<input id="jobcode" class="easyui-textbox" style="width:130px">
 			车头车牌:&nbsp;
-			<input id="licenseplate" class="easyui-textbox" style="width:140px">
+			<input id="licenseplate" class="easyui-textbox" style="width:130px">
 		</div>
 		<div>
 			计&emsp;划&emsp;线&emsp;路:&nbsp;
-			<input id="planroute" class="easyui-textbox" style="width:140px">
+			<input id="planroute" class="easyui-textbox" style="width:130px">
 			调整线路:&nbsp;
-			<input id="adjustroute" class="easyui-textbox" style="width:140px">
+			<input id="adjustroute" class="easyui-textbox" style="width:130px">
 			<a href="#" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="getJobData()">查询</a>
 			<a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="updateOld(record_urls(GD[1].recordName).GET,'dg','#fm','#dlg','回单确认')">修改</a>
-			<a href="#" class="easyui-linkbutton" iconCls="icon-tss-down" plain="true" onclick="expert()">导出</a>
 		</div>
 	</div>
 	<div id="fielddlg" title="设置报表显示格式" class="easyui-dialog" border="false" style="width:40%;height:550px;" closed=true>

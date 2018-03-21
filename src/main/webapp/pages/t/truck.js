@@ -514,16 +514,13 @@ function GetField(url, params, str, callback) {
 				}
 			}
 		}
-		// console.log(url, params, str)
 		callback && callback(arr)
 	})
 }
 //将datagrid id为tid的选中行的field字段批量修改为value,修改的后台表id为recordId
 function batchUpdate(tid, field, value,recordId) {
-	console.log(tid, field, value,recordId)
 	var result=[];
     var rows = $('#'+tid).datagrid('getSelections');
-    console.log(rows)
 
     if(!rows) {
         return alert("你没有选中任何记录，请勾选后再进行批量操作。");
@@ -678,135 +675,3 @@ function AddDays(date, days) {
 	// 	// return M + '/' + d + '/' + y;
 	// 	return y + '/' + M + '/' + d + '' + 'h' + ':' + 'm';
 	// }
-// combobox function
-function setCombobox(id, data, value, text, high, limit, params) {
-	value = value || 'value';
-	text = text || value;
-	high = high || 'auto';
-	limit = limit || false;
-	if ($.type(data) == 'string') {
-		params = params || {};
-		$("#"+id).combobox({
-			url: data,
-			queryParams: params
-		})
-	} else {
-		$("#"+id).combobox({
-			data: data
-		})
-	}
-	$("#"+id).combobox({
-		valueField: value,
-		textField: text,
-		panelHeight: high,
-		limitToList: limit
-	})
-}
-
-// 画报表展示前后的格式
-function drawFieldTable(data, id) {
-	$(id).datagrid({
-		data: data,
-		columns: [
-			[{
-				field: 'field',
-				title: 'code',
-				align: 'center',
-				hidden: true
-			}, {
-				field: 'title',
-				title: '字段名',
-				align: 'center',
-				width:'100%'
-			}]
-		],
-		fit: true
-	})
-}
-// 处理报表的hidden属性
-function manageCol(ad, sd) {
-	if (sd.length != 0) {
-		var str = '';
-		for (var i = 0; i < sd.length; i++) {
-			str += sd[i].field + ','
-		}
-		for (var i = 0; i < ad.length; i++) {
-			for (var j = 0; j < sd.length; j++) {
-				if (sd[j].field != ad[i].field && str.indexOf(ad[i].field + ',') == -1) {
-					ad[i].hidden = true
-				} else {
-					ad[i].hidden = false
-				}
-			}
-		}
-	}
-	return ad
-}
-//保存展示格式数据
-function saveFormatter(tab, user,str) {
-	var newData = $('#showfield').datagrid('getData').rows;
-	var parmas = {
-		table_name: tab,
-		user: user,
-		showtable:str
-	};
-	tssJS.getJSON(REPORTURL.QUERY, parmas, function(data) {
-		var thisdata;
-		thisdata = dataSum(newData, data, 'field,title');
-		for (var i = 0; i < thisdata.length; i++) {
-			if (thisdata[i].handle == -1) {
-				// 删除该条数据
-				$.ajax({
-					url: BASE_RECORD_URL + GD['table_format'].recordId + (thisdata[i].id ? '/' + thisdata[i].id : ''),
-					method: 'DELETE',
-					error: function () {
-						$.messager.alert('提示', '数据保存失败！请重新操作！谢谢！');
-					}
-				})
-			} else if (thisdata[i].handle == 1) {
-				// 新增该条数据
-				$.ajax({
-					url: BASE_RECORD_URL + GD['table_format'].recordId + (thisdata[i].id ? '/' + thisdata[i].id : ''),
-					method: 'post',
-					type: 'json',
-					data: {
-						table_name: tab,
-						field: thisdata[i].field,
-						title: thisdata[i].title,
-						user: USER,
-						showtable: str
-					},
-					error: function() {
-						$.messager.alert('提示', '数据保存失败！请重新操作！谢谢！')
-					}
-				})
-			}
-		}
-		closeDlg('#fielddlg')
-	})
-}
-/** <<waiting>><<DONE>> 将数值转换为千分符逗号形式，并保留n位小数 默认两位小数  
-     * @param number s 需要被转换的数字
-     * @return string 每三位用,隔开
-     * @example numCommafmt(9999999.9)='9,999,999.90'; 
-                numCommafmt(9999999.99)='10,000,000.00';
-                numCommafmt(9999999.99,0)='10,000,000';
-     * @version v001：20170510章敏  收录
-     * @version v002：20170831Hank's modify 支持自定义保留位数 及 负数逗号正常显示
-     */
-function numCommafmt(s, n) {
-	n = isNaN(n) ? 2 : n;
-	var symbol = false;
-	if (s < 0) {
-		s = -s;
-		symbol = true;
-	}
-	s = parseFloat((s + "").replace(/[^\d\.-]/g, "")).toFixed(n) + "";
-	var l = s.split(".")[0].split("").reverse(),
-		r = s.split(".")[1];
-	t = "";
-	for (i = 0; i < l.length; i++) {
-		t += l[i] + ((i + 1) % 3 == 0 && (i + 1) != l.length ? "," : "");
-	}
-	return (symbol ? '-' : '') + t.split("").reverse().join("") + (r ? ("." + r) : '');
-}
