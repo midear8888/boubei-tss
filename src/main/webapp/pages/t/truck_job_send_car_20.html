@@ -43,7 +43,11 @@ var BASEURL = 'http://t.boubei.com',
 	FCOL = [[
 		{field: 'ck', checkbox: true},
 		{field: 'job_code',title: '任务单号',align: 'center',width:'120px',styler: styler2},
-		{field:'status',title:'运单状态',align:'center',width:'120px'}
+		{field:'status',title:'运单状态',align:'center',width:'120px',formatter:function(value){
+			var d = styler3(value);
+			if (!value) return;
+			return "<span title='" + value + "' style=" + d + ";>" + value + "</span>";
+		}}
 	]],//主表冻结列
 	COL = [[
 		{field: 'client',title: '客户名称',align: 'center',width:'120px'},
@@ -157,6 +161,9 @@ $(function() {
 		$('#ifpay').textbox('setValue', '否');
 	})
 
+	$("#jobsubmit").click(function(){
+		$("#status").combobox("setValue",'已派');
+	})
 	$("#ifpay").combobox({
 		onChange: function(newValue, oldValue) {
 			if (newValue == '是') {
@@ -392,6 +399,20 @@ function drawTable(data) {
 			}
 		}
 	})
+}
+
+function styler3(value) {
+	if (value == '已派') {
+		return "color:red";
+	} else if (value == '在途') {
+		return "color:orange"
+	} else if (value == '到达') {
+		return "color:green"
+	} else if (value == '终止') {
+		return "color:grey"
+	} else {
+		return "color:black"
+	}
 }
 // 若修改油卡返回油卡id,否则新增油卡使用记录
 function updateId(url,callback) {
@@ -715,7 +736,8 @@ function saveRecord(recordId) {
 		</form>
 	</div>
 	<div id="dlg-buttons">
-		<a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveTable(GD['t_truck_job'].recordName,'#dg')">保存</a>
+		<a href="#" class="easyui-linkbutton" iconCls="icon-save" onclick="saveTable(GD['t_truck_job'].recordName,'#dg')">保存</a>
+		<a href="#" id="jobsubmit" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveTable(GD['t_truck_job'].recordName,'#dg')">提交</a>
 		<a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="closeDlg('#dlg','#fm')">取消</a>
 	</div>
 	<div id="dlg2" class="easyui-dialog" style="width: 550px;height: 200px" closed=true buttons="#dlg-buttons2">
