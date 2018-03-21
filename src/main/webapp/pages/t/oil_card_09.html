@@ -1,7 +1,4 @@
 
-
-
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -9,12 +6,6 @@
 	<meta charset="utf-8">
 	<title>油卡</title>
 	<eta name="author" content="吴玲；20180125"/>
-    <meta name="keywords" content="xxx"/>
-    <meta name="description" content="xxx"/>
-    <meta name="application" content="xxxx"/>
-    <meta name="datasource" content="xxxx"/>
-    <meta name="version" content="1.0 20180125"/>
-    <meta name="viewport" content="width=device-width"/>
     <link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
     <link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
     <link rel="stylesheet" href="../../css/easyui.css">
@@ -24,10 +15,8 @@
     <script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
     <script src="../../tools/easyui/datagrid-filter.js"></script>
     <script src="../../tools/easyui.js"></script>
-    <!-- // <script src="truck.js"></script> -->
     <script src="../truck.js"></script>
-
-
+    
 </head>
 <style type="text/css">
 
@@ -54,28 +43,13 @@ var BASEURL = 'http://t.boubei.com',
 var AUTH_PATH='http://t.boubei.com/tss/auth/'
 var	URL_DATA_CSV   = AUTH_PATH + "xdata/export/";
 var download_param={};
-$(function() {
-	$("#dg").datagrid({
-		fit: true,
-		url: BASEURL+GD[3].baseurl+GD[3].reportId+'?noCache=true',//+'?noCache=true'
-		queryParams:{},
-		toolbar:[
-			{ text: '新增', iconCls: 'icon-add',handler:createRow},
-			{ text: '修改', iconCls: 'icon-edit',handler:updateRow}
-		],
-		rownumbers: true,
-		title:'油卡基础信息',
-        singleSelect: true,
-        frozenColumns:[[
+var frozenColumns=[[
 	        {field: 'ck', checkbox: true},
 			{field: 'code',title: '卡号',align: 'center',width:'145px'},
 			{field: 'status',title: '状态',align: 'center',width:'70px'},
 			{field: 'balance',title: '余额',align: 'center',width:'70px'},
 			]],
-		columns: [[
-			// {field: 'ck', checkbox: true},
-			// {field: 'code',title: '卡号',align: 'center',width:'140px'},
-			// {field: 'status',title: '状态',align: 'center',width:'70px'},
+    columns=[[
 			{field: 'owner_person',title: '持卡人',align: 'center',width:'80px'},
 			{field: 'expiry_date',title: '有效期',align: 'center',width:'90px'},
 			{field: 'is_main_card',title: '是否主卡',align: 'center',width:'70px'},
@@ -86,14 +60,30 @@ $(function() {
 			{field: 'start_day',title: '启用日期',align: 'center',width:'90px'},
 			{field: 'op_person',title: '操作人',align: 'center',width:'70px'},			
 			{field: 'remark',title: '备注',align: 'center',width:'90px',formatter:format}
-			]],
+			]];
+$(function() {
+
+	$("#dg").datagrid({
+		fit: true,
+		url: BASEURL+GD[3].baseurl+GD[3].reportId+'?noCache=true',//+'?noCache=true'
+		queryParams:{},
+		toolbar:[
+			{ text: '新增', iconCls: 'icon-add',handler:createRow},
+			{ text: '修改', iconCls: 'icon-edit',handler:updateRow},
+			{text: '导出',iconCls: 'icon-save',handler:function(){exportCSV(GD[3].reportId,{param2:'导出'})}}
+		],
+		rownumbers: true,
+		title:'油卡基础信息',
+        singleSelect: true,
+        frozenColumns:frozenColumns,
+		columns:columns ,
 		onLoadSuccess:function(){
 			beginQuery()
 		},
 		onClickRow:function(rowIndex,rowData){
 			beginQuery(record_urls(GD[2].recordName).QUERY,{code: rowData.code})
 		}
-	}).datagrid('enableFilter', [{field: 'code',type: 'textbox'}, {field: 'status',type: 'textbox'},{field:'balance',type:'textbox'},{field: 'owner_person',type: 'textbox'}, {field: 'expiry_date',type: 'textbox'},{field:'is_main_card',type:'textbox'},{field:'main_card',type:'textbox'},{field: 'limit_license',type: 'textbox'}, {field: 'owner_company',type: 'textbox'},{field:'type',type:'textbox'},{field: 'start_day',type: 'textbox'}, {field: 'op_person',type: 'textbox'},{field:'remark',type:'textbox'}]);
+	}).datagrid('enableFilter', getFilterObj(frozenColumns,columns));
 	$("#is_main_card").combobox({
 		panelHeight: '50px',
         width: '150px',
