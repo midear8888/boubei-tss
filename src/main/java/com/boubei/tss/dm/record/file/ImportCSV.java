@@ -73,9 +73,10 @@ public class ImportCSV implements AfterUpload {
     			value = value.replaceAll("，", ","); // 导出时英文逗号替换成了中文逗号，导入时替换回来
     			sb += value;
     			
+    			// 检查值为空的字段，是否配置自动取号规则，是的话先批量取出一串连号
     			String defaultVal = _db.fieldValues.get(j);
-    			if( defaultVal != null && defaultVal.endsWith("yyMMddxxxx")) {
-    				String preCode = defaultVal.replaceFirst("yyMMddxxxx", "");
+    			if( EasyUtils.isNullOrEmpty(value) && (defaultVal+"").endsWith("yyMMddxxxx")) {
+    				String preCode = defaultVal.replaceAll("yyMMddxxxx", "");
     				if(snList == null) {
     					snList = new SerialNOer().create(preCode, rows.length);
     				}
