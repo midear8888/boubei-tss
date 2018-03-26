@@ -3,7 +3,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>员工管理</title>
+<title>员工基础信息</title>
 
 <link rel="stylesheet" href="../../tools/tssJS/css/boubei.css">
 <link rel="stylesheet" href="../../css/easyui.css">
@@ -26,7 +26,7 @@ var GD = [
 	{id:1,recordId:29,recordName:'chinese_nation',baseurl:'/tss/auth/xdata/json/',type:'录入表'},
 	{id:2,recordId:31,recordName:'staff_out',baseurl:'/tss/auth/xdata/json/',type:'录入表'}
 	];
-var max_code='0',all_data=[],query_data=[];
+var max_code='0';
 
 var FIELDS = [
     {field: 'ck', checkbox: true},    
@@ -57,7 +57,7 @@ var FIELDS = [
 $.each(FIELDS, function(i, field) {
     field.align = "center";
 }); 
-var dg,timer = null,query_url;
+var dg,timer = null;
 $(document).ready(function () {
 	$('.l tr td:even').css('width','80px');
     query();
