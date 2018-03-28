@@ -435,8 +435,8 @@ function configDefine() {
 		var columns = defVal.replace(/\t/g, " ").split(" ");  // 替换掉tab
 		defVal = [];
 		columns.each(function(i, column) {
-			column = column.trim();
-			column && defVal.push( " {'label':'" +column.trim()+ "', 'code':'c" +(defVal.length+1)+ "'}" );
+			column = column.trim().replace(/&amp;|\&|\|/g, ""); // 过滤名称里的特殊字符:|、&;
+			column && defVal.push( " {'label':'" +column+ "', 'code':'c" +(defVal.length+1)+ "'}" );
 		});
 		defVal = "[" + defVal.join(", \n") + "]";
 	}
@@ -634,7 +634,7 @@ function editFieldConfig() {
 			}
 			else {
 				if(field === 'label') {
-					newValue = newValue.replace(/\|/g, ""); // 过滤名称里的特殊字符:|
+					newValue = newValue.replace(/\&|\|/g, ""); // 过滤名称里的特殊字符:|、&
 				}
 				if(field === 'code') {
 					newValue = newValue.trim().toLowerCase(); // code 不能有空格

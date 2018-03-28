@@ -55,7 +55,7 @@ public abstract class _Database {
 	public String recordName;
 	public String datasource;
 	public String table;
-	public String customizeTJ;
+	public String customizeTJ;  // 1=1<#if 1=0>showCUV & ignoreDomain</#if>
 	
 	private boolean needLog;
 	public boolean needFile;
@@ -647,11 +647,14 @@ public abstract class _Database {
 		
 		/* 
 		 * 如果用户的域不为空，则只筛选出该域下用户创建的记录
-		 * 只有单机部署的BI允许无域（百世快运这类）；SAAS部署必须每个组都要有域，每个人必属于某个域。Admin不属于任何域
+		 * 只有单机部署的BI允许无域（百世快运这类）；SAAS部署必须每个组都要有域，每个人必属于某个域。Admin不属于任何域。
+		 * 注：部分全局基础表需要忽略域限制：比如行政区划等，customizeTJ: <#if 1=0>ignoreDomain</#if>
 		 */
 		String _customizeTJ = (String) EasyUtils.checkNull(this.customizeTJ, " 1=1 ");
-		_customizeTJ += " <#if USERS_OF_DOAMIN??> and creator in (${USERS_OF_DOAMIN}) </#if> ";
-		condition += " and ( " + DMUtil.customizeParse(_customizeTJ + " or -1 = ${userId} ") + " ) ";
+		if( _customizeTJ.indexOf("ignoreDomain") < 0 ) { 
+			_customizeTJ += " <#if USERS_OF_DOAMIN??> and creator in (${USERS_OF_DOAMIN}) </#if> ";
+		}
+		condition += " and ( ( " + DMUtil.customizeParse(_customizeTJ + " ) or -1 = ${userId} ") + " ) ";
 		
 		// 设置排序方式
 		String _sortField = params.get("sortField");
@@ -755,7 +758,7 @@ public abstract class _Database {
         	sb.append("<column name=\"fileNum\" mode=\"string\" caption=\"附件\" width=\"30px\"/>").append("\n");
         }
         
-        // 判断是否显示这5列
+        // 判断是否显示这5列, customizeTJ: 1=1<#if 1=0>showCUV< /#if>
         if( (this.customizeTJ+"").indexOf("showCUV") >= 0 ) {
         	sb.append("<column name=\"createtime\"  caption=\"创建时间\" sortable=\"true\" width=\"60px\"/>").append("\n");
             sb.append("<column name=\"creator\"  caption=\"创建人\" sortable=\"true\" width=\"40px\"/>").append("\n");
