@@ -25,6 +25,7 @@ public class _Oracle extends _Database {
 	protected Map<String, String> getDBFiledTypes(int length) {
 		Map<String, String> m = super.getDBFiledTypes(length);
 		m.put(_Field.TYPE_DATETIME, "date");
+		m.put(_Field.TYPE_INT, "number(19)");
 		
 		return m;
 	}

@@ -154,14 +154,14 @@ public interface ILoginService {
     List<OperatorDTO> getUsersByRoleId(Long roleId);
     
     /**
-     * 查找指定域下的所有用户
+     * 查找指定域下的所有用户，按【域 + 登录用户】进行缓存（开发者域的域名相同，需要用logonUserId来区分是哪个开发者）
      * 
      * @param domain
      * @param field
      * @return
      */
     @Cached(cyclelife = CacheLife.SHORT)
-    List<?> getUsersByDomain(String domain, String field);
+    List<?> getUsersByDomain(String domain, String field, Long logonUserId);
     
 	/**
 	 * 读取用户联系方式：

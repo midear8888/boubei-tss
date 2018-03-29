@@ -20,6 +20,13 @@ public class _SQLServer extends _Database {
 	public _SQLServer(Record record) {
 		super(record);
 	}
+	
+	protected Map<String, String> getDBFiledTypes(int length) {
+		Map<String, String> m = super.getDBFiledTypes(length);
+		m.put(_Field.TYPE_INT, "BIGINT");
+		
+		return m;
+	}
 
 	public void createTable() {		
 		StringBuffer createDDL = new StringBuffer("create table " + table + " ( ");
@@ -54,6 +61,7 @@ public class _SQLServer extends _Database {
 		String[] names = createNames(field);
 		String[] sqls = super.getSQLs(field);
 		sqls[3] = "drop index " +this.table+ "." + names[1];
+		sqls[4] = "alter table " +this.table+ " alter column " + field;  
 		
 		return sqls;
 	}

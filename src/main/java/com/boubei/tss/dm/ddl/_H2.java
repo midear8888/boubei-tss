@@ -18,6 +18,13 @@ public class _H2 extends _MySQL {
 		super(record);
 	}
 	
+	protected String[] getSQLs(String field) {
+		String[] sqls = super.getSQLs(field);
+		sqls[4] = "alter table " +this.table+ " alter " + field;  
+		
+		return sqls;
+	}
+	
 	public String toPageQuery(String sql, int page, int pagesize) {
 		return super.toPageQuery(sql, page, pagesize);
 	}

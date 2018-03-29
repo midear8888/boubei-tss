@@ -254,13 +254,16 @@ public class SQLExcutor {
         try {
         	excute(sql, conn);
         } catch (Exception e) {
-        	throw new BusinessException(e.getMessage());
-        } finally {
+        	String errorMsg = e.getMessage() + " --- SQL: " + sql + ", " + datasource;
+        	log.info( errorMsg );
+        	throw new BusinessException(errorMsg);
+        } 
+        finally {
             connpool.checkIn(connItem);
         }
     }
     
-    public static void excute(String sql, Connection conn) {
+    private static void excute(String sql, Connection conn) {
     	boolean autoCommit = true;
     	Statement statement = null;
     	try {
@@ -277,10 +280,9 @@ public class SQLExcutor {
 			try { conn.rollback(); } catch (Exception e2) { }
 			
 			String errorMsg = "error: " +e.getMessage();
-			log.info(errorMsg + " ------ SQL: " + sql);
 			throw new BusinessException(errorMsg);
-			
-		} finally {
+		} 
+    	finally {
 			try { conn.setAutoCommit(autoCommit); } catch (Exception e) { }
 			try { statement.close(); } catch (Exception e) { }
 		}

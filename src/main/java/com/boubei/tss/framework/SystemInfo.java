@@ -15,6 +15,7 @@ import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Date;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.util.DateUtil;
 
 @Controller
 @RequestMapping("/si")
@@ -32,6 +34,11 @@ public class SystemInfo {
 	public Object[] getVersion() {
 		String packageTime = Config.getAttribute("last.package.time");
 		String environment = Config.getAttribute("environment");
+		
+		Date d = DateUtil.parse(packageTime);
+		d = DateUtil.addDays(d, 1d/3);  //  +8小时，变成北京时间
+		packageTime = DateUtil.format(d, "yyyy-MM-dd HH:mm:ss");
+		
 		return new Object[] { packageTime, environment };
 	}
 	
