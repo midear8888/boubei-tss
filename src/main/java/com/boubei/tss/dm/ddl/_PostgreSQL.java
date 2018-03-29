@@ -24,10 +24,17 @@ public class _PostgreSQL extends _Database {
 	protected Map<String, String> getDBFiledTypes(int length) {
 		Map<String, String> m = super.getDBFiledTypes(length);
 		m.put(_Field.TYPE_NUMBER, "numeric(19,3)");
-		m.put(_Field.TYPE_INT, "integer");
+		m.put(_Field.TYPE_INT, "bigint");
 		m.put(_Field.TYPE_DATETIME, "timestamp");
 		
 		return m;
+	}
+	
+	protected String[] getSQLs(String field) {
+		String[] sqls = super.getSQLs(field);
+		sqls[4] = "alter table " +this.table+ " alter " +field+ " TYPE ";  
+		
+		return sqls;
 	}
 	
 	public void createTable() {

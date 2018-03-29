@@ -30,6 +30,8 @@ public class MathUtil {
         if ( EasyUtils.isNullOrEmpty(pattern) ) {
             return value.toString();
         }
+        
+        value = EasyUtils.obj2Double(value);
         return new DecimalFormat(pattern).format(value);
     }
     

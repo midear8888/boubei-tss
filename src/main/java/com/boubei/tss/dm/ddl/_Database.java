@@ -55,7 +55,7 @@ public abstract class _Database {
 	public String recordName;
 	public String datasource;
 	public String table;
-	public String customizeTJ;
+	public String customizeTJ;  // 1=1<#if 1=0>showCUV & ignoreDomain</#if>
 	
 	private boolean needLog;
 	public boolean needFile;
@@ -195,11 +195,12 @@ public abstract class _Database {
 	
 	protected String[] getSQLs(String field) {
 		String[] names = createNames(field);
-		String sql1 = "alter table " +this.table+ " add constraint " +names[0]+ " UNIQUE (" +field+ ")";
-		String sql2 = "alter table " +this.table+ " drop constraint " +names[0];
-		String sql3 = "create index " +names[1]+ " on " +this.table+ " (" +field+ ")";
-		String sql4 = "drop index " +names[1];
-		return new String[] { sql1, sql2, sql3, sql4 };
+		String sql0 = "alter table " +this.table+ " add constraint " +names[0]+ " UNIQUE (" +field+ ")";
+		String sql1 = "alter table " +this.table+ " drop constraint " +names[0];
+		String sql2 = "create index " +names[1]+ " on " +this.table+ " (" +field+ ")";
+		String sql3 = "drop index " +names[1];
+		String sql4 = "alter table " +this.table+ " modify " + field;
+		return new String[] { sql0, sql1, sql2, sql3, sql4 };
 	}
 	
 	// 防止索引长度过长
@@ -250,6 +251,11 @@ public abstract class _Database {
 		SQLExcutor.excute("drop table " + table, datasource);
 	}
 	
+	/**
+	 * 修改表结构注意事项：
+	 * 1、字段Code修改后，会新增一列出来，而不是直接修改原有的列名。旧的列如果有数据会保留，没有数据则被删除。如需把旧列的数据显示在新列里，需要自行在DB端操作。
+	 * 2、Oracle表中存在数据时，无法修改字段类型
+	 */
 	public void alterTable(Record _new) {
 		int existedCount = 0;
 		try {
@@ -285,21 +291,22 @@ public abstract class _Database {
         		if(code.equals(fDefs0.get("code"))) {
         			exsited = true; 
         			
+        			String[] ddlSQLs = getSQLs(code);
+        			
         			// 进一步判断字段类型及长度，及是否可空等有无发生变化。注：如果表已有数据，null-->not null可能出错
         			String fieldDef0 = getFiledDef(fDefs0, false);
         			String fieldDef1 = getFiledDef(fDefs1, false);
         			if( !fieldDef1.equalsIgnoreCase(fieldDef0) ) {
         				try {
-        					SQLExcutor.excute("alter table " +this.table+ " modify " + fieldDef1, newDS);
-        				} catch(Exception e1) {
-        					try {
-        						SQLExcutor.excute("alter table " +this.table+ " alter " + fieldDef1, newDS); // h2 只支持alter
+        					SQLExcutor.excute( ddlSQLs[4] + " " + fieldDef1.replace(code, ""), newDS);
+            			} catch(Exception e1) {
+            				try {
+            					SQLExcutor.excute( "alter table " +this.table+ " alter " + code + " " + fieldDef1.replace(code, ""), newDS); // for unit Test
             				} catch(Exception e2) {
+            					throw e1; // 注：抛出的是e1
             				}
-        				}
+            			}
         			} 
-        			
-        			String[] ddlSQLs = getSQLs(code);
         			
         			// 检查唯一性约束是否有变
         			String unique1 = (String) fDefs1.get("unique");
@@ -647,11 +654,14 @@ public abstract class _Database {
 		
 		/* 
 		 * 如果用户的域不为空，则只筛选出该域下用户创建的记录
-		 * 只有单机部署的BI允许无域（百世快运这类）；SAAS部署必须每个组都要有域，每个人必属于某个域。Admin不属于任何域
+		 * 只有单机部署的BI允许无域（百世快运这类）；SAAS部署必须每个组都要有域，每个人必属于某个域。Admin不属于任何域。
+		 * 注：部分全局基础表需要忽略域限制：比如行政区划等，customizeTJ: <#if 1=0>ignoreDomain</#if>
 		 */
 		String _customizeTJ = (String) EasyUtils.checkNull(this.customizeTJ, " 1=1 ");
-		_customizeTJ += " <#if USERS_OF_DOAMIN??> and creator in (${USERS_OF_DOAMIN}) </#if> ";
-		condition += " and ( " + DMUtil.customizeParse(_customizeTJ + " or -1 = ${userId} ") + " ) ";
+		if( _customizeTJ.indexOf("ignoreDomain") < 0 ) { 
+			_customizeTJ += " <#if USERS_OF_DOAMIN??> and creator in (${USERS_OF_DOAMIN}) </#if> ";
+		}
+		condition += " and ( ( " + DMUtil.customizeParse(_customizeTJ + " ) or -1 = ${userId} ") + " ) ";
 		
 		// 设置排序方式
 		String _sortField = params.get("sortField");
@@ -755,7 +765,7 @@ public abstract class _Database {
         	sb.append("<column name=\"fileNum\" mode=\"string\" caption=\"附件\" width=\"30px\"/>").append("\n");
         }
         
-        // 判断是否显示这5列
+        // 判断是否显示这5列, customizeTJ: 1=1<#if 1=0>showCUV< /#if>
         if( (this.customizeTJ+"").indexOf("showCUV") >= 0 ) {
         	sb.append("<column name=\"createtime\"  caption=\"创建时间\" sortable=\"true\" width=\"60px\"/>").append("\n");
             sb.append("<column name=\"creator\"  caption=\"创建人\" sortable=\"true\" width=\"40px\"/>").append("\n");

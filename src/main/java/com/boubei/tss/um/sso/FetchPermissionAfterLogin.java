@@ -92,9 +92,9 @@ public class FetchPermissionAfterLogin implements ILoginCustomizer {
         
         session.setAttribute(SSOConstants.USER_DOAMIN, domain); // 用户所属域
         if( domain != null) { // 取出域下所有用户
-        	List<?> users = loginSerivce.getUsersByDomain(domain, "loginName");
+        	List<?> users = loginSerivce.getUsersByDomain(domain, "loginName", logonUserId);
         	session.setAttribute(SSOConstants.USERS_OF_DOAMIN, DMUtil.insertSingleQuotes(EasyUtils.list2Str(users)));
-        	users = loginSerivce.getUsersByDomain(domain, "id");
+        	users = loginSerivce.getUsersByDomain(domain, "id", logonUserId);
         	session.setAttribute(SSOConstants.USERIDS_OF_DOAMIN, EasyUtils.list2Str(users));
         }
         

@@ -59,11 +59,12 @@ public class _MySQL extends _Database {
 	
 	protected String[] getSQLs(String field) {
 		String[] names = createNames(field);
+		String[] sqls = super.getSQLs(field);
 		
-		String sql1 = "alter table " +this.table+ " add UNIQUE (" +field+ ")";
-		String sql2 = "alter table " +this.table+ " drop index " +field;
-		String sql3 = "create index " +names[1]+ " on " +this.table+ " (" +field+ ")";
-		String sql4 = "drop index " + names[1] + " on " + this.table;
-		return new String[] { sql1, sql2, sql3, sql4 };
+		sqls[0] = "alter table " +this.table+ " add UNIQUE (" +field+ ")";
+		sqls[1] = "alter table " +this.table+ " drop index " +field;
+		sqls[2] = "create index " +names[1]+ " on " +this.table+ " (" +field+ ")";
+		sqls[3] = "drop   index " +names[1]+ " on " +this.table;
+		return sqls;
 	}
 }

@@ -29,7 +29,6 @@ import com.boubei.tss.EX;
 import com.boubei.tss.PX;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.Anonymous;
-import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.sso.IOperator;
 import com.boubei.tss.framework.sso.IdentityCard;
 import com.boubei.tss.framework.sso.TokenUtil;
@@ -334,14 +333,14 @@ public class LoginService implements ILoginService {
         return translateUserList2DTO(data);
     }
     
-    public List<?> getUsersByDomain(String domain, String field) {
+    public List<?> getUsersByDomain(String domain, String field, Long logonUserId) {
     	domain = (String) EasyUtils.checkNull(domain, "noDomain");
     	String selfRegDomain = groupDao.getEntity(UMConstants.SELF_REGISTER_GROUP_ID).getDomain();
     	String devDomain = groupDao.getEntity(UMConstants.DEV_GROUP_ID).getDomain();
     	
     	// 如果当前用户属于开发者域或自注册域，则只返回自己个人账号
     	if(domain.equals(selfRegDomain) || domain.equals(devDomain)) {
-    		return userDao.getEntities( "select distinct u." +field+ " from User u where u.id=?", Environment.getUserId() );
+    		return userDao.getEntities( "select distinct u." +field+ " from User u where u.id=?", logonUserId );
     	}
     	
         String hql = "select distinct u." +field+ " from Group g, GroupUser gu, User u" +

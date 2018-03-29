@@ -88,8 +88,9 @@ public class DMUtil {
 		ILoginService loginService = (ILoginService) Global.getBean("LoginService");
 		
 		// 分别按资源的ID及名称 + uName 搜索一遍令牌
-		List<String> tokenList = loginService.searchTokes(uName, r.getId().toString(), r.getResourceType()); 
-		tokenList.addAll( loginService.searchTokes(uName, r.getName(), r.getResourceType()) );
+		String resourceType = r.getResourceType(); // D1 | D2
+		List<String> tokenList = loginService.searchTokes(uName, r.getId().toString(), resourceType); 
+		tokenList.addAll( loginService.searchTokes(uName, r.getName(), resourceType) );
 		
     	if( tokenList.contains(uToken) ) {
     		loginService.mockLogin(uName, uToken);
@@ -279,7 +280,7 @@ public class DMUtil {
 	
 	public static String customizeParse(String script, Map<String, Object> dataMap, String datasource) {
       	/* 
-      	 * 自动为针对 数据表 的查询加上 按域过滤
+      	 * 自动为针对 数据表 的查询加上 按域过滤。 ${tableName} ==> 带按域过滤的子查询
       	 */
       	Pool cache = CacheHelper.getNoDeadCache();
 		String key = datasource + DMConstants.RECORD_TABLE_LIST;

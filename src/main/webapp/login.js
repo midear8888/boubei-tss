@@ -76,6 +76,7 @@ function init() {
                     
                     passwdEl.disabled = false;
                     passwdEl.focus();
+                    $(".tip").text("");
                 }
             });
 

@@ -32,10 +32,21 @@ public abstract class ARecordTable implements IEntity {
     protected Date   updateTime;
     
     @Version
-    private int version = 0;
+    private Integer version = 0;
     
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+	}
+	
+	public int hashCode() {
+		return this.getPK().hashCode();
+	}
+	
+	public boolean equals(Object other) {
+		if(other == null) return false;
+		
+		return this.getClass().equals(other.getClass()) 
+				&& this.hashCode() == other.hashCode();
 	}
 
 	public String getCreator() {
@@ -70,11 +81,11 @@ public abstract class ARecordTable implements IEntity {
 		this.updateTime = updateTime;
 	}
 
-	public int getVersion() {
+	public Integer getVersion() {
 		return version;
 	}
 
-	public void setVersion(int version) {
+	public void setVersion(Integer version) {
 		this.version = version;
 	}	
 }
