@@ -287,11 +287,12 @@ function IdentityCodeValid(code) {
 			}
 			var last = parity[sum % 11];
 			if (parity[sum % 11] != code[17]) {
-				tip = "校验位错误";
+				tip = "身份证校验位错误";
 				pass = false;
 			}
 		}
 	}
+	if(tip){$.messager.alert('提示',tip)}
 	return pass;
 }
 
@@ -809,4 +810,132 @@ function numCommafmt(s, n) {
 		t += l[i] + ((i + 1) % 3 == 0 && (i + 1) != l.length ? "," : "");
 	}
 	return (symbol ? '-' : '') + t.split("").reverse().join("") + (r ? ("." + r) : '');
+}
+
+//根据身份证号码获取年龄（取得的年龄为向下取整的数据）
+function getAge(identityCard) {
+    var len = (identityCard + "").length;
+    if (len == 0) {
+        return 0;
+    } else {
+        if ((len != 15) && (len != 18))//身份证号码只能为15位或18位其它不合法
+        {
+            return;
+        }
+    }
+    var strBirthday = "";
+    if (len == 18)//处理18位的身份证号码从号码中得到生日和性别代码
+    {
+        strBirthday = identityCard.substr(6, 4) + "/" + identityCard.substr(10, 2) + "/" + identityCard.substr(12, 2);
+    }
+    if (len == 15) {
+        strBirthday = "19" + identityCard.substr(6, 2) + "/" + identityCard.substr(8, 2) + "/" + identityCard.substr(10, 2);
+    }
+    //时间字符串里，必须是“/”
+    var birthDate = new Date(strBirthday);
+    var nowDateTime = new Date();
+    var age = nowDateTime.getFullYear() - birthDate.getFullYear();
+    //再考虑月、天的因素;.getMonth()获取的是从0开始的，这里进行比较，不需要加1
+    if (nowDateTime.getMonth() < birthDate.getMonth() || (nowDateTime.getMonth() == birthDate.getMonth() && nowDateTime.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    return age;
+}
+
+//打开上传附件页面，title可不填
+var globalValiable={};
+function uploadX(tableName,rowid,title) {
+	globalValiable={"tableId":tableName}	
+    globalValiable.itemId = rowid;
+    var title = title ||"管理文件";
+    tssJS.openIframePanel("if1", title, 710, 255, "../../modules/dm/recorder_upload.html", true);
+
+}
+
+//获取直接展示附件的inputcombobox下拉框数据，tb_name为录入表名字，comboboxid为input的ID，select_data为选中的数据，数据时没有第三个参数
+var _tempID;
+function getAttachShow(tb_name,comboboxid,select_data){   
+	var s_data=select_data || {};
+	if(!select_data){
+    	s_data.id=Date.parse(new Date());
+    	_tempID=s_data.id;
+    } 
+    s_data.zizhi=s_data.zizhi||'';
+	tssJS.getJSON('/tss/auth/xdata/attach/json/'+tb_name+'/'+ s_data.id + '?noCache=true',{},function(data){
+		if(data.length==0){
+			data=[{name:'无附件，请先上传',value:'无附件'}];
+		}
+		else{
+			$.each(data,function(i,item){
+				data[i].value=item.name+'#'+item.pk;
+			})
+		}
+		$("#"+comboboxid).combobox({
+			valueField: 'value',
+			textField: 'name',
+			data:data,
+			panelHeight: '150px',
+			multiple:true,
+			formatter: function (row) { 
+	                    var opts = $(this).combobox('options');  
+	                    return '<input type="checkbox" class="combobox-checkbox">' + row[opts.textField] 
+	                },
+	        onLoadSuccess: function (a) {  
+	            var opts = $(this).combobox('options');  
+	            var target = this;  
+	            var values = $(target).combobox('getValues');  
+	            $.map(values, function (value) {  
+	                var el = opts.finder.getEl(target, value);  
+	                el.find('input.combobox-checkbox')._propAttr('checked', true);   
+	            }) 
+	            if(s_data[comboboxid]){$('#zizhi').combobox('setValues',s_data[comboboxid])}	            	              
+	        },  
+	        onSelect: function (row) { //选中一个选项时调用  
+	            var opts = $(this).combobox('options');   
+	            var el = opts.finder.getEl(this, row[opts.valueField]);  
+	            el.find('input.combobox-checkbox')._propAttr('checked', true);  
+	        },  
+	        onUnselect: function (row) {//不选中一个选项时调用  
+	            var opts = $(this).combobox('options');  
+	            var el = opts.finder.getEl(this, row[opts.valueField]);  
+	            el.find('input.combobox-checkbox')._propAttr('checked', false);  
+	        }  
+		})
+	}  )
+	if($('#'+comboboxid).parent().children().length==4){
+		$('#'+comboboxid).parent().children()[2].remove();
+		$('#'+comboboxid).parent().children()[2].remove();	
+	}
+	$('#'+comboboxid).parent().append('<a href="javascript:;" onclick="uploadX(\''+tb_name+'\',\''+s_data.id+'\')" class="textbox-icon icon-tss-up" icon-index="2" tabindex="-1" style="width: 18px; height: 22px;"></a><a href="javascript:;" class="textbox-icon icon-reload" icon-index="2" tabindex="-1" style="width: 18px; height: 22px;" onclick="getAttachShow(\''+tb_name+'\',\''+comboboxid+'\','+JSON.stringify(s_data).replace(/"/g, '&quot;')+')"></a>')	
+}
+
+//保存包含附件的录入表数据，第一个和第二个必填，其他不填则用默认值
+function containAttachSave(recordName,comboboxid,tableid,fm,dlg,dlgbtn) {
+	$('#'+comboboxid).combobox('setValue',$('#'+comboboxid).combobox('getValues').join());
+    var id = dlg ? $('#'+dlg+" input[name='id']").val() : $("input[name='id']").val();
+    fm = fm ? fm : 'fm';
+    dlg = dlg ? dlg : 'dlg';
+    dlgbtn = dlgbtn ? dlgbtn : 'dlgbtn';
+    tableid = tableid ? tableid : 't1';
+    var isCreate = !id;
+    var $saveBtn = $('#'+dlgbtn+'>a[onclick^="save"]');
+    $saveBtn.linkbutton("disable");
+    $('#'+fm).form('submit',{
+        url: BASE_RECORD_URL + recordName + (!isCreate ? "/"+id : '')+(_tempID ? '?_tempID='+_tempID : ''),
+        onSubmit: function(){
+            var flag = $(this).form('validate');
+            if( !flag ) {
+                $saveBtn.linkbutton("enable");
+            }
+            return flag;
+        },
+        success: function(result){
+            $saveBtn.linkbutton("enable");
+            checkException(result, function() {
+                $('#'+dlg).dialog('close');
+			    $('#'+fm).form('clear');
+                $('#'+tableid).datagrid('reload');
+            });
+        }
+    });
 }
