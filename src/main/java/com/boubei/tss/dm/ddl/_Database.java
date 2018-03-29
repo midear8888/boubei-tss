@@ -254,7 +254,7 @@ public abstract class _Database {
 	/**
 	 * 修改表结构注意事项：
 	 * 1、字段Code修改后，会新增一列出来，而不是直接修改原有的列名。旧的列如果有数据会保留，没有数据则被删除。如需把旧列的数据显示在新列里，需要自行在DB端操作。
-	 * 2、
+	 * 2、Oracle表中存在数据时，无法修改字段类型
 	 */
 	public void alterTable(Record _new) {
 		int existedCount = 0;
