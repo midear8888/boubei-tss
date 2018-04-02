@@ -109,6 +109,9 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
      */
     @Column(length = 1000)  
     private String customizeTJ;
+    
+    @Column(length = 2000)  
+    private String workflow;
    
     @Column(length = 2000)
     private String  remark; 
@@ -341,5 +344,13 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
 	
 	public boolean inSysTable() {
 		return SYS_TABLES.contains( this.getTable() );
+	}
+
+	public String getWorkflow() {
+		return workflow;
+	}
+
+	public void setWorkflow(String workflow) {
+		this.workflow = workflow;
 	}
 }

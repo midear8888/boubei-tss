@@ -530,6 +530,9 @@ function editFieldConfig() {
 	var activeNode = fieldTree.getActiveTreeNode();
 	if( !activeNode ) return;
 
+	$("#regpattern>td:nth-child(3), #regpattern>td:nth-child(4)").hide();
+    $("#regpattern>td:nth-child(5), #regpattern>td:nth-child(6)").show();
+
     var valuesMap = $.parseJSON(fieldTree.getActiveTreeNodeAttr("value")) || {};
     RECORD_PARAM_FIELDS.each(function(i, field){
     	var fieldEl = $1("_" + field);
@@ -669,6 +672,11 @@ function editFieldConfig() {
 		    		delete valuesMap['jsonUrl'];
 		    	}
     		} 
+
+    		if(field === 'checkReg' && newValue) {
+    			$("#regpattern>td:nth-child(3), #regpattern>td:nth-child(4)").show();
+    			$("#regpattern>td:nth-child(5), #regpattern>td:nth-child(6)").hide();
+    		}
 
     		if(field === 'type') {
     			var tip = "";

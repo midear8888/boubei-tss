@@ -219,6 +219,17 @@ function batchUpdate(field, value) {
     });
 }
 
+/*
+    var mi = {
+        label:"查看执行日志",
+        callback: function() { showRunLog(); },
+        visible:function() { return true; }
+    }
+*/
+function addGridRightBtn(mi) {
+    $1("grid").contextmenu.addItem(mi);
+}
+
 // ----------------------------------------------- 非常用方法 start------------------------------------------------
 // 针对指定的字段，检查Grid中选中行该字段的值是否和预期的值一致，如不一致，弹框提醒
 function checkBatch(field, expectVal, msg) {

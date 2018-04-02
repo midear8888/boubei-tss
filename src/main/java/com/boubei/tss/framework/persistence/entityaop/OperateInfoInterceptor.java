@@ -66,7 +66,7 @@ public class OperateInfoInterceptor extends MatchByDaoMethodNameInterceptor {
                     @SuppressWarnings("unchecked")
                     IDao<IEntity> dao = (IDao<IEntity>) target;
                     IOperatable old = (IOperatable) dao.getEntity( operateInfo.getClass(), pk);
-                    old = (IOperatable) EasyUtils.checkNull(old, operateInfo); // 可能修改时记录已被其它人删除
+                    old = (IOperatable) EasyUtils.checkNull(old, operateInfo); // 可能修改时记录已被其它人[删除]
                     operateInfo.setCreateTime(old.getCreateTime());
                 }
             }

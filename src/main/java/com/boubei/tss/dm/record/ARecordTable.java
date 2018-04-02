@@ -19,12 +19,14 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
 import com.boubei.tss.framework.persistence.IEntity;
+import com.boubei.tss.framework.persistence.entityaop.IOperatable;
+import com.boubei.tss.framework.sso.Environment;
 
 /**
  * 数据用录入模块来维护，但也配以实体类。
  */
 @MappedSuperclass
-public abstract class ARecordTable implements IEntity {
+public abstract class ARecordTable implements IEntity, IOperatable {
     
     protected String creator;
     protected Date   createTime = new Date();
@@ -87,6 +89,21 @@ public abstract class ARecordTable implements IEntity {
 
 	public void setVersion(Integer version) {
 		this.version = version;
-	}	
+	}
+
+	
+	public void setCreatorId(Long creatorId) {
+	}
+
+	public void setCreatorName(String creatorName) {
+		this.setCreator( Environment.getUserCode() );
+	}
+
+	public void setUpdatorId(Long updatorId) {
+	}
+
+	public void setUpdatorName(String updatorName) {
+		this.setUpdator( Environment.getUserCode() );
+	}
 }
 

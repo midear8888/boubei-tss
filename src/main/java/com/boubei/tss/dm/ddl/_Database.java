@@ -56,6 +56,7 @@ public abstract class _Database {
 	public String datasource;
 	public String table;
 	public String customizeTJ;  // 1=1<#if 1=0>showCUV & ignoreDomain</#if>
+	public String workflow;
 	
 	private boolean needLog;
 	public boolean needFile;
@@ -89,6 +90,7 @@ public abstract class _Database {
 		this.table = record.getTable();
 		this.fields = parseJson(record.getDefine());
 		this.customizeTJ = record.getCustomizeTJ();
+		this.workflow = record.getWorkflow();
 		this.needLog = ParamConstants.TRUE.equals(record.getNeedLog());
 		this.needFile = ParamConstants.TRUE.equals(record.getNeedFile());
 		
@@ -730,7 +732,8 @@ public abstract class _Database {
 		StringBuffer sb = new StringBuffer();
         sb.append("<grid><declare sequence=\"true\" header=\"checkbox\">").append("\n");
         
-        int index = 0; 
+        int index = 0;
+        boolean hasFileField = false;
         for(String fieldName : fieldNames) {
             String fieldCode = fieldCodes.get(index);
             String fieldAlign = (String) EasyUtils.checkNull(fieldAligns.get(index), "center");
@@ -741,6 +744,9 @@ public abstract class _Database {
             if( _Field.TYPE_DATE.equalsIgnoreCase(fieldType) ) { // GridNode里转换异常（date类型要求值也为date）
             	fieldType = "string";  
             } 
+            if( _Field.TYPE_FILE.equalsIgnoreCase(fieldType) ) {
+            	hasFileField = true;
+            }
             
             if(EasyUtils.isNullOrEmpty(fieldWidth)) {
             	fieldWidth = "";
@@ -761,8 +767,11 @@ public abstract class _Database {
             index++;
         }
         
-        if(this.needFile) {
+        if(this.needFile && !hasFileField) {
         	sb.append("<column name=\"fileNum\" mode=\"string\" caption=\"附件\" width=\"30px\"/>").append("\n");
+        }
+        if( !EasyUtils.isNullOrEmpty(this.workflow) ) {
+        	sb.append("<column name=\"fileNum\" mode=\"string\" caption=\"流程状态\" width=\"60px\"/>").append("\n");
         }
         
         // 判断是否显示这5列, customizeTJ: 1=1<#if 1=0>showCUV< /#if>

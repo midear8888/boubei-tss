@@ -10,6 +10,7 @@
 		<column name="customizeJS" caption="录入表单控制" maxLength="10000"/>
 		<column name="customizeTJ" caption="数据过滤条件" maxLength="1000"/>
 		<column name="customizeGrid" caption="全局JS" maxLength="4000"/>
+		<column name="workflow" caption="流程控制定义" maxLength="4000"/>
 		<column name="remark" caption="数据表简介" maxLength="2000"/>
 		<column name="needLog"  caption="记录更新日志" mode="combo" values="0|1" texts="否|是"/>
 		<column name="needFile" caption="是否上传文件" mode="combo" values="0|1" texts="否|是"/>
@@ -101,8 +102,12 @@
 		</TR>
 		<TR>
 			<TD colspan="6">
-				<p>
-					功能开发中......
+				<textarea binding="workflow" class="fullscreenable"/>
+				<a onclick="configWorkflow()"  style="margin: 4px 0 0 2%;">流程设计器</a>
+				<a onclick="previewWorkflow()"  style="margin:4px 10px 0 10px;">预览</a>
+				<p style="display: inline-block; height:18px;">
+					注：此处可定义流程控制，可定义各种审批流。
+					<a href="http://www.boubei.com/tss/article.portal?articleId=107" target="_blank">详细说明</a>
 				</p>
 			</TD>
 		</TR>

@@ -172,6 +172,10 @@ public class GeneralSearchAction extends BaseActionSupport {
 			map.remove("passwordAnswer");
 			map.remove("authMethod");
 			
+			// 用于制作用户下拉列表（Easyui、tssJS的combobox）
+			map.put("text", user.getUserName() + "(" +user.getGroupName()+ ")");
+			map.put("value", user.getLoginName());
+			
 			returnList.add(map);
 		}
 		return returnList;

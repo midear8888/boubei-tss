@@ -42,8 +42,6 @@ public class SerialNOer {
 			first.setDomain(domain);
 			first.setPrecode(precode);
 			first.setLastNum(0);
-			first.setCreateTime(new Date());
-			first.setCreator(Environment.getUserCode());
 			commonService.create(first);
 		} 
 		else {
@@ -60,8 +58,6 @@ public class SerialNOer {
 			result.add(sn);
 		}
 		first.setLastNum(first.getLastNum() + count);
-		first.setUpdateTime(new Date());
-		first.setUpdator(Environment.getUserCode());
 		commonService.update(first);
 		
 		return result;

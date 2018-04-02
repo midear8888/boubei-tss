@@ -132,7 +132,7 @@ public class BeanUtil {
                 } 
                 else {
                     PropertyUtils.setProperty(bean, propertyName, 
-                    		clazz.getConstructor( String.class ).newInstance( value ));
+                    		clazz.getConstructor( String.class ).newInstance( value.toString() ));
                 }
             } catch (Exception e) {
                 throw new RuntimeException( "属性名：" + propertyName + " 设置到实体中时出错", e);
