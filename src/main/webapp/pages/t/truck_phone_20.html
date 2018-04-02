@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -40,7 +39,7 @@ input[class~="easyui-textbox"][readonly]{
 
 <script type="text/javascript">
 
-var BASEURL = '',
+var BASEURL = 'http://t.boubei.com',
 	GD = [
 		{id:0,reportId:81,reportName:'t_truck_phone_info',uri:'/tss/auth/xdata/json/',type:'录入表'},
 		{id:1,reportId:118,reportName:'随车电话充值汇总',uri:'/tss/data/json/',type:'报表'},
@@ -118,10 +117,13 @@ function drawTable(data){
 			beginQuery()
 		},
 		onClickRow:function(rowIndex,rowData){
+			var start, end;
+			start = new Date($("#sd").datetimebox("getValue").replace('-', '/'));
+			end = new Date($("#ed").datetimebox("getValue").replace('-', '/'));
 			PHONE = rowData.phone;
 			USER = rowData.usr_p;
 			var url = record_urls(GD[2].reportName);
-			beginQuery(url.QUERY,{phone_number: PHONE})
+			beginQuery(url.QUERY,{phone_number: PHONE,recharge_time:'[' + start.format('yyyy-MM-dd hh:mm:ss') + ',' + end.format('yyyy-MM-dd hh:mm:ss') + ']'})
 		}
 	}).datagrid('enableFilter',[
 	{field:'phone',type:'textbox'},
@@ -156,20 +158,27 @@ function showTotal() {
 		})
 	})
 }
-
-function getSumData(callback){
+// get params
+function getParams(){
 	var params={
 		param1:$("#sd").datebox("getValue"),
 		param2:$("#ed").datebox("getValue")
 	};
-	tssJS.getJSON(BASEURL+GD[1].uri+GD[1].reportId,params,function(data){
-		// console.log(data)
+	return params
+}
+
+function getSumData(callback){
+	tssJS.getJSON(BASEURL+GD[1].uri+GD[1].reportId,getParams(),function(data){
+		console.log(data)
 		callback && callback(data)
 	})
 }
 
 function beginQuery(url,param){
-	param = param || {phone_number:'?'};
+	var start, end;
+	start = new Date($("#sd").datetimebox("getValue").replace('-', '/'));
+	end = new Date($("#ed").datetimebox("getValue").replace('-', '/'));
+	param = param || {phone_number:'?',recharge_time:'[' + start.format('yyyy-MM-dd hh:mm:ss') + ',' + end.format('yyyy-MM-dd hh:mm:ss') + ']'};
 	$("#record").datagrid({
 		url:url,
 		queryParams:param,
@@ -178,7 +187,19 @@ function beginQuery(url,param){
 		title: '号码' + param.phone_number + '的充值记录',
 		toolbar: [
 			{text: '新增',iconCls: 'icon-add',handler: createRecord}, 
-			{text: '修改',iconCls: 'icon-edit',handler:updateRecordRow}
+			{text: '修改',iconCls: 'icon-edit',handler:updateRecordRow},
+			{text: '导出',iconCls: 'icon-tss-down',handler:function(){
+				var a,b,params;
+				a = new Date($("#sd").datetimebox("getValue").replace('-','/'));
+				b = new Date($("#ed").datetimebox("getValue").replace('-','/'));
+				params = {
+					recharge_time: '[' + a.format('yyyy-MM-dd') + ',' + b.format('yyyy-MM-dd') + ']'
+				}
+				_export(GD[2].reportName,params)
+			}},
+			{text: '批量导入',iconCls:'icon-tss-up',handler:function(){
+				addTab('rec','随车电话充值记录导入', GD[2].reportId, GD[2].reportName);
+			}}
 		],
 		columns: [[
 			{field: 'ck',checkbox: true}, 

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+	<meta charset="utf-8">
+	<title>财务综合面板</title>
+	<meta name="author" content="陈荣沙；20180323"/>
+	<meta name="keywords" content="xxx"/>
+	<meta name="description" content="xxx"/>
+	<meta name="application" content="xxxx"/>
+	<meta name="datasource" content="xxxx"/>
+	<meta name="version" content="1.0 20180323"/>
+	<meta name="viewport" content="width=device-width"/>
+	<link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
+	<link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
+	<link rel="stylesheet" href="../../css/easyui.css">
+	<script src="../../tools/tssJS/tssJS.all.js"></script>
+	<script src="../../tools/easyui/jquery.min.js"></script>
+	<script src="../../tools/easyui/jquery.easyui.min.js"></script>
+	<script src="../../tools/easyui/datagrid-cellediting.js"></script>
+	<script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
+	<script src="../../tools/easyui/datagrid-filter.js"></script>
+	<script src="../../tools/easyui.js"></script>
+	<script src="../../tools/echarts/echarts-all-3.1.2.js"></script>
+	<script src="truck.js"></script>
+</head>
+
+<style type="text/css">
+	
+</style>
+
+<script type="text/javascript">
+var BASEURL = 'http://t.boubei.com',
+    GD = {
+        'expend':{recordId:88,recordName:'t_trucks_job_expend',param:'real_pay_date',fields:'price,real_pay_price'},//运单支出
+        'income':{recordId:87,recordName:'t_trucks_job_income',param:'real_due_date',fields:'price,real_due_price'},//运单收入
+        'phone':{recordId:79,recordName:'t_truck_phone',param:'recharge_time',fields:'recharge'},//随车电话
+        'oil':{recordId:132,recordName:'t_oil_card_event',param:'event,start_day',fields:'money'},//油卡支出
+        'etc':{recordId:136,recordName:'t_etc_event',param:'event,start_day',fields:'money'}//etc支出
+    },
+    COL = [
+        {field:'type',title:'类型',align:'center',width:'90px'},
+        {field:'income',title:'应收金额',align:'right',width:'90px'},
+        {field:'real_income',title:'实收金额',align:'right',width:'90px'},
+        {field:'expend',title:'应付金额',align:'right',width:'90px'},
+        {field:'real_expend',title:'实付金额',align:'right',width:'90px'}
+    ];
+
+$(function() {
+
+    $("#start").datetimebox('setValue', getCurrentMonthFirst().format('2018-01-01 00:00:00'));
+    $("#end").datetimebox('setValue', new Date().format('yyyy-MM-dd 23:59:59'));
+    queryInfo()
+    
+})
+// get detail
+function getDetailData(value, field,callback) {
+	if (value == '运单') {
+		if (field.indexOf("income") >= 0) {
+			tssJS.getJSON(record_urls(GD['expend'].recordName).QUERY, dateParams(GD['income'].param), function(data) {
+				callback && callback(data)
+			})
+		} else {
+			tssJS.getJSON(record_urls(GD['income'].recordName).QUERY, dateParams(GD['expend'].param), function(data) {
+				callback && callback(data)
+			})
+		}
+	} else if (value == '随车电话' && field.indexOf('expend') > 0) {
+		tssJS.getJSON(record_urls(GD['phone'].recordName).QUERY, dateParams(GD['phone'].param), function(data) {
+			callback && callback(data)
+		})
+	} else if (value == '油卡' && field.indexOf('expend') > 0) {
+		tssJS.getJSON(record_urls(GD['oil'].recordName).QUERY, dateParams(GD['oil'].param), function(data) {
+			callback && callback(data)
+		})
+	} else if (value == 'ETC' && field.indexOf('expend') > 0) {
+		tssJS.getJSON(record_urls(GD['etc'].recordName).QUERY, dateParams(GD['etc'].param), function(data) {
+			callback && callback(data)
+		})
+	}
+}
+// 画明细line
+function showLineChart(data) {
+	setLineXaxis(data)
+	var myChart = echarts.init(document.getElementById('linechart'));
+	option = {
+		xAxis: {
+			type: 'category',
+			data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+		},
+		yAxis: {
+			type: 'value'
+		},
+		series: [{
+			data: [820, 932, 901, 934, 1290, 1330, 1320],
+			type: 'line'
+		}]
+	};
+	myChart.setOption(option);
+}
+// set line x
+function setLineXaxis(data){
+	// console.log(data)
+}
+// 画表
+function drawTable(data){
+	$.each(COL,function(i,item){
+	    if (item.title.indexOf('金额') >= 0) {
+	        item.formatter = function(value){
+	            if (!value) return keepTwoDecimalFull(0);
+                return keepTwoDecimalFull(value)
+	        }
+	    } else {
+	        item.styler = styler2;
+	    }
+	})
+    $('#dg').datagrid({
+        data:data,
+        columns:[COL],
+        fit:true,
+        showFooter: true,
+	    rownumbers: true,
+	    singleSelect: true,
+	    onClickCell:function(index, field, value){
+	    	// console.log(index, field)
+	    	getDetailData(data[index].type, field,function(data){
+	    		data && showLineChart(data)
+	    		// console.log(data)
+	    	})
+	    }
+    })
+}
+// get fin info
+function queryInfo(){
+	var data = [];
+    tssJS.getJSON(record_urls(GD['expend'].recordName).QUERY,getParams(GD['expend'].param,GD['expend'].fields),function(expend){
+        data.push({type:'运单',expend:expend[0].price,real_expend:expend[0].real_pay_price});
+        tssJS.getJSON(record_urls(GD['income'].recordName).QUERY,getParams(GD['income'].param,GD['income'].fields),function(income){
+            $.each(data,function(i,item){
+                if (item.type == '运单') {
+                    item.income = income[0].price;
+                    item.real_income = income[0].real_due_price;
+                }
+            })
+            tssJS.getJSON(record_urls(GD['phone'].recordName).QUERY,getParams(GD['phone'].param,GD['phone'].fields),function(phone){
+                data.push({type:'随车电话',real_expend:phone[0].recharge});
+                tssJS.getJSON(record_urls(GD['oil'].recordName).QUERY,getParams(GD['oil'].param,GD['oil'].fields),function(oil){
+                    data.push({type:'油卡',real_expend:oil[0].money});
+                    tssJS.getJSON(record_urls(GD['etc'].recordName).QUERY,getParams(GD['etc'].param,GD['etc'].fields),function(etc){
+                        data.push({type:'ETC',real_expend:etc[0].money});
+                        var foot = {type:'合计','income':0,'real_income':0,'expend':0,'real_expend':0};
+                        $.each(data,function(i,item){
+                            foot["income"] += parseFloat(item.income || 0);
+                            foot["real_income"] += parseFloat(item.real_income || 0);
+                            foot["expend"] += parseFloat(item.expend || 0);
+                            foot["real_expend"] += parseFloat(item.real_expend || 0);
+                        })
+                        data && drawTable(data);
+                        $("#dg").datagrid('reloadFooter',[foot])
+                        showChart(data)
+                    })
+                })
+            })
+
+        })
+    })
+}
+// date params
+function dateParams(str){
+	var start, end, params = {};
+	start = new Date($("#start").datetimebox("getValue").replace('-', '/'));
+	end = new Date($("#end").datetimebox("getValue").replace('-', '/'));
+	str = str.split(',');
+	for (var i = 0; i < str.length; i++) {
+		if (str[i] == 'event') {
+			params[str[i]] = '消费';
+		} else {
+			params[str[i]] = '[' + start.format('yyyy-MM-dd hh:mm:ss') + ',' + end.format('yyyy-MM-dd hh:mm:ss') + ']';
+		}
+	}
+	return params
+}
+// 获取参数
+function getParams(str, fields) {
+	var  params = dateParams(str);
+	fields = fields.split(',');
+	var a = '',
+		b = '';
+	$.each(fields, function(i, item) {
+		if (item === 'price') {
+			a = 'sum(' + item + ') as ' + item;
+		} else {
+			b = 'sum(' + item + ') as ' + item;
+		}
+		if (a) {
+			params['fields'] = a + ',' + b;
+		} else {
+			params['fields'] = b;
+		}
+	})
+	return params
+}
+// 
+function showChart(data) {
+	// 基于准备好的dom，初始化echarts实例
+	var myChart = echarts.init(document.getElementById('chart'));
+	// 指定图表的配置项和数据
+	option = {
+		color: ['#003366', '#006699', '#4cabce', '#e5323e'],
+		tooltip: {trigger : 'item'},
+		legend: setLegend(),
+		toolbox: {show: true,orient: 'vertical',left: 'right',top: 'center',feature: {mark: {show: true},saveAsImage: {show: true}}},
+		calculable: true,
+		xAxis: [{type: 'category',axisTick: {show: true},data: getAttVal(data,'type')}],
+		yAxis: [{type: 'value'}],
+		series: setSeries(data)
+		// dataZoom: [{id: 'dataZoomX',type: 'slider',xAxisIndex: [0]}]
+		// dataZoom可是使用至明细上
+	};
+	// 使用刚指定的配置项和数据显示图表。
+	myChart.setOption(option);
+	// myChart.on('click',function(data){
+ //    	console.log(data.seriesName,data.name,data.value);
+ //    	if (true) {}
+ //    })
+}
+// get legend
+function getAttVal(data,str){
+	var thisdata = [];
+	$.each(data,function(i,item){
+		for(var x in item){
+			if (x==str) thisdata.push(item[str]);
+		}
+	})
+	return thisdata
+}
+// set series
+function setSeries(data){
+	var names = COL.slice(1,COL.length);
+	var ser = [];
+	$.each(names,function(i,item){//item.title,item.field
+		var arr = [];
+		ser.push({name:item.title,type:'bar'});
+		$.each(data,function(j,thisitem){
+			var val = keepTwoDecimalFull(thisitem[item.field] || 0);
+			// var val = thisitem[item.field] || 0;
+			arr.push(val)
+			if (j == data.length - 1) {
+				ser[i]['data'] = arr;
+			}
+		})
+	})
+	return ser
+}
+// set Legend
+function setLegend(){
+	var data = {},arr = [];
+	var names = COL.slice(1,COL.length);
+	$.each(names,function(i,item){
+		arr.push(item.title)
+	})
+	data['data'] = arr;
+	return data;
+}
+
+//四舍五入保留2位小数（不够位数，则用0替补）原truck.js已经存在
+function keepTwoDecimalFull(num) {
+	var result = parseFloat(num);
+	if (isNaN(result)) {
+		alert('传递参数错误，请检查！');
+		return false;
+	}
+	result = Math.round(num * 100) / 100;
+	var s_x = result.toString();
+	var pos_decimal = s_x.indexOf('.');
+	if (pos_decimal < 0) {
+		pos_decimal = s_x.length;
+		s_x += '.';
+	}
+	while (s_x.length <= pos_decimal + 2) {
+		s_x += '0';
+	}
+	return s_x;
+}
+
+</script>
+<body>
+	<div id="mian" class="easyui-layout" data-options="fit:'true'">
+		<div data-options="region:'center',split:true" style="width:40%;" border="true">
+			<table id="dg" class="easyui-datagrid" data-options="toolbar:'#tb'" border="false"></table>
+			<div id="tb" style="padding: 5px;height: auto;">
+				开始时间:&nbsp;
+				<input id="start" class="easyui-datetimebox" style="width:150px">&nbsp;
+				到:&nbsp;
+				<input id="end" class="easyui-datetimebox" style="width:150px">&nbsp;
+				<a href="#" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="queryInfo()">查询</a>
+			</div>
+		</div>
+		<div data-options="region:'east',split:true" style="width:60%;" border="true">
+			<div data-options="region:'north',split:true" style="width:100%;height: 50%" border="true">
+				<div id="chart" style="width: 100%;height:100%;"></div>
+			</div>
+			<div data-options="region:'sorth',split:true" style="width:100%;height: 50%" border="true">
+				<div id="linechart" style="width: 100%;height:100%;"></div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

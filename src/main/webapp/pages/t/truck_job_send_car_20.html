@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -161,9 +160,10 @@ $(function() {
 		$('#ifpay').textbox('setValue', '否');
 	})
 
-	$("#jobsubmit").click(function(){
-		$("#status").combobox("setValue",'已派');
-	})
+	// $("#jobsubmit").click(function(){
+	// 	$("#status").combobox("setValue",'已派');
+	// })
+
 	$("#ifpay").combobox({
 		onChange: function(newValue, oldValue) {
 			if (newValue == '是') {
@@ -463,7 +463,9 @@ function saveSuccess(recordId, tableid){
 	});
 }
 // 保存运单
-function saveTable(recordId, tableid) {
+function saveTable(recordId, tableid,str) {
+	if (str) $("#status").combobox("setValue",'已派');
+	console.log($('#status').combobox('getValue'))
 	if (NEEDOIL && $("#oil_id").combobox("getValue") && $("#license_plate").combobox("getValue")) {
 		updateId(record_urls(GD['oil_event'].recordName).QUERY, function(data) {
 			$.ajax({
@@ -737,7 +739,7 @@ function saveRecord(recordId) {
 	</div>
 	<div id="dlg-buttons">
 		<a href="#" class="easyui-linkbutton" iconCls="icon-save" onclick="saveTable(GD['t_truck_job'].recordName,'#dg')">保存</a>
-		<a href="#" id="jobsubmit" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveTable(GD['t_truck_job'].recordName,'#dg')">提交</a>
+		<a href="#" id="jobsubmit" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveTable(GD['t_truck_job'].recordName,'#dg',true)">提交</a>
 		<a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="closeDlg('#dlg','#fm')">取消</a>
 	</div>
 	<div id="dlg2" class="easyui-dialog" style="width: 550px;height: 200px" closed=true buttons="#dlg-buttons2">

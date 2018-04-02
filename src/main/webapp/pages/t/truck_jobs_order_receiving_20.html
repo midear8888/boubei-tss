@@ -1,8 +1,3 @@
-
-
-
-
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -66,21 +61,6 @@ var BASEURL = 'http://t.boubei.com',
 	JOBTYPEDATA = [{text:'全部',value:''},{text:'临时',value:'0',selected:true},{text:'固定',value:'1'}];
 
 $(function(){
-	// fix safari FireFox日期问题 todo
-	// $.fn.datebox.defaults.formatter = function(date) {
-	// 	var y = date.getFullYear();
-	// 	var m = date.getMonth() + 1;
-	// 	var d = date.getDate();
-	// 	return y + '/' + m + '/' + d;
-	// }
-	// $.fn.datetimebox.defaults.formatter = function(date) {
-	// 	var y = date.getFullYear();
-	// 	var M = date.getMonth() + 1;
-	// 	var d = date.getDate();
-	// 	var h = date.getHours();
-	// 	var m = date.getMinutes();
-	// 	return y + '/' + M + '/' + d + '' + 'h' + ':' + 'm';
-	// }
 	$("#pstart_s").datetimebox('setValue',getCurrentMonthFirst().format('yyyy-MM-dd'));
 	$("#pstart_e").datetimebox('setValue',AddDays(new Date(),10).format('yyyy-MM-dd 23:59'));
 	$("#jobtype").combobox({
@@ -101,14 +81,14 @@ $(function(){
 				$('#real_due_date').datebox({
 					required: true
 				});
-				$('#real_due_price').datebox({
+				$('#real_due_price').numberbox({
 					required: true
 				});
 			} else {
 				$('#real_due_date').datebox({
 					required: false
 				});
-				$('#real_due_price').datebox({
+				$('#real_due_price').numberbox({
 					required: false
 				});
 			}
@@ -138,7 +118,34 @@ $(function(){
 		valueField:'value',
 		textField:'value',
 		panelHeight:"auto",
-		limitToList: true
+		// limitToList: true,
+		onChange:function(newValue,oldValue){
+			if (newValue == '待派') {
+				$("#client").combobox({required:true});//客户名称
+				$("#client_phone").combobox({required:true});//客户电话
+				$("#plan_route").combobox({required:true});//计划线路
+				$("#truck_type").combobox({required:true});//车型
+				$("#route_type").combobox({required:true});//线路类型
+				$("#plan_start_time").datetimebox({required:true});//计划发车时间
+				$("#aging").textbox({required:true});//在途时效
+				$("#receipt").combobox({required:true});//回单要求
+				$("#shipment_site").combobox({required:true});//装货地址
+				$("#arr_port_time").datetimebox({required:true});//靠台时间
+				$("#shipment_phone").combobox({required:true});//装货联系方式
+			} else {
+				$("#client").combobox({required:false});//客户名称
+				$("#client_phone").combobox({required:false});//客户电话
+				$("#plan_route").combobox({required:false});//计划线路
+				$("#truck_type").combobox({required:false});//车型
+				$("#route_type").combobox({required:false});//线路类型
+				$("#plan_start_time").datetimebox({required:false});//计划发车时间
+				$("#aging").textbox({required:false});//在途时效
+				$("#receipt").combobox({required:false});//回单要求
+				$("#shipment_site").combobox({required:false});//装货地址
+				$("#arr_port_time").datetimebox({required:false});//靠台时间
+				$("#shipment_phone").combobox({required:false});//装货联系方式
+			}
+		}
 	})
 	getClient()
 	$("#plan_end_time").datetimebox({
@@ -204,6 +211,20 @@ function jobQuery() {
 		}
 	});
 }
+
+function styler3(value) {
+	if (value == '已派') {
+		return "color:red";
+	} else if (value == '在途') {
+		return "color:orange"
+	} else if (value == '到达') {
+		return "color:green"
+	} else if (value == '终止') {
+		return "color:grey"
+	} else {
+		return "color:black"
+	}
+}
 // 获取下载参数
 function getParams(){
 	var a,b,params;
@@ -228,11 +249,13 @@ function drawTable(data){
 		singleSelect: true,
 		frozenColumns:[[
 			{field: 'ck', checkbox: true},
-			{field: 'job_code',title: '任务单号',align: 'center',width:'120px',styler: styler2}
+			{field: 'job_code',title: '任务单号',align: 'center',width:'120px',styler: styler2},
+			{field: 'status',title: '状态',align: 'center',width:'100px'}
 			]],
 		columns: [[
 			{field: 'client',title: '客户名称',align: 'center',width:'100px'},
 			{field: 'client_phone',title: '联系方式',align: 'center',width:'100px'},
+			
 			{field: 'plan_route',title: '计划线路',align: 'center',width:'100px'},
 			{field: 'truck_type',title: '车型',align: 'center',width:'100px'},
 			{field: 'plan_start_time',title: '计划发车时间',align: 'center',width:'110px',formatter:function(value){
@@ -257,7 +280,6 @@ function drawTable(data){
 			}},
 			{field: 'shipment_site',title: '装货地址',align: 'center',width:'100px'},
 			{field: 'shipment_phone',title: '装货联系方式',align: 'center',width:'100px'},
-			{field: 'status',title: '状态',align: 'center',width:'100px'},
 			{field: 'order_remark',title: '接单备注',align: 'center',width:'100px'},
 			]],
 		onLoadSuccess: function() {
@@ -314,7 +336,6 @@ function drawTable(data){
 	});
 }
 // 录入表dlg combobox设置，并默认setvalue第一个值
-// todo 修复combobox change事件问题
 function getClientInfo(comboboxid,url,params,value,text,str){
 	text = text || value;
 	str = str || value;
@@ -523,8 +544,8 @@ function saveRecord(recordId){
 	<div id="dlg" class="easyui-dialog" style="width:580px;height: 380px;" closed=true buttons="#dlg-buttons">
 		<form id="fm" method="post" novalidate>
 			<input name="id" type="hidden"/>
-			<input id="lockVersion2" name="lockVersion" type="hidden"/>
-			<input id="seqNo2" name="seqNo" type="hidden"/>
+			<input id="lockVersion" name="lockVersion" type="hidden"/>
+			<input id="seqNo" name="seqNo" type="hidden"/>
 			<input id="normal" name="normal" type="hidden"/>
 			<table>
 				<tr>
@@ -534,37 +555,37 @@ function saveRecord(recordId){
 					</td>
 					<td class="label">客户名称:</td>
 					<td>
-						<input id="client" name="client" class="easyui-combobox" style="width: 180px" required/>
+						<input id="client" name="client" class="easyui-combobox" style="width: 180px">
 					</td>
 				</tr>
 				<tr>
 					<td class="label">联系方式:</td>
 					<td>
-						<input id="client_phone" name="client_phone" class="easyui-textbox" style="width: 180px" required/>
+						<input id="client_phone" name="client_phone" class="easyui-textbox" style="width: 180px">
 					</td>
 					<td class="label">线路:</td>
 					<td>
-						<input id="plan_route" name="plan_route" class="easyui-combobox" style="width: 180px" required/>
+						<input id="plan_route" name="plan_route" class="easyui-combobox" style="width: 180px">
 					</td>
 				</tr>
 				<tr>
 					<td class="label">车型:</td>
 					<td>
-						<input id="truck_type" name="truck_type" class="easyui-combobox" style="width: 180px" required/>
+						<input id="truck_type" name="truck_type" class="easyui-combobox" style="width: 180px">
 					</td>
 					<td class="label">线路类型:</td>
 					<td>
-						<input id="route_type" name="route_type" class="easyui-combobox" style="width: 180px" required/>
+						<input id="route_type" name="route_type" class="easyui-combobox" style="width: 180px">
 					</td>
 				</tr>
 				<tr>
 					<td class="label">计划发车时间:</td>
 					<td>
-						<input id="plan_start_time" name="plan_start_time" class="easyui-datetimebox" style="width: 180px" required/>
+						<input id="plan_start_time" name="plan_start_time" class="easyui-datetimebox" style="width: 180px">
 					</td>
 					<td class="label">在途时效:</td>
 					<td>
-						<input id="aging" name="aging" class="easyui-textbox" style="width: 180px" />
+						<input id="aging" name="aging" class="easyui-textbox" style="width: 180px">
 					</td>
 				</tr>
 				<tr>
@@ -585,17 +606,17 @@ function saveRecord(recordId){
 					</td>
 					<td class="label">回单是否需要回收:</td>
 					<td>
-						<input id="receipt" name="receipt" class="easyui-combobox" style="width: 180px" required/>
+						<input id="receipt" name="receipt" class="easyui-combobox" style="width: 180px">
 					</td>
 				</tr>
 				<tr>
 					<td class="label">靠台时间:</td>
 					<td>
-						<input id="arr_port_time" name="arr_port_time" class="easyui-datetimebox" data-options="required:true,showSeconds:false" style="width: 180px" required/>
+						<input id="arr_port_time" name="arr_port_time" class="easyui-datetimebox" data-options="showSeconds:false" style="width: 180px">
 					</td>
 					<td class="label">装货地址:</td>
 					<td>
-						<input id="shipment_site" name="shipment_site" class="easyui-combobox" style="width: 180px" required/>
+						<input id="shipment_site" name="shipment_site" class="easyui-combobox" style="width: 180px">
 					</td>
 				</tr>
 				<tr>

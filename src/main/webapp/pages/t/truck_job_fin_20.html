@@ -22,7 +22,6 @@
 	<script src="../../tools/easyui/datagrid-filter.js"></script>
 	<script src="../../tools/easyui.js"></script>
 	<script src="truck.js"></script>
-	<!-- <script src="http://lhco-op.com/tss/tools/easyui/datagrid-cellediting.js"></script> -->
 </head>
 
 <style type="text/css">
@@ -69,6 +68,7 @@
 var BASEURL = 'http://t.boubei.com',
 	FIELDURL = record_urls('t_field_code'),
 	REPORTURL = record_urls('t_report_format'),
+	SELECT_JOB,INDEX=0,
 	JOBTYPEDATA = [
 		{text:'全部',value:'',selected:true},
 		{text:'临时',value:'0'},
@@ -82,24 +82,37 @@ var BASEURL = 'http://t.boubei.com',
 	},
 	INCOMECOL = [[
 		{field: 'income_type',title: '收入类型',align: 'center',width: '90px'},
-		{field: 'price',title: '应收金额',align: 'center',width: '90px'}, 
+		{field: 'price',title: '应收金额',align: 'right',width: '90px',formatter:function(value){
+			if (!value) return;
+			return numCommafmt(value)
+		}}, 
 		{field:'due_date',title:'应收日期',align:'center',width:'90px'},
-		{field: 'ifpay',title: '是否已付',align: 'center',width: '90px',editor:{type:'textbox',options:{}}},
-		{field:'real_due_price',title:'实收金额',align:'center',width:'90px',editor:{type:'numberbox',options:{precision:2}}},
-		{field:'real_due_date',title:'实收日期',align:'center',width:'90px',editor:{type:'numberbox',options:{precision:2}}},
+		{field: 'ifpay',title: '是否已付',align: 'center',width: '90px',editor:{type:'combobox',options:{data:[{value:'是'},{value:'否'}],valueField:'value',textField:'value',panelHeight:'auto'}}},
+		{field:'real_due_price',title:'实收金额',align:'right',width:'90px',editor:{type:'numberbox',options:{precision:2}},formatter:function(value){
+			if (!value) return;
+			return numCommafmt(value)
+		}},
+		{field:'real_due_date',title:'实收日期',align:'center',width:'90px',editor:{type:'datebox'}},
 		{field: 'remark',title: '备注',align: 'center',width: '90px'}
 	]],
 	EXPENDCOL = [[
 		{field:'expend_type',title:'支出类型',align:'center',width:'90px'},
-		{field:'price',title:'应付金额',align:'center',width:'90px'},
+		{field:'price',title:'应付金额',align:'right',width:'90px',formatter:function(value){
+			if (!value) return;
+			return numCommafmt(value)
+		}},
 		{field:'pay_date',title:'应付日期',align:'center',width:'90px'},
-		{field:'ifpay',title:'是否已付',align:'center',width:'90px',editor:{type:'numberbox',options:{precision:2}}},
-		{field:'real_pay_price',title:'实付金额',align:'center',width:'90px',editor:{type:'numberbox',options:{precision:2}}},
-		{field:'real_pay_date',title:'实付日期',align:'center',width:'90px',editor:{type:'numberbox',options:{precision:2}}},
+		{field:'ifpay',title:'是否已付',align:'center',width:'90px',editor:{type:'combobox',options:{data:[{value:'是'},{value:'否'}],valueField:'value',textField:'value',panelHeight:'auto'}}},
+		{field:'real_pay_price',title:'实付金额',align:'right',width:'90px',editor:{type:'numberbox',options:{precision:2}},formatter:function(value){
+			if (!value) return;
+			return numCommafmt(value)
+		}},
+		{field:'real_pay_date',title:'实付日期',align:'center',width:'90px',editor:{type:'datebox'}},
 		{field: 'remark',title: '备注',align: 'center',width: '90px'}
 	]];
 
 $(function(){
+
 	$("#pstart_s").datetimebox('setValue', getCurrentMonthFirst().format('yyyy-MM-dd 00:00:00'));
 	$("#pstart_e").datetimebox('setValue', new Date().format('yyyy-MM-dd 23:59:59'));
 	setCombobox('jobtype',JOBTYPEDATA,'value','text');
@@ -138,13 +151,13 @@ $(function(){
 })
 function getParams() {
 	var a, b;
-	a = new Date($("#pstart_s").datetimebox("getValue").replace('-', '/'));
-	b = new Date($("#pstart_e").datetimebox("getValue").replace('-', '/'));
+	a = new Date($("#pstart_s").datetimebox("getValue").replace('-','/'));
+	b = new Date($("#pstart_e").datetimebox("getValue").replace('-','/'));
 	var params = {
 		job_code: $("#jcode").textbox("getValue"),
 		client: $("#cname").textbox("getValue"),
 		plan_start_time: '[' + a.format('yyyy-MM-dd hh:mm:ss') + ',' + b.format('yyyy-MM-dd hh:mm:ss') + ']',
-		plan_route: $('#route').textbox('getValue') || 'test',
+		plan_route: $('#route').textbox('getValue'),
 		normal: $("#jobtype").combobox('getValue'),
 		pagesize:10000
 	};
@@ -200,7 +213,7 @@ function jobQuery() {
 					for (var k = 0; k < expend.length; k++) {
 						if (expend[k].truck_code == data[i].job_code) {
 							data[i].expend = expend[k].price;
-							data[i].real_price = expend[k].real_price;
+							data[i].real_expend = expend[k].real_price;
 							break;
 						}
 					}
@@ -221,7 +234,6 @@ function jobQuery() {
 }
 // 画表
 function drawTable(data,columns){
-	// console.log(columns)
 	$("#dg").datagrid({
 		data: data.slice(0,30),
 		fit:true,
@@ -231,9 +243,20 @@ function drawTable(data,columns){
 		columns: [columns],
 		pagination:true,
 		pageList:[30,40,50,100],
+		fixed: true,
+		fitColumns: true,
+		onLoadSuccess: function(){
+			$("#dg").datagrid('selectRow',INDEX);
+			var row = $('#dg').datagrid('getSelections')[0];
+			console.log(row)
+			getDetail('income',record_urls(GD['income'].recordName).QUERY,row.job_code,INCOMECOL,'运单'+row.job_code+'的收入明细');
+			getDetail('expend',record_urls(GD['expend'].recordName).QUERY,row.job_code,EXPENDCOL,'运单'+row.job_code+'的支出明细');
+		},
 		pageSize:30,
 		showFooter: true,
 		onClickRow: function(index,row){
+			INDEX = index;
+			SELECT_JOB = row.job_code;
 			getDetail('income',record_urls(GD['income'].recordName).QUERY,row.job_code,INCOMECOL,'运单'+row.job_code+'的收入明细');
 			getDetail('expend',record_urls(GD['expend'].recordName).QUERY,row.job_code,EXPENDCOL,'运单'+row.job_code+'的支出明细');
 		}
@@ -251,41 +274,91 @@ function drawTable(data,columns){
 			});
 		}
 	});
-	getDetail('income','','',INCOMECOL,'运单收入明细');
-	getDetail('expend','','',EXPENDCOL,'运单支出明细');
 }
 // 
-function getDetail(id,url,value,columns,str){
+function getDetail(id, url, value, columns, str) {
 	str = str || '';
 	url = url || [];
 	value = value || '';
 	columns = columns || [[]];
 	var params = {
-		truck_code:value
+		truck_code: value
 	};
 	if ($.type(url) == 'string') {
 		$("#"+id).datagrid({
-			url: url,
-			queryParams: params
+			url:url,
+			queryParams:params,
+			showFooter:true,
 		})
 	} else {
-		$("#"+id).datagrid({
+		$("#" + id).datagrid({
 			data: url
 		})
 	}
-	$("#"+id).datagrid({
+	$("#" + id).datagrid({
 		columns: columns,
-		fit:true,
+		fit: true,
 		singleSelect: true,
-		title:str
+		title: str,
+		onClickCell: function() {},
+		toolbar: [
+			'-', {
+				text: '保存',
+				iconCls: 'icon-save',
+				handler: function() {
+					if (id == 'income') {
+						saveItems(id, 'id,ifpay,real_due_price,real_due_date', record_urls(GD['income'].recordName))
+					} else {
+						saveItems(id, 'id,ifpay,real_pay_price,real_pay_date', record_urls(GD['expend'].recordName))
+					}
+				},
+				id: "btn22"
+			}
+		]
 	})
-	$("#"+id).datagrid('enableCellEditing');
+	$("#" + id).datagrid('enableCellEditing');
 }
+// 保存村财务实收付金额等
+function saveItems(id, fields, url) {
+	for (var i = 0; i < 1000; i++) {
+		$('#' + id).datagrid("endEdit", i);
+	}
+	var result = [],
+		rows = $('#' + id).datagrid('getRows').reverse(),
+		obj = [];
+	result.push(fields);
+	$.each(rows, function(i, row) {
+		if (id == 'income') {
+			obj = [row.id,row.ifpay,row.real_due_price,row.real_due_date];
+		} else {
+			obj = [row.id,row.ifpay,row.real_pay_price,row.real_pay_date];
+		}
+		result.push(obj.join(","));
+	});
+	if (result.length == 1) return;
+	$.post(url.CUD, {
+		"csv": result.join("\n")
+	}, function(data) {
+		if (data.created || data.updated) {
+			$.messager.show({
+				title: '提示',
+				msg: '保存成功！'
+			});
+			if (id == 'income') {
+				getDetail(id, url.QUERY, SELECT_JOB, INCOMECOL, '运单' + SELECT_JOB + '的收入明细');
+			} else {
+				getDetail(id, url.QUERY, SELECT_JOB, EXPENDCOL, '运单' + SELECT_JOB + '的支出明细');
+			}
+			jobQuery()
+		}
+	});
+}
+
 </script>
 
 <body>
 	<div id="main" class="easyui-layout" data-options="fit:'true'">
-		<div data-options="region:'center',split:true" style="width:60%;">
+		<div data-options="region:'center',split:true" style="width:55%;">
 			<table id="dg" class="easyui-datagrid" data-options="toolbar:'#tb'"></table>
 			<div id="tb" style="padding: 5px;height: auto;">
 				<div style="margin-bottom:5px">
@@ -310,7 +383,7 @@ function getDetail(id,url,value,columns,str){
 				</div>
 			</div>
 		</div>
-		<div data-options="region:'east',split:true" style="width:40%;height: 100%">
+		<div data-options="region:'east',split:true" style="width:45%;height: 100%">
 			<div data-options="region:'outh',split:true" style="height: 50%">
 				<table id="income" class="easyui-datagrid"></table>
 			</div>
