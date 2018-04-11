@@ -43,7 +43,7 @@ var URL2 = record_urls(tableId2);
 GET_URL    = URL.GET; 
 GET_URL2   = URL2.GET //{id}
 QUERY_URL  = URL.QUERY;
-QUERY_URL2 = URL2.query;
+QUERY_URL2 = URL2.QUERY;
 // ATTACH_URL = URL.ATTACH;
 
 var FIELDS = [
@@ -161,6 +161,7 @@ function removeBatch_staff() {
 
 
 function beginQuery(url,params){
+    console.log(url,params)
     params = params || {};
     $('#t2').datagrid({
         url: url,      // 数据地址
@@ -190,8 +191,8 @@ function beginQuery(url,params){
 
 
 function createRecord(recordId,tableid){
-    $('#name2').textbox('disable');
-    $('#model2').textbox('disable');
+    $('#name2').textbox('readonly');
+    $('#model2').textbox('readonly');
     var row = getSelectedRow('t1');
     if(row){
         $("#fm2").form('clear');
