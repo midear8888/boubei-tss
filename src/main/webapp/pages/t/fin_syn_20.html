@@ -32,83 +32,189 @@
 <script type="text/javascript">
 var BASEURL = 'http://t.boubei.com',
     GD = {
-        'expend':{recordId:88,recordName:'t_trucks_job_expend',param:'real_pay_date',fields:'price,real_pay_price'},//运单支出
-        'income':{recordId:87,recordName:'t_trucks_job_income',param:'real_due_date',fields:'price,real_due_price'},//运单收入
-        'phone':{recordId:79,recordName:'t_truck_phone',param:'recharge_time',fields:'recharge'},//随车电话
-        'oil':{recordId:132,recordName:'t_oil_card_event',param:'event,start_day',fields:'money'},//油卡支出
-        'etc':{recordId:136,recordName:'t_etc_event',param:'event,start_day',fields:'money'}//etc支出
+        // 'expend':{recordId:88,recordName:'t_trucks_job_expend',param:'real_pay_date',fields:'price,real_pay_price',groupBy:'truck_code'},//运单支出
+        // 'income':{recordId:87,recordName:'t_trucks_job_income',param:'real_due_date',fields:'price,real_due_price',groupBy:'truck_code'},//运单收入
+        'phone':{recordId:79,recordName:'t_truck_phone',param:'recharge_time',fields:'recharge',groupBy:'user'},//随车电话
+        'oil':{recordId:132,recordName:'t_oil_card_event',param:'event,start_day',fields:'money',groupBy:'license'},//油卡支出
+        'etc':{recordId:136,recordName:'t_etc_event',param:'event,start_day',fields:'money',groupBy:'code'},//etc支出
+        'job':{reportId:167,reportName:'运单营收明细',uri:'/tss/data/json/'},//运单明细
+        'tyre':{reportId:168,reportName:'168t_tyre_fin',uri:'/tss/data/json/'},//轮胎应付、实付
+        'maintain':{reportId:72,reportName:'72-保养数据',uri:'/tss/data/json/'},//保养数据
+        'etcinfo':{recordId:67,recordName:'t_etc'}//etc基础信息
     },
     COL = [
         {field:'type',title:'类型',align:'center',width:'90px'},
         {field:'income',title:'应收金额',align:'right',width:'90px'},
         {field:'real_income',title:'实收金额',align:'right',width:'90px'},
         {field:'expend',title:'应付金额',align:'right',width:'90px'},
-        {field:'real_expend',title:'实付金额',align:'right',width:'90px'}
+        {field:'real_expend',title:'实付金额',align:'right',width:'90px'},
+        {field:'profit',title:'利润',align:'right',width:'90px'},
+        {field:'real_profit',title:'实际利润',align:'right',width:'90px'}
     ];
 
 $(function() {
 
-    $("#start").datetimebox('setValue', getCurrentMonthFirst().format('2018-01-01 00:00:00'));
+    $("#start").datetimebox('setValue', getCurrentMonthFirst().format('yyyy-MM-dd 00:00:00'));
     $("#end").datetimebox('setValue', new Date().format('yyyy-MM-dd 23:59:59'));
     queryInfo()
+
     
 })
+// get detail params
+function getDetailParams(str, fields,str1){
+	var params =getParams(str, fields);
+	params['fields'] = params['fields'] + ',' + str1;
+	params['groupby'] = str1;
+	params['pagesize'] = 100000;
+	return params
+}
 // get detail
-function getDetailData(value, field,callback) {
+function getDetailData(value, field, callback) {
 	if (value == '运单') {
-		if (field.indexOf("income") >= 0) {
-			tssJS.getJSON(record_urls(GD['expend'].recordName).QUERY, dateParams(GD['income'].param), function(data) {
-				callback && callback(data)
-			})
-		} else {
-			tssJS.getJSON(record_urls(GD['income'].recordName).QUERY, dateParams(GD['expend'].param), function(data) {
-				callback && callback(data)
-			})
-		}
-	} else if (value == '随车电话' && field.indexOf('expend') > 0) {
-		tssJS.getJSON(record_urls(GD['phone'].recordName).QUERY, dateParams(GD['phone'].param), function(data) {
+		tssJS.getJSON(BASEURL + GD['job'].uri + GD['job'].reportId, dateParams(''), function(data) {
 			callback && callback(data)
 		})
-	} else if (value == '油卡' && field.indexOf('expend') > 0) {
-		tssJS.getJSON(record_urls(GD['oil'].recordName).QUERY, dateParams(GD['oil'].param), function(data) {
+	} else if (value == '随车电话') {
+		tssJS.getJSON(record_urls(GD['phone'].recordName).QUERY, getDetailParams(GD['phone'].param, GD['phone'].fields, GD['phone'].groupBy), function(data) {
+			data = adjData(data,'recharge')
 			callback && callback(data)
 		})
-	} else if (value == 'ETC' && field.indexOf('expend') > 0) {
-		tssJS.getJSON(record_urls(GD['etc'].recordName).QUERY, dateParams(GD['etc'].param), function(data) {
+	} else if (value == '油卡') {
+		tssJS.getJSON(record_urls(GD['oil'].recordName).QUERY, getDetailParams(GD['oil'].param, GD['oil'].fields, GD['oil'].groupBy), function(data) {
+			data = adjData(data,'money')
 			callback && callback(data)
+		})
+	} else if (value == 'ETC') {
+		tssJS.getJSON(record_urls(GD['etc'].recordName).QUERY, getDetailParams(GD['etc'].param, GD['etc'].fields, GD['etc'].groupBy), function(data) {
+			tssJS.getJSON(record_urls(GD['etcinfo'].recordName).QUERY,{},function(info){
+				$.each(info,function(i,item){
+					$.each(data,function(j,jitem){
+						if (item.code == jitem.code) {
+							jitem.license = item.license;
+						}
+					})
+				})
+				data = adjData(data,'money')
+				callback && callback(data)
+			})
+		})
+	} else if (value == '轮胎') {
+		tssJS.getJSON(BASEURL+GD['tyre'].uri+GD['tyre'].reportName,dateParams(''),function(data){
+			callback && callback(data)
+		})
+	} else if (value == '维保') {
+		tssJS.getJSON(BASEURL+GD['maintain'].uri+GD['maintain'].reportId,dateParams(''),function(data){
+			maintain = distinct(data,'license,pay_money,needpay_money');
+			$.each(maintain,function(i,item){
+				item.expend = item.needpay_money 
+				item.real_expend = item.pay_money
+			})
+			callback && callback(maintain)
 		})
 	}
 }
+// 处理只有支出项目的明细数据
+function adjData(data,field){
+	$.each(data,function(i,item){
+		item.real_profit = item[field];
+		item.real_expend = item[field];
+	})
+	return data
+}
+
+// return titile
+function returnTitle(field){
+	var title;
+	$.each(COL,function(i,item){
+		if (item.field == field) {
+			title = item.title;
+		}
+	})
+	return title
+}
 // 画明细line
-function showLineChart(data) {
-	setLineXaxis(data)
+function showLineChart(value,data,field) {
+	// console.log(value,data,field)
+	var title = returnTitle(field);
 	var myChart = echarts.init(document.getElementById('linechart'));
 	option = {
-		xAxis: {
-			type: 'category',
-			data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-		},
-		yAxis: {
-			type: 'value'
-		},
-		series: [{
-			data: [820, 932, 901, 934, 1290, 1330, 1320],
-			type: 'line'
-		}]
+		title: {
+        	text: value + title +"明细数据"
+    	},
+		xAxis: setLineXaxis(value,data,field),
+		yAxis: {type: 'value'},
+		series: [setLineSeries(data,field)],
+		dataZoom: [{id: 'dataZoomX',type: 'slider',xAxisIndex: [0],start: 0, end: 4}],
+		tooltip: {trigger : 'item'},
+		toolbox: {
+			show: true,
+			orient: 'vertical',
+			left: 'right',
+			top: 'center',
+			feature: { 
+				mark: {show: true},
+            	restore: {show: true}
+            }
+        }
 	};
 	myChart.setOption(option);
 }
+// 指定字段倒序
+function selectionDesc(arr,str) {
+    var len = arr.length;
+    var maxIndex, temp;
+    for (var i = 0; i < len - 1; i++) {
+        maxIndex = i;
+        for (var j = i + 1; j < len; j++) {
+            if (arr[j][str] > arr[maxIndex][str]) {     //寻找最大的数
+                maxIndex = j;                 //将最大数的索引保存
+            }
+        }
+        temp = arr[i];
+        arr[i] = arr[maxIndex];
+        arr[maxIndex] = temp;
+    }
+    return arr;
+}
+// set line series
+// TODO 其他类型画图操作
+function setLineSeries(data,field){
+	var thisdata = {type:'line'},arr = [];
+	var sdata = selectionDesc(data,field);
+	$.each(sdata,function(i,item){
+		arr.push(item[field] || 0)
+	})
+	thisdata['data'] = arr;
+	return thisdata
+}
 // set line x
-function setLineXaxis(data){
-	// console.log(data)
+// TODO 其他类型画图操作
+function setLineXaxis(value,data,field){
+	var thisdata = {type:'category'}, arr = [], thisfield;
+	var field = field || '';
+	if (value == '运单') {
+		thisfield = 'plan_route';
+	} else if (value == '随车电话') {
+		thisfield = 'user'
+	} else if (value == '油卡' || value == 'ETC' || value == '维保') {
+		thisfield = 'license'
+	} else if (value == '轮胎') {
+		thisfield = 'buy_vouchercode'
+	}
+	var jobD = selectionDesc(data,field)
+	$.each(jobD,function(i,item){
+		arr.push(item[thisfield])
+	})
+	thisdata['data'] = arr;
+	return thisdata
 }
 // 画表
 function drawTable(data){
 	$.each(COL,function(i,item){
-	    if (item.title.indexOf('金额') >= 0) {
+	    if (item.title.indexOf('金额') >= 0 || item.title.indexOf('利润') >= 0) {
 	        item.formatter = function(value){
-	            if (!value) return keepTwoDecimalFull(0);
-                return keepTwoDecimalFull(value)
+	            if (!value) return '-';
+                return numCommafmt(keepTwoDecimalFull(value))
 	        }
 	    } else {
 	        item.styler = styler2;
@@ -121,61 +227,115 @@ function drawTable(data){
         showFooter: true,
 	    rownumbers: true,
 	    singleSelect: true,
-	    onClickCell:function(index, field, value){
-	    	// console.log(index, field)
-	    	getDetailData(data[index].type, field,function(data){
-	    		data && showLineChart(data)
-	    		// console.log(data)
+	    onLoadSuccess:function(data){
+	    	getDetailData('运单', 'income',function(thisdata){
+	    		thisdata && showLineChart('运单',thisdata,'income')
 	    	})
+	    },
+	    onClickCell:function(index, field, value){
+	    	if (value == 0 || !value) return;
+	    	var type = data[index].type;
+	    	getDetailData(type, field,function(data){
+	    		data && showLineChart(type,data,field)
+	    	})
+	    	
 	    }
     })
 }
 // get fin info
 function queryInfo(){
-	var data = [];
-    tssJS.getJSON(record_urls(GD['expend'].recordName).QUERY,getParams(GD['expend'].param,GD['expend'].fields),function(expend){
-        data.push({type:'运单',expend:expend[0].price,real_expend:expend[0].real_pay_price});
-        tssJS.getJSON(record_urls(GD['income'].recordName).QUERY,getParams(GD['income'].param,GD['income'].fields),function(income){
-            $.each(data,function(i,item){
-                if (item.type == '运单') {
-                    item.income = income[0].price;
-                    item.real_income = income[0].real_due_price;
-                }
-            })
-            tssJS.getJSON(record_urls(GD['phone'].recordName).QUERY,getParams(GD['phone'].param,GD['phone'].fields),function(phone){
-                data.push({type:'随车电话',real_expend:phone[0].recharge});
-                tssJS.getJSON(record_urls(GD['oil'].recordName).QUERY,getParams(GD['oil'].param,GD['oil'].fields),function(oil){
-                    data.push({type:'油卡',real_expend:oil[0].money});
-                    tssJS.getJSON(record_urls(GD['etc'].recordName).QUERY,getParams(GD['etc'].param,GD['etc'].fields),function(etc){
-                        data.push({type:'ETC',real_expend:etc[0].money});
-                        var foot = {type:'合计','income':0,'real_income':0,'expend':0,'real_expend':0};
-                        $.each(data,function(i,item){
-                            foot["income"] += parseFloat(item.income || 0);
-                            foot["real_income"] += parseFloat(item.real_income || 0);
-                            foot["expend"] += parseFloat(item.expend || 0);
-                            foot["real_expend"] += parseFloat(item.real_expend || 0);
-                        })
-                        data && drawTable(data);
-                        $("#dg").datagrid('reloadFooter',[foot])
-                        showChart(data)
-                    })
-                })
-            })
-
-        })
-    })
+	var jobinfo,phone,oil,etc,tyre,maintain;
+	tssJS.getJSON(BASEURL+GD['job'].uri+GD['job'].reportId,dateParams(''),function(data){
+		jobinfo = data;
+		waitingF(jobinfo,phone,oil,etc,tyre,maintain)
+	})
+	tssJS.getJSON(record_urls(GD['phone'].recordName).QUERY,getParams(GD['phone'].param,GD['phone'].fields),function(data3){
+		phone = data3;
+		waitingF(jobinfo,phone,oil,etc,tyre,maintain)
+	})
+	tssJS.getJSON(record_urls(GD['oil'].recordName).QUERY,getParams(GD['oil'].param,GD['oil'].fields),function(data4){
+		oil = data4;
+		waitingF(jobinfo,phone,oil,etc,tyre,maintain)
+	})
+	tssJS.getJSON(record_urls(GD['etc'].recordName).QUERY,getParams(GD['etc'].param,GD['etc'].fields),function(data5){
+		etc = data5;
+		waitingF(jobinfo,phone,oil,etc,tyre,maintain)
+	})
+	tssJS.getJSON(BASEURL+GD['tyre'].uri+GD['tyre'].reportName,dateParams(''),function(data){
+		tyre = data;
+		waitingF(jobinfo,phone,oil,etc,tyre,maintain)
+	})
+	tssJS.getJSON(BASEURL+GD['maintain'].uri+GD['maintain'].reportId,dateParams(''),function(data){
+		maintain = distinct(data,'license,pay_money,needpay_money');
+		$.each(maintain,function(i,item){
+			item.expend = item.needpay_money 
+			item.real_expend = item.pay_money
+		})
+		waitingF(jobinfo,phone,oil,etc,tyre,maintain)
+	})
 }
+
+function distinct(data, str) {
+	var arr = [];
+	str = str.split(',')
+	for (var i = data.length - 1; i >= 0; i--) {
+		$.each(str, function(j, item) {
+			if (!findObj(data[i], arr, item) && data[i][item]) {
+				arr.push(data[i])
+			}
+		})
+	}
+	return arr
+}
+
+function calSum(data,type){
+	type = type || '合计';
+	var sum = {type:type,income:0,real_income:0,expend:0,real_expend:0,profit:0,real_profit:0};
+	$.each(data,function(i,item){
+		sum["income"] += parseFloat(item.income || 0);
+        sum["real_income"] += parseFloat(item.real_income || 0);
+        sum["expend"] += parseFloat(item.expend || 0);
+        sum["real_expend"] += parseFloat(item.real_expend || 0);
+        sum["profit"] += parseFloat(item.profit || 0);
+        sum["real_profit"] += parseFloat(item.real_profit || 0);
+    })
+    return sum;
+}
+
+function waitingF(jobinfo,phone,oil,etc,tyre,maintain){
+	if (jobinfo && phone && oil && etc && tyre && maintain) {
+		var data = [];
+		data.push(calSum(jobinfo,'运单'));
+		data.push({type:'随车电话',real_expend:phone[0].recharge,real_profit:(phone[0].real_income || 0)- phone[0].recharge});
+		data.push({type:'油卡',real_expend:oil[0].money,real_profit:(oil[0].real_income || 0)- oil[0].money});
+		data.push({type:'ETC',real_expend:etc[0].money,real_profit:(etc[0].real_income || 0)- etc[0].money});
+		data.push(calSum(tyre,'轮胎'));
+		data.push(calSum(maintain,'维保'))
+        data && drawTable(data);
+        $("#dg").datagrid('reloadFooter',[calSum(data)])
+        showChart(data);
+	}
+}
+   
 // date params
 function dateParams(str){
 	var start, end, params = {};
 	start = new Date($("#start").datetimebox("getValue").replace('-', '/'));
 	end = new Date($("#end").datetimebox("getValue").replace('-', '/'));
-	str = str.split(',');
-	for (var i = 0; i < str.length; i++) {
-		if (str[i] == 'event') {
-			params[str[i]] = '消费';
-		} else {
-			params[str[i]] = '[' + start.format('yyyy-MM-dd hh:mm:ss') + ',' + end.format('yyyy-MM-dd hh:mm:ss') + ']';
+	str = str || '';
+	if (str) {
+		str = str.split(',');
+		for (var i = 0; i < str.length; i++) {
+			if (str[i] == 'event') {
+				params[str[i]] = '消费';
+			} else {
+				params[str[i]] = '[' + start.format('yyyy-MM-dd hh:mm:ss') + ',' + end.format('yyyy-MM-dd hh:mm:ss') + ']';
+			}
+		}
+	} else {
+		params = {
+			'param1': start.format('yyyy-MM-dd hh:mm:ss'),
+			'param2': end.format('yyyy-MM-dd hh:mm:ss')
 		}
 	}
 	return params
@@ -198,31 +358,23 @@ function getParams(str, fields) {
 			params['fields'] = b;
 		}
 	})
+	params['pagesize'] = 100000;
 	return params
 }
-// 
+// 柱状图
 function showChart(data) {
 	// 基于准备好的dom，初始化echarts实例
 	var myChart = echarts.init(document.getElementById('chart'));
 	// 指定图表的配置项和数据
 	option = {
-		color: ['#003366', '#006699', '#4cabce', '#e5323e'],
 		tooltip: {trigger : 'item'},
 		legend: setLegend(),
-		toolbox: {show: true,orient: 'vertical',left: 'right',top: 'center',feature: {mark: {show: true},saveAsImage: {show: true}}},
 		calculable: true,
 		xAxis: [{type: 'category',axisTick: {show: true},data: getAttVal(data,'type')}],
 		yAxis: [{type: 'value'}],
 		series: setSeries(data)
-		// dataZoom: [{id: 'dataZoomX',type: 'slider',xAxisIndex: [0]}]
-		// dataZoom可是使用至明细上
 	};
-	// 使用刚指定的配置项和数据显示图表。
 	myChart.setOption(option);
-	// myChart.on('click',function(data){
- //    	console.log(data.seriesName,data.name,data.value);
- //    	if (true) {}
- //    })
 }
 // get legend
 function getAttVal(data,str){
@@ -243,7 +395,6 @@ function setSeries(data){
 		ser.push({name:item.title,type:'bar'});
 		$.each(data,function(j,thisitem){
 			var val = keepTwoDecimalFull(thisitem[item.field] || 0);
-			// var val = thisitem[item.field] || 0;
 			arr.push(val)
 			if (j == data.length - 1) {
 				ser[i]['data'] = arr;
@@ -262,47 +413,26 @@ function setLegend(){
 	data['data'] = arr;
 	return data;
 }
-
-//四舍五入保留2位小数（不够位数，则用0替补）原truck.js已经存在
-function keepTwoDecimalFull(num) {
-	var result = parseFloat(num);
-	if (isNaN(result)) {
-		alert('传递参数错误，请检查！');
-		return false;
-	}
-	result = Math.round(num * 100) / 100;
-	var s_x = result.toString();
-	var pos_decimal = s_x.indexOf('.');
-	if (pos_decimal < 0) {
-		pos_decimal = s_x.length;
-		s_x += '.';
-	}
-	while (s_x.length <= pos_decimal + 2) {
-		s_x += '0';
-	}
-	return s_x;
-}
-
 </script>
 <body>
 	<div id="mian" class="easyui-layout" data-options="fit:'true'">
-		<div data-options="region:'center',split:true" style="width:40%;" border="true">
-			<table id="dg" class="easyui-datagrid" data-options="toolbar:'#tb'" border="false"></table>
-			<div id="tb" style="padding: 5px;height: auto;">
-				开始时间:&nbsp;
-				<input id="start" class="easyui-datetimebox" style="width:150px">&nbsp;
-				到:&nbsp;
-				<input id="end" class="easyui-datetimebox" style="width:150px">&nbsp;
-				<a href="#" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="queryInfo()">查询</a>
+		<div  class="easyui-layout" data-options="region:'north',split:true" style="height: 50%;width:100%;" border="true">
+			<div data-options = "region:'west',split:true" style="width: 50%;height:100%">
+				<table id="dg" class="easyui-datagrid" data-options="toolbar:'#tb'" border="false"></table>
+				<div id="tb" style="padding: 5px;height: auto;">
+					开始时间:&nbsp;
+					<input id="start" class="easyui-datetimebox" style="width:150px">&nbsp;
+					到:&nbsp;
+					<input id="end" class="easyui-datetimebox" style="width:150px">&nbsp;
+					<a href="#" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="queryInfo()">查询</a>
+				</div>
 			</div>
-		</div>
-		<div data-options="region:'east',split:true" style="width:60%;" border="true">
-			<div data-options="region:'north',split:true" style="width:100%;height: 50%" border="true">
+			<div data-options = "region:'center',split:true" style="width: 50%;height:100%">
 				<div id="chart" style="width: 100%;height:100%;"></div>
 			</div>
-			<div data-options="region:'sorth',split:true" style="width:100%;height: 50%" border="true">
-				<div id="linechart" style="width: 100%;height:100%;"></div>
-			</div>
+		</div>
+		<div data-options="region:'center',split:true" style="width:100%;height: 50%" border="true">
+			<div id="linechart" style="width: 100%;height:100%;"></div>
 		</div>
 	</div>
 </body>
