@@ -580,13 +580,13 @@ function saveRecord(recordId) {
 	        </div>
 		</div>
 	</div>
-	<div id="dlg" class="easyui-dialog" style="width:580px;height: 530px;" closed=true buttons="#dlg-buttons">
+	<div id="dlg" class="easyui-dialog" style="width:812px;height: 520px;" closed=true buttons="#dlg-buttons">
 		<form id="fm" method="post" novalidate>
 			<input name="id" type="hidden"/>
 			<input id="lockVersion2" name="lockVersion" type="hidden"/>
 			<input id="seqNo2" name="seqNo" type="hidden"/>
 			<input id="normal" name="normal" type="hidden"/>
-			<table>
+			<table class="l">
 				<tr>
 					<td class="label">任务单号:</td>
 					<td>
@@ -596,18 +596,16 @@ function saveRecord(recordId) {
 					<td>
 						<input id="client" name="client" class="easyui-textbox" style="width: 180px" disabled/>
 					</td>
-				</tr>
-				<tr>
 					<td class="label">在途时效:</td>
 					<td>
 						<input id="aging" name="aging" class="easyui-textbox" style="width: 180px" disabled/>
 					</td>
+				</tr>
+				<tr>
 					<td class="label">靠台时间:</td>
 					<td>
 						<input id="arr_port_time" name="arr_port_time" class="easyui-textbox" style="width: 180px" disabled/>
 					</td>
-				</tr>
-				<tr>
 					<td class="label">额载:</td>
 					<td>
 						<input id="load_type" name="load_type" class="easyui-textbox" style="width: 180px" disabled/>
@@ -626,18 +624,16 @@ function saveRecord(recordId) {
 					<td>
 						<input id="shipment_phone" name="shipment_phone" class="easyui-textbox" style="width: 180px" disabled/>
 					</td>
-				</tr>
-				<tr>
 					<td class="label">计划线路:</td>
 					<td>
 						<input id="plan_route" name="plan_route" class="easyui-textbox" style="width: 180px" disabled/>
 					</td>
+				</tr>
+				<tr>
 					<td class="label">调整线路:</td>
 					<td>
 						<input id="adjust_route" name="adjust_route" class="easyui-textbox" style="width: 180px">
 					</td>
-				</tr>
-				<tr>
 					<td class="label">是否外请车:</td>
 					<td>
 						<input id="temp_car" name="temp_car" class="easyui-combobox" style="width: 180px">
@@ -656,18 +652,16 @@ function saveRecord(recordId) {
 					<td>
 						<input id="trailer_plate" name="trailer_plate" class="easyui-combobox" style="width: 180px">
 					</td>
-				</tr>
-				<tr>
 					<td class="label">油卡卡号:</td>
 					<td>
 						<input id="oil_id" name="oil_id" class="easyui-combobox" style="width: 180px">
 					</td>
+				</tr>
+				<tr>
 					<td class="label">油卡是否需回收:</td>
 					<td>
 						<input id="oil_ib" name="oil_ib" class="easyui-combobox" style="width: 180px">
 					</td>
-				</tr>
-				<tr>
 					<td class="label">驾驶员:</td>
 					<td>
 						<input id="driver" name="driver" class="easyui-combobox" style="width: 180px">
@@ -686,15 +680,9 @@ function saveRecord(recordId) {
 					<td>
 						<input id="send_truck_type" name="send_truck_type" class="easyui-combobox" style="width: 180px">
 					</td>
-				</tr>
-				<tr>
 					<td class="label">计划发车时间:</td>
 					<td>
 						<input id="plan_start_time" name="plan_start_time" class="easyui-textbox" style="width: 180px" disabled/>
-					</td>
-					<td class="label">实际发车时间:</td>
-					<td>
-						<input id="actual_start_time" name="actual_start_time" class="easyui-datetimebox" style="width: 180px">
 					</td>
 				</tr>
 				<tr>
@@ -702,6 +690,11 @@ function saveRecord(recordId) {
 					<td>
 						<input id="plan_end_time" name="plan_end_time" class="easyui-textbox" style="width: 180px" disabled/>
 					</td>
+					<td class="label">实际发车时间:</td>
+					<td>
+						<input id="actual_start_time" name="actual_start_time" class="easyui-datetimebox" style="width: 180px">
+					</td>
+					
 					<td class="label">实际到达时间:</td>
 					<td>
 						<input id="actual_end_time" name="actual_end_time" class="easyui-datetimebox" style="width: 180px">
@@ -717,18 +710,17 @@ function saveRecord(recordId) {
 					<td>
 						<input id="payee_id" name="payee_id" class="easyui-combobox" style="width: 180px" >
 					</td>
-				</tr>
-				<tr>
 					<td class="label">开户行:</td>
 					<td>
 						<input id="open_bank" name="open_bank" class="easyui-combobox" style="width: 180px">
 					</td>
+				</tr>
+				<tr>
+					
 					<td class="label">银行卡:</td>
 					<td>
 						<input id="bank_no" name="bank_no" class="easyui-combobox" style="width: 180px">
 					</td>
-				</tr>
-				<tr>
 					<td class="label">派车备注:</td>
 					<td>
 						<input id="send_remark" name="send_remark" class="easyui-textbox" style="width: 180px">
@@ -742,12 +734,12 @@ function saveRecord(recordId) {
 		<a href="#" id="jobsubmit" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveTable(GD['t_truck_job'].recordName,'#dg',true)">提交</a>
 		<a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="closeDlg('#dlg','#fm')">取消</a>
 	</div>
-	<div id="dlg2" class="easyui-dialog" style="width: 550px;height: 200px" closed=true buttons="#dlg-buttons2">
+	<div id="dlg2" class="easyui-dialog" style="width: 550px;height: 240px" closed=true buttons="#dlg-buttons2">
 		<form id="fm2" method="post" novalidate="">
 			<input name="id" type="hidden"/>
 			<input id="lockVersion2" name="lockVersion" type="hidden"/>
 			<input id="seqNo2" name="seqNo" type="hidden"/>
-			<table>
+			<table class="l">
 				<tr>
 					<td class="label">任务单号:</td>
 					<td>

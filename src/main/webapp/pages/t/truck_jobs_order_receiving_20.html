@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -63,62 +64,26 @@ var BASEURL = 'http://t.boubei.com',
 $(function(){
 	$("#pstart_s").datetimebox('setValue',getCurrentMonthFirst().format('yyyy-MM-dd'));
 	$("#pstart_e").datetimebox('setValue',AddDays(new Date(),10).format('yyyy-MM-dd 23:59'));
-	$("#jobtype").combobox({
-		data:JOBTYPEDATA,
-		valueField:'value',
-		textField:'text',
-		panelHeight:'auto'
-	})
+	setCombobox('jobtype', JOBTYPEDATA,'','text');//查询条件的任务状态
+	setCombobox('ifpay',RECEIPTDATA,'','','',true);//设置是否已付
 	jobQuery();
+
 	$("#ifpay").combobox({
-		data:RECEIPTDATA,
-		valueField: 'value',
-		textField: 'value',
-		panelHeight:'auto',
-		limitToList:true,
 		onChange:function(newValue,oldValue){
 			if (newValue == '是') {
-				$('#real_due_date').datebox({
-					required: true
-				});
-				$('#real_due_price').numberbox({
-					required: true
-				});
+				$('#real_due_date').datebox({required: true});
+				$('#real_due_price').numberbox({required: true});
 			} else {
-				$('#real_due_date').datebox({
-					required: false
-				});
-				$('#real_due_price').numberbox({
-					required: false
-				});
+				$('#real_due_date').datebox({required: false});
+				$('#real_due_price').numberbox({required: false});
 			}
 		}
 	});
-	$("#truck_type").combobox({
-		url: record_urls(GD[2].recordName).QUERY,
-		queryParams:{},
-		valueField:'truck_type',
-		textField:'truck_type',
-		panelHeight:'auto'
-	});
-	$("#route_type").combobox({
-		data:ROUTETYPEDATA,
-		valueField:'value',
-		textField:'value',
-		panelHeight:'auto'
-	});
-	$("#receipt").combobox({
-		data:RECEIPTDATA,
-		valueField:'value',
-		textField:'value',
-		panelHeight:'auto'
-	});
+	setCombobox('truck_type',record_urls(GD[2].recordName).QUERY,'truck_type','','150px',true);
+	setCombobox('route_type',ROUTETYPEDATA);
+	setCombobox('receipt',RECEIPTDATA);
+	setCombobox('status',STATUSDATA);
 	$("#status").combobox({
-		data:STATUSDATA,
-		valueField:'value',
-		textField:'value',
-		panelHeight:"auto",
-		// limitToList: true,
 		onChange:function(newValue,oldValue){
 			if (newValue == '待派') {
 				$("#client").combobox({required:true});//客户名称
@@ -148,20 +113,18 @@ $(function(){
 		}
 	})
 	getClient()
-	$("#plan_end_time").datetimebox({
-		showSeconds: false
-	})
+	$("#plan_end_time").datetimebox({showSeconds: false});
 	$("#aging").textbox({
 		prompt: '例：25小时20分钟',
 		required: true,
-		onChange: function(nv, ov) {
-			calEndTime(nv,true)
+		onChange: function(newValue, oldValue) {
+			calEndTime(newValue,true)
 		}
 	})
 	$("#plan_start_time").datetimebox({
 		showSeconds: false,
-		onChange: function(nv, ov) {
-			calEndTime(nv)
+		onChange: function(newValue, oldValue) {
+			calEndTime(newValue)
 		}
 	})
 	$("#addjob").click(function(){
@@ -170,26 +133,17 @@ $(function(){
 	$("#addincome").click(function(){
 		$('#truck_code').textbox('setValue', JOBCODE);
 	})
-	$("#income_type").combobox({
-		url:BASEURL+GD[4].uri+GD[4].reportId,
-		valueField:'value',
-		textField:'value',
-		panelHeight:'auto'
-	})
-	$("#plan_route").combobox({
-		url:BASEURL+GD[6].uri+GD[6].reportId,
-		valueField:'plan_route',
-		textField:'plan_route',
-		panelHeight:'150px'
-	})
-	
+	setCombobox('income_type',BASEURL+GD[4].uri+GD[4].reportId,'','','150px');
+	setCombobox('plan_route',BASEURL+GD[6].uri+GD[6].reportId,'plan_route','','150px');
 });
-function calEndTime(nv,b) {
+// 计算到达时间
+function calEndTime(newValue,b) {
 	var st = $("#plan_start_time").datetimebox("getValue");
 	var val = $("#aging").textbox("getValue");
 	var h = val.substring(0, val.indexOf('小时'));
-	var m = val.substring(val.indexOf('时') + 1, val.indexOf('分钟'));
-	if (val || nv) {
+	var m = 0;
+	if (val.indexOf('分钟') >= 0) m = val.substring(val.indexOf('时') + 1, val.indexOf('分钟'));
+	if (val || newValue) {
 		if (isNaN(parseInt(h)) || isNaN(parseInt(m))) {
 			if (b) $.messager.alert('提示', '请输入正确时长格式!');
 		} else if (st) {
@@ -198,6 +152,7 @@ function calEndTime(nv,b) {
 		}
 	}
 }
+// 获取主数据
 function jobQuery() {
 	tssJS.ajax({
 		url: record_urls(GD[0].recordName).QUERY + '?noCache=true',
@@ -211,7 +166,7 @@ function jobQuery() {
 		}
 	});
 }
-
+// 区别运单状态
 function styler3(value) {
 	if (value == '已派') {
 		return "color:red";
@@ -250,8 +205,12 @@ function drawTable(data){
 		frozenColumns:[[
 			{field: 'ck', checkbox: true},
 			{field: 'job_code',title: '任务单号',align: 'center',width:'120px',styler: styler2},
-			{field: 'status',title: '状态',align: 'center',width:'100px'}
-			]],
+			{field: 'status',title: '状态',align: 'center',width:'100px',formatter:function(value){
+				var d = styler3(value);
+				if (!value) return;
+				return "<span title='" + value + "' style=" + d + ";>" + value + "</span>";
+			}}
+		]],
 		columns: [[
 			{field: 'client',title: '客户名称',align: 'center',width:'100px'},
 			{field: 'client_phone',title: '联系方式',align: 'center',width:'100px'},
@@ -345,7 +304,6 @@ function getClientInfo(comboboxid,url,params,value,text,str){
 		queryParams:params,
 		valueField:value,
 		textField:text,
-		// limitToList:true,
 		panelHeight:'auto',
 		loadFilter:function(data){
 			var arr = [],
@@ -369,7 +327,6 @@ function getClientInfo(comboboxid,url,params,value,text,str){
 // 获取客户信息
 function getClient() {
 	var url = BASEURL + GD[5].uri + GD[5].reportId + '?noCache=true';
-	// console.log(url)
 	$("#client").combobox({
 		url: url,
 		queryParams: {},
@@ -384,7 +341,7 @@ function getClient() {
 		},
 		valueField: 'client',
 		textField: 'client',
-		panelHeight: 'auto',
+		panelHeight: '150px',
 		icons: [{
 			iconCls: 'icon-add',
 			handler: function(){
@@ -395,14 +352,14 @@ function getClient() {
 			handler: getClient
 		}],
 		onChange: function(newValue, oldValue) {
-			if (newValue) {
-				var params = {
-					param1: newValue
-				};
-				// console.log(params)
+			//备注：目前存在数据维护不全 导致onchange事件与updataJob冲突 
+			if (newValue && oldValue) {
+				// console.log(1)
+				var params = {param1: newValue};
 				getClientInfo('#client_phone', url, params, 'client_phone');
 				getClientInfo('#shipment_site', url, params, 'shipment_site');
 				getClientInfo('#shipment_phone', url, params, 'shipment_phone');
+				// updataJob()
 			}
 		}
 	})
@@ -500,7 +457,29 @@ function saveRecord(recordId){
         }
     });
 }
-
+function updataJob() {
+	var row = getSelectedRow('dg');
+	if (row) {
+		$.getJSON(record_urls(GD[0].recordName).GET + row.id, {}, function(select_data) {
+			// console.log(select_data)
+			$('#fm').form('load', select_data);
+			$('#client').combobox('setValue', select_data.client);
+			$('#client_phone').combobox('setValue',select_data.client_phone);
+			$("#shipment_site").combobox('setValue',select_data.shipment_site);
+			$("#shipment_phone").combobox('setValue',select_data.shipment_phone);
+			$("#plan_route").combobox('setValue',select_data.plan_route);//线路
+			$("#truck_type").combobox('setValue',select_data.truck_type);//车型
+			$("#route_type").combobox('setValue',select_data.route_type);//线路类型
+			$("#plan_start_time").datetimebox('setValue',select_data.plan_start_time);//计划发车时间
+			$("#aging").textbox('setValue',select_data.aging);//在途时效
+			$("#plan_end_time").datetimebox('setValue',select_data.plan_end_time);//计划到达时间
+			$('#dlg').dialog({
+				"modal": true
+			}).dialog('open').dialog('setTitle', '修改运单').dialog('center');
+			$('#code').textbox('readonly', true);
+		}, "GET");
+	}
+}
 </script>
 
 <body class="easyui-layout">
@@ -512,7 +491,7 @@ function saveRecord(recordId){
             	<div id="tb" style="padding:5px;height:auto">
 					<div style="margin-bottom:5px">
 						<a href="#" id="addjob" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="createNew('#dlg','#fm','新增运单')">新增</a>
-						<a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="updateOld(record_urls(GD[0].recordName).GET,'dg','#fm','#dlg','修改运单')">修改</a>
+						<a href="#" id="amend" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="updataJob()">修改</a>
 						<a href="#" class="easyui-linkbutton" iconCls="icon-tss-down" plain="true" onclick="_export('t_truck_job',getParams())">导出</a>
 					</div>
 					<div style="margin-bottom:5px">
@@ -541,13 +520,13 @@ function saveRecord(recordId){
 	        </div>
 		</div>
 	</div>
-	<div id="dlg" class="easyui-dialog" style="width:580px;height: 380px;" closed=true buttons="#dlg-buttons">
+	<div id="dlg" class="easyui-dialog" style="width:550;height: 465px;" closed=true buttons="#dlg-buttons">
 		<form id="fm" method="post" novalidate>
 			<input name="id" type="hidden"/>
 			<input id="lockVersion" name="lockVersion" type="hidden"/>
 			<input id="seqNo" name="seqNo" type="hidden"/>
 			<input id="normal" name="normal" type="hidden"/>
-			<table>
+			<table class="l">
 				<tr>
 					<td class="label">任务单号:</td>
 					<td>
@@ -642,12 +621,12 @@ function saveRecord(recordId){
 		<a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveTable(GD[0].recordName,'#dg')">保存</a>
 		<a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="closeDlg('#dlg','#fm')">取消</a>
 	</div>
-	<div id="dlg2" class="easyui-dialog" style="width:550px;height: 200px;" closed=true buttons="#dlg-buttons2">
+	<div id="dlg2" class="easyui-dialog" style="width:550px;height: 240px;" closed=true buttons="#dlg-buttons2">
 		<form id="fm2" method="post" novalidate>
-			<input name="id" type="hidden"/>
+			<input name="id2" type="hidden"/>
 	        <input id="lockVersion2" name="lockVersion" type="hidden"/>
 	        <input id="seqNo2" name="seqNo" type="hidden"/>
-	        <table>
+	        <table class="l">
 	        	<tr>
 	        		<td class="label">任务单号:</td>
 	        		<td>

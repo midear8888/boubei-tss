@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -72,7 +71,7 @@ var BASEURL = 'http://t.boubei.com',
 		{id:0,reportId:121,reportName:'运单回单管理',uri:'/tss/data/json/'},//需要回单的运单数据
 		{id:1,recordId:98,recordName:'t_truck_job',uri:'/tss/auth/xdata/json/'},//运单表
 		{id:2,recordId:132,recordName:'t_oil_card_event',uri:'tss/auth/xdata/json/'},//油卡事件录入
-		{id:3,recordId:144,recordName:'t_report_format',uri:'tss/auth/xdata/json/'},//展示格式后台表
+		{id:3,recordId:144,recordName:'t_report_format',uri:'tss/auth/xdata/json/'}//展示格式后台表
 	],
 	USER,FIELDDATA;
 $(function() {
@@ -98,11 +97,11 @@ $(function() {
 	loginInfo(function(data) {
 		USER = data.login_code; //当前登录人信息
 		GetField(FIELDURL.QUERY, {
-			table_code: GD[1].reportName
+			table_code: GD[1].recordName
 		}, 'field,title', function(AD) { //获取allfield
 			FIELDDATA = cloneObj(AD);
 			GetField(REPORTURL.QUERY, {
-				table_name: GD[1].reportName,
+				table_name: GD[1].recordName,
 				user: USER,//使用人
 				showtable: '回单'//应用场景
 			}, 'field,title', function(SD) { //获取showfield
@@ -116,14 +115,14 @@ $(function() {
 					for (var i = AD.length - 1; i >= 0; i--) {
 						for (var j = 0; j < SD.length; j++) {
 							if (SD[j].field == AD[i].field) {
-								AD.splice(i, 1,);
+								AD.splice(i, 1);
 								break;
 							}
 						}
 					}
 					drawFieldTable(AD, '#allfield');
 					drawFieldTable(SD, '#showfield');
-					// console.log(AD,SD)
+					console.log(AD,SD)
 					queryJob(function(sdata) {
 						sdata && drawTable(sdata, manageCol(FIELDDATA, SD));
 					})
