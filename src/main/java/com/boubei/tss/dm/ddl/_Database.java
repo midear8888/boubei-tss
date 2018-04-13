@@ -36,6 +36,7 @@ import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.record.Record;
 import com.boubei.tss.dm.record.permission.RecordPermission;
 import com.boubei.tss.dm.record.permission.RecordResource;
+import com.boubei.tss.dm.record.workflow.WFDefine;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.Environment;
@@ -56,7 +57,7 @@ public abstract class _Database {
 	public String datasource;
 	public String table;
 	public String customizeTJ;  // 1=1<#if 1=0>showCUV & ignoreDomain</#if>
-	public String workflow;
+	public WFDefine wfDefine;
 	
 	private boolean needLog;
 	public boolean needFile;
@@ -90,11 +91,11 @@ public abstract class _Database {
 		this.table = record.getTable();
 		this.fields = parseJson(record.getDefine());
 		this.customizeTJ = record.getCustomizeTJ();
-		this.workflow = record.getWorkflow();
-		this.needLog = ParamConstants.TRUE.equals(record.getNeedLog());
+		this.needLog  = ParamConstants.TRUE.equals(record.getNeedLog());
 		this.needFile = ParamConstants.TRUE.equals(record.getNeedFile());
 		
 		this.initFieldCodes();
+		this.wfDefine = WFDefine.parse( record.getWorkflow(), this );
 	}
 	
 	protected void initFieldCodes() {
@@ -633,18 +634,24 @@ public abstract class _Database {
 			if(fieldIndex >= 0) {
 				String paramType = this.fieldTypes.get(fieldIndex);
 				
-				String[] vals = DMUtil.preTreatScopeValue(valueStr);				
+				String[] vals = DMUtil.preTreatScopeValue(valueStr); // 是否查询条件为：从和到				
 				if(vals.length == 1) {
-					Object val = DMUtil.preTreatValue(vals[0], paramType);
+					boolean isStringType = ( paramType == null || "string".equals(paramType.toLowerCase()) );
 					
-					// 字符串支持模糊查询
-					if( (paramType == null || "string".equals(paramType.toLowerCase())) && !"true".equals(strictQuery) ) {
-						condition += " and " + key + " like ? ";
-						val = "%"+val+"%";
-					} else {
-						condition += " and " + key + " = ? ";
+					// 如果是一个逗号分隔的字符串，使用in查询
+					if( isStringType && valueStr.indexOf(",") > 0 ) {  
+						condition += " and " + key + " in (" + ("\'" + valueStr.replaceAll(",", "\',\'") + "\'") + ") ";
 					}
-					paramsMap.put(paramsMap.size() + 1, val);
+					else {
+						Object val = DMUtil.preTreatValue(vals[0], paramType);
+						if( isStringType && !"true".equals(strictQuery) ) { // 字符串支持模糊查询
+							condition += " and " + key + " like ? ";
+							val = "%"+val+"%";
+						} else {
+							condition += " and " + key + " = ? ";
+						}
+						paramsMap.put(paramsMap.size() + 1, val);
+					}
 				}
 				else if(vals.length == 2) {
 					condition += " and " + key + " >= ?  and " + key + " <= ? ";
@@ -770,8 +777,8 @@ public abstract class _Database {
         if(this.needFile && !hasFileField) {
         	sb.append("<column name=\"fileNum\" mode=\"string\" caption=\"附件\" width=\"30px\"/>").append("\n");
         }
-        if( !EasyUtils.isNullOrEmpty(this.workflow) ) {
-        	sb.append("<column name=\"fileNum\" mode=\"string\" caption=\"流程状态\" width=\"60px\"/>").append("\n");
+        if( !EasyUtils.isNullOrEmpty(this.wfDefine) ) {
+        	sb.append("<column name=\"wfstatus\" mode=\"string\" caption=\"流程状态\" width=\"60px\"/>").append("\n");
         }
         
         // 判断是否显示这5列, customizeTJ: 1=1<#if 1=0>showCUV< /#if>

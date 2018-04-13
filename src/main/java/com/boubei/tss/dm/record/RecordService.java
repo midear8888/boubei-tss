@@ -24,6 +24,8 @@ public interface RecordService {
 
     Record getRecord(Long id);
     
+    Long getRecordID(Object record);
+    
     Long getRecordID(String recordName, int type);
     
     _Database getDB(Long recordId);

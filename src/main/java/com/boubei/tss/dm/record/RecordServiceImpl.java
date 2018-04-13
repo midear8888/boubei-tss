@@ -43,6 +43,20 @@ public class RecordServiceImpl implements RecordService {
         return record;
 	}
 	
+	public Long getRecordID(Object record) {
+    	Long recordId = null;
+    	try { 
+    		// 先假定是录入表ID（Long型）
+    		recordId = Long.valueOf(record.toString());
+    	} 
+    	catch(Exception e) { 
+    		// 按名字或表名（不支持带前缀，eg: tss1.j_inv）再查一遍
+    		recordId = getRecordID((String) record, Record.TYPE1);
+    	}
+    	
+    	return recordId;
+    }
+	
 	// 名字、表名二者有一个能对上即可
 	public Long getRecordID(String recordName, int type) {
 		String hql = "select o.id from Record o where ? in (o.name, o.table) and type = ? order by o.id desc"; 

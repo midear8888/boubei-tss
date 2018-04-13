@@ -16,20 +16,31 @@ function isNew() {
  *
  * @param string field  单个字段ID
  * @param string value  新值
+ * @param boolean value  是否不允许再编辑
  * @example updateField("applier", "Jack");
  */
-function updateField(field, value) {
+function updateField(field, value, readonly) {
     var xform = tssJS.F("page1Form");
     if(!xform) return; // queryForm触发
 
     xform.updateDataExternal(field, value);    
     xform.updateData( $1(field) );
+
+    readonly && forbid(field);
+}
+
+// 读取Form里指定字段值
+function getFiledVal(field) {
+    var xform = tssJS.F("page1Form");
+    if(!xform) return; // queryForm触发
+
+    return x.getData(field);
 }
 
 /** 
  * 检查当前用户是否拥有指定角色集中的一个
  *
- * @param string roles  逗号分隔的一至多个角色ID
+ * @param string roles  逗号分隔的一至多个角色ID|名称
  * @example checkRole("12,13") 、 checkRole("12")
  */
 function checkRole(roles) {    
@@ -170,7 +181,7 @@ function showFiled(field) {
  *
  * @param string name  按钮标题
  * @param function fn  点击按钮触发此方法
- * @param string roles 逗号分隔的一至多个角色ID
+ * @param string roles 逗号分隔的一至多个角色ID|名称
  * @param string groups 逗号分隔的一至多个用户组ID
  * @example 
  *      addOptBtn('批量打分', function() { batchUpdate("score", "及格") });
@@ -192,13 +203,20 @@ function addOptBtn(name, fn, roles, groups) {
  * @param string name  按钮标题
  * @param string field 字段名
  * @param string value 新值
- * @param string roles 逗号分隔的一至多个角色ID
+ * @param string roles 逗号分隔的一至多个角色ID|名称
  * @param string groups 逗号分隔的一至多个用户组ID
+ * @param function checkfn 检查选中的列是否都允许进行批量操作
  * @example 
  *      batchOpt('批量审批', "status", "审核通过", "r1,r2", "g1, g2");
  */
-function batchOpt(name, field, value, roles, groups) {
-    addOptBtn(name, function() { batchUpdate(field, value) }, roles, groups);  
+function batchOpt(name, field, value, roles, groups, checkfn) {
+    addOptBtn(name, 
+        function() { 
+            if( !checkfn || checkfn() ) {
+                batchUpdate(field, value); 
+            }
+        }, 
+    roles, groups);  
 }
 
 // 批量更新选中行某一列的值

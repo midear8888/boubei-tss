@@ -365,7 +365,7 @@ function loadDetailData(rowID, version) {
             f.role2 && !checkRole(f.role2) && hideFiled(f.code);
 
             // 自动取号
-            if( isCreateRow && (f.defaultValue||'').indexOf("yyMMddxxxx") > 0 ) {
+            if( isCreateRow && (f.defaultValue+'').indexOf("yyMMddxxxx") > 0 ) {
                 var precode = f.defaultValue.replace("yyMMddxxxx", "");
                 tssJS.getJSON("/tss/sn/" +precode+ "/1", function(result) {
                     var sn = result[0];
@@ -489,6 +489,9 @@ function loadDetailData(rowID, version) {
                 }); 
 
                 showInForm();
+
+                // 
+
             });
             return;
         }

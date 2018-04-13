@@ -144,7 +144,7 @@ function buildMenu(reports, records) {
     });
 
     data.each( function(i, item) {
-        var id = item[0], pid = item[2], name = item[1], isResource = item[3];
+        var id = item[0], pid = item[2], name = item[1], isResource = item[3], icon = item[5]||"";
         menusMap[id] = item;
 
         if( Math.abs(pid) == rootId ) { // 一级目录

@@ -34,7 +34,13 @@ import com.boubei.tss.util.FileHelper;
 
 /**
  * 根据数据表提供的导入模板，填写后导入实现批量录入数据。
- * TODO 批量插入，如果莫一批出错，如何回滚所有已经插入的数据
+ * CSV文件需满足条件：
+ * 1、模板从 xdata/import/tl/ 接口导出
+ * 2、表头列的数量和顺序 和 录入表的字段信息严格一致
+ * 3、每一行数据的列数及顺序 == 表头的列数及顺序，不能多也不能少
+ * 4、每个字段值不允许存在 换行符、英文逗号
+ * 
+ * TODO 批量插入，如果某一批（目前10000一批）出错，如何回滚所有已经插入的数据
  */
 public class ImportCSV implements AfterUpload {
 
@@ -62,7 +68,7 @@ public class ImportCSV implements AfterUpload {
 			String row = rows[index];
 			String[] fieldVals = (row+ " ").split(",");
 			
-			if(fieldVals.length < fields.length) {
+			if(fieldVals.length != fields.length) {
 				throw new BusinessException(EX.parse(EX.DM_23, index));
 			}
 			

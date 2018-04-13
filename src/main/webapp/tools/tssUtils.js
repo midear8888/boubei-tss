@@ -1,7 +1,7 @@
 if( location.hostname == 'www.boubei.com' ) {
 	$(function() {
 	    var scriptNode = document.createElement("script");
-	    scriptNode.src = "http://s11.cnzz.com/z_stat.php?id=1256153120&web_id=1256153120";
+	    scriptNode.src = location.protocol + "//s11.cnzz.com/z_stat.php?id=1256153120&web_id=1256153120";
 	    scriptNode.async = false;
 	    $('head').appendChild(scriptNode);
 	});

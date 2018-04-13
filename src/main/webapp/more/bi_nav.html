@@ -49,7 +49,7 @@ a:hover { text-decoration:underline; }
 
 .navlist { list-style-type:none; margin:0px; padding:0px; }
 .navlist li { height: 30px; border-bottom: 1px solid rgba(204, 204, 204, 0.2); }
-.navlist li a { display: block; line-height: 28px; text-indent: 20px; }
+.navlist li a { display: inline-block; line-height: 28px; text-indent: 15px; }
 .navlist li:hover { background-color: #FEF7A9; }
 .navlist li:hover a { color:#416AA3; text-decoration: none; }
 .navlist li a span { 
@@ -59,6 +59,13 @@ a:hover { text-decoration:underline; }
 	word-break: break-all;
 	white-space: nowrap; 
 }
+.navlist li img {
+	display: inline-block;
+    height: 16px; padding-left: 15px; margin-top: -2px;
+    vertical-align: middle;
+}
+.tssicon { display: inline-block; font-size: 16px; padding-right: 15px; }
+.tssicon:before { vertical-align: middle; }
 		 
 </STYLE>
 
@@ -98,7 +105,7 @@ function initMenu() {
 
 	var selectedPanelname = '', index = 0;
 	$.each(_menus, function(i, menu1) {
-		var menu1Name = "&nbsp;&nbsp;" + menu1[1];
+		var menu1Name =  (menu1[5]||"&nbsp;&nbsp;") +  menu1[1];
 		// 没有任何报表的二级目录将被过滤掉
 		if( !menu1.children || menu1.children.length == 0 ) {
 			return true;
@@ -107,8 +114,10 @@ function initMenu() {
 		var menuHTML = [];
 		menuHTML.push('<ul class="navlist">');
 	    menu1.children && $.each(menu1.children, function(j, menu2) {
+	    	var icon = (menu2[5]||'');
+
 	    	menuHTML.push('<li>');
-	    	menuHTML.push('<div><a ref="' + menu2[0] + '" href="#">');
+	    	menuHTML.push('<div>' +icon+ '<a ref="' + menu2[0] + '" href="#">');
 	    	menuHTML.push('  <span class="nav">' + menu2[1] + '</span>');
 	    	menuHTML.push('</a></div>');
 			menuHTML.push('</li>');
@@ -239,7 +248,7 @@ function showSearchDialog() {
 
 <body class="easyui-layout" style="overflow-y: hidden" fit="true" scroll="no" id="main">
   	
-  	<div region="west" id="west" split="true" title="<span class='icon icon-gear'></span><b>BI 功能导航</b>">
+  	<div region="west" id="west" split="true" title="<span class='icon icon-gear'></span><b>功能导航</b>">
 		<div id="nav"></div>
   	</div>
   

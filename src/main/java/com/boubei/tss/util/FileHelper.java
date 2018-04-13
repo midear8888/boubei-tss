@@ -65,6 +65,11 @@ public class FileHelper {
     	return readFile(new File(filePath));
     }
     
+    // classes 目录下的文件
+    public static String readResource(String resource) {
+    	return readFile( URLUtil.getResourceFileUrl(resource).getFile() );
+    }
+    
     /**
      * 指定编码读入文件为字符串
      * @param file

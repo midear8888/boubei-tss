@@ -7,7 +7,7 @@ if( location.hostname == 'www.boubei.com' ) {
     });
 }
 
-BASE_URL = 'http://www.boubei.com/tss/'
+BASE_URL = location.protocol + '//www.boubei.com/tss/'
 
 BASE_JSON_URL  = BASE_URL + '/data/json/';
 BASE_JSONP_URL = BASE_URL + '/data/jsonp/';

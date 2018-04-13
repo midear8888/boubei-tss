@@ -43,7 +43,8 @@ import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.record.file.RecordAttach;
 import com.boubei.tss.dm.record.permission.RecordPermission;
 import com.boubei.tss.dm.record.permission.RecordResource;
-import com.boubei.tss.dm.report.Report;
+import com.boubei.tss.dm.record.workflow.WFManager;
+import com.boubei.tss.dm.record.workflow.WFStep;
 import com.boubei.tss.dm.report.log.AccessLogRecorder;
 import com.boubei.tss.framework.SecurityUtil;
 import com.boubei.tss.framework.exception.BusinessException;
@@ -101,24 +102,10 @@ public class _Recorder extends BaseActionSupport {
 		return idList;
     }
 	
-    private Long getRecordId(Object record) {
-    	Long recordId = null;
-    	try { 
-    		// 先假定是录入表ID（Long型）
-    		recordId = Long.valueOf(record.toString());
-    	} 
-    	catch(Exception e) { 
-    		// 按名字或表名（不支持带前缀，eg: tss1.j_inv）再查一遍
-    		recordId = recordService.getRecordID((String) record, Report.TYPE1);
-    	}
-    	
-    	return recordId;
-    }
-	
 	@RequestMapping("/define/{record}")
     @ResponseBody
     public Object getDefine(@PathVariable("record") Object record) {
-		Long recordId = getRecordId(record);
+		Long recordId  = recordService.getRecordID(record);
 		Record _record = recordService.getRecord( recordId );
 		if(!_record.isActive()) {
 			throw new BusinessException(EX.DM_10);
@@ -160,7 +147,7 @@ public class _Recorder extends BaseActionSupport {
             @PathVariable("record") Object record, 
             @PathVariable("page") int page) {
     	
-    	Long recordId = getRecordId(record);
+    	Long recordId = recordService.getRecordID(record);
     	Map<String, String> requestMap = prepareParams(request, recordId);
     	boolean pointed = requestMap.containsKey("fields") ;
     	_Database _db = getDB(recordId);
@@ -230,7 +217,11 @@ public class _Recorder extends BaseActionSupport {
             	item.put("fileNum", "<a href='javascript:void(0)' onclick='manageAttach(" + itemId + ")'>" + attachNum + "</a>");
             }
             
-            /* TODO 添加工作流信息 */
+            /* 添加工作流信息 */
+            if( _db.wfDefine != null ) {
+            	String currStatus = WFManager.getCurrStatus(_db, item);
+				item.put("wfstatus", "<a href='javascript:void(0)' onclick='showDetail()'>" + currStatus + "</a>");
+            }
         }
 		
 		return ex;
@@ -246,7 +237,7 @@ public class _Recorder extends BaseActionSupport {
     	if( !EasyUtils.isNullOrEmpty(recordName)  ) {
     		record = recordName;
     	}
-    	Long recordId = getRecordId(record);
+    	Long recordId = recordService.getRecordID(record);
     	
     	Map<String, String> requestMap = prepareParams(request, recordId);
     	boolean pointed = requestMap.containsKey("fields") ;
@@ -266,12 +257,13 @@ public class _Recorder extends BaseActionSupport {
 		return ex.result;
     }
     
+    /** EasyUI 翻页调用此处接口 */
     @RequestMapping("/json/{record}")
     @ResponseBody
     public Object showAsJSON(HttpServletRequest request, 
     		@PathVariable("record") String record) {
     	
-    	Long recordId = getRecordId(record);
+    	Long recordId = recordService.getRecordID(record);
     	
     	Map<String, String> requestMap = prepareParams(request, recordId);
     	Object page = EasyUtils.checkNull(requestMap.get("page"), 1);
@@ -291,7 +283,7 @@ public class _Recorder extends BaseActionSupport {
     	
     	Map<String, String> requestMap = DMUtil.getRequestMap(request, true);  // GET Method Request
     	boolean pointed = requestMap.containsKey("fields") ;
-    	Long recordId = getRecordId(record);
+    	Long recordId = recordService.getRecordID(record);
     	_Database _db = getDB(recordId);
         
     	int _page = EasyUtils.obj2Int( EasyUtils.checkNull(requestMap.get("page"), "1") );
@@ -322,13 +314,19 @@ public class _Recorder extends BaseActionSupport {
     public Map<String, Object> get(HttpServletRequest request, 
     		@PathVariable("record") Object record, @PathVariable("id") Long id) {
     	
-    	Long recordId = getRecordId(record);
+    	Long recordId = recordService.getRecordID(record);
     	prepareParams(request, recordId);
     	_Database _db = getDB(recordId, Record.OPERATION_CDATA, Record.OPERATION_VDATA, Record.OPERATION_EDATA);
 
         Map<String, Object> result = _db.get(id);
         if(result == null) {
         	throw new BusinessException( EX.parse(EX.DM_13_2, id) );
+        }
+        
+        /* 添加工作流信息 */
+        if( _db.wfDefine != null ) {
+        	WFStep currStep = WFManager.getCurrStep(_db, result);
+			result.put("wfBtns", currStep);
         }
         
         result.put("id", id);
@@ -348,7 +346,7 @@ public class _Recorder extends BaseActionSupport {
     public Object createAndReturnID(HttpServletRequest request, 
     		@PathVariable("record") Object record) {
     	
-    	Long recordId = getRecordId(record);
+    	Long recordId = recordService.getRecordID(record);
     	Map<String, String> requestMap = prepareParams(request, recordId);
     	Long _tempID = EasyUtils.obj2Long(requestMap.remove("_tempID"));
     	
@@ -388,7 +386,7 @@ public class _Recorder extends BaseActionSupport {
     		@PathVariable("record") Object record, 
     		@PathVariable("id") Long id) {
     	
-    	Long recordId = getRecordId(record);
+    	Long recordId = recordService.getRecordID(record);
     	Map<String, String> requestMap = prepareParams(request, recordId);
     	
     	// 检查用户对当前记录是否有编辑权限，防止篡改别人创建的记录
@@ -413,7 +411,7 @@ public class _Recorder extends BaseActionSupport {
     		@PathVariable("record") Object record, 
     		String ids, String field, String value) {
     	
-    	Long recordId = getRecordId(record);
+    	Long recordId = recordService.getRecordID(record);
     	prepareParams(request, recordId);
     	
     	// 检查用户对当前记录是否有编辑权限，防止篡改别人创建的记录
@@ -431,7 +429,7 @@ public class _Recorder extends BaseActionSupport {
     		@PathVariable("record") Object record, 
     		@PathVariable("id") Long id) {
     	
-    	Long recordId = getRecordId(record);
+    	Long recordId = recordService.getRecordID(record);
     	prepareParams(request, recordId);
     	
     	exeDelete(recordId, id);
@@ -464,7 +462,7 @@ public class _Recorder extends BaseActionSupport {
     public void deleteBatch(HttpServletRequest request, HttpServletResponse response, 
     		@PathVariable("record") Object record, String ids) {
     	
-    	Long recordId = getRecordId(record);
+    	Long recordId = recordService.getRecordID(record);
     	prepareParams(request, recordId);
     	
     	String[] idArray = ids.split(",");
@@ -485,7 +483,7 @@ public class _Recorder extends BaseActionSupport {
     @ResponseBody
     public Object cudBatch(HttpServletRequest request, @PathVariable("record") Object record) {
     	
-    	Long recordId = getRecordId(record);
+    	Long recordId = recordService.getRecordID(record);
     	Map<String, String> requestMap = prepareParams(request, recordId);
     	String csv = requestMap.get("csv");
     	
@@ -538,7 +536,7 @@ public class _Recorder extends BaseActionSupport {
     public void getImportTL(HttpServletResponse response, 
     		@PathVariable("record") Object record) {
     	
-    	Long recordId = getRecordId(record);
+    	Long recordId = recordService.getRecordID(record);
     	 _Database _db = getDB(recordId, Record.OPERATION_CDATA, Record.OPERATION_EDATA, Record.OPERATION_VDATA);
 		
 		String fileName = _db.recordName + "-tl.csv";
@@ -556,7 +554,7 @@ public class _Recorder extends BaseActionSupport {
     public List<?> getAttachList(HttpServletRequest request, 
     		@PathVariable("record") Object record, @PathVariable("itemId") Long itemId) {
 		
-		Long recordId = getRecordId(record);
+		Long recordId = recordService.getRecordID(record);
 		prepareParams(request, recordId);
 		
 		// 检查用户对当前记录是否有查看权限
@@ -571,7 +569,7 @@ public class _Recorder extends BaseActionSupport {
     public void getAttachListXML(HttpServletRequest request, HttpServletResponse response, 
     		@PathVariable("record") Object record, @PathVariable("itemId") Long itemId) {
 		
-		Long recordId = getRecordId(record);
+		Long recordId = recordService.getRecordID(record);
 		prepareParams(request, recordId);
 		
 		// 检查用户对当前记录是否有查看权限
@@ -587,7 +585,7 @@ public class _Recorder extends BaseActionSupport {
 	@RequestMapping(value = "/attach/{id}", method = RequestMethod.DELETE)
     public void deleteAttach(HttpServletRequest request, HttpServletResponse response, @PathVariable("id") Long id) {
 		// 远程访问时需校验Token需要用到recordId；本地访问可不传
-		Long recordId = getRecordId( request.getParameter("recordId") );
+		Long recordId = recordService.getRecordID( request.getParameter("recordId") );
 		prepareParams(request, recordId); // 远程访问预登录
 		
 		RecordAttach attach = recordService.getAttach(id);

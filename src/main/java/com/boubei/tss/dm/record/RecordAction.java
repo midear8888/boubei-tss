@@ -80,7 +80,7 @@ public class RecordAction extends BaseActionSupport {
 			Long id = record.getId();
     		String name = record.getName();
 			Long parentId = record.getParentId();
-			result.add(new Object[] { id, name, parentId, record.getType(), "record" });
+			result.add(new Object[] { id, name, parentId, record.getType(), "record", record.getIcon() });
     	}
     	
     	return result;

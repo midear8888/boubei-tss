@@ -17,6 +17,7 @@ package com.boubei.tss;
  * regable = false     关闭注册
  * regableDev = false  关闭开发者注册
  * index_logo = logo-scm.png   LOGO路径
+ * mobile_menu = 72    移动端菜单组ID
  */
 public interface PX {
 	

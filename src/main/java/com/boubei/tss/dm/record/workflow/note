@@ -1,0 +1,66 @@
+<process>
+	<buttonSet>
+		<button id="b1" name="分配">
+			updateField("state", "正在解决", true);
+			sendEmail( "${processor}" ); // getFiledVal("processor") 
+		</button>
+		<button id="b2" name="关闭">
+			updateField("state", "关闭", true);
+			sendEmail( "${all}" );  // 所有流程参与人
+		</button>
+		<button id="b3" name="完成">
+			updateField("state", "已解决", true);
+			sendEmail( "${creator}" );
+		</button>
+		<button id="b4" name="挂起">
+			updateField("state", "挂起", true);
+		</button>
+		<button id="b5" name="重新打开">
+			updateField("state", "正在解决", true);
+		</button>
+		<button id="b6" name="非异常">
+			updateField("state", "非异常", true);
+		</button>
+	</buttonSet>
+	
+	<steps>
+		<step id="assign" status="待分配">
+			<role value="QA经理,项目经理">b1,b2</role>
+			<user value="${creator}">b2</role>
+			<user value="Admin,JK">b1,b2</user>
+		</step>
+		<step id="assigned" status="已分配">
+			<user value="${processor}">b4,b5</user>
+		</step>
+		<step id="hang" status="挂起">
+			<user value="${processor}">b5</user>
+		</step>
+		<step id="processing" status="处理中">
+			<user value="${processor}">b3,b6</user>
+		</step>
+		<step id="closed" status="已解决">
+			<user value="${creator}">b2,b5</user>
+		</step>
+	</steps>
+	
+	<#if state == '创建' || state == '又出现了'>
+		<#if processor??>
+			<curstep id="assign"/>
+		<#elseif>
+			<curstep id="assigned"/>
+		</#if>
+	</#if>
+	
+	<#if state == '正在解决'>
+		<curstep id="processing"/>
+	</#if>
+	
+	<#if state == '挂起'>
+		<curstep id="hang"/>
+	</#if>
+	
+	<#if state == '已解决' || state == '非异常'>
+		<curstep id="closed"/>
+	</#if>
+	
+</process>

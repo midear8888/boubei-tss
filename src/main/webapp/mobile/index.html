@@ -114,38 +114,40 @@ function init() {
             }
         }, "GET");
 
-	// 读取用户有浏览权限的菜单列表
-	$.getJSON("/tss/auth/navigator/json/" + 72, {},
-		function(_menus) {
-			if(_menus.errorMsg) {
-				window.parent.location.href = "login.html";
-			}	  	
+	getParam("mobile_menu", function(result) {
+        // 读取用户有浏览权限的菜单列表
+		$.getJSON("/tss/auth/navigator/json/" + (result||72), {}, initMenus, "POST", true);
+    });
+}
 
-			var li0 = $("#menu1>ul>li")[0];
-			$.each(_menus, function(i, menu1) {
-				var li = $.createElement("li");
-				$("#menu1>ul").appendChild(li);
+function initMenus( _menus ) {
+	if(_menus.errorMsg) {
+		window.parent.location.href = "login.html";
+	}	  	
 
-				var html = [];
-				html.push("<a href='javascript:void(0)' onclick='openUrl(\"" +menu1.url+ "\")' >" +menu1.name+ "</a>");
-				if(menu1.children && menu1.children.length) {				
-					html.push('<ul>');
-				    $.each(menu1.children, function(j, menu2) {
-				    	html.push('<li>');
-				    	html.push("<a href='javascript:void(0)' onclick='openUrl(\"" +menu2.url+ "\")' >" +menu2.name+ "</a>");
-						html.push('</li>');
-				    });
-					html.push('</ul>');
-				}			
-				$(li).html(html.join(" "));
+	var li0 = $("#menu1>ul>li")[0];
+	$.each(_menus, function(i, menu1) {
+		var li = $.createElement("li");
+		$("#menu1>ul").appendChild(li);
 
-				if( i == 0 && menu1.url ) { // 默认打开第一个菜单
-					openUrl( menu1.url );
-				}
+		var html = [];
+		html.push("<a href='javascript:void(0)' onclick='openUrl(\"" +menu1.url+ "\")' >" +menu1.name+ "</a>");
+		if(menu1.children && menu1.children.length) {				
+			html.push('<ul>');
+		    $.each(menu1.children, function(j, menu2) {
+		    	html.push('<li>');
+		    	html.push("<a href='javascript:void(0)' onclick='openUrl(\"" +menu2.url+ "\")' >" +menu2.name+ "</a>");
+				html.push('</li>');
 		    });
-		    $("#menu1>ul").appendChild(li0);
+			html.push('</ul>');
+		}			
+		$(li).html(html.join(" "));
 
-		}, "POST", true);
+		if( i == 0 && menu1.url ) { // 默认打开第一个菜单
+			openUrl( menu1.url );
+		}
+    });
+    $("#menu1>ul").appendChild(li0);
 }
 
 function openUrl(url) {

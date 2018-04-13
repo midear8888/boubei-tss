@@ -52,7 +52,7 @@ public class XServiceImpl implements XService {
 		String userCode = Environment.getUserCode();
 		Param env = ParamManager.getSimpleParam( userCode );
 		if(env == null) {
-			throw new BusinessException("您不是开发者，不能导入，请先注册为开发者。");
+			throw new BusinessException("您不是开发者，无开发目录可以导入，请先注册为开发者。");
 		}
 		String[] groups = env.getValue().split(",");
 		Long reportGroupId = EasyUtils.obj2Long(groups[0]);

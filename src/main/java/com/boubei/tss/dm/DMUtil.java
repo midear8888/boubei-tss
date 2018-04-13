@@ -357,4 +357,17 @@ public class DMUtil {
         }
 		return params;
 	}
+	
+    // 展示图标等扩展属性：一个图片地址 或 class，存放在remark里, eg: icon = images/xx.jpg
+	public static String getExtendAttr(String remark, String attr) {
+		String[] infos = EasyUtils.split(remark + "", "\n");
+		for(String info : infos) {
+			String[] arr = info.split(":=");
+			if(arr.length == 2 && attr.equals(arr[0].trim()) ) {
+				return arr[1].trim();
+			}
+		}
+		
+		return null;
+	}
 }
