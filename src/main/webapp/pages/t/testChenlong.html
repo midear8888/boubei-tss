@@ -13,6 +13,7 @@
 <script src="../../tools/easyui/jquery.min.js"></script>
 <script src="../../tools/easyui/jquery.easyui.min.js"></script>
 <script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
+<script src="../../tools/easyui/datagrid-filter.js"></script>
 <script src="../../tools/easyui.js"></script>
 <script src="../truck.js"></script>
 
@@ -54,7 +55,7 @@ var columns = [[
         {field: "fix_record", width: "8%",align:"center", title: "维修记录"}
 ]];
 
-var frozenColumns;
+// var frozenColumns;
 
 // $(document).ready(function () {
 //     query();
@@ -101,7 +102,7 @@ function query(params) {
                 _export('t_receive_phone',{param2:'导出内容'})            
             }}
         ] ,
-        frozenColumns:frozenColumns,
+        // frozenColumns:frozenColumns,
         columns:columns,
         onLoadSuccess:function(){
             beginQuery()
@@ -109,7 +110,8 @@ function query(params) {
         onClickRow:function(rowIndex,rowData){
             beginQuery(QUERY_URL2,{name: rowData.name})
         }
-    }).datagrid('enableFilter',getFilterObj(frozenColumns,columns));
+    })
+    $('#t1').datagrid('enableFilter',getFilterObj(columns));
 }
 
 function create() {
