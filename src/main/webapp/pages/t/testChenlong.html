@@ -1,8 +1,3 @@
-
-
-
-
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -45,35 +40,35 @@ GET_URL2   = URL2.GET //{id}
 QUERY_URL  = URL.QUERY;
 QUERY_URL2 = URL2.QUERY;
 // ATTACH_URL = URL.ATTACH;
+var columns = [[
+        {field: 'ck', checkbox: true}, 
+        {field: "get_time", width: "10%", align:"center",title: "领取时间"},
+        {field: "brand", width: "10%", align:"center",title: "名称"},
+        {field: "model", width: "10%",align:"center", title: "品牌型号"},
+        {field: "class", width: "10%", align:"center",title: "类别"},
+        {field: "quantity", width: "10%", align:"center",title: "数量"},
+        {field: "fixing", width: "15%",align:"center", title: "配件"},
+        {field: "number", width: "10%", align:"center",title: "匹配号码"}, 
+        {field: "plate_number", width: "10%", align:"center",title: "匹配车辆"},
+        {field: "name", width: "8%", align:"center",title: "领取人"},
+        {field: "fix_record", width: "8%",align:"center", title: "维修记录"}
+]];
 
-var FIELDS = [
-		{field: 'ck', checkbox: true}, 
-		{field: "get_time", width: "10%", title: "领取时间"},
-		{field: "brand", width: "10%", title: "名称"},
-		{field: "model", width: "10%", title: "品牌型号"},
-		{field: "class", width: "10%", title: "类别"},
-		{field: "quantity", width: "10%", title: "数量"},
-		{field: "fixing", width: "15%", title: "配件"},
-		{field: "number", width: "10%", title: "匹配号码"}, 
-		{field: "plate_number", width: "10%", title: "匹配车辆"},
-		{field: "name", width: "8%", title: "领取人"},
-		{field: "fix_record", width: "8%", title: "维修记录"}
-	];
+var frozenColumns;
 
-$.each(FIELDS, function(i, field) {
-    field.align = "center";
-}); 
+// $(document).ready(function () {
+//     query();
+//     $('#plate_number').combobox({
+//         url:record_urls('t_truck_detail').QUERY+'?noCache=true&fields=distinct%20plate',
+//         // data:[{plate:'test'}],
+//         valueField:'plate',
+//         textField:'plate'
+//     });
 
-$(document).ready(function () {
+// });
+
+$(function() {
     query();
-    $('#plate_number').combobox({
-        url:record_urls('t_truck_detail').QUERY+'?noCache=true&fields=distinct%20plate',
-        // data:[{plate:'test'}],
-        valueField:'plate',
-        textField:'plate'
-
-    })
-
 });
 
 
@@ -95,18 +90,27 @@ function query(params) {
             	 { text: '新增', iconCls: 'icon-add', handler: create }, //下面的create函数
             '-', { text: '修改', iconCls: 'icon-edit', handler: update }, //下面的update函数
             '-', { text: '删除', iconCls : 'icon-remove', handler : removeBatch_staff }, //下面的_remove函数
-            '-', { text: '导入数据', iconCls : 'icon-add', handler : function(){ batchImport(tableId); }}
+            '-', { text: '导入数据', iconCls : 'icon-add', handler : function(){ batchImport(tableId); }},
+            '-', { text: '导出', iconCls: 'icon-tss-down',handler:function(){
+                // var a,b,params;
+                // a = new Date($("#sd").datetimebox("getValue").replace('-','/'));
+                // b = new Date($("#ed").datetimebox("getValue").replace('-','/'));
+                // params = {
+                //     recharge_time: '[' + a.format('yyyy-MM-dd') + ',' + b.format('yyyy-MM-dd') + ']'
+                // }
+                _export('t_receive_phone',{param2:'导出内容'})            
+            }}
         ] ,
-        columns: [FIELDS],
+        frozenColumns:frozenColumns,
+        columns:columns,
         onLoadSuccess:function(){
             beginQuery()
         },
         onClickRow:function(rowIndex,rowData){
             beginQuery(QUERY_URL2,{name: rowData.name})
         }
-    });
+    }).datagrid('enableFilter',getFilterObj(frozenColumns,columns));
 }
-
 
 function create() {
     $('#plate_number').textbox('enable');
@@ -119,7 +123,7 @@ function create() {
 function update() {
 	$('#plate_number').textbox('disable');
 	$('#save').linkbutton("enable");
-    var row = getSelectedRow();
+    var row = getSelectedRow('t1');
     if (row) {
         openDialog('修改记录');
         $.getJSON(GET_URL + row.id, {}, function (data) {       
@@ -178,7 +182,7 @@ function beginQuery(url,params){
             {field: 'fix_time',title: '维修时间',align: 'center',width: '80px'},
             {field: 'model',title: '品牌型号',align: 'center',width: '50px'}, 
             {field: 'fix_item',title: '维修事项',align: 'center',width: '130px'}, 
-            {field: 'fix_time',title: '维修费用',align: 'center',width: '60px'},
+            {field: 'fix_cost',title: '维修费用',align: 'center',width: '60px'},
             {field: 'fix_overtime',title: '维修完成时间',align: 'center',width: '80px'},
             {field: 'fix_fail',title: '报废',align: 'center',width: '120px'},
             {field: 'name',title: '领取人',align: 'center',width: '90px'},
@@ -205,15 +209,14 @@ function createRecord(recordId,tableid){
     }
 }
 
+
 function updateRecord(){
-    $('#name2').textbox('disable');
-    $('#save2').linkbutton("enable");
     var row = getSelectedRow('t2');
     if (row) {
         openDialog('修改记录');
-        $.getJSON(GET_URL2 + row.id, {}, function (data) {       
-            $('#fm2').form('load', data);
-            // $('#plate_number').textbox('readonly', false);
+        $.getJSON(GET_URL2 + row.id, {}, function (select_data) {       
+            $('#fm2').form('load', select_data);
+            $('#name').textbox('readonly', false);
         }, "GET");
     };
 
