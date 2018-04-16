@@ -20,7 +20,8 @@
 <style type="text/css" >
 
 .easyui-dialog table.l .label {
-    background-color: #eee;
+    background-color: white;
+    border: false
     width: 70px;
     text-align: right;
     box-sizing: content-box;
@@ -42,7 +43,6 @@ QUERY_URL  = URL.QUERY;
 QUERY_URL2 = URL2.QUERY;
 // ATTACH_URL = URL.ATTACH;
 var columns = [[
-        {field: 'ck', checkbox: true}, 
         {field: "get_time", width: "10%", align:"center",title: "领取时间"},
         {field: "brand", width: "10%", align:"center",title: "名称"},
         {field: "model", width: "10%",align:"center", title: "品牌型号"},
@@ -55,22 +55,17 @@ var columns = [[
         {field: "fix_record", width: "8%",align:"center", title: "维修记录"}
 ]];
 
-// var frozenColumns;
 
-// $(document).ready(function () {
-//     query();
-//     $('#plate_number').combobox({
-//         url:record_urls('t_truck_detail').QUERY+'?noCache=true&fields=distinct%20plate',
-//         // data:[{plate:'test'}],
-//         valueField:'plate',
-//         textField:'plate'
-//     });
-
-// });
-
-$(function() {
+$(document).ready(function () {
     query();
+    $('#plate_number').combobox({
+        url:record_urls('t_truck_detail').QUERY+'?noCache=true&fields=distinct%20plate',
+        // data:[{plate:'test'}],
+        valueField:'plate',
+        textField:'plate'
+    });
 });
+
 
 
 var dg;
@@ -84,14 +79,14 @@ function query(params) {
         pagination: true,
         rownumbers: true,
         pageSize : 30,
-        singleSelect: false,
+        singleSelect: true,
         checkOnSelect: true,
         selectOnCheck: true,
         toolbar: [ 
             	 { text: '新增', iconCls: 'icon-add', handler: create }, //下面的create函数
             '-', { text: '修改', iconCls: 'icon-edit', handler: update }, //下面的update函数
             '-', { text: '删除', iconCls : 'icon-remove', handler : removeBatch_staff }, //下面的_remove函数
-            '-', { text: '导入数据', iconCls : 'icon-add', handler : function(){ batchImport(tableId); }},
+            '-', { text: '导入数据', iconCls : 'icon-tss-up', handler : function(){ batchImport(tableId); }},
             '-', { text: '导出', iconCls: 'icon-tss-down',handler:function(){
                 // var a,b,params;
                 // a = new Date($("#sd").datetimebox("getValue").replace('-','/'));
@@ -111,7 +106,7 @@ function query(params) {
             beginQuery(QUERY_URL2,{name: rowData.name})
         }
     })
-    $('#t1').datagrid('enableFilter',getFilterObj(columns));
+    dg.datagrid('enableFilter',getFilterObj(columns));
 }
 
 function create() {
@@ -173,7 +168,7 @@ function beginQuery(url,params){
         url: url,      // 数据地址
         queryParams: params, // 参数
         fit: true,
-        singleSelect: true,
+        singleSelect: false,
         title: params.name + '的维修记录',
         toolbar: [ 
                  { text: '新增', iconCls: 'icon-add', handler: createRecord }, //下面的createRecord函数
@@ -181,13 +176,13 @@ function beginQuery(url,params){
         ] ,
         columns: [[
             {field: 'ck',checkbox: true}, 
-            {field: 'fix_time',title: '维修时间',align: 'center',width: '80px'},
-            {field: 'model',title: '品牌型号',align: 'center',width: '50px'}, 
-            {field: 'fix_item',title: '维修事项',align: 'center',width: '130px'}, 
+            {field: 'name',title: '领取人',align: 'center',width: '50px'},
+            {field: 'fix_item',title: '维修事项',align: 'center',width: '130px'},
             {field: 'fix_cost',title: '维修费用',align: 'center',width: '60px'},
+            {field: 'fix_time',title: '维修时间',align: 'center',width: '80px'},
             {field: 'fix_overtime',title: '维修完成时间',align: 'center',width: '80px'},
+            {field: 'model',title: '品牌型号',align: 'center',width: '60px'}, 
             {field: 'fix_fail',title: '报废',align: 'center',width: '120px'},
-            {field: 'name',title: '领取人',align: 'center',width: '90px'},
             {field: 'remark',title: '备注',align: 'center',width: '120px'}
             ]],   
     });
@@ -199,7 +194,7 @@ function beginQuery(url,params){
 function createRecord(recordId,tableid){
     $('#name2').textbox('readonly');
     $('#model2').textbox('readonly');
-    var row = getSelectedRow('t1');
+    var row = getSelectedRow();
     if(row){
         $("#fm2").form('clear');
         $('#dlg2').dialog({
@@ -213,11 +208,15 @@ function createRecord(recordId,tableid){
 
 
 function updateRecord(){
+    $('#name2').textbox('readonly');
+    $('#model2').textbox('readonly');
     var row = getSelectedRow('t2');
     if (row) {
-        openDialog('修改记录');
         $.getJSON(GET_URL2 + row.id, {}, function (select_data) {       
             $('#fm2').form('load', select_data);
+            $('#dlg2').dialog({
+                "modal": true
+            }).dialog('open').dialog('setTitle', '修改记录').dialog('center');
             $('#name').textbox('readonly', false);
         }, "GET");
     };
@@ -277,13 +276,13 @@ function closeDialog2(){
 
 </head>
 <body class="easyui-layout">
-    <div id="main"  style="width:100%;height:100%;" >
+    <div  style="width:100%;height:100%;" >
         <div class="easyui-layout" fit="true">
-            <div  data-options="region:'center'"  style="width:70%" title="手机领取量">
-                <table id="t1" class="easyui-datagrid"></table>
+            <div  data-options="region:'center',collapsed:false"  border="false" style="width:70%" title="手机领取量" >
+                <table id="t1" class="easyui-datagrid" border="false"></table>
             </div>
-            <div data-options="region:'east'"   style="width:30%" >
-                <table id="t2" class="easyui-datagrid"></table>
+            <div data-options="region:'east'"   style="width:30%"  >
+                <table id="t2" class="easyui-datagrid" border="false"></table>
             </div>
         </div>
     </div>
@@ -315,7 +314,7 @@ function closeDialog2(){
 		<tr>
 			<td class="label">类别:</td>
 			<td>
-			  <input name="class" id="class" class="easyui-textbox" required/>
+			  <input name="class" id="class" class="easyui-combobox" style="width:170px;" data-options="required:false, editable:false, panelHeight: '50', valueField: 'value',textField: 'label', multiple:false, data: [{label: '进',value: '进'},{label:'出',value:'出'}]" required/>
 			</td>		 
 			<td class="label">数量:</td>
 			<td>
@@ -368,13 +367,13 @@ function closeDialog2(){
                     </td>
                     <td class="label">维修费用:</td>
                     <td>
-                        <input name="fix_cost" id="fix_cost" class="easyui-numberbox" data-options="precision:2" required/>
+                        <input name="fix_cost" id="fix_cost" class="easyui-numberbox" data-options="precision:2" style="width:170px;" required/>
                     </td>
                 </tr>
                 <tr>
                     <td class="label">维修完成时间:</td>
                     <td>
-                        <input name="fix_overtime" id="fix_overtime" class="easyui-datebox">
+                        <input name="fix_overtime" id="fix_overtime"  style="width:170px;" class="easyui-datebox">
                     </td>
                     <td class="label">报废:</td>
                     <td>
