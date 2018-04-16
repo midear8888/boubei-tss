@@ -28,7 +28,6 @@ import javax.persistence.Table;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 import com.boubei.tss.dm.DMConstants;
-import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.record.permission.RecordResource;
 import com.boubei.tss.framework.persistence.entityaop.IDecodable;
 import com.boubei.tss.framework.persistence.entityaop.OperateInfo;
@@ -353,13 +352,5 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
 
 	public void setWorkflow(String workflow) {
 		this.workflow = workflow;
-	}
-	
-    /*
-     *  icon:=<div class='icon icon-key tssicon'></div>
-     *  icon:=<img src='/tss/images/icon_refresh.gif'/>
-     */
-	public String getIcon() {
-		return DMUtil.getExtendAttr(this.remark, "icon");
 	}
 }

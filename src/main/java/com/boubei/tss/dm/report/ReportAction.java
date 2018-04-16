@@ -99,7 +99,8 @@ public class ReportAction extends BaseActionSupport {
 				Long id = report.getId();
 	    		String name = report.getName();
 				Long pid = report.getParentId();
-				result.add(new Object[] { id, name, pid, report.getType(), "report", report.getIcon() });
+				String icon = DMUtil.getExtendAttr(report.getRemark(), "icon");
+				result.add(new Object[] { id, name, pid, report.getType(), "report", icon });
 			}
     	}
     	
