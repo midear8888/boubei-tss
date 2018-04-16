@@ -26,7 +26,6 @@ import javax.persistence.Table;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 import com.boubei.tss.dm.DMConstants;
-import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.report.permission.ReportResource;
 import com.boubei.tss.framework.persistence.entityaop.IDecodable;
 import com.boubei.tss.framework.persistence.entityaop.OperateInfo;
@@ -270,9 +269,4 @@ public class Report extends OperateInfo implements IXForm, IDecodable, IResource
 	public void setParamUri(String paramUri) {
 		this.paramUri = paramUri;
 	}
-
-	public String getIcon() {
-		return DMUtil.getExtendAttr(this.remark, "icon");
-	}
-
 }
