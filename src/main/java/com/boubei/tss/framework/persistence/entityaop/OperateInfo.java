@@ -100,5 +100,12 @@ public abstract class OperateInfo implements IOperatable, IEntity {
     public void setLockVersion(int lockVersion) {
         this.lockVersion = lockVersion;
     }
+    
+    public void setDomain(String domain) {
+    }
+    
+    public String getDomain() {
+    	return null;
+    }
 }
 

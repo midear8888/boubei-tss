@@ -34,6 +34,7 @@ public class _SQLServer extends _Database {
 			createDDL.append( getFiledDef(fDefs, false) ).append( ", " );
    		}
    		
+   		createDDL.append("domain varchar(50), ");
    		createDDL.append("createtime datetime NULL, ");
 		createDDL.append("creator varchar(50) NOT NULL, ");
 		createDDL.append("updatetime datetime NULL, ");

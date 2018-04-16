@@ -27,6 +27,8 @@ import com.boubei.tss.framework.sso.Environment;
  */
 @MappedSuperclass
 public abstract class ARecordTable implements IEntity, IOperatable {
+	
+	protected String domain;
     
     protected String creator;
     protected Date   createTime = new Date();
@@ -49,6 +51,14 @@ public abstract class ARecordTable implements IEntity, IOperatable {
 		
 		return this.getClass().equals(other.getClass()) 
 				&& this.hashCode() == other.hashCode();
+	}
+	
+	public String getDomain() {
+		return domain;
+	}
+
+	public void setDomain(String domain) {
+		this.domain = domain;
 	}
 
 	public String getCreator() {

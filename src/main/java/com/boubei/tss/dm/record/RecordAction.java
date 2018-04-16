@@ -103,11 +103,12 @@ public class RecordAction extends BaseActionSupport {
     
     @RequestMapping(value = "/detail/{type}")
     public void getRecord(HttpServletRequest request, HttpServletResponse response, @PathVariable("type") int type) {
-        String uri = null;
+        String uri = null, defaultTable = null;
         if(Record.TYPE0 == type) {
             uri = DMConstants.XFORM_GROUP;
         } else {
             uri = DMConstants.XFORM_RECORD;
+            defaultTable = Record.DEFAULT_TABLE;
         }
         
         XFormEncoder xformEncoder;
@@ -124,7 +125,7 @@ public class RecordAction extends BaseActionSupport {
             Long parentId = parentIdValue == null ? Record.DEFAULT_PARENT_ID : EasyUtils.obj2Long(parentIdValue);
             map.put("parentId", parentId);
             map.put("type", type);
-            map.put("table", Record.DEFAULT_TABLE);
+            map.put("table", defaultTable);
             map.put("needLog", ParamConstants.TRUE);
             map.put("needFile", ParamConstants.TRUE);
             map.put("batchImp", ParamConstants.TRUE);

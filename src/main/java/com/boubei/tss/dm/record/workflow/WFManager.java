@@ -14,26 +14,51 @@ import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.ddl._Database;
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.record.RecordService;
+import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.um.helper.dto.OperatorDTO;
+import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.XMLDocUtil;
 
 public class WFManager {
 	
 	public static WFStep getCurrStep(_Database _db, Map<String, Object> data) {
-		// 加入特定用户、角色等信息
-		data.put( "all", data.get("creator") ); // TODO 此流程数据所有参与人员，从WFLog里获取
 		
+		ILoginService loginSerivce = (ILoginService) Global.getBean("LoginService");
+		String creator = (String) data.get("creator");
+		
+		// TODO 此流程数据所有参与人员，从WFLog里获取
+		data.put( "all", creator ); 
+		
+		// 加入当前审批人的角色、组织等信息
 		List<String> roles = Environment.getOwnRoleNames();
 		for( String role : roles ) {
-			data.put( role, role );
+			data.put( "@" + role, role );
 		}
+		List<Object[]> fatherGroups = loginSerivce.getGroupsByUserId(Environment.getUserId());
+        for(Object[] temp : fatherGroups) {
+        	data.put( "@" + temp[1],  temp[1] );
+        }
+		
+		// 加入流程提交人的角色、组织等信息
+		OperatorDTO _creator = loginSerivce.getOperatorDTOByLoginName(creator);
+		List<Long> roleIds = loginSerivce.getRoleIdsByUserId( _creator.getId() );
+        List<String> roleNames = loginSerivce.getRoleNames(roleIds);
+        for( String role : roleNames ) {
+			data.put( "^" + role, role );
+		}
+        
+        fatherGroups = loginSerivce.getGroupsByUserId( _creator.getId() );
+        for(Object[] temp : fatherGroups) {
+        	data.put( "^" + temp[1],  temp[1] );
+        }
 		
 		String _wf = DMUtil.freemarkerParse( _db.wfDefine.content, data );
 		
 		Document doc = XMLDocUtil.dataXml2Doc(_wf);
 		List<Element> nodes = XMLDocUtil.selectNodes(doc, "/process/curstep");
-		String currStep = nodes.get(0).getText();
+		String currStep = nodes.get(0).attributeValue("id");
 		
 		return _db.wfDefine.steps.get(currStep);
 	}

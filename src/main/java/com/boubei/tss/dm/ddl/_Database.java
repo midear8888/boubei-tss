@@ -198,7 +198,7 @@ public abstract class _Database {
 	
 	protected String[] getSQLs(String field) {
 		String[] names = createNames(field);
-		String sql0 = "alter table " +this.table+ " add constraint " +names[0]+ " UNIQUE (" +field+ ")";
+		String sql0 = "alter table " +this.table+ " add constraint " +names[0]+ " UNIQUE (" +field+ ", domain)";
 		String sql1 = "alter table " +this.table+ " drop constraint " +names[0];
 		String sql2 = "create index " +names[1]+ " on " +this.table+ " (" +field+ ")";
 		String sql3 = "drop index " +names[1];
@@ -243,6 +243,12 @@ public abstract class _Database {
 				} catch(Exception e) { }
 			}
    		}	
+   		
+   		// 为domain字段创建索引
+   		String[] ddlSQLs = getSQLs("domain");
+   		try {
+   			SQLExcutor.excute(ddlSQLs[2], datasource);
+   		} catch(Exception e) { }
    		
    		// 总是在新建表之后执行
    		Pool cache = CacheHelper.getNoDeadCache();
@@ -415,6 +421,7 @@ public abstract class _Database {
 			
 			paramsMap.put(++index, value);
 		}
+		paramsMap.put(++index, Environment.getDomain()); 
 		paramsMap.put(++index, new Timestamp(new Date().getTime())); 
 		paramsMap.put(++index, Environment.getUserCode());
 		paramsMap.put(++index, 0);
@@ -442,8 +449,8 @@ public abstract class _Database {
 			valueTags += "?,";
 			fieldTags += field + ",";
 		}
-		String insertSQL = "insert into " + this.table + "(" + fieldTags + "createtime,creator,version) " +
-				" values (" + valueTags + " ?, ?, ?)";
+		String insertSQL = "insert into " + this.table + "(" + fieldTags + "domain,createtime,creator,version) " +
+				" values (" + valueTags + " ?, ?, ?, ?)";
 		return insertSQL;
 	}
 
@@ -577,11 +584,11 @@ public abstract class _Database {
 		if(params == null) {
 			params = new HashMap<String, String>();
 		}
-		
 		String strictQuery = params.remove("strictQuery"); // 是否精确查询
 		String _fields = params.remove("fields"); // eg: /tss/auth/xdata/price_list?fields=name,fee as value
+		
 		List<String> visiableFields = getVisiableFields(false);
-		String defaultFields = EasyUtils.list2Str( visiableFields )+",createtime,creator,updatetime,updator,version,id";
+		String defaultFields = EasyUtils.list2Str( visiableFields )+",domain,createtime,creator,updatetime,updator,version,id";
 		String fields = (String) EasyUtils.checkNull(_fields, defaultFields);
 		boolean noPointed = EasyUtils.isNullOrEmpty(_fields);
 		
@@ -668,7 +675,8 @@ public abstract class _Database {
 		 */
 		String _customizeTJ = (String) EasyUtils.checkNull(this.customizeTJ, " 1=1 ");
 		if( _customizeTJ.indexOf("ignoreDomain") < 0 ) { 
-			_customizeTJ += " <#if USERS_OF_DOAMIN??> and creator in (${USERS_OF_DOAMIN}) </#if> ";
+			_customizeTJ += DMConstants.DOMAIN_CONDITION;
+			
 		}
 		condition += " and ( ( " + DMUtil.customizeParse(_customizeTJ + " ) or -1 = ${userId} ") + " ) ";
 		
@@ -794,6 +802,7 @@ public abstract class _Database {
         
         // ID列默认隐藏
         sb.append("<column name=\"id\" display=\"none\"/>").append("\n");
+        sb.append("<column name=\"domain\" display=\"none\"/>").append("\n");
         
         sb.append("</declare>\n<data></data></grid>");
         

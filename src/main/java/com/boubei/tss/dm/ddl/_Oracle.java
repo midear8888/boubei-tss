@@ -38,6 +38,7 @@ public class _Oracle extends _Database {
 			createDDL.append( getFiledDef(fDefs, false) ).append( ", " );
    		}
    		
+   		createDDL.append("domain varchar(50), ");
    		createDDL.append("createtime date NOT NULL, ");
 		createDDL.append("creator varchar(50) NOT NULL, ");
 		createDDL.append("updatetime date NULL, ");
@@ -74,8 +75,8 @@ public class _Oracle extends _Database {
 			valueTags += "?,";
 			fieldTags += field + ",";
 		}
-		String insertSQL = "insert into " + this.table + "(" + fieldTags + "createtime,creator,version,id) " +
-				" values (" + valueTags + " ?, ?, ?, " + getSeq() + ".nextval)";
+		String insertSQL = "insert into " + this.table + "(" + fieldTags + "domain,createtime,creator,version,id) " +
+				" values (" + valueTags + " ?, ?, ?, ?, " + getSeq() + ".nextval)";
 		return insertSQL;
 	}
 	

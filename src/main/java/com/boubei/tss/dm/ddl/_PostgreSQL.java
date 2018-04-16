@@ -45,6 +45,7 @@ public class _PostgreSQL extends _Database {
 			createDDL.append( getFiledDef(fDefs, false) ).append( ", " );
    		}
    		
+   		createDDL.append("domain varchar(50), ");
    		createDDL.append("createtime timestamp NULL, ");
 		createDDL.append("creator varchar(50) NOT NULL, ");
 		createDDL.append("updatetime timestamp NULL, ");

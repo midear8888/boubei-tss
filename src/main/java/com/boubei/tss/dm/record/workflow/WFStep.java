@@ -10,4 +10,8 @@ public class WFStep {
 	public String status;
 	public Map<String, List<WFButton>> role_btn = new HashMap<String, List<WFButton>>();
 	public Map<String, List<WFButton>> user_btn = new HashMap<String, List<WFButton>>();
+	
+	public String toString() {
+		return id + ", " + status;
+	}
 }

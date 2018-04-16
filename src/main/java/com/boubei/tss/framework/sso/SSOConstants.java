@@ -38,9 +38,9 @@ public interface SSOConstants {
     public static final String USER_ID = "userId";
     public static final String USER_PASSWORD  = "password";
     
-    public static final String USER_DOAMIN  = "DOMAIN";
-    public static final String USERS_OF_DOAMIN  = "USERS_OF_DOAMIN";
-    public static final String USERIDS_OF_DOAMIN  = "USERIDS_OF_DOAMIN";
+    public static final String USER_DOMAIN  = "DOMAIN";
+    public static final String USERS_OF_DOMAIN  = "USERS_OF_DOMAIN";
+    public static final String USERIDS_OF_DOMAIN  = "USERIDS_OF_DOMAIN";
     
     public static final String RANDOM_KEY  = "randomKey";
     

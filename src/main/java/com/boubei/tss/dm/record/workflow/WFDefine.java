@@ -10,6 +10,7 @@ import org.dom4j.Element;
 
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.ddl._Database;
+import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.XMLDocUtil;
 
@@ -20,7 +21,7 @@ public class WFDefine {
 		
 		HashMap<String, Object> dataMap = new HashMap<String, Object>();
 		dataMap.put("all", "");
-		dataMap.put("creator", "");
+		dataMap.put("creator", Environment.getUserCode());
 		for( String filed : _db.fieldCodes ) {
 			dataMap.put(filed, "");
 		}
@@ -31,7 +32,7 @@ public class WFDefine {
 	public String content;
 	public Document xml;
 	
-	public Map<String, WFStep> steps = new HashMap<String, WFStep>();
+	public Map<String, WFStep>  steps = new HashMap<String, WFStep>();
 	public Map<String, WFButton> btns = new HashMap<String, WFButton>();
 	
 	public String currStep;
@@ -74,7 +75,7 @@ public class WFDefine {
 				for(String btnID : btnIDs) {
 					list.add( wf.btns.get(btnID) );
 				}
-				step.role_btn.put(user.attributeValue("value"), list);
+				step.user_btn.put(user.attributeValue("value"), list);
 			}
 			
 			wf.steps.put(step.id, step);

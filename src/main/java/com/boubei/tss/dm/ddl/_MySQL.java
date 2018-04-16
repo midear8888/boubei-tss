@@ -37,6 +37,7 @@ public class _MySQL extends _Database {
 			createDDL.append( getFiledDef(fDefs, false) ).append( ", " );
    		}
    		
+   		createDDL.append("`domain` varchar(50), ");
    		createDDL.append("`createtime` TIMESTAMP NULL, ");
 		createDDL.append("`creator` varchar(50) NOT NULL, ");
 		createDDL.append("`updatetime` TIMESTAMP NULL, ");
@@ -61,7 +62,7 @@ public class _MySQL extends _Database {
 		String[] names = createNames(field);
 		String[] sqls = super.getSQLs(field);
 		
-		sqls[0] = "alter table " +this.table+ " add UNIQUE (" +field+ ")";
+		sqls[0] = "alter table " +this.table+ " add UNIQUE (" +field+ ", domain)";
 		sqls[1] = "alter table " +this.table+ " drop index " +field;
 		sqls[2] = "create index " +names[1]+ " on " +this.table+ " (" +field+ ")";
 		sqls[3] = "drop   index " +names[1]+ " on " +this.table;

@@ -150,18 +150,17 @@ public class SchedulerBean implements ParamListener {
 			}
 			
 			// 新增或修过过的定时配置，需要重新生成定时Job
-			@SuppressWarnings("unchecked")
-			Class<Job> jobClazz = (Class<Job>) BeanUtil.createClassByName(def.getJobClassName());
-			JobDetail aJob = JobBuilder.newJob(jobClazz)
-					.withIdentity(jobName)
-					.usingJobData(jobName, def.getCustomizeInfo())
-					.usingJobData(jobName + "-ID", def.getId())
-					.build();
-			
-			Trigger trigger;
 			try {
+				@SuppressWarnings("unchecked")
+				Class<Job> jobClazz = (Class<Job>) BeanUtil.createClassByName(def.getJobClassName());
+				JobDetail aJob = JobBuilder.newJob(jobClazz)
+						.withIdentity(jobName)
+						.usingJobData(jobName, def.getCustomizeInfo())
+						.usingJobData(jobName + "-ID", def.getId())
+						.build();
+				
 				String ts = def.getTimeStrategy(); // 定时策略
-				trigger = TriggerBuilder.newTrigger().withSchedule( CronScheduleBuilder.cronSchedule(ts) ).build(); 
+				Trigger trigger = TriggerBuilder.newTrigger().withSchedule( CronScheduleBuilder.cronSchedule(ts) ).build(); 
 				scheduler.scheduleJob(aJob, trigger);
 				
 				log.info(" scheduler.scheduleJob: " + jobName + " successed. timeStrategy=" + ts );

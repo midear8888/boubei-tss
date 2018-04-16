@@ -53,7 +53,8 @@ public class OperateInfoInterceptor extends MatchByDaoMethodNameInterceptor {
 				if( pk == null ) { // ID为null，说明是新建
                     operateInfo.setCreateTime(new Date());
                     operateInfo.setCreatorId(Environment.getUserId());
-                    operateInfo.setCreatorName(Environment.getUserName());           
+                    operateInfo.setCreatorName(Environment.getUserName());   
+                    operateInfo.setDomain(Environment.getDomain());
                 } 
                 else {
                     operateInfo.setUpdateTime(new Date());

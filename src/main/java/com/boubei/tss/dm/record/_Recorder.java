@@ -232,7 +232,7 @@ public class _Recorder extends BaseActionSupport {
     public Object showAsJSON(HttpServletRequest request, 
     		@PathVariable("record") Object record, @PathVariable("page") int page) {
     	
-    	// 如果同时传递了录入表名，优先用之
+    	// 如果同时传递了录入表名，优先用之（适合中文名表名）
     	String recordName = request.getParameter("recordName");
     	if( !EasyUtils.isNullOrEmpty(recordName)  ) {
     		record = recordName;
@@ -326,7 +326,7 @@ public class _Recorder extends BaseActionSupport {
         /* 添加工作流信息 */
         if( _db.wfDefine != null ) {
         	WFStep currStep = WFManager.getCurrStep(_db, result);
-			result.put("wfBtns", currStep);
+			result.put("wfStep", currStep);
         }
         
         result.put("id", id);
@@ -395,6 +395,11 @@ public class _Recorder extends BaseActionSupport {
     	_Database _db = getDB(recordId);
     	try {
 			_db.update(id, requestMap );
+			
+			/* 生成工作流日志， TODO 如何含附件信息 */
+            if( _db.wfDefine != null && requestMap.containsKey("wfUpdate") ) {
+            	
+            }
 			
 			printSuccessMessage();
     	}

@@ -90,12 +90,12 @@ public class FetchPermissionAfterLogin implements ILoginCustomizer {
         	lastGroup = temp;
         }
         
-        session.setAttribute(SSOConstants.USER_DOAMIN, domain); // 用户所属域
+        session.setAttribute(SSOConstants.USER_DOMAIN, domain); // 用户所属域
         if( domain != null) { // 取出域下所有用户
         	List<?> users = loginSerivce.getUsersByDomain(domain, "loginName", logonUserId);
-        	session.setAttribute(SSOConstants.USERS_OF_DOAMIN, DMUtil.insertSingleQuotes(EasyUtils.list2Str(users)));
+        	session.setAttribute(SSOConstants.USERS_OF_DOMAIN, DMUtil.insertSingleQuotes(EasyUtils.list2Str(users)));
         	users = loginSerivce.getUsersByDomain(domain, "id", logonUserId);
-        	session.setAttribute(SSOConstants.USERIDS_OF_DOAMIN, EasyUtils.list2Str(users));
+        	session.setAttribute(SSOConstants.USERIDS_OF_DOMAIN, EasyUtils.list2Str(users));
         }
         
         session.setAttribute("GROUP_LAST_ID", lastGroup[0]);

@@ -114,7 +114,7 @@ public class Environment {
     }
     
     public static String getDomain() {
-    	return (String) getInSession(SSOConstants.USER_DOAMIN);
+    	return (String) getInSession(SSOConstants.USER_DOMAIN);
     }
     
     private static Object getInSession(String attrName) {

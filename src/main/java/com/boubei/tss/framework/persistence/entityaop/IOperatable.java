@@ -32,6 +32,8 @@ public interface IOperatable {
 
 	void setUpdatorName(String updatorName);
 	
+	void setDomain(String domain);
+	
 }
 
 	

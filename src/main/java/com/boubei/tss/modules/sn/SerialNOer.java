@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 
@@ -31,7 +32,7 @@ public class SerialNOer {
 		ICommonService commonService = Global.getCommonService();
 		
 		String hql = " from SerialNO where day = ? and precode = ? and domain = ? ";
-		String domain = (String) EasyUtils.checkNull(Environment.getDomain(), "noDomain");
+		String domain = (String) EasyUtils.checkNull(Environment.getDomain(), UMConstants.DEFAULT_DOMAIN);
 		
 		SerialNO first;
 		Date today = DateUtil.today();
@@ -39,10 +40,10 @@ public class SerialNOer {
 		if(list.isEmpty()) {
 			first = new SerialNO();
 			first.setDay( today );
-			first.setDomain(domain);
 			first.setPrecode(precode);
 			first.setLastNum(0);
 			commonService.create(first);
+			first.setDomain(domain);
 		} 
 		else {
 			first = (SerialNO) list.get(0);

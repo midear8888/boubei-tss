@@ -28,7 +28,8 @@ public final class DMConstants {
 	
 	// 常用宏
 	public final static String FILTER_BY_DOMAIN = "filterByDomain";
-	public final static String DOMAIN_CONDITION  = "<#if USERS_OF_DOAMIN??> and creator in (${USERS_OF_DOAMIN}) </#if>";
+	public final static String DOMAIN_CONDITION_0  = "<#if USERS_OF_DOMAIN??> and creator in (${USERS_OF_DOMAIN}) </#if>";
+	public final static String DOMAIN_CONDITION  = "<#if DOMAIN??> and domain = '${DOMAIN}' </#if>";
 	public final static String CREATOR_CONDITION = "<#if userCode??> and creator = '${userCode}' </#if>";
 	
 	public static String RECORD_PORTLET_HTML = "/tss/modules/dm/recorder.html?id=";

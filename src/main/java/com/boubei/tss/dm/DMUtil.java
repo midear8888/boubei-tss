@@ -358,7 +358,11 @@ public class DMUtil {
 		return params;
 	}
 	
-    // 展示图标等扩展属性：一个图片地址 或 class，存放在remark里, eg: icon = images/xx.jpg
+    /*
+     * 展示图标等扩展属性：一个图片地址 或 class，存放在remark里，如icon：
+     *  icon:=<div class='icon icon-key tssicon'></div>
+     *  icon:=<img src='/tss/images/icon_refresh.gif'/>
+     */
 	public static String getExtendAttr(String remark, String attr) {
 		String[] infos = EasyUtils.split(remark + "", "\n");
 		for(String info : infos) {

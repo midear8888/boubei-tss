@@ -40,6 +40,10 @@ public class RoleUser implements IEntity {
 	private Long roleId;     // 角色Id
 	private Long userId;     // 用户Id
 	private Long strategyId; // 策略Id
+	
+	public String toString() {
+		return roleId + ", " + userId + ", " + strategyId;
+	}
  
 	public Long getId() {
 		return id;

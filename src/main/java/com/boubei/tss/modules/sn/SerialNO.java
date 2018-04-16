@@ -31,8 +31,6 @@ public class SerialNO extends ARecordTable {
 	@Column(nullable = false)
 	private Date day;
 	
-	private String domain;
-	
 	private int lastNum;
 
 	public Serializable getPK() {
@@ -61,14 +59,6 @@ public class SerialNO extends ARecordTable {
 
 	public void setDay(Date day) {
 		this.day = day;
-	}
-
-	public String getDomain() {
-		return domain;
-	}
-
-	public void setDomain(String domain) {
-		this.domain = domain;
 	}
 
 	public int getLastNum() {

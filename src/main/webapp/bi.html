@@ -128,15 +128,18 @@ function buildMenu(reports, records) {
         return openMsgPage();
     }
 
-    var data = [];
+    var data = [], level1Num = 0;
     records.each( function(i, item) {
         if( item[2] == rootId && item[1].indexOf("系统功能") >=0 ) return true;
         if( item[1].indexOf("$") == 0 ) return true;  // $打头的节点约定为不显示，不直接开放用户访问
+        if( item[2] == rootId ) level1Num ++;
 
         data.push(item);
+
     });
     reports.each( function(i, item) {
         if( item[2] == rootId && item[1].indexOf("系统报表") >=0 ) return true;
+        if( item[2] == rootId ) level1Num ++;
 
         item[0] = -1 * item[0];
         item[2] = -1 * item[2];
@@ -150,7 +153,15 @@ function buildMenu(reports, records) {
         if( Math.abs(pid) == rootId ) { // 一级目录
             var li = tssJS.createElement("li");
             $(li).html("<a onclick='openLevelOne(" +id+ ")'>" +name+ "</a>");
-            $("#_bi>ul").appendChild(li);
+            $(li).find("a").css("color", "orange");
+
+            if( level1Num <= 2 ) {  // 直接放顶级目录里
+                // $(".menu>ul").appendChild(li); 
+                $(".menu>ul")[0].insertBefore(li, $1("_bi"));
+                $("#_bi").hide();
+            } else {
+                $("#_bi>ul").appendChild(li); // 一级目录
+            }
 
             level_2_menus[id] = [];
             fisrtGroup = fisrtGroup || id;
