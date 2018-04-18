@@ -117,9 +117,12 @@ public class GroupService implements IGroupService {
 		Group group = new Group();
 		group.setName(domain);
 		group.setParentId(UMConstants.DOMAIN_ROOT_ID);
-		group.setDomain(domain);
 		group.setGroupType(Group.MAIN_GROUP_TYPE);
 		group.setSeqNo(groupDao.getNextSeqNo(UMConstants.DOMAIN_ROOT_ID));
+		groupDao.saveGroup(group);
+		
+		// 创建时，OperateInfoInterceptor 会执行 IOperatable.setDomain(Environment.getDomain())；需要单独再保存一遍domain信息
+		group.setDomain(domain);
 		groupDao.saveGroup(group);
 		
 		return group;

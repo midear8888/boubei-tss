@@ -104,6 +104,7 @@ var recordId=1, recordName="录入表", openItemId,
 var _operation = ['1','2','3','4','5'], 
     userCode, 
     userName, 
+    userDomain,
     userGroups = [], 
     userRoles = [], 
     userRoleNames = [], 
@@ -174,6 +175,7 @@ function init() {
             userCode   = result[3];
             userName   = result[4];
             userAssistGroups = result[5];
+            userDomain = result[12];
 
             // 获取表单定义信息
             tssJS.ajax({

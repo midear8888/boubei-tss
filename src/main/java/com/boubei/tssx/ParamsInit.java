@@ -32,7 +32,7 @@ public class ParamsInit {
 	   		(select domain from um_group g, um_user u, um_groupuser gu where g.id=gu.groupid and gu.userId = u.id and u.loginName = t.creator)
 	   	 where t.id > 0;
 	 */
-	@RequestMapping(value = "/domain")
+	@RequestMapping(value = "/domain", method = RequestMethod.GET)
 	@ResponseBody
 	public void fixDataDomain() {
 		List<Map<String, Object>> users = SQLExcutor.query(DMConstants.LOCAL_CONN_POOL, 
@@ -76,7 +76,7 @@ public class ParamsInit {
 	
 	@Autowired protected ParamService paramService;
 	
-	@RequestMapping(method = RequestMethod.GET)
+	@RequestMapping(value = "/param", method = RequestMethod.GET)
 	@ResponseBody
 	public Object init() {
 		String[][] items = new String[][]{ 

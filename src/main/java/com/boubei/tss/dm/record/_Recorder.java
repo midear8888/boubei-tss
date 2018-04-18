@@ -293,6 +293,7 @@ public class _Recorder extends BaseActionSupport {
 
 		String fileName = DateUtil.format(new Date()) +"_"+ recordId + Environment.getUserId() + ".csv";
         for (Map<String, Object> row : ex.result) { // 剔除
+        	row.remove("domain");
         	row.remove("createtime");
         	row.remove("creator");
         	row.remove("updatetime");
