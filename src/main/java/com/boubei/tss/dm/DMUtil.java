@@ -226,6 +226,7 @@ public class DMUtil {
     	Map<String, Object> fmDataMap = new HashMap<String, Object>();
         
       	// 加入登陆用户的信息
+    	fmDataMap.put( "_" + DMConstants.USER_ID, Environment.getUserId());
       	fmDataMap.put(DMConstants.USER_ID, EasyUtils.obj2String(Environment.getUserId()));
       	fmDataMap.put(DMConstants.USER_CODE, Environment.getUserCode());
 		fmDataMap.put(DMConstants.FROM_USER_ID, Environment.getUserInfo(DMConstants.FROM_USER_ID));

@@ -92,11 +92,14 @@ public class PermissionHelper extends TreeSupportDao<IDecodable> {
     	
         String hql = "select distinct p.id.operationId from " + permissionTable + " p, RoleUserMapping ru "  +
                 " where p.id.resourceId = ? and p.id.roleId = ru.id.roleId and ru.id.userId = ? ";  
-        List<String> operationsOnResource = (List<String>) getEntities(hql, resourceId, Environment.getUserId());
+        
+        Long userId = Environment.getUserId();
+        userId = (Long) EasyUtils.checkNull(userId, Anonymous._ID);
+		List<String> operationsOnResource = (List<String>) getEntities(hql, resourceId, userId);
         operations.addAll(operationsOnResource);  // 用户对指定节点的操作权限
         
         ILevelTreeNode resource = (ILevelTreeNode) getEntity(resourceClass, resourceId);
-        List<?> parentOperations = getEntities(hql, resource.getParentId(), Environment.getUserId()); 
+        List<?> parentOperations = getEntities(hql, resource.getParentId(), userId); 
         for(Object oprationId : parentOperations){
             operations.add("p_" + oprationId);  // 指定节点的父节点的操作权限，加"p_"
         }

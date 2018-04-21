@@ -429,7 +429,7 @@ function batchImport() {
 var fieldTree, count = 0;
 function configDefine() {
 	var rform = $.F("recordForm");
-	var defVal = rform.getData("define");
+	var defVal = rform.getData("define").revertEntity(); // getData里执行了XML符号处理方法 converEntity，& --> &amp;  需要替换回来
 
 	if(defVal && defVal.indexOf('{') < 0) {  // 根据Excel表头快速定义的录入表，eg: 仓库 货主 库位 货品 包装 数量
 		var columns = defVal.replace(/\t/g, " ").split(" ");  // 替换掉tab

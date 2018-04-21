@@ -39,6 +39,7 @@ import com.boubei.tss.dm.record.permission.RecordResource;
 import com.boubei.tss.dm.record.workflow.WFDefine;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.exception.BusinessException;
+import com.boubei.tss.framework.sso.Anonymous;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.modules.log.IBusinessLogger;
 import com.boubei.tss.modules.log.Log;
@@ -579,7 +580,7 @@ public abstract class _Database {
 	 */
 	public SQLExcutor select(int page, int pagesize, Map<String, String> params) {
 		Map<Integer, Object> paramsMap = new HashMap<Integer, Object>();
-		paramsMap.put(1, Environment.getUserCode());
+		paramsMap.put(1, EasyUtils.checkNull(Environment.getUserCode(), Anonymous._CODE));
 		
 		if(params == null) {
 			params = new HashMap<String, String>();
@@ -678,7 +679,7 @@ public abstract class _Database {
 			_customizeTJ += DMConstants.DOMAIN_CONDITION;
 			
 		}
-		condition += " and ( ( " + DMUtil.customizeParse(_customizeTJ + " ) or -1 = ${userId} ") + " ) ";
+		condition += " and ( ( " + DMUtil.customizeParse(_customizeTJ + " )  or -1 = ${_userId!-10000} ") + " ) ";
 		
 		// 设置排序方式
 		String _sortField = params.get("sortField");
