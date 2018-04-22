@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.boubei.tss.EX;
+import com.boubei.tss.PX;
 import com.boubei.tss.cache.Cacheable;
 import com.boubei.tss.cache.Pool;
 import com.boubei.tss.cache.extension.CacheHelper;
@@ -56,6 +57,7 @@ import com.boubei.tss.framework.web.display.grid.GridDataEncoder;
 import com.boubei.tss.framework.web.display.grid.IGridNode;
 import com.boubei.tss.framework.web.mvc.BaseActionSupport;
 import com.boubei.tss.modules.HitRateManager;
+import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.um.permission.PermissionHelper;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
@@ -428,36 +430,61 @@ public class _Recorder extends BaseActionSupport {
 		getDB(recordId).updateBatch(ids, field, value);
         printSuccessMessage();
     }
- 
-    // 微信小程序method=DELETE无效
-    @RequestMapping(value = "/{record}/{id}", method = RequestMethod.DELETE)
-    public void delete(HttpServletRequest request, HttpServletResponse response, 
+    
+    @RequestMapping(value = "/{record}/{id}", method = RequestMethod.PUT)
+    public void restore(HttpServletRequest request, HttpServletResponse response, 
     		@PathVariable("record") Object record, 
     		@PathVariable("id") Long id) {
     	
     	Long recordId = recordService.getRecordID(record);
     	prepareParams(request, recordId);
     	
-    	exeDelete(recordId, id);
+    	checkRowEditable(recordId, id);
+    	_Database db = getDB(recordId);
+    	db.restore(id);
+    	
+        printSuccessMessage();
+    }
+ 
+    @RequestMapping(value = "/{record}/{id}", method = RequestMethod.DELETE)
+    public void delete(HttpServletRequest request, HttpServletResponse response, 
+    		@PathVariable("record") Object record, 
+    		@PathVariable("id") Long id) {
+    	
+    	Long recordId = recordService.getRecordID(record);
+    	Map<String, String> requestMap = prepareParams(request, recordId);
+    	
+    	exeDelete(recordId, id, requestMap);
         printSuccessMessage();
     }
     
-    private void exeDelete(Long recordId, Long id) {
+    private void exeDelete(Long recordId, Long id, Map<String, String> requestMap) {
 		// 检查用户对当前记录是否有编辑权限
     	checkRowEditable(recordId, id);
     	
     	_Database db = getDB(recordId);
-		db.delete(id);
     	
-	    // 删除附件
-    	List<?> attachs = recordService.getAttachList(recordId, id);
-    	for(Object obj : attachs) {
-    		RecordAttach attach = (RecordAttach)obj;
-    		recordService.deleteAttach( attach.getId() );
-    		FileHelper.deleteFile(new File(attach.getAttachPath()));
+    	// 判断是逻辑删除还是物理删除
+    	boolean loginDel = "true".equals( ParamManager.getValue(PX.LOGIC_DEL, "false") ) 
+    					|| "true".equals( requestMap.get(PX.LOGIC_DEL) )
+    					|| "true".equals( DMUtil.getExtendAttr(db.remark, PX.LOGIC_DEL) );
+    	if(loginDel) {
+    		db.logicDelete(id);
+    	}
+    	else {
+    		db.delete(id);
+        	
+    	    // 删除附件
+        	List<?> attachs = recordService.getAttachList(recordId, id);
+        	for(Object obj : attachs) {
+        		RecordAttach attach = (RecordAttach)obj;
+        		recordService.deleteAttach( attach.getId() );
+        		FileHelper.deleteFile(new File(attach.getAttachPath()));
+        	}
     	}
     }
     
+    // for 不支持method=DELETE的客户端，微信小程序等
     @RequestMapping(value = "/batch/{record}/del", method = RequestMethod.POST)
     public void deleteBatchII(HttpServletRequest request, HttpServletResponse response, 
     		@PathVariable("record") Object record, String ids) {
@@ -469,11 +496,11 @@ public class _Recorder extends BaseActionSupport {
     		@PathVariable("record") Object record, String ids) {
     	
     	Long recordId = recordService.getRecordID(record);
-    	prepareParams(request, recordId);
+    	Map<String, String> requestMap = prepareParams(request, recordId);
     	
     	String[] idArray = ids.split(",");
     	for(String id : idArray) {
-    		exeDelete(recordId, EasyUtils.obj2Long(id));
+    		exeDelete(recordId, EasyUtils.obj2Long(id), requestMap);
     	}
         printSuccessMessage();
     }
@@ -515,7 +542,7 @@ public class _Recorder extends BaseActionSupport {
 			} else {
 				Long itemID = EasyUtils.obj2Long( _itemID );
 				if( row.replaceAll(",", "").trim().equals(_itemID.trim()) ) { // 除了ID其它都为空
-					exeDelete(recordId, itemID);
+					exeDelete(recordId, itemID, requestMap);
 					deleteCount++;
 				} else {
 					checkRowEditable(recordId, itemID);

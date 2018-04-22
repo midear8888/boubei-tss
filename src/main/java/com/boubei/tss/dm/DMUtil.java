@@ -87,12 +87,13 @@ public class DMUtil {
 	public static boolean checkAPIToken(IResource r, String uName, String uToken) {
 		ILoginService loginService = (ILoginService) Global.getBean("LoginService");
 		
-		// 分别按资源的ID及名称 + uName 搜索一遍令牌
+		// 分别按资源的【ID】或【名称】 + uName 搜索一遍令牌
 		String resourceType = r.getResourceType(); // D1 | D2
 		List<String> tokenList = loginService.searchTokes(uName, r.getId().toString(), resourceType); 
 		tokenList.addAll( loginService.searchTokes(uName, r.getName(), resourceType) );
 		
     	if( tokenList.contains(uToken) ) {
+    		// 模拟登录，初始化 Environment
     		loginService.mockLogin(uName, uToken);
     		return true;
     	}

@@ -259,7 +259,13 @@ function initMenus() {
         label:"删除",
         callback: remove,
         icon: "images/icon_del.gif",
-        visible:function() {return canEditRow();}
+        visible:function() {return canEditRow() && (tssJS.G("grid").getColumnValue("domain")||"").indexOf("@--") < 0 ;}
+    }
+    var item32 = {
+        label:"还原",
+        callback: restore,
+        icon: "images/export.gif",
+        visible:function() { return userRoles.contains(-1) && (tssJS.G("grid").getColumnValue("domain")||"").indexOf("@--") >= 0; }
     }
     var item4 = {
         label:"管理附件",
@@ -277,6 +283,7 @@ function initMenus() {
     menu.addItem(item1);
     menu.addItem(item2);
     menu.addItem(item3);
+    menu.addItem(item32);
     menu.addItem(item4);
     menu.addItem(item5);
     $1("grid").contextmenu = menu;
@@ -572,6 +579,22 @@ function remove()  {
     });
 }
 
+function restore()  { 
+    tssJS.confirm("您确定要还原该行记录吗？", "还原确认", function(){
+        var grid = tssJS.G("grid");
+        var rowID  = grid.getColumnValue("id");
+        if( rowID ) {
+            tssJS.ajax({
+                url : URL_DELETE_SOURCE + recordId + "/" + rowID,
+                method : "PUT",
+                onsuccess : function() { 
+                    loadGridData( $1("GridPageList").value || 1 ); // 更新Grid 
+                }
+            }); 
+        }
+    });
+}
+
 function removeBatch() {
     var grid = tssJS.G("grid");
     var ids  = grid.getCheckedRows();
@@ -676,6 +699,10 @@ function showQueryForm() {
             }
         }
     });
+    
+    if( userRoles.contains(-1) ) {
+        paramsConfig.push({"label": "用户域", "name": "p_domain", "width": "150px"});
+    }
     paramsConfig.push({"label": "创建人", "name": "p_creator", "width": "150px"});
     paramsConfig.push({"label": "修改人", "name": "p_updator", "width": "150px"});
 

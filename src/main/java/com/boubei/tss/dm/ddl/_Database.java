@@ -63,6 +63,8 @@ public abstract class _Database {
 	private boolean needLog;
 	public boolean needFile;
 	
+	public String remark;
+	
 	List<Map<Object, Object>> fields;
 	public List<String> fieldCodes;
 	public List<String> fieldTypes;
@@ -94,6 +96,7 @@ public abstract class _Database {
 		this.customizeTJ = record.getCustomizeTJ();
 		this.needLog  = ParamConstants.TRUE.equals(record.getNeedLog());
 		this.needFile = ParamConstants.TRUE.equals(record.getNeedFile());
+		this.remark = record.getRemark();
 		
 		this.initFieldCodes();
 		this.wfDefine = WFDefine.parse( record.getWorkflow(), this );
@@ -511,7 +514,7 @@ public abstract class _Database {
 	public Map<String, Object> get(Long id) {
 		String fields = EasyUtils.list2Str( getVisiableFields(false) );
 
-		String sql = "select " + fields + ",creator,version from " + this.table + " where id=?";
+		String sql = "select " + fields + ",domain,creator,version from " + this.table + " where id=?";
 		List<Map<String, Object>> list = SQLExcutor.query(this.datasource, sql, id);
 		if( EasyUtils.isNullOrEmpty(list) ) {
 			return null;
@@ -519,6 +522,7 @@ public abstract class _Database {
 		return list.get(0);
 	}
 
+	// 物理删除
 	public void delete(Long id) {
 		if(id == null) return;
 		
@@ -529,6 +533,35 @@ public abstract class _Database {
 		
 		// 记录删除日志
         logCUD(id, "delete", Environment.getUserCode() + " deleted one row：" + old);
+	}
+	
+	public static final String deletedTag = "@--";
+	// 逻辑删除
+	public void logicDelete(Long id) {
+		if(id == null) return;
+		
+		Map<String, Object> old = get(id);
+		String domain = (String) old.get("domain") + deletedTag;
+		
+		String updateSQL = "update " + this.table + " set domain = '" +domain+ "' where id=" + id;
+		SQLExcutor.excute(updateSQL, this.datasource);
+		
+		// 记录删除日志
+        logCUD(id, "logicDelete", Environment.getUserCode() + " deleted one row：" + old);
+	}
+	
+	// 还原数据
+	public void restore(Long id) {
+		if(id == null) return;
+		
+		Map<String, Object> old = get(id);
+		String domain = EasyUtils.obj2String(old.get("domain")).replaceAll(deletedTag, "");
+		
+		String updateSQL = "update " + this.table + " set domain = '" +domain+ "' where id=" + id;
+		SQLExcutor.excute(updateSQL, this.datasource);
+		
+		// 记录还原日志
+        logCUD(id, "restore", Environment.getUserCode() + " restored one row：" + old);
 	}
 	
 	public void logCUD(Object id, String opeartion, String logMsg) {
@@ -627,6 +660,12 @@ public abstract class _Database {
 			
 			if("updator".equals(key)) {
 				condition += " and updator = ? ";
+				paramsMap.put(paramsMap.size() + 1, valueStr);
+				continue;
+			}
+			
+			if( "domain".equals(key) && Environment.isAdmin() ) { // Admin 可以查询其它域下的数据
+				condition += " and domain = ? ";
 				paramsMap.put(paramsMap.size() + 1, valueStr);
 				continue;
 			}
@@ -803,7 +842,7 @@ public abstract class _Database {
         
         // ID列默认隐藏
         sb.append("<column name=\"id\" display=\"none\"/>").append("\n");
-        sb.append("<column name=\"domain\" display=\"none\"/>").append("\n");
+        sb.append("<column name=\"domain\" caption=\"域\" " +( Environment.isAdmin() ? "" : "display=\"none\"" )+ "/>").append("\n");
         
         sb.append("</declare>\n<data></data></grid>");
         

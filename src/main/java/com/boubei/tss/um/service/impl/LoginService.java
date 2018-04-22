@@ -437,7 +437,11 @@ public class LoginService implements ILoginService {
 		List<String> tokens = (List<String>) userDao.getEntities(hql, uName, resource, type, now );
 		tokens.addAll( (List<String>) userDao.getEntities(hql, Anonymous._CODE, resource, type, now ) );
 		
-		// 把用户的MD5密码也作为令牌，如果和uToken对的上，给予通过（适用于开放数据表链接给第三方用户录入，此时不宜逐个给用户发放令牌）
+		/*
+		 *  把用户的MD5密码也作为令牌，如果和uToken对的上，给予通过（适用于开放数据表链接给第三方用户录入，此时不宜逐个给用户发放令牌）
+		 *  令牌校验通过后，对访问的数据服务、数据表接口等资源是否有相应的操作权限，还要在_Recorder和_Reporter里进一步校验。
+		 *  自定义的接口 /api/*，需要在接口方法内，进行相应的角色和数据等控制
+		 */
 		OperatorDTO user = getOperatorDTOByLoginName(uName);
 		Object uToken = EasyUtils.checkNull(user.getAttribute("authToken"), user.getAttribute("password"));
 		tokens.add( (String) uToken );

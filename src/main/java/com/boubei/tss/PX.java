@@ -32,6 +32,9 @@ public interface PX {
 	/** 是否启用定时Job */
 	static String ENABLE_JOB = "job.enable";
 	
+	/** 数据表是否只做逻辑删除 */
+	static String LOGIC_DEL = "LOGIC_DEL";
+	
 	// ParamConfig：component_param 或 application.properties
     /** 
      * 资源地址白名单，白名单内的资源允许【匿名访问】
