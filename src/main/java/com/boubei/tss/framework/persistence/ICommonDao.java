@@ -10,6 +10,16 @@
 
 package com.boubei.tss.framework.persistence;
 
+import java.io.Serializable;
+
+import com.boubei.tss.modules.log.Logable;
+
 public interface ICommonDao extends IDao<IEntity> {
+	
+	@Logable(operateObject="${table}", operateInfo=" ${args[0]} ")
+	Object update(Object entity);
+	
+	@Logable(operateObject="${table}", operateInfo="删除了记录 ${returnVal} ")
+	Object delete(Class<?> clazz, Serializable id);
 
 }

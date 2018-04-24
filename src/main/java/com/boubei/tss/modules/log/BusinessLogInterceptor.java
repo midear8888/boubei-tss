@@ -15,12 +15,15 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.persistence.Table;
+
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.boubei.tss.framework.persistence.IEntity;
 import com.boubei.tss.util.EasyUtils;
 
 import freemarker.template.TemplateException;
@@ -53,8 +56,20 @@ public class BusinessLogInterceptor implements MethodInterceptor {
             String operateInfo = annotation.operateInfo();
             
             String operateMethod = targetMethod.getName();
+            
+            returnVal = EasyUtils.checkNull(returnVal, "");
+            Map<String, Object> data = new HashMap<String, Object>();
+            data.put("returnVal", returnVal);
+            
+            Table table = returnVal.getClass().getAnnotation(Table.class);
+            if( table != null ) {
+            	data.put("tableName", operateTable = table.name());
+            }
+            if( returnVal instanceof IEntity ) {
+            	operateMethod += ", " + ((IEntity)returnVal).getPK();
+            }
 
-            Log log = new Log(operateMethod, parseMacro(operateInfo, args, returnVal));
+            Log log = new Log(operateMethod, parseMacro(operateInfo, args, data));
             log.setOperateTable(operateTable);
             log.setMethodExcuteTime(methodExcuteTime);
 
@@ -73,8 +88,7 @@ public class BusinessLogInterceptor implements MethodInterceptor {
      * @throws IOException
      * @throws TemplateException
      */
-    public String parseMacro(String logInfo, Object[] args, Object returnVal) {
-        Map<String, Object> data = new HashMap<String, Object>();
+    public String parseMacro(String logInfo, Object[] args, Map<String, Object> data) {
         if(args != null && args.length > 0) {
     		Object[] tempArgs = new Object[args.length];
     		for( int i = 0; i < args.length; i++ ) {
@@ -82,7 +96,6 @@ public class BusinessLogInterceptor implements MethodInterceptor {
     		}
     		 data.put("args", tempArgs);
     	}
-        data.put("returnVal", returnVal == null ? "" : returnVal);
 
         logInfo = EasyUtils.fmParse(logInfo, data);
         return logInfo;
