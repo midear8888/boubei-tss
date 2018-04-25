@@ -46,15 +46,6 @@
 	</bean>
 	
 	<bean class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
-		<property name="beanNames"> <value>*Service</value> </property>
-		<property name="interceptorNames">
-			<list>
-				<value>businessLogInterceptor</value>
-			</list>
-		</property>
-	</bean>
-	
-	<bean class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
 		<property name="beanNames"> 
 			<value>*DAO, *Dao, *Service</value> 
 		</property>
@@ -62,6 +53,7 @@
 			<list>
 				<value>queryCacheInterceptor</value>
 				<value>cacheInterceptor</value>
+				<value>businessLogInterceptor</value>
 			</list>
 		</property>
 	</bean>
