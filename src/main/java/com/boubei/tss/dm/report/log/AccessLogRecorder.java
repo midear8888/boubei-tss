@@ -101,8 +101,8 @@ public class AccessLogRecorder extends OutputRecordsManager {
         try {
             AccessLog log = new AccessLog();
             log.setClassName(cnName);
+            log.setMethodCnName( name );
     		log.setMethodName( methodName );
-    		log.setMethodCnName( name );
             log.setAccessTime( new Date(start) );
             log.setRunningTime( System.currentTimeMillis() - start );
             log.setParams(params);

@@ -151,10 +151,10 @@ public class _Recorder extends BaseActionSupport {
     	
     	Long recordId = recordService.getRecordID(record);
     	Map<String, String> requestMap = prepareParams(request, recordId);
-    	boolean pointed = requestMap.containsKey("fields") ;
+    	boolean pointedFileds = requestMap.containsKey("fields") ;
     	_Database _db = getDB(recordId);
     	
-        SQLExcutor ex = queryRecordData(_db, page, PAGE_SIZE, requestMap, pointed);
+        SQLExcutor ex = queryRecordData(_db, page, PAGE_SIZE, requestMap, pointedFileds);
  
         List<IGridNode> temp = new ArrayList<IGridNode>();
 		for(Map<String, Object> item : ex.result) {
@@ -165,7 +165,7 @@ public class _Recorder extends BaseActionSupport {
             temp.add(gridNode);
         }
 		
-        Document gridTemplate = pointed ? ex.getGridTemplate(_db.cnm, _db.ctm, _db.cpm) : _db.getGridTemplate();
+        Document gridTemplate = pointedFileds ? ex.getGridTemplate(_db.cnm, _db.ctm, _db.cpm) : _db.getGridTemplate();
 		GridDataEncoder gEncoder = new GridDataEncoder(temp, gridTemplate);
         
         PageInfo pageInfo = new PageInfo();
@@ -176,10 +176,13 @@ public class _Recorder extends BaseActionSupport {
         print(new String[] {"RecordData", "PageInfo"}, new Object[] {gEncoder, pageInfo});
     }
     
-    private SQLExcutor queryRecordData(_Database _db, int page, int pagesize, Map<String, String> requestMap, boolean pointed) {
+    private SQLExcutor queryRecordData(_Database _db, int page, int pagesize, Map<String, String> requestMap, boolean pointedFileds) {
     	
+    	long start = System.currentTimeMillis();
     	SQLExcutor ex = _db.select(page, pagesize, requestMap);
-    	if( pointed || requestMap.containsKey("id")) {
+    	AccessLogRecorder.outputAccessLog(_db.recordName, _db.recordName, "select_"+pointedFileds, requestMap, start);
+    	
+    	if( pointedFileds || requestMap.containsKey("id")) {
     		return ex;
     	}
     	
@@ -242,12 +245,12 @@ public class _Recorder extends BaseActionSupport {
     	Long recordId = recordService.getRecordID(record);
     	
     	Map<String, String> requestMap = prepareParams(request, recordId);
-    	boolean pointed = requestMap.containsKey("fields") ;
+    	boolean pointedFileds = requestMap.containsKey("fields") ;
     	int _pagesize = getPageSize(requestMap, PAGE_SIZE*20);
     	
         _Database _db = getDB(recordId);
         
-        SQLExcutor ex = queryRecordData(_db, page, _pagesize, requestMap, pointed);
+        SQLExcutor ex = queryRecordData(_db, page, _pagesize, requestMap, pointedFileds);
         
         if( requestMap.containsKey("rows") ) { // for EasyUI
         	Map<String, Object> returlVal = new HashMap<String, Object>();

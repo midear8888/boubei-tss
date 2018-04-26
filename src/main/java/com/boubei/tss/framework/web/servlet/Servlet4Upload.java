@@ -30,6 +30,7 @@ import com.boubei.tss.PX;
 import com.boubei.tss.framework.exception.convert.ExceptionConvertorFactory;
 import com.boubei.tss.framework.web.display.XmlPrintWriter;
 import com.boubei.tss.framework.web.display.xmlhttp.XmlHttpEncoder;
+import com.boubei.tss.framework.web.filter.Filter8APITokenCheck;
 import com.boubei.tss.modules.param.ParamConfig;
 import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
@@ -48,19 +49,30 @@ import com.boubei.tss.util.FileHelper;
  * -4. 单独设置文件服务器的域名
  * 
  * 注：最大可以上传文件大小为20M = 20971520Byte
+ * 
+ * 微信小程序等上传附件：
+ * var url =  "https://scm.boudata.com/tss/file/upload?afterUploadClass=com.boubei.tss.dm.record.file.CreateAttach&type=2";
+	url += "&recordId=" + recordId;  
+	url += "&itemId=" + selectedLineId;
+	url += "&uName=" + uName;  
+	url += "&uToken=" + uToken;
  */
-@WebServlet(urlPatterns="/auth/file/upload")
+@WebServlet(urlPatterns={"/auth/file/upload", "/remote/upload"})
 @MultipartConfig(maxFileSize = 1024 * 1024 * 20)
 public class Servlet4Upload extends HttpServlet {
 
 	private static final long serialVersionUID = -6423431960248248353L;
 
 	Logger log = Logger.getLogger(this.getClass());
-	
-	
 
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
+		
+		HttpServletRequest req = (HttpServletRequest) request;
+        String servletPath = req.getServletPath() + "";
+        if( servletPath.endsWith("/remote/upload") ) { // 远程上传进行自动登录
+        	Filter8APITokenCheck.autoLogin(request);
+        }
 		
 		XmlHttpEncoder encoder = new XmlHttpEncoder();
 		try {

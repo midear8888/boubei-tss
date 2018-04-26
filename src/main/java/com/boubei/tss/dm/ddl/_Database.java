@@ -75,11 +75,12 @@ public abstract class _Database {
 	public List<String> fieldRole2s;
 	public List<String> fieldValues;
 	
-	public Map<String, String> cnm = new HashMap<String, String>();
-	public Map<String, String> ctm = new HashMap<String, String>();
-	public Map<String, String> crm = new HashMap<String, String>();
-	public Map<String, String> cpm = new HashMap<String, String>();
-	public Map<String, String> cvm = new HashMap<String, String>();
+	public Map<String, String> cnm = new HashMap<String, String>(); // code -- label
+	public Map<String, String> ncm = new HashMap<String, String>(); // label -- code
+	public Map<String, String> ctm = new HashMap<String, String>(); // code -- type
+	public Map<String, String> crm = new HashMap<String, String>(); // code -- role2
+	public Map<String, String> cpm = new HashMap<String, String>(); // code -- pattern
+	public Map<String, String> cvm = new HashMap<String, String>(); // code -- defaultValue
 	
 	public String toString() {
 		return "【" + this.datasource + "." + this.recordName + "】";
@@ -119,6 +120,7 @@ public abstract class _Database {
 			String label = (String) fDefs.get("label");
 			this.fieldNames.add(label);
 			cnm.put(code, label);
+			ncm.put(label, code);
 			
 			String type = (String) fDefs.get("type");
 			this.fieldTypes.add(type);

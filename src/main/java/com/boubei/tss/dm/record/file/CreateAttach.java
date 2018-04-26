@@ -77,6 +77,7 @@ public class CreateAttach implements AfterUpload {
 	}
 	
 	private RecordAttach saveAttach(File file, Long recordId, Long itemId, int type, String oldfileName) {
+		// TODO 检测用户对记录是否有编辑权限
 		
         String attachDir = RecordAttach.getAttachDir(recordId, itemId);
         File rootDir = new File(attachDir);
