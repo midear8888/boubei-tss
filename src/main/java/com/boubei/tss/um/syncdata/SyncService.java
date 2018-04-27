@@ -142,6 +142,9 @@ public class SyncService implements ISyncService, Progressable {
 					group.setGroupType(Group.MAIN_GROUP_TYPE);
 					groupDao.saveGroup(group);
 					
+					group.setDomain( groupDao.getEntity(parentId).getDomain() );
+					groupDao.refreshEntity(group);
+					
 					// 补齐权限
 		            resourcePermission.addResource(group.getId(), group.getResourceType());
         		}

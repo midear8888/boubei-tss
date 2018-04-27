@@ -51,11 +51,12 @@ import com.boubei.tss.util.FileHelper;
  * 注：最大可以上传文件大小为20M = 20971520Byte
  * 
  * 微信小程序等上传附件：
- * var url =  "https://scm.boudata.com/tss/file/upload?afterUploadClass=com.boubei.tss.dm.record.file.CreateAttach&type=2";
+ * var url =  "https://scm.boudata.com/tss/remote/upload?afterUploadClass=com.boubei.tss.dm.record.file.CreateAttach&type=2";
 	url += "&recordId=" + recordId;  
 	url += "&itemId=" + selectedLineId;
 	url += "&uName=" + uName;  
 	url += "&uToken=" + uToken;
+	url += "&client=" + wx;
  */
 @WebServlet(urlPatterns={"/auth/file/upload", "/remote/upload"})
 @MultipartConfig(maxFileSize = 1024 * 1024 * 20)
@@ -94,7 +95,9 @@ public class Servlet4Upload extends HttpServlet {
 	}
 	
 	String doUpload(HttpServletRequest request, Part part) throws Exception {
-		// gets absolute path of the web application, tomcat7/webapps/tss
+		/*
+		 *  gets absolute path of the web application, tomcat7/webapps/tss
+		 */
 		String defaultUploadPath = request.getServletContext().getRealPath("");
 		
 		String uploadPath = ParamConfig.getAttribute(PX.UPLOAD_PATH, defaultUploadPath);

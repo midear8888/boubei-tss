@@ -620,7 +620,7 @@ public class _Recorder extends BaseActionSupport {
 	
 	@RequestMapping(value = "/attach/{id}", method = RequestMethod.DELETE)
     public void deleteAttach(HttpServletRequest request, HttpServletResponse response, @PathVariable("id") Long id) {
-		// 远程访问时需校验Token需要用到recordId；本地访问可不传
+		// 注：远程访问时需校验Token需要用到recordId；本地访问可不传
 		Long recordId = recordService.getRecordID( request.getParameter("recordId") );
 		prepareParams(request, recordId); // 远程访问预登录
 		
@@ -640,7 +640,7 @@ public class _Recorder extends BaseActionSupport {
 	
 	@RequestMapping("/attach/download/{id}")
 	public void downloadAttach(HttpServletRequest request, HttpServletResponse response, @PathVariable("id") Long id) throws IOException {
-		// 远程访问时需校验Token需要用到recordId；本地访问可不传
+		// 注：远程访问时需校验Token需要用到recordId；本地访问可不传
 		prepareParams(request, EasyUtils.obj2Long(request.getParameter("recordId")));
 		
 		RecordAttach attach = recordService.getAttach(id);

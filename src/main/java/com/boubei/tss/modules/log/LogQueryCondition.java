@@ -85,7 +85,7 @@ public class LogQueryCondition extends MacrocodeQueryCondition {
     }
 
     public String getOperationCode() {
-    	if(operationCode != null){
+    	if(operationCode != null && operationCode.indexOf("%") < 0) { // 判断是否指定了模糊方式
     		operationCode = "%" + operationCode.trim() + "%";           
         }
         return operationCode;
