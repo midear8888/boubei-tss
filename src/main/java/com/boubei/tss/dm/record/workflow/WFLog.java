@@ -34,7 +34,7 @@ import com.boubei.tss.dm.record.ARecordTable;
  */
 
 @Entity
-@Table(name = "wf_log")
+@Table(name = "dm_wf_log")
 @SequenceGenerator(name = "wf_log_sequence", sequenceName = "wf_log_sequence", initialValue = 1, allocationSize = 10)
 public class WFLog extends ARecordTable {
 	
@@ -54,17 +54,16 @@ public class WFLog extends ARecordTable {
 	private String processer;
 	
 	@Column(nullable = false)
-	private Date   processerTime1; // 开始处理时间，记录用户打开流程状态的时间
-	
-	@Column(nullable = false)
-	private Date   processerTime2; // 结束处理时间
+	private Date   processerTime; // 处理时间
 	
 	@Column(length = 1000)
 	private String processResult;  // 处理结果
 	
-	private String curstep;
-	private String nextStep;
-	private String nextStepProcesser;
+	private String attachFile;  // 附件
+	
+	private String onStep;    // 流程操作时的状态
+	private String nextStep;  // 流程操作后的状态
+	private String nextStepProcesser; // 可以是多人
 
 	public Serializable getPK() {
 		return this.getId();
@@ -102,36 +101,12 @@ public class WFLog extends ARecordTable {
 		this.processer = processer;
 	}
 
-	public Date getProcesserTime1() {
-		return processerTime1;
-	}
-
-	public void setProcesserTime1(Date processerTime1) {
-		this.processerTime1 = processerTime1;
-	}
-
-	public Date getProcesserTime2() {
-		return processerTime2;
-	}
-
-	public void setProcesserTime2(Date processerTime2) {
-		this.processerTime2 = processerTime2;
-	}
-
 	public String getProcessResult() {
 		return processResult;
 	}
 
 	public void setProcessResult(String processResult) {
 		this.processResult = processResult;
-	}
-
-	public String getCurstep() {
-		return curstep;
-	}
-
-	public void setCurstep(String curstep) {
-		this.curstep = curstep;
 	}
 
 	public String getNextStep() {
@@ -148,6 +123,30 @@ public class WFLog extends ARecordTable {
 
 	public void setNextStepProcesser(String nextStepProcesser) {
 		this.nextStepProcesser = nextStepProcesser;
+	}
+
+	public String getAttachFile() {
+		return attachFile;
+	}
+
+	public void setAttachFile(String attachFile) {
+		this.attachFile = attachFile;
+	}
+
+	public Date getProcesserTime() {
+		return processerTime;
+	}
+
+	public void setProcesserTime(Date processerTime) {
+		this.processerTime = processerTime;
+	}
+
+	public String getOnStep() {
+		return onStep;
+	}
+
+	public void setOnStep(String onStep) {
+		this.onStep = onStep;
 	}
 
 }

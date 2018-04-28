@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.boubei.tss.framework.persistence.pagequery.PageInfo;
 import com.boubei.tss.framework.web.display.grid.GridDataEncoder;
@@ -51,10 +52,21 @@ public class LogAction extends BaseActionSupport {
     @RequestMapping("/{page}")
     public void queryLogs4Grid(HttpServletResponse response, LogQueryCondition condition, @PathVariable int page) {
         condition.getPage().setPageNum(page);
-        PageInfo users = service.getLogsByCondition(condition);
+        PageInfo pi = service.getLogsByCondition(condition);
         
-        GridDataEncoder gridEncoder = new GridDataEncoder(users.getItems(), XMLDocUtil.createDoc(LOG_GRID_TEMPLET_PATH));
-        print(new String[]{"LogList", "PageInfo"}, new Object[]{gridEncoder, users});
+        GridDataEncoder gridEncoder = new GridDataEncoder(pi.getItems(), XMLDocUtil.createDoc(LOG_GRID_TEMPLET_PATH));
+        print(new String[]{"LogList", "PageInfo"}, new Object[]{gridEncoder, pi});
+    }
+    
+    /**
+     * http://localhost:9000/tss/log/json/1?operationCode=update, 04
+     * TODO 为数据表定制一个适合业务人员查看的日志界面，在每个数据表的全局JS里定制定义展示方法
+     */
+    @RequestMapping("/json/{page}")
+    @ResponseBody
+    public List<?> queryLogs4Json(LogQueryCondition condition) {
+        PageInfo pi = service.getLogsByCondition(condition);
+        return pi.getItems();
     }
     
     @RequestMapping("/item/{id}")

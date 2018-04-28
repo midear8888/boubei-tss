@@ -510,7 +510,11 @@ public abstract class _Database {
 		
 		SQLExcutor.excute(updateSQL, paramsMap, this.datasource);
 		
-		logCUD(ids, "update batch", "\n field: " + field + " \n value: " + value);
+		String[] idArray = ids.split(",");
+		for(String _id : idArray) {
+			logCUD(_id, "update", field + "=" + value);
+		}
+		logCUD(ids, "update batch", field + "=" + value);
 	}
 
 	public Map<String, Object> get(Long id) {

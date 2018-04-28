@@ -60,7 +60,9 @@ public class ImportCSV implements AfterUpload {
 		Record record = recordService.getRecord(recordId);
 		_Database _db = _Database.getDB(record);
 		int insertCount = 0, updateCount = 0;
+		List<Integer> ignoreLines = new ArrayList<Integer>();
 		
+		boolean ignoreExist = "true".equals( request.getParameter("ignoreExist") );
 		String uniqueCodes = request.getParameter("uniqueCodes");
 		String charSet = (String) EasyUtils.checkNull(request.getParameter("charSet"), DataExport.CSV_CHAR_SET); // 默认GBK
 
@@ -124,11 +126,16 @@ public class ImportCSV implements AfterUpload {
 				if( !hasNullParam ) {
 					List<Map<String, Object>> result = _db.select(1, 1, params).result;
 					if( result.size() > 0 ) {
-						Map<String, Object> old = result.get(0);
-						Long itemId = EasyUtils.obj2Long(old.get("id"));
-						_db.update(itemId, valuesMap);
+						if( ignoreExist ) {
+							ignoreLines.add(index);
+						} else {
+							Map<String, Object> old = result.get(0);
+							Long itemId = EasyUtils.obj2Long(old.get("id"));
+							_db.update(itemId, valuesMap);
+							
+							updateCount ++;
+						}
 						
-						updateCount ++;
 						continue;
 					}
 				}
@@ -146,7 +153,8 @@ public class ImportCSV implements AfterUpload {
     	_db.insertBatch(valuesMaps);
 		
 		// 向前台返回成功信息
-		return "parent.alert('导入完成：共新增" +insertCount+ "行，覆盖" +updateCount+ "行。请刷新查看。'); parent.openActiveTreeNode();";
+    	String noInserts = ignoreExist ? ("忽略了第【" +EasyUtils.list2Str(ignoreLines)+ "】行") : ("覆盖" +updateCount+ "行");
+		return "parent.alert('导入完成：共新增" +insertCount+ "行，" +noInserts+ "。请刷新查看。'); parent.openActiveTreeNode();";
 	}
 	
 }
