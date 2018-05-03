@@ -282,20 +282,25 @@ public abstract class _Database {
 		String newDS = _new.getDatasource();
 		String table = _new.getTable();
 		this.customizeTJ = _new.getCustomizeTJ();
-		this.needLog = ParamConstants.TRUE.equals(_new.getNeedLog());
+		this.needLog  = ParamConstants.TRUE.equals(_new.getNeedLog());
 		this.needFile = ParamConstants.TRUE.equals(_new.getNeedFile());
+		this.wfDefine = WFDefine.parse( _new.getWorkflow(), this ); // 更新流程配置
 		
+		// 比较新旧字段定义的异同（新增的和删除的，暂时只关心新增的）
+		List<Map<Object, Object>> newFields = parseJson(_new.getDefine());
+				
 		if(!newDS.equals(this.datasource) || !table.equals(this.table)) {
 			this.datasource = newDS;
 			this.table = table;
+			
+			this.fields = newFields;
+			initFieldCodes();
+			
 			createTable();
 			createUniqueAndIndex();
 			return;
 		}
 		
-		// 比较新旧字段定义的异同（新增的和删除的，暂时只关心新增的）
-		List<Map<Object, Object>> newFields = parseJson(_new.getDefine());
-				
 		// 新增加的字段
 		for(Map<Object, Object> fDefs1 : newFields) { // new
 			String code = (String) fDefs1.get("code");

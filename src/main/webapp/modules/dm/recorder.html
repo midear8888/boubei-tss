@@ -35,7 +35,7 @@
 
     #customizeBox { display: inline-block; }
     #customizeBox button { margin: 2px; }
-    #attach  { width: 800px; display: none; z-index: 10000; }
+    #attachDialog  { width: 800px; display: none; z-index: 10000; }
     #uploadForm  { background-color: #E0ECFF; padding: 5px 5px 5px 10px; margin-top: -3px; }
     #attachGrid { height: 200px; background-color: #fff; }
     #attachFile { color: #fff; background-color: #323232; padding: 2px 0px 1px 0px; }
@@ -848,7 +848,7 @@ function manageAttach(lineId, tag, isCreateRow) {
             var attachNode  = this.getNodeValue("RecordAttach");
 
             tssJS.showWaitingLayer();
-            tssJS("#attach").show(true).center();
+            tssJS("#attachDialog").show(true).center();
 
             if( isCreateRow || (canEditRow(lineId) && (!checkFileOpt||checkFileOpt(tag)) ) ) {
                 tssJS("#uploadForm span").show();               
@@ -864,7 +864,7 @@ function manageAttach(lineId, tag, isCreateRow) {
 }
 
 function clostUpload() {
-    tssJS("#attach").hide();
+    tssJS("#attachDialog").hide();
     tssJS.hideWaitingLayer();
 }
 
@@ -961,7 +961,7 @@ function delAttach() {
 
     <div id="searchFormDiv"></div>
 
-    <div id="attach">
+    <div id="attachDialog">
         <Grid id="attachGrid"></Grid>
         <form id="uploadForm" method="post" target='fileUpload' enctype="multipart/form-data">
             <span>

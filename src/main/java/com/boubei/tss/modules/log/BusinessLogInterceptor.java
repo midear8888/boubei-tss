@@ -63,7 +63,10 @@ public class BusinessLogInterceptor implements MethodInterceptor {
             
             Table table = returnVal.getClass().getAnnotation(Table.class);
             if( table != null ) {
-            	data.put("tableName", operateTable = table.name());
+            	if( "${table}".equals(operateTable) ) {
+            		operateTable = table.name();
+            	}
+            	data.put("tableName", operateTable);
             }
             if( returnVal instanceof IEntity ) {
             	operateMethod += ", " + ((IEntity)returnVal).getPK();
