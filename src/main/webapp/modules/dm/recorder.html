@@ -160,12 +160,10 @@ function getOperation() {
 /* 页面初始化 */
 function init() {
     // 先取用户权限信息，Grid定制依赖具体权限
-    var params = {};
-
     tssJS.ajax({
         url : URL_GET_USER_HAS,
         method : "GET",
-        params: params,
+        params: {},
         type : "json",
         ondata: function() {
             var result = this.getResponseJSON();
@@ -200,6 +198,13 @@ function init() {
 
                     recordDefine.each(function(i, field){
                         field._defaultValue = field.defaultValue;
+
+                        // 检测有没有传入初始查询条件
+                        var fcode = field.code;
+                        var fval = tssJS.Query.get(fcode);
+                        if(fval) {
+                            params[fcode] = fval;
+                        }
                     });
 
                     initMenus();
@@ -726,6 +731,12 @@ function showQueryForm() {
 
     var searchForm = tssJS.json2Form("searchForm", paramsConfig, buttonBox.join("")); 
     tssJS.cache.XmlDatas["searchFormXML"] = searchForm.template.sourceXML;
+
+    $.each(params, function(key, val){
+        var pKey = "p_" + key;
+        searchForm.updateDataExternal(pKey, val);
+        searchForm.updateData( $1(pKey) );
+    });
     
     $1("btSearch").onclick = function () {
         if( searchForm.checkForm() ) {

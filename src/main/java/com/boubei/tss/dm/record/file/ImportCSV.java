@@ -64,22 +64,37 @@ public class ImportCSV implements AfterUpload {
 		
 		boolean ignoreExist = "true".equals( request.getParameter("ignoreExist") );
 		String uniqueCodes = request.getParameter("uniqueCodes");
-		String charSet = (String) EasyUtils.checkNull(request.getParameter("charSet"), DataExport.CSV_CHAR_SET); // 默认GBK
+		String charSet = (String) EasyUtils.checkNull(request.getParameter("charSet"), DataExport.CSV_GBK); // 默认GBK
 
 		// 解析附件数据
 		File targetFile = new File(filepath);
 		String dataStr = FileHelper.readFile(targetFile, charSet); 
 		dataStr = dataStr.replaceAll(";", ","); // mac os 下excel另存为csv是用分号;分隔的
 		String[] rows = EasyUtils.split(dataStr, "\n");
+		if(rows.length < 2) {
+			return "parent.alert('导入文件没有数据');";
+		}
+		
+		String[] headers = rows[0].split(",");
+		int messyCount = 0;
+		for(String fieldName : headers) {
+			if( !_db.ncm.containsKey(fieldName) ) messyCount++; // 表头名 在数据表字段定义里不存在
+		}
+		if( messyCount*1.0 / headers.length > 0.5 ) { // header一半以上都找不着，可能是CSV文件为UTF-8编码，以UTF-8再次尝试盗取
+			dataStr = FileHelper.readFile(targetFile, DataExport.CSV_UTF8); 
+			dataStr = dataStr.replaceAll(";", ",");
+			rows = EasyUtils.split(dataStr, "\n");
+			headers = rows[0].split(",");
+		}
 		
 		List<String> snList = null;
 		List<Map<String, String>> valuesMaps = new ArrayList<Map<String, String>>();
-		String[] fields = rows[0].split(",");
+		
 		for(int index = 1; index < rows.length; index++) { // 第一行为表头，不要
 			String row = rows[index];
 			String[] fieldVals = (row+ " ").split(",");
 			
-			if(fieldVals.length != fields.length) {
+			if(fieldVals.length != headers.length) {
 				throw new BusinessException(EX.parse(EX.DM_23, index));
 			}
 			
@@ -90,7 +105,7 @@ public class ImportCSV implements AfterUpload {
     			value = value.replaceAll("，", ","); // 导出时英文逗号替换成了中文逗号，导入时替换回来
     			sb += value;
     			
-    			String filedLabel = fields[j];
+    			String filedLabel = headers[j];
     			String fieldCode = _db.ncm.get(filedLabel); //_db.fieldCodes.get(j);
     			
     			// 检查值为空的字段，是否配置自动取号规则，是的话先批量取出一串连号
