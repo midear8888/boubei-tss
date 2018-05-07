@@ -54,7 +54,7 @@ public class MathUtil {
     }
     
     /**
-	 * 两Double型数据相加
+	 * Double类型数据，保留n位小数
 	 * 
 	 * @param value
 	 * @param n
