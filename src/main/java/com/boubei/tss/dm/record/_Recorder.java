@@ -18,7 +18,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -420,8 +419,8 @@ public class _Recorder extends BaseActionSupport {
             	WFStep nextStep = WFManager.getCurrStep(_db, _db.get(id));
             	wlog.setNextStep(nextStep.status);
             	
-            	Set<String> roles = nextStep.role_btn.keySet();  // 优先使用同部门的，没有则取其它部门
-            	Set<String> users = nextStep.user_btn.keySet();
+//            	Set<String> roles = nextStep.role_btn.keySet();  // 优先使用同部门的，没有则取其它部门
+//            	Set<String> users = nextStep.user_btn.keySet();
 //            	wlog.setNextStepProcesser(processer); // 计算下一步处理人
             }
 			
