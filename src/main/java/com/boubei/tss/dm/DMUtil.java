@@ -51,6 +51,7 @@ import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
+import com.boubei.tss.util.URLUtil;
 
 public class DMUtil {
 	
@@ -100,26 +101,34 @@ public class DMUtil {
     	return false;
 	}
 	
-	// 注：通过tssJS.ajax能自动过滤params里的空值，jQuery发送的ajax请求则不能
+	/*
+	 *  注：通过tssJS.ajax能自动过滤params里的空值，jQuery发送的ajax请求则不能
+	 *  $.getJSON("/tss/xdata/json/dm_etl_task?name=任务&xx=abc", {"jobname": "定时器"}, function(data) { console.log(data); }, "POST");
+	 */
     public static Map<String, String> getRequestMap(HttpServletRequest request, boolean isGet) {
+    	// Tomcat 或 Jetty 默认已经对queryString上的参数 URLDecode 处理
     	Map<String, String[]> parameterMap = request.getParameterMap();
-    	boolean isJetty = "org.eclipse.jetty.server.Request".equals( request.getClass().getName() );
     	boolean hasUToken = parameterMap.containsKey("uToken");
     	
     	Map<String, String> requestMap = new LinkedHashMap<String, String>();
+    	
+    	// 处理通过queryString传递过来的中文参数，这些参数已经过URLEncode处理
+    	String queryString = request.getQueryString();
+		requestMap.putAll( URLUtil.parseQueryString(queryString) );
+    	
+    	// 没有经过URLEncode处理的GetRequest的参数，Tomcat对这一类参数默认为ISO-8859-1编码
     	for(String key : parameterMap.keySet()) {
-    		String[] values = parameterMap.get(key);
-			String value = null;
+			if(requestMap.containsKey(key)) continue;
 			
-			if( (isGet || hasUToken ) && !isJetty ) { // (tomcat7 or httpClientCall) and (not jetty) 
+			String[] values = parameterMap.get(key);
+			String value = null;
+			if( isGet || hasUToken ) { // (tomcat7 or httpClient call API(uToken) )
 				try {
 					value = new String(values[0].getBytes("ISO-8859-1"), "UTF-8"); 
 				} catch (UnsupportedEncodingException e) {
 				}
 			}
-			
-			value = (String) EasyUtils.checkNull(value, values[0]);
-			requestMap.put( key, value );
+			requestMap.put( key, (String) EasyUtils.checkNull(value, values[0]) );
     	}
     	
     	requestMap.remove("_time");          // 剔除jsonp为防止url被浏览器缓存而加的时间戳参数

@@ -172,6 +172,7 @@ var Field = function(info) {
 		fields.each(function(i, field){
 			if( !field.jsonUrl ) return;
 
+			field.jsonUrl = decodeURI(field.jsonUrl); // 从浏览器复制过来已经带了encode
 			function loadList() {
 				$.getJSON(field.jsonUrl, 
 					function(result) { 
@@ -198,7 +199,7 @@ var Field = function(info) {
             var refreshBT = tssJS.createElement('img');
             refreshBT.src = "images/icon_refresh.gif";
             refreshBT.title = "刷新下拉列表";
-            tssJS(refreshBT).css("margin-left", "4px").click( function() {      
+            tssJS(refreshBT).css("margin-left", "4px").css("cursor", "pointer").click( function() {      
                 loadList();
             } );  
             tdNode.appendChild(refreshBT);

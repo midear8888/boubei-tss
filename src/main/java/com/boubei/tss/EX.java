@@ -25,7 +25,7 @@ public class EX {
 	public static String parse(String msg, Object...values) {
 		Map<String, Object> data = new HashMap<String, Object>();
 		for(Object val : values) {
-			data.put("x" + (data.size() + 1), val.toString());
+			data.put("x" + (data.size() + 1), EasyUtils.obj2String(val));
 		}
 		return EasyUtils.fmParse(msg, data);
 	}
@@ -85,7 +85,7 @@ public class EX {
 	public static String DM_12 = "您对此数据表没有维护权限";
 	public static String DM_13 = "ID=${x1} 的数据表不存在。";
 	public static String DM_13_2 = "ID=${x1} 的数据记录不存在。";
-	public static String DM_14 = "没有找到名为【${x1}】的数据表";
+	public static String DM_14 = "没有找到名为【${x1}】的数据表(服务)，其不存在或您的账号权限不够";
 	public static String DM_15 = "【${x1}】的参数配置有误，JSON格式存在错误，请检查修正后再保存。具体原因：${x2}";
 	public static String DM_16 = "修改出错，该记录不存在，可能已经被删除。";
 	public static String DM_17 = "修改异常，该记录在你修改期间已经被其它人修改过了，请关闭后刷新列表，再重新进行修改。";
@@ -96,6 +96,8 @@ public class EX {
 	public static String DM_22 = "报表【${x1}】的内容详细请参见附件。";
 	public static String DM_23 = "数据异常，第${x1}行数据列和表头列数量不等。请用文本编辑器（记事本等）打开导入文件，检查此行字段内容里是否存在换行符。";
 	public static String DM_24 = "没有查询到数据";
+	public static String DM_25 = "字段编码【${x1}】重复了，检查修改后在保存";
+	public static String DM_26 = "字段名称【${x1}】重复了，检查修改后在保存";
 	
 	public static String F_01 = "【${x1}】参数有误，第 ${x2} 个参数值为Null！";
 	public static String F_02 = "排序节点和目标节点不属于同一层的节点（父节点不一致），不能排序。";

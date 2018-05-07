@@ -272,8 +272,7 @@ public class _Recorder extends BaseActionSupport {
     	
     	Long recordId = recordService.getRecordID(record);
     	
-    	Map<String, String> requestMap = prepareParams(request, recordId);
-    	Object page = EasyUtils.checkNull(requestMap.get("page"), 1);
+    	Object page = EasyUtils.checkNull(request.getParameter("page"), 1);
         return showAsJSON(request, recordId, EasyUtils.obj2Int(page));
     }
     

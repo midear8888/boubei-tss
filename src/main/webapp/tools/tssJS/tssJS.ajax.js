@@ -34,6 +34,16 @@ CONTEXTPATH = "tss";
             request.setFormContent(arg.formNode);
         }
 
+        if( (request.method||"").toUpperCase() == 'GET') { // 将params里参数拼到url
+            if(request.url.indexOf('?') < 0) {
+                request.url += '?1=1';
+            }
+            $.each(request.params, function(key, val) {
+                request.url += "&" +key+ "=" + val;
+            });
+            request.url = encodeURI( request.url );
+        }
+
         request.ondata = arg.ondata || request.ondata;
         request.onresult = arg.onresult || request.onresult;
         request.onsuccess = arg.onsuccess || request.onsuccess;

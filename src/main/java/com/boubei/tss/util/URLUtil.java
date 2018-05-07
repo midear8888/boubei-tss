@@ -10,8 +10,12 @@
 package com.boubei.tss.util;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.log4j.helpers.Loader;
 
@@ -86,5 +90,34 @@ public class URLUtil {
             throw new RuntimeException("getClassesPath方法定位path: " + path + " 失败", e);
         }
         return onePathUrl;
+    }
+    
+    /**
+     * 自主解析Get Request queryString里包含的参数，防止Tomcat下乱码
+     */
+    public static Map<String, String> parseQueryString(String queryString) {
+    	
+    	Map<String, String> paramsMap = new HashMap<String, String>();
+    	
+    	if( !EasyUtils.isNullOrEmpty(queryString) ) {
+	    	try {
+				queryString = URLDecoder.decode(queryString, "UTF-8");
+				queryString = URLDecoder.decode(queryString, "UTF-8"); 
+				// 防止前台encodeURI了两次， encodeURI(" ") ==> 20%  vs  encodeURI(encodeURI(" "))  ==> "%2520"
+			} 
+	    	catch (UnsupportedEncodingException e) { }
+	    	
+			String[] arr = EasyUtils.split(queryString, "&");
+			for(String pairs : arr) {
+				int index = pairs.indexOf('=');
+				if(index <= 0) continue;
+				
+				String key = pairs.substring(0, index);
+				String val = pairs.substring(index + 1);
+				paramsMap.put( key, val );
+			}
+    	}
+		
+		return paramsMap;
     }
 }

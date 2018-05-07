@@ -1270,6 +1270,16 @@
             request.setFormContent(arg.formNode);
         }
 
+        if( (request.method||"").toUpperCase() == 'GET') { // 将params里参数拼到url
+            if(request.url.indexOf('?') < 0) {
+                request.url += '?1=1';
+            }
+            $.each(request.params, function(key, val) {
+                request.url += "&" +key+ "=" + val;
+            });
+            request.url = encodeURI( request.url );
+        }
+
         request.ondata = arg.ondata || request.ondata;
         request.onresult = arg.onresult || request.onresult;
         request.onsuccess = arg.onsuccess || request.onsuccess;
@@ -4121,7 +4131,7 @@
         this.load = function() {
             var valueList = ($el.attr("values") || "").split('|');
             var textList  = ($el.attr("texts")  || "").split('|');
-            this.height = Math.max(3, Math.min(valueList.length, 10)) * 18 + "px";
+            this.height = Math.max(4, Math.min(valueList.length, 10)) * 18 + "px";
 
             this.nodesData = [];
             for(var i=0; i < valueList.length; i++) {

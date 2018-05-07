@@ -135,8 +135,8 @@ tssJS(function() {
         return;
     }
 
-    recordId = tssJS.Query.get("id");
-    recordName = tssJS.Query.get("name");
+    recordId   = tssJS.Query.get("id");
+    recordName = tssJS.Query.get("rctable") || decodeURI(tssJS.Query.get("rcname")||"");
     openItemId = tssJS.Query.get("itemId");
 
     if(!recordId && recordName) {
@@ -203,7 +203,7 @@ function init() {
                         var fcode = field.code;
                         var fval = tssJS.Query.get(fcode);
                         if(fval) {
-                            params[fcode] = fval;
+                            params[fcode] = decodeURI( fval );
                         }
                     });
 
@@ -396,7 +396,7 @@ function loadDetailData(rowID, version) {
                 var uploadBtn = tssJS.createElement('img');
                 uploadBtn.src = "images/icon_up.gif";
                 uploadBtn.title = "上传附件";
-                tssJS(uploadBtn).css("margin-left", "4px").click( function() {      
+                tssJS(uploadBtn).css("margin-left", "4px").css("cursor", "pointer").click( function() {      
                     manageAttach( _tempID, "form", isCreateRow);
                 } );  
                 tdNode.appendChild(uploadBtn);
@@ -426,7 +426,7 @@ function loadDetailData(rowID, version) {
                 var refreshBT = tssJS.createElement('img');
                 refreshBT.src = "images/icon_refresh.gif";
                 refreshBT.title = "刷新附件下拉列表";
-                tssJS(refreshBT).css("margin-left", "6px").click( function() {      
+                tssJS(refreshBT).css("margin-left", "6px").css("cursor", "pointer").click( function() {      
                     loadList();
                 } );  
                 tdNode.appendChild(refreshBT);

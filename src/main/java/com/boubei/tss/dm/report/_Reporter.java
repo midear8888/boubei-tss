@@ -42,16 +42,36 @@ import com.boubei.tss.framework.web.mvc.BaseActionSupport;
 import com.boubei.tss.modules.log.IBusinessLogger;
 import com.boubei.tss.modules.log.Log;
 import com.boubei.tss.util.EasyUtils;
+import com.boubei.tss.util.URLUtil;
 
 @Controller
-@RequestMapping( {"/display", "/data", "/api"} )
+@RequestMapping( {"/data", "/api", "/display"} )
 public class _Reporter extends BaseActionSupport {
     
     @Autowired ReportService reportService;
     
-	@RequestMapping("/{reportId}/define")
+	@RequestMapping("/{nameOrID}/define")
     @ResponseBody
-    public Object getReportDefine(@PathVariable("reportId") Long reportId) {
+    public Object getReportDefine(HttpServletRequest request, @PathVariable("nameOrID") String nameOrID) {
+		// 如果是【报表名：rpName】参数传过来，优先通过报表名查询
+		String queryString = request.getQueryString();
+		String rpName =  URLUtil.parseQueryString(queryString).get("rpName");
+		// if(rpName != null ) log.info( rpName  + " vs " + request.getParameter("rpName") );  // GET Request里，getParameter取出的是ISO-ISO-8859-1编码
+		
+		rpName = (String) EasyUtils.checkNull(rpName, request.getParameter("rpName"));
+		nameOrID = (String) EasyUtils.checkNull(rpName, nameOrID);
+		
+		Long reportId = null;
+    	try { // 先假定是报表ID（Long型）
+    		reportId = reportService.getReportId("id", Long.valueOf(nameOrID), Report.TYPE1);
+    	} 
+    	catch(Exception e) { 
+    		reportId = reportService.getReportId("name", nameOrID, Report.TYPE1);
+    	}
+    	if(reportId == null) {
+    		throw new BusinessException(EX.parse(EX.DM_14, nameOrID));
+    	}
+    	
 		Report report = reportService.getReport(reportId);
 		
 		String name = report.getName();
@@ -62,7 +82,7 @@ public class _Reporter extends BaseActionSupport {
 		String remark = EasyUtils.obj2String( report.getRemark() );
 		String queryUri = report.getParamUri();
 		
-		return new Object[] {name, param, displayUri, hasScript, mailable, remark, queryUri};
+		return new Object[] {name, param, displayUri, hasScript, mailable, remark, queryUri, reportId};
     }
 	
     /**

@@ -73,7 +73,7 @@ function query(page) {
 
           $("ul.data-list-ul").appendChild(li);
           $(".tssbutton", li).click(function(){
-            window.open(encodeURI('/tss/modules/dm/recorder.html?name=系统使用反馈&itemId=' + item.id));
+            window.open(encodeURI('/tss/modules/dm/recorder.html?rcname=系统使用反馈&itemId=' + item.id));
           });
         });
       }

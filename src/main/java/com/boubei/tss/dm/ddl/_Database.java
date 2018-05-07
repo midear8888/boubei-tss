@@ -14,6 +14,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -153,6 +154,8 @@ public abstract class _Database {
 		}
 		
 		define = define.replaceAll("'", "\"");
+		List<String> labels = new ArrayList<String>();
+		List<String> codes = new ArrayList<String>( Arrays.asList("creator", "createTime", "updator", "updateTime", "version") ); // domain
 		
 		try {  
    			List<Map<Object, Object>> list = new ObjectMapper().readValue(define, List.class);  
@@ -163,6 +166,17 @@ public abstract class _Database {
    				String code = (String) fDefs.get("code");
    				code = (EasyUtils.isNullOrEmpty(code) ? _Field.COLUMN + index : code).toLowerCase().trim();
    				fDefs.put("code", code);
+   				
+   				String label = (String) fDefs.get("label");
+   				if( labels.contains(label) ) {
+   					throw new BusinessException( EX.parse(EX.DM_26, label) );
+   				}
+   				if( codes.contains(code) ) {
+   					throw new BusinessException( EX.parse(EX.DM_25, code) );
+   				}
+   				
+				labels.add( label );
+   				codes.add( code );
    			}
    			return list;
    	    } 

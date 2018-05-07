@@ -59,7 +59,7 @@ public class SyncService implements ISyncService, Progressable {
         return param;
     }
     
-    public Map<String, Object> getCompleteSyncGroupData(Long mainGgroupId, String applicationId, String fromGroupId) {
+    public Map<String, Object> getCompleteSyncGroupData(Long mainGroupId, String applicationId, String fromGroupId) {
         Application application = applicationDao.getApplication(applicationId);
         if(application == null) {
             throw new BusinessException("did not find other system(" + applicationId + ")'s config.");
@@ -81,7 +81,7 @@ public class SyncService implements ISyncService, Progressable {
         List<?> users  = getUsers (dataSourceType, appParams, fromGroupId); //从其它系统获取需要同步的所有用户
         
         Map<String, Object> paramsMap = new HashMap<String, Object>();
-        paramsMap.put("groupId", mainGgroupId);
+        paramsMap.put("groupId", mainGroupId);
         paramsMap.put("groups", groups);
         paramsMap.put("users", users);
         paramsMap.put("idMapping", idMapping);
@@ -102,16 +102,19 @@ public class SyncService implements ISyncService, Progressable {
     
     @SuppressWarnings("unchecked")
 	public void execute(Map<String, Object> paramsMap, Progress progress) {
+    	Long mainGroupId = (Long) paramsMap.get("groupId");
     	String fromApp = (String) paramsMap.get("fromApp");
         List<?> groups = (List<?>)paramsMap.get("groups");
         List<?> users  = (List<?>)paramsMap.get("users");
         Map<String, Long> idMapping = (Map<String, Long>)paramsMap.get("idMapping");
         
-        syncGroups(groups, idMapping, progress, fromApp);
+        String domain = groupDao.getEntity(mainGroupId).getDomain();
+        
+        syncGroups(groups, idMapping, progress, fromApp, domain);
         syncUsers (users, idMapping, progress);
     }
 
-    private void syncGroups(List<?> otherGroups, Map<String, Long> idMapping, Progress progress, String fromApp) {
+    private void syncGroups(List<?> otherGroups, Map<String, Long> idMapping, Progress progress, String fromApp, String domain) {
         for (int i = 0; i < otherGroups.size(); i++) {
             GroupDTO groupDto = (GroupDTO) otherGroups.get(i);
             String fromGroupId = groupDto.getId();
@@ -142,7 +145,7 @@ public class SyncService implements ISyncService, Progressable {
 					group.setGroupType(Group.MAIN_GROUP_TYPE);
 					groupDao.saveGroup(group);
 					
-					group.setDomain( groupDao.getEntity(parentId).getDomain() );
+					group.setDomain( domain );
 					groupDao.refreshEntity(group);
 					
 					// 补齐权限

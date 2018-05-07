@@ -102,23 +102,23 @@ function openUrl(url, dialog, title) {
 
 // report_portlet.html  的 feedback()方法调用到这里
 function feedback(module) {
-    openUrl( encodeURI('modules/dm/recorder.html?name=系统使用反馈' + (module ? "&udf="+module : "")), true, "建议反馈" );
+    openUrl( encodeURI('modules/dm/recorder.html?rcname=系统使用反馈' + (module ? "&udf="+module : "")), true, "建议反馈" );
 }
 
 function manageJob() {
-    openUrl( encodeURI('modules/dm/recorder.html?name=系统定时器') );
+    openUrl( encodeURI('modules/dm/recorder.html?rcname=系统定时器') );
 }
 
 function manageETLTask() {
-    openUrl( encodeURI('modules/dm/recorder.html?name=ETL任务') );
+    openUrl( encodeURI('modules/dm/recorder.html?rcname=ETL任务') );
 }
 
 function manageToken() {
-    openUrl( encodeURI('modules/dm/recorder.html?name=对外用户令牌发放') );
+    openUrl( encodeURI('modules/dm/recorder.html?rcname=对外用户令牌发放') );
 }
 
 function releaseModule() {
-    openUrl( encodeURI('modules/dm/recorder.html?name=功能模块发布') );
+    openUrl( encodeURI('modules/dm/recorder.html?rcname=功能模块发布') );
 }
 
 function fixUserInfo() {
