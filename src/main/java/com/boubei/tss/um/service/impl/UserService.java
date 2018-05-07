@@ -73,11 +73,11 @@ public class UserService implements IUserService{
 
 	public void deleteUser(Long groupId, Long userId) {
 		/* 
-		 * 登录过的用户不能被删除，只能被停用。
+		 * 登录过的用户( entity.getLogonCount() > 0 )不能被删除，只能被停用。
 		 * 防止域管理员把域下用户删除，导致删除用户创建的数据表记录无法被查询到，甚至会可能被其它域下后期注册的同名用户吸走了） 
          */
 		User entity = userDao.getEntity(userId);
-        if(Environment.getUserId().equals(userId) || entity.getLogonCount() > 0) {
+        if( Environment.getUserId().equals(userId) ) { 
             throw new BusinessException( EX.parse(EX.U_32, entity.getLoginName()) );
         }
         

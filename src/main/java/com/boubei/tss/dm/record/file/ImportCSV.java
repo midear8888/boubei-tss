@@ -60,24 +60,41 @@ public class ImportCSV implements AfterUpload {
 		Record record = recordService.getRecord(recordId);
 		_Database _db = _Database.getDB(record);
 		int insertCount = 0, updateCount = 0;
+		List<Integer> ignoreLines = new ArrayList<Integer>();
 		
+		boolean ignoreExist = "true".equals( request.getParameter("ignoreExist") );
 		String uniqueCodes = request.getParameter("uniqueCodes");
-		String charSet = (String) EasyUtils.checkNull(request.getParameter("charSet"), DataExport.CSV_CHAR_SET); // 默认GBK
+		String charSet = (String) EasyUtils.checkNull(request.getParameter("charSet"), DataExport.CSV_GBK); // 默认GBK
 
 		// 解析附件数据
 		File targetFile = new File(filepath);
 		String dataStr = FileHelper.readFile(targetFile, charSet); 
 		dataStr = dataStr.replaceAll(";", ","); // mac os 下excel另存为csv是用分号;分隔的
 		String[] rows = EasyUtils.split(dataStr, "\n");
+		if(rows.length < 2) {
+			return "parent.alert('导入文件没有数据');";
+		}
+		
+		String[] headers = rows[0].split(",");
+		int messyCount = 0;
+		for(String fieldName : headers) {
+			if( !_db.ncm.containsKey(fieldName) ) messyCount++; // 表头名 在数据表字段定义里不存在
+		}
+		if( messyCount*1.0 / headers.length > 0.5 ) { // header一半以上都找不着，可能是CSV文件为UTF-8编码，以UTF-8再次尝试盗取
+			dataStr = FileHelper.readFile(targetFile, DataExport.CSV_UTF8); 
+			dataStr = dataStr.replaceAll(";", ",");
+			rows = EasyUtils.split(dataStr, "\n");
+			headers = rows[0].split(",");
+		}
 		
 		List<String> snList = null;
 		List<Map<String, String>> valuesMaps = new ArrayList<Map<String, String>>();
-		String[] fields = rows[0].split(",");
+		
 		for(int index = 1; index < rows.length; index++) { // 第一行为表头，不要
 			String row = rows[index];
 			String[] fieldVals = (row+ " ").split(",");
 			
-			if(fieldVals.length != fields.length) {
+			if(fieldVals.length != headers.length) {
 				throw new BusinessException(EX.parse(EX.DM_23, index));
 			}
 			
@@ -88,7 +105,7 @@ public class ImportCSV implements AfterUpload {
     			value = value.replaceAll("，", ","); // 导出时英文逗号替换成了中文逗号，导入时替换回来
     			sb += value;
     			
-    			String filedLabel = fields[j];
+    			String filedLabel = headers[j];
     			String fieldCode = _db.ncm.get(filedLabel); //_db.fieldCodes.get(j);
     			
     			// 检查值为空的字段，是否配置自动取号规则，是的话先批量取出一串连号
@@ -124,11 +141,16 @@ public class ImportCSV implements AfterUpload {
 				if( !hasNullParam ) {
 					List<Map<String, Object>> result = _db.select(1, 1, params).result;
 					if( result.size() > 0 ) {
-						Map<String, Object> old = result.get(0);
-						Long itemId = EasyUtils.obj2Long(old.get("id"));
-						_db.update(itemId, valuesMap);
+						if( ignoreExist ) {
+							ignoreLines.add(index);
+						} else {
+							Map<String, Object> old = result.get(0);
+							Long itemId = EasyUtils.obj2Long(old.get("id"));
+							_db.update(itemId, valuesMap);
+							
+							updateCount ++;
+						}
 						
-						updateCount ++;
 						continue;
 					}
 				}
@@ -146,7 +168,8 @@ public class ImportCSV implements AfterUpload {
     	_db.insertBatch(valuesMaps);
 		
 		// 向前台返回成功信息
-		return "parent.alert('导入完成：共新增" +insertCount+ "行，覆盖" +updateCount+ "行。请刷新查看。'); parent.openActiveTreeNode();";
+    	String noInserts = ignoreExist ? ("忽略了第【" +EasyUtils.list2Str(ignoreLines)+ "】行") : ("覆盖" +updateCount+ "行");
+		return "parent.alert('导入完成：共新增" +insertCount+ "行，" +noInserts+ "。请刷新查看。'); parent.openActiveTreeNode();";
 	}
 	
 }

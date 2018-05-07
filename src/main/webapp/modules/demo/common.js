@@ -1,21 +1,16 @@
 
-function initCombobox(id, code, params, init) {
-    var url = '/tss/param/json/combo/' + code;
-    $.get(url, params, function(data){
-        var _data = [];
-        $.each(data, function(i, item){
-            _data.push({'id': item[0], 'text': item[1]});
-        });
-
+function initCombobox(id, code, init) {
+    var url = '/tss/param/json/combo/' + code + '?KV=true';
+    $.get(url, function(data){
         $('#' + id).combobox( {
                     panelHeight: '120px',
-                    valueField: 'id',
+                    valueField: 'value',
                     textField: 'text',
-                    data: _data
+                    data: data
                 });
 
         if(data[init]) {
-            $('#' + id).combobox('setValue', data[init][0]);
+            $('#' + id).combobox('setValue', data[init].value);
         }
     });
 }

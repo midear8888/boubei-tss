@@ -35,7 +35,7 @@
 
     #customizeBox { display: inline-block; }
     #customizeBox button { margin: 2px; }
-    #attach  { width: 800px; display: none; z-index: 10000; }
+    #attachDialog  { width: 800px; display: none; z-index: 10000; }
     #uploadForm  { background-color: #E0ECFF; padding: 5px 5px 5px 10px; margin-top: -3px; }
     #attachGrid { height: 200px; background-color: #fff; }
     #attachFile { color: #fff; background-color: #323232; padding: 2px 0px 1px 0px; }
@@ -160,12 +160,10 @@ function getOperation() {
 /* 页面初始化 */
 function init() {
     // 先取用户权限信息，Grid定制依赖具体权限
-    var params = {};
-
     tssJS.ajax({
         url : URL_GET_USER_HAS,
         method : "GET",
-        params: params,
+        params: {},
         type : "json",
         ondata: function() {
             var result = this.getResponseJSON();
@@ -200,6 +198,13 @@ function init() {
 
                     recordDefine.each(function(i, field){
                         field._defaultValue = field.defaultValue;
+
+                        // 检测有没有传入初始查询条件
+                        var fcode = field.code;
+                        var fval = tssJS.Query.get(fcode);
+                        if(fval) {
+                            params[fcode] = fval;
+                        }
                     });
 
                     initMenus();
@@ -616,7 +621,7 @@ function removeBatch() {
 function showEditLog() {
     var itemId = tssJS.G("grid").getColumnValue("id"); 
     var operateTable  = encodeURI(recordName),
-        operationCode = encodeURI(", " + itemId);
+        operationCode = encodeURI("%, " + itemId);
 
     tssJS.openIframePanel("logPanel", "数据修改日志", 960, 500, "../_log/log.htm?operateTable="+operateTable+"&operationCode=" +operationCode);
     tssJS("#logPanel").css("zIndex", "10001");
@@ -726,6 +731,12 @@ function showQueryForm() {
 
     var searchForm = tssJS.json2Form("searchForm", paramsConfig, buttonBox.join("")); 
     tssJS.cache.XmlDatas["searchFormXML"] = searchForm.template.sourceXML;
+
+    $.each(params, function(key, val){
+        var pKey = "p_" + key;
+        searchForm.updateDataExternal(pKey, val);
+        searchForm.updateData( $1(pKey) );
+    });
     
     $1("btSearch").onclick = function () {
         if( searchForm.checkForm() ) {
@@ -808,6 +819,7 @@ function getImportTL() {
     tssJS("#downloadFrame").attr( "src", encodeURI(URL_RECORD_CSV_TL + recordId ) );
 }
 
+var uniqueCodes;
 function batchImport() {
     function checkFileWrong(subfix) {
         return subfix != ".csv";
@@ -816,7 +828,7 @@ function batchImport() {
     var url = URL_UPLOAD_FILE + "?afterUploadClass=com.boubei.tss.dm.record.file.ImportCSV";
     url += "&recordId=" + recordId;
     if(uniqueCodes) {
-        url += "&uniqueCodes=" + uniqueCodes; // 定义在页面全局变量里：var uniqueCodes="oto,sjphone";
+        url += "&uniqueCodes=" + uniqueCodes; // 定义在页面全局变量里：uniqueCodes="oto,sjphone";
     }
     
     var importDiv = createImportDiv("请点击图标选择CSV文件导入", checkFileWrong, url);
@@ -847,7 +859,7 @@ function manageAttach(lineId, tag, isCreateRow) {
             var attachNode  = this.getNodeValue("RecordAttach");
 
             tssJS.showWaitingLayer();
-            tssJS("#attach").show(true).center();
+            tssJS("#attachDialog").show(true).center();
 
             if( isCreateRow || (canEditRow(lineId) && (!checkFileOpt||checkFileOpt(tag)) ) ) {
                 tssJS("#uploadForm span").show();               
@@ -863,7 +875,7 @@ function manageAttach(lineId, tag, isCreateRow) {
 }
 
 function clostUpload() {
-    tssJS("#attach").hide();
+    tssJS("#attachDialog").hide();
     tssJS.hideWaitingLayer();
 }
 
@@ -960,7 +972,7 @@ function delAttach() {
 
     <div id="searchFormDiv"></div>
 
-    <div id="attach">
+    <div id="attachDialog">
         <Grid id="attachGrid"></Grid>
         <form id="uploadForm" method="post" target='fileUpload' enctype="multipart/form-data">
             <span>

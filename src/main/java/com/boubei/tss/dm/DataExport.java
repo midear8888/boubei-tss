@@ -36,7 +36,8 @@ import com.boubei.tss.util.FileHelper;
 
 public class DataExport {
 	
-	public static final String CSV_CHAR_SET = "GBK";
+	public static final String CSV_GBK = "GBK";
+	public static final String CSV_UTF8 = "UTF-8";
 	
 	static Logger log = Logger.getLogger(DataExport.class);
 	
@@ -141,7 +142,7 @@ public class DataExport {
     }
     
     public static void exportCSV(String path, Collection<Object[]> data, List<String> fields) {
-    	exportCSV(path, data, fields, CSV_CHAR_SET);
+    	exportCSV(path, data, fields, CSV_GBK);
     }
     
     public static void exportCSV(String path, Collection<Object[]> data, List<String> fields, String charSet) {
@@ -183,7 +184,7 @@ public class DataExport {
     public static void exportCSV(String path, String data) {
         try {
         	File file = FileHelper.createFile(path);
-            OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(file), CSV_CHAR_SET );
+            OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(file), CSV_GBK );
             BufferedWriter fw = new BufferedWriter(write);   
             
             fw.write(data);

@@ -31,27 +31,27 @@ public class WFManager {
 		// TODO 此流程数据所有参与人员，从WFLog里获取
 		data.put( "all", creator ); 
 		
-		// 加入当前审批人的角色、组织等信息
+		// 加入【当前审批人】的角色、组织等信息
 		List<String> roles = Environment.getOwnRoleNames();
 		for( String role : roles ) {
-			data.put( "@" + role, role );
+			data.put( "C" + role, role );
 		}
 		List<Object[]> fatherGroups = loginSerivce.getGroupsByUserId(Environment.getUserId());
         for(Object[] temp : fatherGroups) {
-        	data.put( "@" + temp[1],  temp[1] );
+        	data.put( "C" + temp[1],  temp[1] );
         }
 		
-		// 加入流程提交人的角色、组织等信息
+		// 加入【流程提交人】的角色、组织等信息
 		OperatorDTO _creator = loginSerivce.getOperatorDTOByLoginName(creator);
 		List<Long> roleIds = loginSerivce.getRoleIdsByUserId( _creator.getId() );
         List<String> roleNames = loginSerivce.getRoleNames(roleIds);
         for( String role : roleNames ) {
-			data.put( "^" + role, role );
+			data.put( "F" + role, role );
 		}
         
         fatherGroups = loginSerivce.getGroupsByUserId( _creator.getId() );
         for(Object[] temp : fatherGroups) {
-        	data.put( "^" + temp[1],  temp[1] );
+        	data.put( "F" + temp[1],  temp[1] );
         }
 		
 		String _wf = DMUtil.freemarkerParse( _db.wfDefine.content, data );
@@ -71,7 +71,7 @@ public class WFManager {
 	/**
 	 * TODO 获取用户的同组某角色用户，比如此部门的部门经理
 	 */
-	public Object getSameGroupUserByRole() {
+	public Object getSameGroupUserByRole(String role, String staff) {
 		return null;
 	}
 	

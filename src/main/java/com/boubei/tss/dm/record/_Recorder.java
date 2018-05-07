@@ -18,6 +18,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -44,6 +45,7 @@ import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.record.file.RecordAttach;
 import com.boubei.tss.dm.record.permission.RecordPermission;
 import com.boubei.tss.dm.record.permission.RecordResource;
+import com.boubei.tss.dm.record.workflow.WFLog;
 import com.boubei.tss.dm.record.workflow.WFManager;
 import com.boubei.tss.dm.record.workflow.WFStep;
 import com.boubei.tss.dm.report.log.AccessLogRecorder;
@@ -400,11 +402,28 @@ public class _Recorder extends BaseActionSupport {
     	
     	_Database _db = getDB(recordId);
     	try {
+    		Map<String, Object> old = _db.get(id);
 			_db.update(id, requestMap );
 			
-			/* 生成工作流日志， TODO 如何含附件信息 */
+			/* 生成工作流日志， TODO 如何含附件信息，附件还是挂在主记录上?? */
             if( _db.wfDefine != null && requestMap.containsKey("wfUpdate") ) {
+            	WFLog wlog = new WFLog();
+            	wlog.setTableId(recordId);
+            	wlog.setItemId(id);
+            	wlog.setProcesser( Environment.getUserName() );
+            	wlog.setProcesserTime( new Date() );
+            	wlog.setProcessResult( requestMap.get("processResult") );
+            	wlog.setAttachFile( requestMap.get("attachFile") );  // TODO
             	
+            	WFStep currStep = WFManager.getCurrStep(_db, old);
+            	wlog.setOnStep(currStep.status);
+            	
+            	WFStep nextStep = WFManager.getCurrStep(_db, _db.get(id));
+            	wlog.setNextStep(nextStep.status);
+            	
+            	Set<String> roles = nextStep.role_btn.keySet();  // 优先使用同部门的，没有则取其它部门
+            	Set<String> users = nextStep.user_btn.keySet();
+//            	wlog.setNextStepProcesser(processer); // 计算下一步处理人
             }
 			
 			printSuccessMessage();
@@ -416,6 +435,7 @@ public class _Recorder extends BaseActionSupport {
     
     /**
      * 批量更新选中记录行的某个字段值，用在批量审批等场景
+     * $.post("/tss/xdata/batch/13", {'ids': '1,2,3,4', 'field': 'brand', 'value': '农夫'} , function(data) {});
      */
     @RequestMapping(value = "/batch/{record}", method = RequestMethod.POST)
     public void updateBatch(HttpServletRequest request, HttpServletResponse response, 
@@ -620,7 +640,7 @@ public class _Recorder extends BaseActionSupport {
 	
 	@RequestMapping(value = "/attach/{id}", method = RequestMethod.DELETE)
     public void deleteAttach(HttpServletRequest request, HttpServletResponse response, @PathVariable("id") Long id) {
-		// 远程访问时需校验Token需要用到recordId；本地访问可不传
+		// 注：远程访问时需校验Token需要用到recordId；本地访问可不传
 		Long recordId = recordService.getRecordID( request.getParameter("recordId") );
 		prepareParams(request, recordId); // 远程访问预登录
 		
@@ -640,7 +660,7 @@ public class _Recorder extends BaseActionSupport {
 	
 	@RequestMapping("/attach/download/{id}")
 	public void downloadAttach(HttpServletRequest request, HttpServletResponse response, @PathVariable("id") Long id) throws IOException {
-		// 远程访问时需校验Token需要用到recordId；本地访问可不传
+		// 注：远程访问时需校验Token需要用到recordId；本地访问可不传
 		prepareParams(request, EasyUtils.obj2Long(request.getParameter("recordId")));
 		
 		RecordAttach attach = recordService.getAttach(id);

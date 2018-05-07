@@ -209,7 +209,10 @@ public class ParamAction extends BaseActionSupport {
         printSuccessMessage(msg);
     }
 	
-	/*************************************** 以下为Param的json格式服务，供前台调用 *************************************/
+	/*
+	 * ************************************** 以下为Param的json格式服务，供前台调用 ************************************
+	 * 注：如需提供为匿名调用，把参数code添加到系统地址白名单，eg: /simple/subTitle,/combo/EX_TYPE
+	 */
 	
 	/** 系统配置参数 */
 	@RequestMapping(value = "/json/simple/{code}", method = RequestMethod.GET)
@@ -221,27 +224,42 @@ public class ParamAction extends BaseActionSupport {
 	/** 获取下拉类型/树型参数列表  */
 	@RequestMapping(value = "/json/combo/{code}", method = RequestMethod.GET)
 	@ResponseBody
-	public Object getComboParam2Json(@PathVariable("code") String code, boolean isTree) {
-    	try{
-			List<Param> list = isTree ? paramService.getTreeParam(code) : paramService.getComboParam(code);
-			if(list != null) {
-				List<Object[]> result = new ArrayList<Object[]>();
-				for (Param param : list) {
-					result.add(new Object[] { param.getId(), param.getText(), param.getParentId(), param.getValue() });
-				}
-				return result;
+	public Object getComboParam2Json(@PathVariable("code") String code, boolean KV) {
+		List<Object> result = new ArrayList<Object>();
+		List<Param> list = paramService.getComboParam(code);
+		if(list == null) return result;
+		
+		for (Param param : list) {
+			if( KV ) {
+				Map<String, String> item = new HashMap<String, String>();
+				item.put("text", param.getText());
+				item.put("value", param.getValue());
+				result.add(item);
+			} 
+			else {
+				result.add(new Object[] { param.getId(), param.getText(), param.getValue() });
 			}
-    	} catch (Exception e) {
-    		log.warn("获取参数信息失败!code=" + code + ", " + e.getMessage());
 		}
-    	return "";
+ 
+    	return result;
+    }
+	
+	@RequestMapping(value = "/json/tree/{code}", method = RequestMethod.GET)
+	@ResponseBody
+	public Object getTreeParam2Json(@PathVariable("code") String code) {
+		List<Param> list = paramService.getTreeParam(code);
+		List<Object> result = new ArrayList<Object>();
+		if(list == null) return result;
+		
+		for (Param param : list) {
+			result.add(new Object[] { param.getId(), param.getParentId(), param.getText(), param.getValue() });
+		}
+		return result;
     }
 	
 	@RequestMapping(value = "/xml/combo/{code}")
-	public void getComboParam2XML(HttpServletResponse response, 
-			@PathVariable("code") String code, boolean isTree) {
-		
-		try{
+	public void getComboParam2XML(HttpServletResponse response, @PathVariable("code") String code, boolean isTree) {
+		try {
 			List<Param> list = isTree ? paramService.getTreeParam(code) : paramService.getComboParam(code);
 			TreeEncoder treeEncoder = new TreeEncoder(list, new LevelTreeParser());
 			treeEncoder.setNeedRootNode(false);
