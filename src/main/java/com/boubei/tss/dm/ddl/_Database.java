@@ -169,7 +169,7 @@ public abstract class _Database {
    				
    				String label = (String) fDefs.get("label");
    				if( labels.contains(label) ) {
-   					throw new BusinessException( EX.parse(EX.DM_26, label) );
+//   					throw new BusinessException( EX.parse(EX.DM_26, label) );
    				}
    				if( codes.contains(code) ) {
    					throw new BusinessException( EX.parse(EX.DM_25, code) );
@@ -453,7 +453,7 @@ public abstract class _Database {
 		return paramsMap;
 	}
 	
-	// 用于数据清洗或批量导入
+	// 用于数据清洗或批量导入（含自动取号）
 	public void insertBatch(Collection<Map<String, String>> valuesMaps) {
 		if(valuesMaps == null || valuesMaps.isEmpty()) return;
 		

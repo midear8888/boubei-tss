@@ -30,7 +30,7 @@ import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 
 /**
- * 按天抽取Job，可以配置多个，在不同时间点触发
+ * 按天抽取Job，可以配置多个，在不同时间点触发。
  */
 @DisallowConcurrentExecution
 public class ByDayETLJob extends AbstractETLJob {
@@ -167,8 +167,9 @@ public class ByDayETLJob extends AbstractETLJob {
 	        	list2.add(item2);
 	        }
         	
+        	// check target is a RecordTable or SQL, if SQL, this will throw exception, then do catch { ... }
         	try { 
-        		Long recordId = EasyUtils.obj2Long(target); // check target is a ID or SQL, if SQL, this will throw exception, then do catch{} 
+        		Long recordId = recordService.getRecordID(target);  
         		_Database db = recordService.getDB(recordId);
 				db.insertBatch(list2);
 				

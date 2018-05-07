@@ -52,19 +52,6 @@ public class MathUtil {
         }
         return sum.doubleValue();
     }
-    
-    /**
-	 * Double类型数据，保留n位小数
-	 * 
-	 * @param value
-	 * @param n
-	 * @return
-	 */
-    public static Double round(Double value, int n) {
-    	double m = Math.pow(10, n);
-        value *= m;
-        return Math.round(value)/m;
-    }
 
 	/**
 	 * 两数相乘

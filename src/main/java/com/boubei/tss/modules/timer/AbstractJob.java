@@ -39,23 +39,26 @@ public abstract class AbstractJob implements Job {
 	 */
 	protected IOperator jobRobot() {
         return new OperatorDTO(UMConstants.ROBOT_USER_ID, UMConstants.ROBOT_USER_NAME); 
-
 	}
 	
 	protected boolean needSuccessLog() {
 		return false;
 	}
 	
+	protected void initContext() {
+		// 模拟登录，用以初始化Environment
+		IOperator excutor = jobRobot();
+		String token = TokenUtil.createToken("1234567890", excutor.getId());
+		IdentityCard card = new IdentityCard(token, excutor);
+		Context.initIdentityInfo(card);
+	}
+	
     public void execute(JobExecutionContext context) throws JobExecutionException {
     	try {
-    		// 模拟登录，用以初始化Environment
-    		IOperator excutor = jobRobot();
-			String token = TokenUtil.createToken("1234567890", excutor.getId());
-    		IdentityCard card = new IdentityCard(token, excutor);
-    		Context.initIdentityInfo(card); 
-    			
+    		initContext(); 
     		businessLogger = (IBusinessLogger) Global.getBean("BusinessLogger"); // 跑Test时可能没有spring IOC
-    	} catch (Exception e) { }
+    	} 
+    	catch (Exception e) { }
     	
     	JobDetail aJob = context.getJobDetail();
     	String jobName = aJob.getKey().getName();
@@ -100,7 +103,7 @@ public abstract class AbstractJob implements Job {
         	catch(Exception e) { }
         }
     }
-    
+
     protected abstract void excuteJob(String jobConfig, Long jobID);
     
     public void excuteJob(String jobConfig) {

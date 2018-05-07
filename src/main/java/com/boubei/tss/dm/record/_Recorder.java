@@ -384,6 +384,8 @@ public class _Recorder extends BaseActionSupport {
     private void throwEx(Exception e, String op) {
     	Throwable firstCause = ExceptionEncoder.getFirstCause(e);
 		String errorMsg = op + " error: " + firstCause;
+		errorMsg = errorMsg.replaceAll("com.boubei.tss.framework.exception.BusinessException: ", "");
+		
 		log.error(errorMsg);
 		throw new BusinessException(errorMsg);
     }

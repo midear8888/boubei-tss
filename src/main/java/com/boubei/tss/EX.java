@@ -88,7 +88,7 @@ public class EX {
 	public static String DM_14 = "没有找到名为【${x1}】的数据表(服务)，其不存在或您的账号权限不够";
 	public static String DM_15 = "【${x1}】的参数配置有误，JSON格式存在错误，请检查修正后再保存。具体原因：${x2}";
 	public static String DM_16 = "修改出错，该记录不存在，可能已经被删除。";
-	public static String DM_17 = "修改异常，该记录在你修改期间已经被其它人修改过了，请关闭后刷新列表，再重新进行修改。";
+	public static String DM_17 = "修改异常，该记录在你修改期间已经被其它人修改过了，请关闭后重新打开编辑再保存。";
 	public static String DM_18 = "【${x1}】数据服务不存在。";
 	public static String DM_19 = "此报表没有包含任何查询脚本，无法被订阅。";
 	public static String DM_20 = "参数【${x1}】不能为空。";

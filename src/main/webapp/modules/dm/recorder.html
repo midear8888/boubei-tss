@@ -362,12 +362,12 @@ function isCreate(rowID) {
 }
 
 var uniqueFlag = false, uniqueMsg, _tempID;
-function loadDetailData(rowID, version) {
+function loadDetailData(rowID) {
     var form, dataNode = tssJS.cache.XmlDatas[rowID],
         isCreateRow = isCreate(rowID);
     _tempID = isCreateRow ? $.now() : rowID;
 
-    function showInForm() {
+    function showInForm(version) {
         xform = tssJS.json2Form("page1Form", recordDefine, null, customizeJS);
         xform.template.dataNode.id = _tempID;
         tssJS.cache.XmlDatas[rowID] = xform.template.dataNode;
@@ -455,7 +455,7 @@ function loadDetailData(rowID, version) {
 
         // 设置保存/关闭按钮操作
         if( canEditRow(rowID) && (!disableSave || !disableSave())) {
-            tssJS("#page1BtSave").show().click( function() { saveSource(rowID, isCreateRow);  } );
+            tssJS("#page1BtSave").show().click( function() { saveSource(rowID, isCreateRow, version);  } );
         } else {
             tssJS("#page1BtSave").hide();
         }
@@ -502,19 +502,16 @@ function loadDetailData(rowID, version) {
                     field.defaultValue = item[field.code];
                 }); 
 
-                showInForm();
-
-                // 
-
+                showInForm(item.version);  // update
             });
             return;
         }
     }
 
-    showInForm();
+    showInForm();  // create
 }
 
-function saveSource(rowID, isCreate) {
+function saveSource(rowID, isCreate, version) {
     var xform = tssJS.F("page1Form");  
     if( !xform.checkForm() ) return;
 
@@ -535,6 +532,7 @@ function saveSource(rowID, isCreate) {
     var dataNode = tssJS.cache.XmlDatas[rowID];
     request.setFormContent(dataNode);
     request.addParam("_tempID", _tempID);
+    version && request.addParam("_version", version);  // 乐观锁
 
     var isUpdate = !isCreate;
     if( isUpdate ) {

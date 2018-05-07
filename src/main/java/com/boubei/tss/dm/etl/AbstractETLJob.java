@@ -43,7 +43,7 @@ public abstract class AbstractETLJob extends AbstractJob {
 	protected ReportService reportService = (ReportService) Global.getBean("ReportService");
 	protected RecordService recordService = (RecordService) Global.getBean("RecordService");
 	
-	String currTaskCreator;
+	String currTaskCreator = UMConstants.ROBOT_USER_NAME;
 	
 	protected IOperator jobRobot() {
         return new OperatorDTO(UMConstants.ROBOT_USER_ID, currTaskCreator); 
@@ -55,7 +55,11 @@ public abstract class AbstractETLJob extends AbstractJob {
 		
 		for(Object obj : tasks) {
 			Task task = (Task) obj;
+			
+			// 为每个任务单独设置Context
 			currTaskCreator = task.getCreator();
+			initContext();
+			
 			excuteTask( task );
 		}
 	}
