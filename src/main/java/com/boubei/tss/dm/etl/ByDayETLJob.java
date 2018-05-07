@@ -65,14 +65,12 @@ public class ByDayETLJob extends AbstractETLJob {
 			currDay = DateUtil.addDays(currDay, 1);
 		}
 		
-		int repeats = task.getRepeatDays();
-		if(repeats > 0) {
-			while ( repeats > 0 ) {
-				currDay = DateUtil.subDays(today, repeats);
-				dateList.add(currDay);
-				repeatList.add(currDay);
-				repeats --;
-			}
+		int repeats = EasyUtils.obj2Int(task.getRepeatDays());
+		while ( repeats > 0 ) {
+			currDay = DateUtil.subDays(today, repeats);
+			dateList.add(currDay);
+			repeatList.add(currDay);
+			repeats --;
 		}
 				
 		log.info(task.getName() + " is starting! total days = " +dateList.size()+ "" );
@@ -169,7 +167,7 @@ public class ByDayETLJob extends AbstractETLJob {
         	
         	// check target is a RecordTable or SQL, if SQL, this will throw exception, then do catch { ... }
         	try { 
-        		Long recordId = recordService.getRecordID(target);  
+        		Long recordId = recordService.getRecordID(target, false);  
         		_Database db = recordService.getDB(recordId);
 				db.insertBatch(list2);
 				

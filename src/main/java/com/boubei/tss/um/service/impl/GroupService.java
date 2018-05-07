@@ -121,12 +121,16 @@ public class GroupService implements IGroupService {
 		group.setSeqNo(groupDao.getNextSeqNo(UMConstants.DOMAIN_ROOT_ID));
 		groupDao.saveGroup(group);
 		
-		// 创建时，OperateInfoInterceptor 会执行 IOperatable.setDomain(Environment.getDomain())；需要单独再保存一遍domain信息
-		group.setDomain(domain);
-		groupDao.saveGroup(group);
+		fixDomain(domain, group);
 		
 		return group;
     }
+
+	private void fixDomain(String domain, Group group) {
+		// 创建时，OperateInfoInterceptor 会执行 IOperatable.setDomain(Environment.getDomain())；需要单独再保存一遍domain信息
+		group.setDomain(domain);
+		groupDao.saveGroup(group);
+	}
     
 	public void createNewGroup(Group group, String userIdsStr, String roleIdsStr) {
 		Long parentId = group.getParentId();
@@ -136,6 +140,8 @@ public class GroupService implements IGroupService {
 		group.setSeqNo(groupDao.getNextSeqNo(parentId));
 		group.setDisabled(parent.getDisabled());
 		groupDao.saveGroup(group);
+		
+		fixDomain( parent.getDomain() , group);
         
 		saveGroupToUser(group.getId(), userIdsStr);
 		saveGroupToRole(group.getId(), roleIdsStr);

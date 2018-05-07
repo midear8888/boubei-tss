@@ -532,7 +532,7 @@ function saveSource(rowID, isCreate, version) {
     var dataNode = tssJS.cache.XmlDatas[rowID];
     request.setFormContent(dataNode);
     request.addParam("_tempID", _tempID);
-    version && request.addParam("_version", version);  // 乐观锁
+    request.addParam("_version", version||0);  // 乐观锁
 
     var isUpdate = !isCreate;
     if( isUpdate ) {
@@ -666,13 +666,19 @@ function showQueryForm() {
         }
 
         if(field.isparam === 'true') {
-            var copy = clone(field);
-            copy.name = "p_" + (copy.name || copy.code);
+            var copy = clone(field), 
+                fcode = field.name || field.code;
+            copy.name = "p_" + fcode;
 
             delete copy["nullable"];
             delete copy["height"];
             // delete copy["width"];
             delete copy["defaultValue"];
+
+            // 放入传入页面的默认值
+            if( params[fcode] ) {
+                copy.defaultValue = params[field.code];
+            }
 
             if(field.type === 'date' || field.type === 'datetime' || field.type === 'number') {
                 var from = clone(copy), to = clone(copy);
@@ -682,6 +688,13 @@ function showQueryForm() {
                 to.label += "到";
                 paramsConfig.push(from);
                 paramsConfig.push(to);
+
+                if( params[from.name] ) {
+                    from.defaultValue = params[from.name];
+                }
+                if( params[to.name] ) {
+                    to.defaultValue = params[to.name];
+                }    
             } 
             else {                
                 paramsConfig.push(copy);
@@ -730,11 +743,6 @@ function showQueryForm() {
     var searchForm = tssJS.json2Form("searchForm", paramsConfig, buttonBox.join("")); 
     tssJS.cache.XmlDatas["searchFormXML"] = searchForm.template.sourceXML;
 
-    $.each(params, function(key, val){
-        var pKey = "p_" + key;
-        searchForm.updateDataExternal(pKey, val);
-        searchForm.updateData( $1(pKey) );
-    });
     
     $1("btSearch").onclick = function () {
         if( searchForm.checkForm() ) {

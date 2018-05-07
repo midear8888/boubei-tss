@@ -78,7 +78,7 @@ public class WFManager {
 	public List<?> queryTasks4User(RecordService recordService, String userCode, Object record, 
 			Map<String, String> params, int page, int pagesize) {
 		
-		Long recordId = recordService.getRecordID(record);
+		Long recordId = recordService.getRecordID(record, true);
     	_Database _db = recordService.getDB(recordId);
     	List<Map<String, Object>> items = _db.select(page, pagesize, params).result;
     	List<Object> itemIds = new ArrayList<Object>();

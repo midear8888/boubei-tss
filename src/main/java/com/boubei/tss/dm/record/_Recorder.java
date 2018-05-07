@@ -99,7 +99,7 @@ public class _Recorder extends BaseActionSupport {
 		String[] list = nameOrTables.split(",");
 		List<Long> idList = new ArrayList<Long>();
 		for(String nt : list) {
-			Long id = recordService.getRecordID(nt, Record.TYPE1);
+			Long id = recordService.getRecordID(nt, Record.TYPE1, false);
 			idList.add(id);
 		}
 		
@@ -109,7 +109,7 @@ public class _Recorder extends BaseActionSupport {
 	@RequestMapping("/define/{record}")
     @ResponseBody
     public Object getDefine(@PathVariable("record") Object record) {
-		Long recordId  = recordService.getRecordID(record);
+		Long recordId  = recordService.getRecordID(record, true);
 		Record _record = recordService.getRecord( recordId );
 		if(!_record.isActive()) {
 			throw new BusinessException(EX.DM_10);
@@ -151,7 +151,7 @@ public class _Recorder extends BaseActionSupport {
             @PathVariable("record") Object record, 
             @PathVariable("page") int page) {
     	
-    	Long recordId = recordService.getRecordID(record);
+    	Long recordId = recordService.getRecordID(record, false);
     	Map<String, String> requestMap = prepareParams(request, recordId);
     	boolean pointedFileds = requestMap.containsKey("fields") ;
     	_Database _db = getDB(recordId);
@@ -244,7 +244,7 @@ public class _Recorder extends BaseActionSupport {
     	if( !EasyUtils.isNullOrEmpty(recordName)  ) {
     		record = recordName;
     	}
-    	Long recordId = recordService.getRecordID(record);
+    	Long recordId = recordService.getRecordID(record, false);
     	
     	Map<String, String> requestMap = prepareParams(request, recordId);
     	boolean pointedFileds = requestMap.containsKey("fields") ;
@@ -270,10 +270,8 @@ public class _Recorder extends BaseActionSupport {
     public Object showAsJSON(HttpServletRequest request, 
     		@PathVariable("record") String record) {
     	
-    	Long recordId = recordService.getRecordID(record);
-    	
     	Object page = EasyUtils.checkNull(request.getParameter("page"), 1);
-        return showAsJSON(request, recordId, EasyUtils.obj2Int(page));
+        return showAsJSON(request, record, EasyUtils.obj2Int(page));
     }
     
     private int getPageSize(Map<String, String> m, int defaultSize) {
@@ -289,7 +287,7 @@ public class _Recorder extends BaseActionSupport {
     	
     	Map<String, String> requestMap = DMUtil.getRequestMap(request, true);  // GET Method Request
     	boolean pointed = requestMap.containsKey("fields") ;
-    	Long recordId = recordService.getRecordID(record);
+    	Long recordId = recordService.getRecordID(record, true);
     	_Database _db = getDB(recordId);
         
     	int _page = EasyUtils.obj2Int( EasyUtils.checkNull(requestMap.get("page"), "1") );
@@ -321,7 +319,7 @@ public class _Recorder extends BaseActionSupport {
     public Map<String, Object> get(HttpServletRequest request, 
     		@PathVariable("record") Object record, @PathVariable("id") Long id) {
     	
-    	Long recordId = recordService.getRecordID(record);
+    	Long recordId = recordService.getRecordID(record, false);
     	prepareParams(request, recordId);
     	_Database _db = getDB(recordId, Record.OPERATION_CDATA, Record.OPERATION_VDATA, Record.OPERATION_EDATA);
 
@@ -353,7 +351,7 @@ public class _Recorder extends BaseActionSupport {
     public Object createAndReturnID(HttpServletRequest request, 
     		@PathVariable("record") Object record) {
     	
-    	Long recordId = recordService.getRecordID(record);
+    	Long recordId = recordService.getRecordID(record, false);
     	Map<String, String> requestMap = prepareParams(request, recordId);
     	Long _tempID = EasyUtils.obj2Long(requestMap.remove("_tempID"));
     	
@@ -395,7 +393,7 @@ public class _Recorder extends BaseActionSupport {
     		@PathVariable("record") Object record, 
     		@PathVariable("id") Long id) {
     	
-    	Long recordId = recordService.getRecordID(record);
+    	Long recordId = recordService.getRecordID(record, false);
     	Map<String, String> requestMap = prepareParams(request, recordId);
     	
     	// 检查用户对当前记录是否有编辑权限，防止篡改别人创建的记录
@@ -443,7 +441,7 @@ public class _Recorder extends BaseActionSupport {
     		@PathVariable("record") Object record, 
     		String ids, String field, String value) {
     	
-    	Long recordId = recordService.getRecordID(record);
+    	Long recordId = recordService.getRecordID(record, false);
     	prepareParams(request, recordId);
     	
     	// 检查用户对当前记录是否有编辑权限，防止篡改别人创建的记录
@@ -460,7 +458,7 @@ public class _Recorder extends BaseActionSupport {
     		@PathVariable("record") Object record, 
     		@PathVariable("id") Long id) {
     	
-    	Long recordId = recordService.getRecordID(record);
+    	Long recordId = recordService.getRecordID(record, false);
     	prepareParams(request, recordId);
     	
     	checkRowEditable(recordId, id);
@@ -475,7 +473,7 @@ public class _Recorder extends BaseActionSupport {
     		@PathVariable("record") Object record, 
     		@PathVariable("id") Long id) {
     	
-    	Long recordId = recordService.getRecordID(record);
+    	Long recordId = recordService.getRecordID(record, false);
     	Map<String, String> requestMap = prepareParams(request, recordId);
     	
     	exeDelete(recordId, id, requestMap);
@@ -519,7 +517,7 @@ public class _Recorder extends BaseActionSupport {
     public void deleteBatch(HttpServletRequest request, HttpServletResponse response, 
     		@PathVariable("record") Object record, String ids) {
     	
-    	Long recordId = recordService.getRecordID(record);
+    	Long recordId = recordService.getRecordID(record, false);
     	Map<String, String> requestMap = prepareParams(request, recordId);
     	
     	String[] idArray = ids.split(",");
@@ -540,7 +538,7 @@ public class _Recorder extends BaseActionSupport {
     @ResponseBody
     public Object cudBatch(HttpServletRequest request, @PathVariable("record") Object record) {
     	
-    	Long recordId = recordService.getRecordID(record);
+    	Long recordId = recordService.getRecordID(record, false);
     	Map<String, String> requestMap = prepareParams(request, recordId);
     	String csv = requestMap.get("csv");
     	
@@ -593,7 +591,7 @@ public class _Recorder extends BaseActionSupport {
     public void getImportTL(HttpServletResponse response, 
     		@PathVariable("record") Object record) {
     	
-    	Long recordId = recordService.getRecordID(record);
+    	Long recordId = recordService.getRecordID(record, false);
     	 _Database _db = getDB(recordId, Record.OPERATION_CDATA, Record.OPERATION_EDATA, Record.OPERATION_VDATA);
 		
 		String fileName = _db.recordName + "-tl.csv";
@@ -611,7 +609,7 @@ public class _Recorder extends BaseActionSupport {
     public List<?> getAttachList(HttpServletRequest request, 
     		@PathVariable("record") Object record, @PathVariable("itemId") Long itemId) {
 		
-		Long recordId = recordService.getRecordID(record);
+		Long recordId = recordService.getRecordID(record, false);
 		prepareParams(request, recordId);
 		
 		// 检查用户对当前记录是否有查看权限
@@ -626,7 +624,7 @@ public class _Recorder extends BaseActionSupport {
     public void getAttachListXML(HttpServletRequest request, HttpServletResponse response, 
     		@PathVariable("record") Object record, @PathVariable("itemId") Long itemId) {
 		
-		Long recordId = recordService.getRecordID(record);
+		Long recordId = recordService.getRecordID(record, false);
 		prepareParams(request, recordId);
 		
 		// 检查用户对当前记录是否有查看权限
@@ -642,7 +640,7 @@ public class _Recorder extends BaseActionSupport {
 	@RequestMapping(value = "/attach/{id}", method = RequestMethod.DELETE)
     public void deleteAttach(HttpServletRequest request, HttpServletResponse response, @PathVariable("id") Long id) {
 		// 注：远程访问时需校验Token需要用到recordId；本地访问可不传
-		Long recordId = recordService.getRecordID( request.getParameter("recordId") );
+		Long recordId = recordService.getRecordID( request.getParameter("recordId"), false );
 		prepareParams(request, recordId); // 远程访问预登录
 		
 		RecordAttach attach = recordService.getAttach(id);

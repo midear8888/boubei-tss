@@ -98,7 +98,7 @@ public class RecordAction extends BaseActionSupport {
 	@RequestMapping(value = "/id", method = RequestMethod.POST)
     @ResponseBody
     public Object getRecordID( String name ) {
-		return recordService.getRecordID(name, Record.TYPE1);
+		return recordService.getRecordID(name, Record.TYPE1, false);
     }
     
     @RequestMapping(value = "/detail/{type}")
