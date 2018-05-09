@@ -16,7 +16,7 @@ import com.boubei.tss.dm.record.ARecordTable;
 @Entity
 @Table(name = "${tableName}")
 @SequenceGenerator(name = "${tableName}_seq", sequenceName = "${tableName}_seq", initialValue =1, allocationSize = 10)
-public class DemoEntity implements ARecordTable  {
+public class DemoEntity extends ARecordTable  {
     
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "${tableName}_seq")

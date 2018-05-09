@@ -40,6 +40,7 @@ import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.DataExport;
 import com.boubei.tss.dm.ddl._Database;
 import com.boubei.tss.dm.ddl._Field;
+import com.boubei.tss.dm.dml.MultiSQLExcutor;
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.record.file.RecordAttach;
 import com.boubei.tss.dm.record.permission.RecordPermission;
@@ -361,15 +362,24 @@ public class _Recorder extends BaseActionSupport {
     		
     		File attachDir1 = new File(RecordAttach.getAttachDir(recordId, _tempID));
     		if( attachDir1.exists() ) { // 将挂在临时记录ID下的附件挂到新生成的记录ID上
+    			String fixSql = "update dm_record_attach set itemId=? where recordId=? and itemId=?";
+    			String attachSeqNos = requestMap.remove("remainAttachs"); // 提交记录时还存在的附件序号，有些上传错的附件可能已经删除了
+    			if( !EasyUtils.isNullOrEmpty(attachSeqNos) ) {
+    				fixSql += " and seqNo in (" +attachSeqNos+ ") "; // 不在attachSeqNos里的附件成为废弃记录，可写一个定时Job清理这类记录
+    			}
+    			
     			Map<Integer, Object> paramsMap = new HashMap<Integer, Object>();
     			paramsMap.put(1, newID);
     			paramsMap.put(2, recordId);
     			paramsMap.put(3, _tempID);
-				SQLExcutor.excute("update dm_record_attach set itemId=? where recordId=? and itemId=?", paramsMap, DMConstants.LOCAL_CONN_POOL);
+				SQLExcutor.excute(fixSql, paramsMap, DMConstants.LOCAL_CONN_POOL);
 				
 				File attachDir2 = new File(RecordAttach.getAttachDir(recordId, newID));
 				attachDir1.renameTo(attachDir2);
     		}
+    		
+    		// 新增时带附件操作，使用了自定义操作来支持多表数据操作；修改、删除不带附件操作，直接用MultiSQLExcutor执行即可
+    		exeAfterOperation(requestMap, _db, newID);
     	}
     	catch(Exception e) {
     		_db.delete(newID); // 回滚
@@ -377,6 +387,19 @@ public class _Recorder extends BaseActionSupport {
     	}
     	return newID;
     }
+
+	protected void exeAfterOperation( Map<String, String> requestMap, _Database _db, Long itemId) throws Exception {
+		String afterOption = requestMap.remove("_after_");
+		if( !EasyUtils.isNullOrEmpty(afterOption) ) {
+			Map<String, Object> data = _db.get(itemId);
+			data.put("id", itemId);
+			
+			afterOption = EasyUtils.fmParse(afterOption, data);
+			MultiSQLExcutor mex = new MultiSQLExcutor();
+			mex.recordService = this.recordService;
+			mex._exeMultiSQLs(afterOption, _db.datasource, data);
+		}
+	}
     
     private void throwEx(Exception e, String op) {
     	Throwable firstCause = ExceptionEncoder.getFirstCause(e);

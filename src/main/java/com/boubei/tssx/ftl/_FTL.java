@@ -36,7 +36,7 @@ public class _FTL {
 	
 	@RequestMapping(value = "/table/{id}", produces = "text/plain;charset=utf-8")
 	@ResponseBody
-	public Object recordDef2Def(@PathVariable("id") Long id) {
+	public Object recordDef2Model(@PathVariable("id") Long id) {
 		_Database _db = recordService.getDB(id);
         List<Map<Object, Object>> fields = _db.getFields();
         
@@ -101,7 +101,7 @@ public class _FTL {
 				if( !column.nullable() ) {
 					list.add("'nullable':'false'");
 				}
-				if( !column.unique() ) {
+				if( column.unique() ) {
 					list.add("'unique':'true'");
 				}
 				if( column.length() >= 500) {

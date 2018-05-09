@@ -13,6 +13,7 @@ package com.boubei.tss.dm.dml;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,11 +32,10 @@ import com.boubei.tss.EX;
 import com.boubei.tss.cache.Cacheable;
 import com.boubei.tss.cache.JCache;
 import com.boubei.tss.cache.Pool;
-import com.boubei.tss.dm.ddl._Database;
-import com.boubei.tss.dm.record.Record;
 import com.boubei.tss.dm.record.RecordService;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.exception.BusinessException;
+import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.modules.log.IBusinessLogger;
 import com.boubei.tss.modules.log.Log;
 import com.boubei.tss.util.EasyUtils;
@@ -48,14 +48,13 @@ import com.boubei.tss.util.EasyUtils;
 	delete from tbl_jx  where id = ${maxid} - 1
 	
 	var json = [];
-	json.push({ "sqlID": 1, data: {"org": "org1", "center": "A", "score": 59, "day": "2017-01-01"} });
-	json.push({ "sqlID": 1, data: {"org": "org2", "center": "B", "score": 58, "day": "2017-01-02"} });
-	json.push({ "sqlID": 2, data: {} });
-	json.push({ "sqlID": 3, data: {"score": 100} });
-	json.push({ "sqlID": 4, data: {} });
+	json.push({ "sqlCode": "s1", data: {"org": "org1", "center": "A", "score": 59, "day": "2017-01-01"} });
+	json.push({ "sqlCode": "s1", data: {"org": "org2", "center": "B", "score": 58, "day": "2017-01-02"} });
+	json.push({ "sqlCode": "s2", data: {} });
+	json.push({ "sqlCode": "s3", data: {"score": 100} });
+	json.push({ "sqlCode": "s4", data: {} });
 	
 	var params = {};
-	params.recordId=1055; // 维护SQL的录入表
 	params.ds = "connpool-btr-mysql";
 	params.json = JSON.stringify(json);
 	tssJS.post("/tss/auth/dml/multi", params, function(result) { console.log(result); } );
@@ -70,26 +69,23 @@ public class MultiSQLExcutor {
 	
 	public static final int PAGE_SIZE = 50;
 	
-	@Autowired RecordService recordService;
+	@Autowired public RecordService recordService;
 	  
     /**
-     * 一个事务内执行新增、修改、删除、查询等多条SQL语句，All in one，并记录日志
-     * TODO 数据行级权限如何控制
-     * 
-     * @param request
-     * @param recordId 记录SQL的数据表ID
-     * @param json
-     * @return
+     * 一个事务内执行新增、修改、删除、查询等多条SQL语句，All in one，并记录日志；要求都在一个数据源内执行。
+     * 注：需严格控制数据行级权限
      */
-    @SuppressWarnings("unchecked")
 	@RequestMapping(value = "/multi", method = RequestMethod.POST)
     @ResponseBody
-    public Object exeMultiSQLs(HttpServletRequest request, 
-    		Long recordId, String json, String ds) throws Exception {
+    public Object exeMultiSQLs(HttpServletRequest request, String json, String ds) throws Exception {
+    	return _exeMultiSQLs(json, ds, new HashMap<String, Object>());
+    }
     	
-    	Record record = recordService.getRecord(recordId);
-    	_Database _db = _Database.getDB(record);
+	@SuppressWarnings("unchecked")
+    public Object _exeMultiSQLs(String json, String ds, Map<String, Object> data) throws Exception {
     	
+    	ICommonService commonService = Global.getCommonService();
+ 
     	Pool connpool = getDSPool(ds);
         Cacheable connItem = connpool.checkOut(0);
         Connection conn = (Connection) connItem.getValue();
@@ -108,15 +104,26 @@ public class MultiSQLExcutor {
 	    	int index = 1;
 	    	for(Map<Object, Object> item : list) {
 	    		Long sqlId = EasyUtils.obj2Long(item.get("sqlID"));
-	    		Map<String, Object> params = (Map<String, Object>) item.get("data");
-	    		params.putAll(stepResults);
-	    		
-	    		Map<String, Object> sqlInfo = _db.get(sqlId);
-	    		if(sqlInfo == null) {
-	    			throw new BusinessException("ID=" + sqlId + " SQL not exsit.");
+	    		String sqlCode = (String) item.get("sqlCode");
+	    		SQLDef sqlInfo;
+	    		if( !EasyUtils.isNullOrEmpty(sqlCode) ) {
+	    			List<?> temp = commonService.getList("from SQLDef where code=?", sqlCode);
+	    			sqlInfo = (SQLDef) (temp.isEmpty() ? null : temp.get(0));
+	    		} 
+	    		else {
+	    			sqlInfo = (SQLDef) commonService.getEntity(SQLDef.class, sqlId);
 	    		}
 	    		
-				sql = (String) sqlInfo.get("script");
+	    		if(sqlInfo == null) {
+	    			throw new BusinessException("code = " +sqlCode+ " or ID = " + sqlId + "'s SQLDef not exsit.");
+	    		}
+	    		
+				sql = sqlInfo.getScript();
+				
+	    		Map<String, Object> params = (Map<String, Object>) item.get("data");
+	    		params.putAll(stepResults);
+	    		params.putAll(data);
+	    		
 	    		String _sql = EasyUtils.fmParse(sql, params).trim(); // MacrocodeCompiler.run(sql, params, true);
 	    		if(_sql.startsWith("FM-parse-error")) {
 	    			throw new BusinessException("SQL freemarker parse error" + _sql.replaceAll("FM-parse-error:", ""));
@@ -137,7 +144,7 @@ public class MultiSQLExcutor {
                     stepResults.put("step" + index, statement.getUpdateCount());
 	    		}
 	    		
-	    		Log excuteLog = new Log(recordId + ", " + sqlId, sql ); // params.toString()
+	    		Log excuteLog = new Log( "SQLDef, " + sqlId, sql ); // params.toString()
     			excuteLog.setOperateTable("exeMultiSQLs");
     			logs.add(excuteLog);
     			
