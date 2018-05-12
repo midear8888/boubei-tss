@@ -211,7 +211,7 @@ public class _Recorder extends BaseActionSupport {
         				
         				String name = value.substring(0, splitIndex);
         				String id = value.substring(splitIndex + 1);
-        				urls += "<a href='/tss/auth/xdata/attach/download/" +id+ "' target='_blank'>" +name+ "</a>&nbsp&nbsp";
+        				urls += "<a href='/tss/xdata/attach/download/" +id+ "' target='_blank'>" +name+ "</a>&nbsp&nbsp";
     				}
 
     				item.put(field, urls);
@@ -661,9 +661,8 @@ public class _Recorder extends BaseActionSupport {
 	
 	@RequestMapping(value = "/attach/{id}", method = RequestMethod.DELETE)
     public void deleteAttach(HttpServletRequest request, HttpServletResponse response, @PathVariable("id") Long id) {
-		// 注：远程访问时需校验Token需要用到recordId；本地访问可不传
-		Long recordId = recordService.getRecordID( request.getParameter("recordId"), false );
-		prepareParams(request, recordId); // 远程访问预登录
+
+		preAPICall(request);
 		
 		RecordAttach attach = recordService.getAttach(id);
 		if(attach == null) {
@@ -681,8 +680,8 @@ public class _Recorder extends BaseActionSupport {
 	
 	@RequestMapping("/attach/download/{id}")
 	public void downloadAttach(HttpServletRequest request, HttpServletResponse response, @PathVariable("id") Long id) throws IOException {
-		// 注：远程访问时需校验Token需要用到recordId；本地访问可不传
-		prepareParams(request, EasyUtils.obj2Long(request.getParameter("recordId")));
+		
+		preAPICall(request);
 		
 		RecordAttach attach = recordService.getAttach(id);
 		if(attach == null) {
@@ -696,6 +695,15 @@ public class _Recorder extends BaseActionSupport {
 		
 		FileHelper.downloadFile(response, attach.getAttachPath(), attach.getName());
 		HitRateManager.getInstanse("dm_record_attach").output(id);
+	}
+
+	// 注：远程访问时需校验Token需要用到recordId；本地访问可不传
+	protected void preAPICall(HttpServletRequest request) {
+		String _recordId = request.getParameter("recordId");
+		if( !EasyUtils.isNullOrEmpty(_recordId) ) {
+			Long recordId = recordService.getRecordID( _recordId, false );
+			prepareParams(request, recordId); // 远程访问预登录
+		}
 	}
 	
 	/************************************* check permissions：安全级别 >= 6 才启用 **************************************/

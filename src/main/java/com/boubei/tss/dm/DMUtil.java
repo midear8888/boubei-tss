@@ -275,10 +275,10 @@ public class DMUtil {
 	
 	public static String customizeParse(String script) {
 		Map<String, Object> dataMap = getFreemarkerDataMap();
-		return customizeParse(script, dataMap);
+		return _customizeParse(script, dataMap);
 	}
 	
-	public static String customizeParse(String script, Map<String, Object> dataMap) {
+	private static String _customizeParse(String script, Map<String, Object> dataMap) {
 		ScriptParser scriptParser = ScriptParserFactory.getParser();
       	if(scriptParser == null) {
       		script = DMUtil.freemarkerParse(script, dataMap);
@@ -289,17 +289,17 @@ public class DMUtil {
       	return script;
 	}
 	
-	public static String customizeParse(String script, Map<String, Object> dataMap, String datasource) {
+	public static String customizeParse(String script, Map<String, Object> dataMap) {
       	/* 
       	 * 自动为针对 数据表 的查询加上 按域过滤。 ${tableName} ==> 带按域过滤的子查询
       	 */
       	Pool cache = CacheHelper.getNoDeadCache();
-		String key = datasource + DMConstants.RECORD_TABLE_LIST;
+		String key = DMConstants.RECORD_TABLE_LIST;
 		Cacheable o = cache.getObject(key );
       	if( o == null ) {
       		ICommonService commonService = (ICommonService) Global.getBean("CommonService");
-      		String hql = "select id, table from Record where type = 1 and datasource = ? ";
-      		o = cache.putObject(key, commonService.getList(hql, datasource));
+      		String hql = "select id, table from Record where type = 1 and disabled <> 1 ";
+      		o = cache.putObject(key, commonService.getList(hql)); 
       	}
       	
       	@SuppressWarnings("unchecked")
@@ -322,7 +322,7 @@ public class DMUtil {
       	
       	/* TODO 自动识别出script中含有的 录入表名称，替换成 ${tableName} */
       	
-		return customizeParse(script, dataMap);
+		return _customizeParse(script, dataMap);
 	}
 	
 	public static String wrapTable(String tableName, boolean visible) {

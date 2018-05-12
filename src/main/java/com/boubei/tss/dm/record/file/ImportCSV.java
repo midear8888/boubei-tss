@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 
 import com.boubei.tss.EX;
+import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.DataExport;
 import com.boubei.tss.dm.ddl._Database;
 import com.boubei.tss.dm.record.Record;
@@ -59,8 +60,6 @@ public class ImportCSV implements AfterUpload {
 		Long recordId  = Long.parseLong(request.getParameter("recordId"));
 		Record record = recordService.getRecord(recordId);
 		_Database _db = _Database.getDB(record);
-		int insertCount = 0, updateCount = 0;
-		List<Integer> ignoreLines = new ArrayList<Integer>();
 		
 		boolean ignoreExist = "true".equals( request.getParameter("ignoreExist") );
 		String uniqueCodes = request.getParameter("uniqueCodes");
@@ -87,16 +86,46 @@ public class ImportCSV implements AfterUpload {
 			headers = rows[0].split(",");
 		}
 		
-		List<String> snList = null;
+		// 校验数据
+		List<String> errLines = new ArrayList<String>(); // errorLine = lineIndex + errorMsg + row
+		IDataVaild vailder = new DefaultDataVaild();
+		List<Integer> errLineIndexs = vailder.vaild(_db, rows, headers, errLines);
+		if(errLineIndexs.size() > 0) {
+			// 将 errorLines 输出到一个单独文件
+			
+			// 根据配置，是够终止导入
+			boolean together = "true".equals( request.getParameter("together") );
+			if( together ) {
+				return "parent.alert('导入失败，其中有" +errLineIndexs.size()+ "行数据校验出异常，请点<a>【异常记录】</a>下载查看。'); ";
+			}
+		}
+		
+		// 执行导入到数据库
+		return import2db(_db, ignoreExist, uniqueCodes, rows, headers, errLineIndexs);
+	}
+
+	/**
+	 * 对于有特殊需求的数据导入，可继承本Class，然后在录入表的全局JS里重新定义afterUploadClass的值为自定义的Class
+	 * @param _db
+	 * @param ignoreExist  忽略or覆盖已存在的记录
+	 * @param uniqueCodes  唯一性字段（一个或多个）
+	 * @param rows
+	 * @param headers
+	 * @param errorLineIndexs 校验错误的记录行
+	 * @return
+	 */
+	protected String import2db(_Database _db, boolean ignoreExist, String uniqueCodes, String[] rows, String[] headers, List<Integer> errorLineIndexs) {
+		int insertCount = 0, updateCount = 0;
+		List<Integer> ignoreLines = new ArrayList<Integer>();
+		List<String> snList = null; // 自动取号
 		List<Map<String, String>> valuesMaps = new ArrayList<Map<String, String>>();
 		
 		for(int index = 1; index < rows.length; index++) { // 第一行为表头，不要
+			
+			if(errorLineIndexs.contains(index)) continue;
+			
 			String row = rows[index];
 			String[] fieldVals = (row+ " ").split(",");
-			
-			if(fieldVals.length != headers.length) {
-				throw new BusinessException(EX.parse(EX.DM_23, index));
-			}
 			
 			Map<String, String> valuesMap = new HashMap<String, String>();
 			String sb = "";
@@ -110,8 +139,8 @@ public class ImportCSV implements AfterUpload {
     			
     			// 检查值为空的字段，是否配置自动取号规则，是的话先批量取出一串连号
     			String defaultVal = _db.cvm.get(fieldCode);  //fieldValues.get(j);
-    			if( EasyUtils.isNullOrEmpty(value) && (defaultVal+"").endsWith("yyMMddxxxx")) {
-    				String preCode = defaultVal.replaceAll("yyMMddxxxx", "");
+    			if( EasyUtils.isNullOrEmpty(value) && (defaultVal+"").endsWith(DMConstants.SNO_yyMMddxxxx)) {
+    				String preCode = defaultVal.replaceAll(DMConstants.SNO_yyMMddxxxx, "");
     				if(snList == null) {
     					snList = new SerialNOer().create(preCode, rows.length);
     				}
@@ -132,7 +161,7 @@ public class ImportCSV implements AfterUpload {
 				boolean hasNullParam = false;
 				for(String code : codes) {
 					code = code.trim();
-					String value = valuesMap.get(code); // 值不能为空，为空会查出无辜的数据覆盖
+					String value = valuesMap.get(code); // 值不能为空，为空会查出无辜的数据覆盖【查询条件为空致使查出无关的数据】
 					if( EasyUtils.isNullOrEmpty(value) ) {
 						hasNullParam = true;
 					}
@@ -141,9 +170,11 @@ public class ImportCSV implements AfterUpload {
 				if( !hasNullParam ) {
 					List<Map<String, Object>> result = _db.select(1, 1, params).result;
 					if( result.size() > 0 ) {
+						// 是否覆盖已存在数据
 						if( ignoreExist ) {
 							ignoreLines.add(index);
-						} else {
+						} 
+						else {
 							Map<String, Object> old = result.get(0);
 							Long itemId = EasyUtils.obj2Long(old.get("id"));
 							_db.update(itemId, valuesMap);

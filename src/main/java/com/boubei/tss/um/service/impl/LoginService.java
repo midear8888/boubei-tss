@@ -288,10 +288,11 @@ public class LoginService implements ILoginService {
         return names;
     }
     
-	public List<?> getAssistGroupIdsByUserId(Long userId) {
-        String hql = "select distinct g.id from Group g, GroupUser gu " +
+	@SuppressWarnings("unchecked")
+	public List<Object[]> getAssistGroupIdsByUserId(Long userId) {
+        String hql = "select distinct g.id, g.name from Group g, GroupUser gu " +
         		" where g.id = gu.groupId and gu.userId = ? and g.groupType = ?";
-        return userDao.getEntities(hql, userId, Group.ASSISTANT_GROUP_TYPE);
+        return (List<Object[]>) userDao.getEntities(hql, userId, Group.ASSISTANT_GROUP_TYPE);
 	}
 
 	public List<Object[]> getGroupsByUserId(Long userId) {

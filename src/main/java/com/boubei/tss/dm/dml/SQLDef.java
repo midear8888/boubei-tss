@@ -29,7 +29,7 @@ import com.boubei.tss.dm.record.ARecordTable;
  * 
  * 
 [
-  {'label':'code','code':'code','nullable':'false','unique':'true','width':'100px'},
+  {'label':'code','code':'code','nullable':'false','unique':'true','width':'180px'},
   {'label':'script','code':'script','nullable':'false','width':'300px','height':'80px','cwidth':'500px'},
   {'label':'remark','code':'remark','width':'300px','height':'80px','cwidth':'200px'}
 ]
@@ -44,7 +44,7 @@ public class SQLDef extends ARecordTable {
 	@GeneratedValue(strategy = GenerationType.AUTO, generator = "sql_def_seq")
 	private Long id;
 	
-	@Column(length = 50, nullable = false, unique=true)
+	@Column(length = 100, nullable = false, unique=true)
 	private String code;
 	
 	@Column(length = 1000, nullable = false)

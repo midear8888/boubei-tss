@@ -12,7 +12,9 @@ package com.boubei.tss.util;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -133,6 +135,17 @@ public class EasyUtils {
             sb.append(obj == null ? "" : obj);
         }
         return sb.toString();
+    }
+    
+    /**
+     * 将数组中的 指定列拼成字符串
+     */
+    public static String list2Str(Collection<Object[]> list, int index){
+    	List<Object> temp = new ArrayList<Object>();
+    	for(Object[] objs : list) {
+    		temp.add( objs[index] );
+    	}
+        return list2Str(temp, ",");
     }
     
     /**

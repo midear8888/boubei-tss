@@ -825,13 +825,14 @@ function getImportTL() {
     tssJS("#downloadFrame").attr( "src", encodeURI(URL_RECORD_CSV_TL + recordId ) );
 }
 
-var uniqueCodes;
+var uniqueCodes, 
+    afterUploadClass="com.boubei.tss.dm.record.file.ImportCSV";
 function batchImport() {
     function checkFileWrong(subfix) {
         return subfix != ".csv";
     }
 
-    var url = URL_UPLOAD_FILE + "?afterUploadClass=com.boubei.tss.dm.record.file.ImportCSV";
+    var url = URL_UPLOAD_FILE + "?afterUploadClass=" + afterUploadClass;
     url += "&recordId=" + recordId;
     if(uniqueCodes) {
         url += "&uniqueCodes=" + uniqueCodes; // 定义在页面全局变量里：uniqueCodes="oto,sjphone";

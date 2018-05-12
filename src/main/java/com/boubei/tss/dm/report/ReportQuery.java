@@ -76,8 +76,9 @@ public class ReportQuery {
   	        	LinkedHashMap<Object, Object> map = list.get(i);
   	        	
   	        	int index = i + 1;
-  	        	String paramKy = "param" + index;
-  	        	String paramValue = requestMap.get(paramKy);
+  	        	String paramKey = "param" + index;
+  	        	String code = (String) EasyUtils.checkNull(map.get("code"), paramKey); // 允许为每个查询条件自定义code
+  	        	String paramValue = (String) EasyUtils.checkNull(requestMap.get(code), requestMap.get(paramKey));
 				if ( EasyUtils.isNullOrEmpty(paramValue) ) {
 					if( "false".equals(map.get("nullable")) ) {
 						throw new BusinessException(EX.parse(EX.DM_20, map.get("label")));
@@ -92,12 +93,13 @@ public class ReportQuery {
 				 * 判断是否作为宏定义用于freemarker的模板解析
 				 * 如一些只用于多级下拉联动的参数，可能并不用于FM(script+参数）
 				 */
+				String _script = reportScript.toLowerCase();
 				Object ignore = EasyUtils.checkNull(map.get("isMacrocode"), map.get("ignore")); 
-				if ( reportScript.indexOf("${" + paramKy + "}") > 0 ) {
+				if ( _script.indexOf("${" + code + "}") > 0 || _script.indexOf("${" + paramKey + "}") > 0 ) {
 					ignore = "true";		
 				}
-				else if(reportScript.indexOf("if " + paramKy) > 0
-						&& reportScript.indexOf("if " + paramKy + "??") < 0) {
+				else if( (_script.indexOf("if " + code) > 0 && _script.indexOf("if " + code + "??") < 0)
+						|| (_script.indexOf("if " + paramKey) > 0 && _script.indexOf("if " + paramKey + "??") < 0) ) {
 					// <#if param1==1> or <#elseif param1==1>
 					// eg1: <#if param1==1> group by week </#if>  --> is macrocode: true 
 					// eg2: <#if param1??> createTime > ? </#if>  --> is macrocode: false
@@ -114,8 +116,7 @@ public class ReportQuery {
 				paramValue = DateUtil.fastCast(paramValue);
 
 				// 处理in查询的条件值，为每个项加上单引号
-				if (reportScript.indexOf("in (${" + paramKy + "})") > 0 ||
-						reportScript.indexOf("IN (${" + paramKy + "})") > 0) {
+				if (_script.indexOf("in (${" + code + "})") > 0 || _script.indexOf("in (${" + paramKey + "})") > 0) {
 					
 					paramValue = DMUtil.insertSingleQuotes(paramValue); 
 				}
@@ -125,14 +126,15 @@ public class ReportQuery {
 					paramsMap.put(paramsMap.size() + 1, value);
 				}
 				
-				fmDataMap.put(paramKy, paramValue);
+				fmDataMap.put(paramKey, paramValue);
+				fmDataMap.put(code, paramValue);
   	        }
       	}
       	
         // 结合 requestMap 进行 freemarker解析 sql，允许指定sql预处理类。
 		String datasource = report.getDatasource();
       	fmDataMap.put("report.info", report.toString()); // 用于解析出错时定位report
-      	reportScript = DMUtil.customizeParse(reportScript, fmDataMap, datasource);
+      	reportScript = DMUtil.customizeParse(reportScript, fmDataMap);
       	if( reportScript.indexOf("${") >=0 ) {
       		reportScript = DMUtil.customizeParse(reportScript, fmDataMap); // 再解析一次
       	}

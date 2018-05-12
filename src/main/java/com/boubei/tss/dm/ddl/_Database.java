@@ -439,8 +439,8 @@ public abstract class _Database {
 			
 			// 检查值为空的字段，是否配置自动取号规则
 			String defaultVal = this.fieldValues.get(index);
-			if( EasyUtils.isNullOrEmpty(value) && (defaultVal+"").endsWith("yyMMddxxxx")) {
-				String preCode = defaultVal.replaceAll("yyMMddxxxx", "");
+			if( EasyUtils.isNullOrEmpty(value) && (defaultVal+"").endsWith(DMConstants.SNO_yyMMddxxxx)) {
+				String preCode = defaultVal.replaceAll(DMConstants.SNO_yyMMddxxxx, "");
 				value = new SerialNOer().create(preCode, 1).get(0);
 			}
 			
@@ -644,7 +644,7 @@ public abstract class _Database {
 			params = new HashMap<String, String>();
 		}
 		String strictQuery = params.remove("strictQuery"); // 是否精确查询
-		String _fields = params.remove("fields"); // eg: /tss/auth/xdata/price_list?fields=name,fee as value
+		String _fields = params.remove("fields"); // eg: /tss/xdata/price_list?fields=name,fee as value
 		
 		List<String> visiableFields = getVisiableFields(false);
 		String defaultFields = EasyUtils.list2Str( visiableFields )+",domain,createtime,creator,updatetime,updator,version,id";
@@ -671,8 +671,9 @@ public abstract class _Database {
 			condition = " creator = ? ";
 		}
 		
-		for(String key : params.keySet()) {
-			String valueStr = params.get(key);
+		for(String _key : params.keySet()) {
+			String valueStr = params.get(_key);
+			String key = _key.toLowerCase();  // code默认都是小写
 			if( EasyUtils.isNullOrEmpty(valueStr) ) continue;
 			
 			// 对paramValue进行检测，防止SQL注入
@@ -686,6 +687,15 @@ public abstract class _Database {
 			if("updator".equals(key)) {
 				condition += " and updator = ? ";
 				paramsMap.put(paramsMap.size() + 1, valueStr);
+				continue;
+			}
+			
+			if("createtime".equals(key) || "updatetime".equals(key)) {
+				String[] vals = DMUtil.preTreatScopeValue(valueStr); // 是否查询条件为：从和到	
+				condition += " and " + key + " >= ?  and " + key + " <= ? ";
+				paramsMap.put(paramsMap.size() + 1, DMUtil.preTreatValue(vals[0], _Field.TYPE_DATE));
+				paramsMap.put(paramsMap.size() + 1, DMUtil.preTreatValue(vals[1], _Field.TYPE_DATE));
+				
 				continue;
 			}
 			

@@ -144,8 +144,8 @@ public class MultiSQLExcutor {
                     stepResults.put("step" + index, statement.getUpdateCount());
 	    		}
 	    		
-	    		Log excuteLog = new Log( "SQLDef, " + sqlId, sql ); // params.toString()
-    			excuteLog.setOperateTable("exeMultiSQLs");
+	    		Log excuteLog = new Log( sqlInfo.getCode(), sql ); // params.toString()
+    			excuteLog.setOperateTable( "SQLDef_" + sqlInfo.getCode() );
     			logs.add(excuteLog);
     			
     			index++;
