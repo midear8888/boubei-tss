@@ -273,56 +273,65 @@ public class DMUtil {
 	    return rtScript;
 	}
 	
-	public static String customizeParse(String script) {
-		Map<String, Object> dataMap = getFreemarkerDataMap();
-		return _customizeParse(script, dataMap);
-	}
-	
 	private static String _customizeParse(String script, Map<String, Object> dataMap) {
+		Map<String, Object> data = new HashMap<String, Object>();
+		data.putAll(getFreemarkerDataMap());
+		data.putAll(dataMap);
+ 		
 		ScriptParser scriptParser = ScriptParserFactory.getParser();
       	if(scriptParser == null) {
-      		script = DMUtil.freemarkerParse(script, dataMap);
+      		script = DMUtil.freemarkerParse(script, data);
       	} else {
-      		script = scriptParser.parse(script, dataMap);
+      		script = scriptParser.parse(script, data);
       	}
       	
       	return script;
 	}
 	
-	public static String customizeParse(String script, Map<String, Object> dataMap) {
-      	/* 
-      	 * 自动为针对 数据表 的查询加上 按域过滤。 ${tableName} ==> 带按域过滤的子查询
-      	 */
-      	Pool cache = CacheHelper.getNoDeadCache();
-		String key = DMConstants.RECORD_TABLE_LIST;
-		Cacheable o = cache.getObject(key );
-      	if( o == null ) {
-      		ICommonService commonService = (ICommonService) Global.getBean("CommonService");
-      		String hql = "select id, table from Record where type = 1 and disabled <> 1 ";
-      		o = cache.putObject(key, commonService.getList(hql)); 
-      	}
+	public static String fmParse(String script) {
+		return _customizeParse(script, new HashMap<String, Object>());
+	}
+	
+	public static String fmParse(String script, Map<String, Object> valuesMap) {
+		return fmParse(script, valuesMap, false);
+	}
+	
+	// 带录入表${rctable}解析，性能有一定影响
+	public static String fmParse(String script, Map<String, Object> valuesMap, boolean withRcTable) {
+		Map<String, Object> data = new HashMap<String, Object>();
+		data.putAll( valuesMap );
+		
+		/*  自动为针对 数据表 的查询加上 按域过滤。 ${tableName} ==> 带按域过滤的子查询 */
+		if(withRcTable) {
+			Pool cache = CacheHelper.getNoDeadCache();
+			String key = DMConstants.RECORD_TABLE_LIST;
+			Cacheable o = cache.getObject(key );
+	      	if( o == null ) {
+	      		ICommonService commonService = (ICommonService) Global.getBean("CommonService");
+	      		String hql = "select id, table from Record where type = 1 and disabled <> 1 ";
+	      		o = cache.putObject(key, commonService.getList(hql)); 
+	      	}
+	      	
+	      	@SuppressWarnings("unchecked")
+	      	List<Object[]> tables = (List<Object[]>) o.getValue();
+	      	for(Object[] table : tables) {
+	      		Long recordId = (Long) table[0];
+	      		String tableName = (String) table[1];
+	      		
+	      		try {
+					PermissionHelper ph = PermissionHelper.getInstance();
+					boolean visible = ph.checkPermission(recordId, RecordPermission.class.getName(), RecordResource.class, 
+							Record.OPERATION_EDATA, Record.OPERATION_VDATA);
+					String filterS = wrapTable(tableName, visible);
+					
+					data.put(tableName.toUpperCase(), filterS);
+					data.put(tableName.toLowerCase(), filterS);
+	      		} 
+	      		catch(Exception e) { }
+	      	}
+		}
       	
-      	@SuppressWarnings("unchecked")
-      	List<Object[]> tables = (List<Object[]>) o.getValue();
-      	for(Object[] table : tables) {
-      		Long recordId = (Long) table[0];
-      		String tableName = (String) table[1];
-      		
-      		try {
-				PermissionHelper ph = PermissionHelper.getInstance();
-				boolean visible = ph.checkPermission(recordId, RecordPermission.class.getName(), RecordResource.class, 
-						Record.OPERATION_EDATA, Record.OPERATION_VDATA);
-				String filterS = wrapTable(tableName, visible);
-				
-				dataMap.put(tableName.toUpperCase(), filterS);
-				dataMap.put(tableName.toLowerCase(), filterS);
-      		} 
-      		catch(Exception e) { }
-      	}
-      	
-      	/* TODO 自动识别出script中含有的 录入表名称，替换成 ${tableName} */
-      	
-		return _customizeParse(script, dataMap);
+		return _customizeParse(script, data);
 	}
 	
 	public static String wrapTable(String tableName, boolean visible) {

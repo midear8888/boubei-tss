@@ -94,10 +94,11 @@ public class EX {
 	public static String DM_20 = "参数【${x1}】不能为空。";
 	public static String DM_21 = "点击链接可以看到更详细的图表：";
 	public static String DM_22 = "报表【${x1}】的内容详细请参见附件。";
-	public static String DM_23 = "数据异常，第${x1}行数据列和表头列数量不等。请用文本编辑器（记事本等）打开导入文件，检查此行字段内容里是否存在换行符。";
+	public static String DM_23 = "数据异常，数据列和表头列数量不等。请用记事本打开导入文件，检查此行数据里是否存在换行符";
 	public static String DM_24 = "没有查询到数据";
 	public static String DM_25 = "字段编码【${x1}】重复了，检查修改后在保存";
 	public static String DM_26 = "字段名称【${x1}】重复了，检查修改后在保存";
+	public static String DM_27 = "本行数据为空";
 	
 	public static String F_01 = "【${x1}】参数有误，第 ${x2} 个参数值为Null！";
 	public static String F_02 = "排序节点和目标节点不属于同一层的节点（父节点不一致），不能排序。";

@@ -100,7 +100,7 @@ public class GridNode {
 		    return MathUtil.formatNumber(value, pattern);
 		}
 		
-		return XmlUtil.toFormXml(value);
+		return XmlUtil.toFormXml(value).replaceAll("&quot;", "'"); // Grid 显示时值不能有双引号
 	}
 
 	/**

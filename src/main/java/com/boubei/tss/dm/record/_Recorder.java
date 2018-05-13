@@ -167,7 +167,7 @@ public class _Recorder extends BaseActionSupport {
             temp.add(gridNode);
         }
 		
-        Document gridTemplate = pointedFileds ? ex.getGridTemplate(_db.cnm, _db.ctm, _db.cpm) : _db.getGridTemplate();
+        Document gridTemplate = pointedFileds ? ex.getGridTemplate(_db.cnm, _db.ctype, _db.cpattern) : _db.getGridTemplate();
 		GridDataEncoder gEncoder = new GridDataEncoder(temp, gridTemplate);
         
         PageInfo pageInfo = new PageInfo();
@@ -393,6 +393,12 @@ public class _Recorder extends BaseActionSupport {
 		if( !EasyUtils.isNullOrEmpty(afterOption) ) {
 			Map<String, Object> data = _db.get(itemId);
 			data.put("id", itemId);
+			
+			for(String key : requestMap.keySet()) {
+				if( !data.containsKey(key) ) {
+					data.put(key, requestMap.get(key) );
+				}
+			}
 			
 			afterOption = EasyUtils.fmParse(afterOption, data);
 			MultiSQLExcutor mex = new MultiSQLExcutor();

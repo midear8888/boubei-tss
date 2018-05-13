@@ -90,7 +90,7 @@ public class Register extends HttpServlet {
         	user.setEmail(account);
         } 
         
-        String regExp = "^[1]([3][0-9]{1}|59|58|88|89)[0-9]{8}$";  
+        String regExp = "^[1][3,4,5,6,7,8,9][0-9]{9}$";  
         Pattern p = Pattern.compile(regExp);  
         Matcher m = p.matcher(account);  
         if( m.find() && EasyUtils.isNullOrEmpty(user.getTelephone()) ) {

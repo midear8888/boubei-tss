@@ -26,6 +26,8 @@ public class _Field {
 	public static String TYPE_HIDDEN   = "hidden";
 	
 	public static String COLUMN = "f";
+	
+	public final static String SNO_yyMMddxxxx = "yyMMddxxxx"; // 取号器格式
 
 	/**
 	 * 字符串的类型字段的长度 = height/18 *255
@@ -41,4 +43,7 @@ public class _Field {
 		return length;
 	}
 	
+	public static boolean isAutoSN(String defaultVal) {
+		return (defaultVal+"").trim().endsWith(SNO_yyMMddxxxx);
+	}
 }

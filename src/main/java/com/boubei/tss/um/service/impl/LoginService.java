@@ -271,21 +271,21 @@ public class LoginService implements ILoginService {
 
     public List<Long> getRoleIdsByUserId(Long userId) {
         List<Object[]> userRoles = getUserRolesAfterLogin(userId);
-        List<Long> roleIds = new ArrayList<Long>();
+        Set<Long> roleIds = new HashSet<Long>();
         for( Object[] urInfo : userRoles ){
             roleIds.add((Long) urInfo[1]);
         }
-        return roleIds;
+        return new ArrayList<Long>(roleIds);
     }
     
     public List<String> getRoleNames(List<Long> roleIds) {
-    	List<String> names = new ArrayList<String>();
+    	Set<String> names = new HashSet<String>();
     	for(Long roleId : roleIds) {
     		Role role = roleDao.getEntity(roleId);
     		names.add(role.getName());
     	}
          
-        return names;
+        return new ArrayList<String>(names);
     }
     
 	@SuppressWarnings("unchecked")

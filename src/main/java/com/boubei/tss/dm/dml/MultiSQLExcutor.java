@@ -32,6 +32,7 @@ import com.boubei.tss.EX;
 import com.boubei.tss.cache.Cacheable;
 import com.boubei.tss.cache.JCache;
 import com.boubei.tss.cache.Pool;
+import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.record.RecordService;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.exception.BusinessException;
@@ -124,7 +125,7 @@ public class MultiSQLExcutor {
 	    		params.putAll(stepResults);
 	    		params.putAll(data);
 	    		
-	    		String _sql = EasyUtils.fmParse(sql, params).trim(); // MacrocodeCompiler.run(sql, params, true);
+	    		String _sql = DMUtil.fmParse(sql, params, true).trim(); // MacrocodeCompiler.run(sql, params, true);
 	    		if(_sql.startsWith("FM-parse-error")) {
 	    			throw new BusinessException("SQL freemarker parse error" + _sql.replaceAll("FM-parse-error:", ""));
 	    		}

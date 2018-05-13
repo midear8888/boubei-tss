@@ -28,8 +28,6 @@ import org.apache.log4j.Logger;
 
 import com.boubei.tss.PX;
 import com.boubei.tss.framework.exception.convert.ExceptionConvertorFactory;
-import com.boubei.tss.framework.web.display.XmlPrintWriter;
-import com.boubei.tss.framework.web.display.xmlhttp.XmlHttpEncoder;
 import com.boubei.tss.framework.web.filter.Filter8APITokenCheck;
 import com.boubei.tss.modules.param.ParamConfig;
 import com.boubei.tss.util.BeanUtil;
@@ -75,11 +73,11 @@ public class Servlet4Upload extends HttpServlet {
         	Filter8APITokenCheck.autoLogin(request);
         }
 		
-		XmlHttpEncoder encoder = new XmlHttpEncoder();
+        String script;
 		try {
 	        Part part = request.getPart("file");
-			String script = doUpload(request, part); // 自定义输出到指定目录
-			encoder.put("script", EasyUtils.checkNull(script, "console.log('上传完成')"));
+			script = doUpload(request, part); // 自定义输出到指定目录
+			script = (String) EasyUtils.checkNull(script, "console.log('上传完成')");
 			
 		} catch (Exception _e) {
 			Exception e = ExceptionConvertorFactory.getConvertor().convert(_e);
@@ -87,17 +85,17 @@ public class Servlet4Upload extends HttpServlet {
 			log.error(errorMsg, _e);
 			
 			errorMsg = Pattern.compile("\t|\r|\n|\'").matcher(errorMsg).replaceAll(""); // 剔除换行，以免alert不出来
-			encoder.put("script", "alert('" + errorMsg + "');");
+			script = "parent.alert('" + errorMsg + "');";
 		}
-
+		
+		// 上传文件在一个独立的iframe里执行，完成后，输出一个html到该iframe，以触发提示脚本
 		response.setContentType("text/html;charset=utf-8");
-		encoder.print(new XmlPrintWriter(response.getWriter()));
+		response.getWriter().print("<html><script> " +script+ " </script></html>");
 	}
 	
 	String doUpload(HttpServletRequest request, Part part) throws Exception {
-		/*
-		 *  gets absolute path of the web application, tomcat7/webapps/tss
-		 */
+		
+		/* gets absolute path of the web application, tomcat7/webapps/tss */
 		String defaultUploadPath = request.getServletContext().getRealPath("");
 		
 		String uploadPath = ParamConfig.getAttribute(PX.UPLOAD_PATH, defaultUploadPath);

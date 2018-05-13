@@ -19,8 +19,6 @@ public final class DMConstants {
 	
 	public final static String LOCAL_CONN_POOL = "connectionpool";
 	
-	public final static String SNO_yyMMddxxxx = "yyMMddxxxx"; // 取号器格式
-    
 	public final static String USER_ID      = "userId";
 	public final static String USER_CODE    = "userCode";
 	public final static String FROM_USER_ID = "fromUserId";

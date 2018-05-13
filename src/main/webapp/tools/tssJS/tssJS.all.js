@@ -1116,7 +1116,7 @@
         return this.replace(/\&/g, "&amp;").replace(/\"/g, "&quot;").replace(/\</g, "&lt;").replace(/\>/g, "&gt;");
     }
 
-    String.prototype.revertEntity = function() {
+    String.prototype.revertEntry = function() {
         return this.replace(/&quot;/g, "\"").replace(/&lt;/g, "\<").replace(/&gt;/g, "\>").replace(/&amp;/g, "\&");
     }
 
@@ -1140,7 +1140,7 @@
 
             /* 将字符串转化成xml节点对象 */
             toNode: function(xml) {
-                xml = xml.revertEntity();
+                xml = xml.revertEntry();
                 return $.parseXML(xml).documentElement;
             },
 
@@ -1271,11 +1271,13 @@
         }
 
         if( (request.method||"").toUpperCase() == 'GET') { // 将params里参数拼到url
-            if(request.url.indexOf('?') < 0) {
-                request.url += '?1=1';
-            }
             $.each(request.params, function(key, val) {
-                request.url += "&" +key+ "=" + val;
+                if(request.url.indexOf("?") < 0) {
+                    request.url += '?';
+                } else {
+                    request.url += '&';
+                }
+                request.url += key+ "=" + val;
             });
             request.url = encodeURI( request.url );
         }

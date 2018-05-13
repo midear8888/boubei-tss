@@ -85,7 +85,7 @@ public abstract class MacrocodeQueryCondition  {
         Map<String, Object> map = new HashMap<String, Object>();
 
         String domainCondition = "<#if USERIDS_OF_DOAMIN??> and " +getCreatorIdField()+ " in (${USERIDS_OF_DOAMIN}) </#if> ";
-        map.put("${domain}",  DMUtil.customizeParse(domainCondition));
+        map.put("${domain}",  DMUtil.fmParse(domainCondition));
         
         return map;
 	}

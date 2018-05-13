@@ -825,7 +825,10 @@ function getImportTL() {
     tssJS("#downloadFrame").attr( "src", encodeURI(URL_RECORD_CSV_TL + recordId ) );
 }
 
+// 允许再数据表的【页面控制脚本】里定制以下个性化导入的参数信息
 var uniqueCodes, 
+    ignoreExist,
+    together,
     afterUploadClass="com.boubei.tss.dm.record.file.ImportCSV";
 function batchImport() {
     function checkFileWrong(subfix) {
@@ -836,6 +839,12 @@ function batchImport() {
     url += "&recordId=" + recordId;
     if(uniqueCodes) {
         url += "&uniqueCodes=" + uniqueCodes; // 定义在页面全局变量里：uniqueCodes="oto,sjphone";
+    }
+    if(ignoreExist) {
+        url += "&ignoreExist=" + ignoreExist; // 是否覆盖式导入：true:false
+    }
+    if(together) {
+        url += "&together=" + together; // 是否完整性导入（即不允许部分导入）：true:false
     }
     
     var importDiv = createImportDiv("请点击图标选择CSV文件导入", checkFileWrong, url);

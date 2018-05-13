@@ -580,7 +580,7 @@ function configParams(paramsType, id, name) {
     var parameters = page1Form.getData("parameters");
     if($.isNullOrEmpty(parameters)) return;
 
-    var xmlNode = parseParameters(parameters.revertEntity());
+    var xmlNode = parseParameters(parameters.revertEntry());
     var oldParamsNode = xmlNode.querySelector(paramsType);
 
     var title = "配置【" + nameValue + "】的参数";

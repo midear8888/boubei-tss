@@ -257,7 +257,7 @@
             label:"删除",
             callback: function() { delelteUser(); },
             icon:ICON + "del.gif",
-            visible:function() { return getUserOperation("2") && getUserAttr("logonCount") === '0'; }
+            visible:function() { return getUserOperation("2"); }
         }
         /* 登录过的用户不能被删除，只能被停用。
            防止域管理员把域下用户删除，导致删除用户创建的数据表记录无法被查询到，甚至会可能被其它域下后期注册的同名用户吸走了） */

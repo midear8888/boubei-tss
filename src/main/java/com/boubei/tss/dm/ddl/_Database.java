@@ -78,10 +78,15 @@ public abstract class _Database {
 	
 	public Map<String, String> cnm = new HashMap<String, String>(); // code -- label
 	public Map<String, String> ncm = new HashMap<String, String>(); // label -- code
-	public Map<String, String> ctm = new HashMap<String, String>(); // code -- type
-	public Map<String, String> crm = new HashMap<String, String>(); // code -- role2
-	public Map<String, String> cpm = new HashMap<String, String>(); // code -- pattern
-	public Map<String, String> cvm = new HashMap<String, String>(); // code -- defaultValue
+	public Map<String, String> ctype = new HashMap<String, String>(); // code -- type
+	public Map<String, String> crole = new HashMap<String, String>(); // code -- role2
+	public Map<String, String> cpattern = new HashMap<String, String>(); // code -- pattern
+	public Map<String, String> cval = new HashMap<String, String>(); // code -- defaultValue
+	public Map<String, String> cerr = new HashMap<String, String>(); // code -- errorMsg
+	public Map<String, String> cuni = new HashMap<String, String>(); // code -- unique
+	public Map<String, String> cnull = new HashMap<String, String>(); // code -- nullable
+	public Map<String, String> creg = new HashMap<String, String>(); // code -- checkReg
+	public Map<String, String> csql = new HashMap<String, String>(); // code -- valSQL
 	
 	public String toString() {
 		return "【" + this.datasource + "." + this.recordName + "】";
@@ -125,22 +130,28 @@ public abstract class _Database {
 			
 			String type = (String) fDefs.get("type");
 			this.fieldTypes.add(type);
-			ctm.put(code, type);
+			ctype.put(code, type);
 			
 			String pattern = (String) fDefs.get("pattern");
 			if( _Field.TYPE_NUMBER.equalsIgnoreCase(type) ) {
 				pattern = (String) EasyUtils.checkNull(pattern, "##,##0.00");  //  类GridNode会对数据进行格式化
             }
 			this.fieldPatterns.add( pattern ); 
-			cpm.put(code, pattern);
+			cpattern.put(code, pattern);
 			
 			String defaultVal = (String) fDefs.get("defaultValue");
 			this.fieldValues.add(defaultVal);
-			cvm.put(code, defaultVal);
+			cval.put(code, defaultVal);
+			
+			cerr.put(code, (String) fDefs.get("errorMsg"));
+			cnull.put(code, (String) fDefs.get("nullable"));
+			cuni.put(code, (String) fDefs.get("unique"));
+			creg.put(code, (String) fDefs.get("checkReg"));
+			csql.put(code, (String) fDefs.get("valSQL"));
 			
 			String role2 = (String) fDefs.get("role2");
 			this.fieldRole2s.add(role2);
-			crm.put(code, role2);
+			crole.put(code, role2);
 			
 			this.fieldAligns.add( (String)EasyUtils.checkNull(fDefs.get("calign"), "") ); // 列对齐方式
 			this.fieldWidths.add( (String)EasyUtils.checkNull(fDefs.get("cwidth"), "") ); // 列宽度
@@ -439,8 +450,8 @@ public abstract class _Database {
 			
 			// 检查值为空的字段，是否配置自动取号规则
 			String defaultVal = this.fieldValues.get(index);
-			if( EasyUtils.isNullOrEmpty(value) && (defaultVal+"").endsWith(DMConstants.SNO_yyMMddxxxx)) {
-				String preCode = defaultVal.replaceAll(DMConstants.SNO_yyMMddxxxx, "");
+			if( EasyUtils.isNullOrEmpty(value) &&  _Field.isAutoSN(defaultVal) ) {
+				String preCode = defaultVal.replaceAll(_Field.SNO_yyMMddxxxx, "");
 				value = new SerialNOer().create(preCode, 1).get(0);
 			}
 			
@@ -608,7 +619,7 @@ public abstract class _Database {
         		continue;
         	}
         	
-            String fieldRole2 = crm.get(fieldCode);
+            String fieldRole2 = crole.get(fieldCode);
             if( PermissionHelper.checkRole(fieldRole2) ) {
             	result.add( needName ? cnm.get(fieldCode) : fieldCode);
             }
@@ -753,7 +764,7 @@ public abstract class _Database {
 			_customizeTJ += DMConstants.DOMAIN_CONDITION;
 			
 		}
-		condition += " and ( ( " + DMUtil.customizeParse(_customizeTJ + " )  or -1 = ${_userId!-10000} ") + " ) ";
+		condition += " and ( ( " + DMUtil.fmParse(_customizeTJ + " )  or -1 = ${_userId!-10000} ") + " ) ";
 		
 		// 设置排序方式
 		String _sortField = params.get("sortField");

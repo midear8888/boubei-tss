@@ -56,7 +56,7 @@ public class ByIDETLJob extends AbstractETLJob {
 
 	protected void excuteTask(Task task) {
 		Long maxID = EasyUtils.obj2Long( getMaxID(task) );
-		maxID = Math.max(maxID, task.getStartID()); // 如果任务上设置的ID大于日志里记录的最大ID，则说明是人为单独设置了任务上的ID
+		maxID = Math.max( maxID, EasyUtils.obj2Long(task.getStartID()) ); // 如果任务上设置的ID大于日志里记录的最大ID，则说明是人为单独设置了任务上的ID
 		
 		log.info(task.getName() + " is starting! 【" + maxID + "】" );
 		

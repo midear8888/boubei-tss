@@ -10,6 +10,7 @@ import com.boubei.tss.dm.ddl._Database;
  */
 public interface IDataVaild {
 	
-	List<Integer> vaild(_Database _db, String[] rows, String[] headers, List<String> errorLines);
+	List<Integer> vaild(_Database _db, String[] rows, String[] headers, 
+			List<String> errorLines, List<Integer> emptyLineIndexs);
 
 }

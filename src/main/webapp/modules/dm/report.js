@@ -547,7 +547,7 @@ function configParams() {
 		ev.ownTree.sortTreeNode(ev.dragNode, ev.destNode);
 	}
 
-	$("#reportParamsDiv").show(true).center().css("top", "30px");
+	$("#reportParamsDiv").show(true).center().css("top", "60px");
 
 	// 默认选中第一个参数，如果没有则清空表单
 	var paramNodeIds = paramTree.getAllNodeIds();
@@ -600,7 +600,7 @@ function closeConfigParams() {
 	$("#reportParamsDiv").hide();
 }
 
-var REPORT_PARAM_FIELDS = ['label', 'type', 'nullable', 'defaultValue', 'checkReg', 'errorMsg', 'width', 'height', 'options', 'multiple', 'onchange', 'isMacrocode'];
+var REPORT_PARAM_FIELDS = ['label', 'code', 'type', 'nullable', 'defaultValue', 'checkReg', 'errorMsg', 'width', 'height', 'options', 'multiple', 'onchange', 'isMacrocode'];
 
 function editParamConfig() {
 	var activeNode = paramTree.getActiveTreeNode();

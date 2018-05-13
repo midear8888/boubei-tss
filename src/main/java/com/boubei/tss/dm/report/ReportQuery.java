@@ -134,9 +134,9 @@ public class ReportQuery {
         // 结合 requestMap 进行 freemarker解析 sql，允许指定sql预处理类。
 		String datasource = report.getDatasource();
       	fmDataMap.put("report.info", report.toString()); // 用于解析出错时定位report
-      	reportScript = DMUtil.customizeParse(reportScript, fmDataMap);
+      	reportScript = DMUtil.fmParse(reportScript, fmDataMap, true);
       	if( reportScript.indexOf("${") >=0 ) {
-      		reportScript = DMUtil.customizeParse(reportScript, fmDataMap); // 再解析一次
+      		reportScript = DMUtil.fmParse(reportScript, fmDataMap, true); // 再解析一次
       	}
           
 		SQLExcutor excutor = new SQLExcutor();

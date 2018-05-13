@@ -20,14 +20,13 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 
-import com.boubei.tss.EX;
-import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.DataExport;
 import com.boubei.tss.dm.ddl._Database;
+import com.boubei.tss.dm.ddl._Field;
 import com.boubei.tss.dm.record.Record;
 import com.boubei.tss.dm.record.RecordService;
 import com.boubei.tss.framework.Global;
-import com.boubei.tss.framework.exception.BusinessException;
+import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.web.servlet.AfterUpload;
 import com.boubei.tss.modules.sn.SerialNOer;
 import com.boubei.tss.util.EasyUtils;
@@ -79,7 +78,7 @@ public class ImportCSV implements AfterUpload {
 		for(String fieldName : headers) {
 			if( !_db.ncm.containsKey(fieldName) ) messyCount++; // 表头名 在数据表字段定义里不存在
 		}
-		if( messyCount*1.0 / headers.length > 0.5 ) { // header一半以上都找不着，可能是CSV文件为UTF-8编码，以UTF-8再次尝试盗取
+		if( messyCount*1.0 / headers.length > 0.5 ) { // header一半以上都找不着，可能是CSV文件为UTF-8编码，以UTF-8再次尝试读取
 			dataStr = FileHelper.readFile(targetFile, DataExport.CSV_UTF8); 
 			dataStr = dataStr.replaceAll(";", ",");
 			rows = EasyUtils.split(dataStr, "\n");
@@ -88,20 +87,32 @@ public class ImportCSV implements AfterUpload {
 		
 		// 校验数据
 		List<String> errLines = new ArrayList<String>(); // errorLine = lineIndex + errorMsg + row
+		List<Integer> emptyLineIndexs = new ArrayList<Integer>();
+		
 		IDataVaild vailder = new DefaultDataVaild();
-		List<Integer> errLineIndexs = vailder.vaild(_db, rows, headers, errLines);
+		List<Integer> errLineIndexs = vailder.vaild(_db, rows, headers, errLines, emptyLineIndexs);
+		
+		String fileName = null;
 		if(errLineIndexs.size() > 0) {
 			// 将 errorLines 输出到一个单独文件
+			StringBuffer sb = new StringBuffer("行号,导入失败原因," + rows[0]).append("\n");
+			for(String err : errLines) {
+				sb.append(err).append("\n");
+			}
+			System.out.println( sb );
 			
-			// 根据配置，是够终止导入
-			boolean together = "true".equals( request.getParameter("together") );
-			if( together ) {
-				return "parent.alert('导入失败，其中有" +errLineIndexs.size()+ "行数据校验出异常，请点<a>【异常记录】</a>下载查看。'); ";
+			fileName = "err-" + recordId + Environment.getUserId();
+	        String exportPath = DataExport.getExportPath() + "/" + fileName + ".csv";
+	        DataExport.exportCSV(exportPath, sb.toString()); // 先输出内容到服务端的导出文件中
+			
+			// 根据配置，是够终止导入。默认要求一次性导入，不允许分批
+			if( !"false".equals( request.getParameter("together") ) ) {
+				return "parent.alert('导入失败，其中有" +errLineIndexs.size()+ "行数据校验出异常，请点<a href=\"/tss/data/download/" +fileName+ "\">【异常记录】</a>下载查看。'); ";
 			}
 		}
 		
 		// 执行导入到数据库
-		return import2db(_db, ignoreExist, uniqueCodes, rows, headers, errLineIndexs);
+		return import2db(_db, ignoreExist, uniqueCodes, rows, headers, errLineIndexs, emptyLineIndexs, fileName);
 	}
 
 	/**
@@ -111,47 +122,47 @@ public class ImportCSV implements AfterUpload {
 	 * @param uniqueCodes  唯一性字段（一个或多个）
 	 * @param rows
 	 * @param headers
-	 * @param errorLineIndexs 校验错误的记录行
+	 * @param errLineIndexs 校验错误的记录行
 	 * @return
 	 */
-	protected String import2db(_Database _db, boolean ignoreExist, String uniqueCodes, String[] rows, String[] headers, List<Integer> errorLineIndexs) {
+	protected String import2db(_Database _db, boolean ignoreExist, String uniqueCodes, String[] rows, String[] headers, 
+			List<Integer> errLineIndexs, List<Integer> emptyLineIndexs, String fileName) {
+		
+		int errLineSize = errLineIndexs.size();
 		int insertCount = 0, updateCount = 0;
 		List<Integer> ignoreLines = new ArrayList<Integer>();
-		List<String> snList = null; // 自动取号
 		List<Map<String, String>> valuesMaps = new ArrayList<Map<String, String>>();
+		
+		List<String> snList = null; // 自动取号
 		
 		for(int index = 1; index < rows.length; index++) { // 第一行为表头，不要
 			
-			if(errorLineIndexs.contains(index)) continue;
+			if(errLineIndexs.contains(index) || emptyLineIndexs.contains(index)) continue;
 			
-			String row = rows[index];
-			String[] fieldVals = (row+ " ").split(",");
-			
+			String[] fieldVals = (rows[index]+ " ").split(",");
 			Map<String, String> valuesMap = new HashMap<String, String>();
-			String sb = "";
 			for(int j = 0; j < fieldVals.length; j++) {
     			String value = fieldVals[j].trim();
     			value = value.replaceAll("，", ","); // 导出时英文逗号替换成了中文逗号，导入时替换回来
-    			sb += value;
     			
     			String filedLabel = headers[j];
-    			String fieldCode = _db.ncm.get(filedLabel); //_db.fieldCodes.get(j);
+    			String fieldCode = _db.ncm.get(filedLabel);
     			
-    			// 检查值为空的字段，是否配置自动取号规则，是的话先批量取出一串连号
-    			String defaultVal = _db.cvm.get(fieldCode);  //fieldValues.get(j);
-    			if( EasyUtils.isNullOrEmpty(value) && (defaultVal+"").endsWith(DMConstants.SNO_yyMMddxxxx)) {
-    				String preCode = defaultVal.replaceAll(DMConstants.SNO_yyMMddxxxx, "");
-    				if(snList == null) {
-    					snList = new SerialNOer().create(preCode, rows.length);
-    				}
-    				value = snList.get(index - 1);
+    			String defaultVal = _db.cval.get(fieldCode);
+    			if( EasyUtils.isNullOrEmpty(value) && !EasyUtils.isNullOrEmpty(defaultVal) ) {    				
+    				// 检查值为空的字段，是否配置自动取号规则，是的话先批量取出一串连号
+        			if( _Field.isAutoSN(defaultVal) ) {
+        				String preCode = defaultVal.replaceAll(_Field.SNO_yyMMddxxxx, "");
+        				if(snList == null) {
+        					int snNum = rows.length - errLineSize - emptyLineIndexs.size();
+							snList = new SerialNOer().create(preCode, snNum);
+        				}
+        				value = snList.get(index - 1);
+        			}
     			}
     			
 				valuesMap.put(fieldCode, value);
         	}
-			if( EasyUtils.isNullOrEmpty(sb) ) { // 判断是否每个字段都没有数据，是的话为空行
-				continue;
-			}
 			
 			// 支持覆盖式导入，覆盖规则为参数指定的某个（或几个）字段
 			if( !EasyUtils.isNullOrEmpty(uniqueCodes) ) {
@@ -200,7 +211,8 @@ public class ImportCSV implements AfterUpload {
 		
 		// 向前台返回成功信息
     	String noInserts = ignoreExist ? ("忽略了第【" +EasyUtils.list2Str(ignoreLines)+ "】行") : ("覆盖" +updateCount+ "行");
-		return "parent.alert('导入完成：共新增" +insertCount+ "行，" +noInserts+ "。请刷新查看。'); parent.openActiveTreeNode();";
+    	String errMsg = errLineSize > 0 ? "请刷新查看。" : "其中有" +errLineSize+ "行数据校验异常，请点【<a href=\"/tss/data/download/" +fileName+ "\">异常记录</a>】下载查看。";
+		return "parent.alert('导入完成：共新增" +insertCount+ "行，" +noInserts+ "。" +errMsg+ "'); parent.openActiveTreeNode();";
 	}
 	
 }
