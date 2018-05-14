@@ -91,7 +91,8 @@ public class Temp implements IEntity {
 	}
 
 	public String toString() {
-		return "id=" + this.getId() + ", thread=" + this.thread;
+		return "{id:" + this.getId() + ", thread:" + this.thread + 
+				", udf1:" + this.udf1 + ", udf2:" + this.udf2 + ", udf3:" + this.udf3+ "}";
 	}
 
 	public Long getThread() {

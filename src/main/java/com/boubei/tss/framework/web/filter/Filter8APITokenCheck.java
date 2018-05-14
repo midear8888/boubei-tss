@@ -29,6 +29,10 @@ import com.boubei.tss.um.service.ILoginService;
  * 	稳定性：对接双方需要保证双方交互接口的稳定性,避免`接口不稳定导致通信过程中数据不及时,甚至数据丢失,进而对平台客户产生影响。
  * 	可扩展性
  * 	高性能：大业务量时,需要交互的接口性能较高,需要双方的接口都能快速处理调用方发送的请求。
+ * 
+ * 
+ * http://api?uName=JK&sign=md5(params+secret+timestamp)&timestamp=201603261407&参数1=value1&参数2=value2.......
+ * 
  */
 //@WebFilter(filterName = "Filter8APITokenCheck", urlPatterns = {"/api/*"})
 public class Filter8APITokenCheck implements Filter {
