@@ -57,14 +57,14 @@ public class RecordServiceImpl implements RecordService {
     	return recordId;
     }
 	
-	public Long getRecordID(String recordName, int type) {
-		return this.getRecordID(recordName, type, true);
+	public Long getRecordID(String nameOrTable, int type) {
+		return this.getRecordID(nameOrTable, type, true);
 	}
 	
 	// 名字、表名二者有一个能对上即可
-	public Long getRecordID(String recordName, int type, boolean auth) {
+	public Long getRecordID(String nameOrTable, int type, boolean auth) {
 		String hql = "select o.id from Record o where ? in (o.name, o.table) and type = ? order by o.id desc"; 
-		List<?> list = recordDao.getEntities(hql, recordName, type); 
+		List<?> list = recordDao.getEntities(hql, nameOrTable, type); 
 		
 		if(!auth && list.size() > 0) {
 			return (Long) list.get(0);
@@ -82,7 +82,7 @@ public class RecordServiceImpl implements RecordService {
 			}
 		}
 		
-		throw new BusinessException(EX.parse(EX.DM_14, recordName));
+		throw new BusinessException(EX.parse(EX.DM_14, nameOrTable));
 	}
 	
 	public _Database getDB(Long recordId) {

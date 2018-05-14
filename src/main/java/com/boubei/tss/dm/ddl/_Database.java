@@ -282,9 +282,7 @@ public abstract class _Database {
    		} catch(Exception e) { }
    		
    		// 总是在新建表之后执行
-   		Pool cache = CacheHelper.getNoDeadCache();
-		String key = this.datasource + DMConstants.RECORD_TABLE_LIST;
-		cache.destroyByKey(key);
+   		CacheHelper.getNoDeadCache().destroyByKey(DMConstants.RECORD_TABLE_LIST);
 	}
 	
 	public void dropTable(String table, String datasource) {

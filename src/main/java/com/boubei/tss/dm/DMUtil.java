@@ -33,7 +33,6 @@ import com.boubei.tss.cache.extension.CacheHelper;
 import com.boubei.tss.dm.ddl._Field;
 import com.boubei.tss.dm.record.Record;
 import com.boubei.tss.dm.record.permission.RecordPermission;
-import com.boubei.tss.dm.record.permission.RecordResource;
 import com.boubei.tss.dm.report.ScriptParser;
 import com.boubei.tss.dm.report.ScriptParserFactory;
 import com.boubei.tss.framework.Global;
@@ -307,22 +306,26 @@ public class DMUtil {
 			String key = DMConstants.RECORD_TABLE_LIST;
 			Cacheable o = cache.getObject(key );
 	      	if( o == null ) {
-	      		ICommonService commonService = (ICommonService) Global.getBean("CommonService");
+	      		ICommonService commonService = Global.getCommonService();
 	      		String hql = "select id, table from Record where type = 1 and disabled <> 1 ";
 	      		o = cache.putObject(key, commonService.getList(hql)); 
 	      	}
 	      	
 	      	@SuppressWarnings("unchecked")
 	      	List<Object[]> tables = (List<Object[]>) o.getValue();
+	      	
+	      	PermissionHelper ph = PermissionHelper.getInstance();
+	      	String permissionTable = RecordPermission.class.getName();
+			List<Long> permissions = ph.getResourceIdsByOperation(permissionTable, Record.OPERATION_EDATA);
+	      	permissions.addAll(ph.getResourceIdsByOperation(permissionTable, Record.OPERATION_VDATA));
+	      	
 	      	for(Object[] table : tables) {
 	      		Long recordId = (Long) table[0];
 	      		String tableName = (String) table[1];
 	      		
 	      		try {
-					PermissionHelper ph = PermissionHelper.getInstance();
-					boolean visible = ph.checkPermission(recordId, RecordPermission.class.getName(), RecordResource.class, 
-							Record.OPERATION_EDATA, Record.OPERATION_VDATA);
-					String filterS = wrapTable(tableName, visible);
+					boolean visible = permissions.contains(recordId); // 浏览|编辑
+					String filterS = wrapTable(tableName, visible);  // 默认按录入wrap
 					
 					data.put(tableName.toUpperCase(), filterS);
 					data.put(tableName.toLowerCase(), filterS);

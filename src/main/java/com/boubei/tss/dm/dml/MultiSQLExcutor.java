@@ -39,6 +39,7 @@ import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.modules.log.IBusinessLogger;
 import com.boubei.tss.modules.log.Log;
+import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.EasyUtils;
 
 /**
@@ -63,7 +64,7 @@ import com.boubei.tss.util.EasyUtils;
 	Object {result: maxid: 2, "Success", step1: 1, step2: 1, step4: 1, step5: 0}
  */
 @Controller
-@RequestMapping( {"/auth/dml/"})
+@RequestMapping( {"/auth/dml/, /api/dml/"})
 public class MultiSQLExcutor {
 	
 	Logger log = Logger.getLogger(this.getClass());
@@ -71,14 +72,15 @@ public class MultiSQLExcutor {
 	public static final int PAGE_SIZE = 50;
 	
 	@Autowired public RecordService recordService;
+	@Autowired private ILoginService loginService;
 	  
     /**
      * 一个事务内执行新增、修改、删除、查询等多条SQL语句，All in one，并记录日志；要求都在一个数据源内执行。
-     * 注：需严格控制数据行级权限
+     * 注：需严格控制数据行级权限； 在
      */
 	@RequestMapping(value = "/multi", method = RequestMethod.POST)
     @ResponseBody
-    public Object exeMultiSQLs(HttpServletRequest request, String json, String ds) throws Exception {
+    public Object exeMultiSQLs(HttpServletRequest request, String json, String ds) throws Exception {		
     	return _exeMultiSQLs(json, ds, new HashMap<String, Object>());
     }
     	
@@ -122,6 +124,9 @@ public class MultiSQLExcutor {
 				sql = sqlInfo.getScript();
 				
 	    		Map<String, Object> params = (Map<String, Object>) item.get("data");
+	    		if( params == null ) {
+	    			params = new HashMap<String, Object>();
+	    		}
 	    		params.putAll(stepResults);
 	    		params.putAll(data);
 	    		

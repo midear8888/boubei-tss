@@ -26,9 +26,9 @@ public interface RecordService {
     
     Long getRecordID(Object record, boolean auth);
     
-    Long getRecordID(String recordName, int type);
+    Long getRecordID(String nameOrTable, int type);
     
-    Long getRecordID(String recordName, int type, boolean auth);
+    Long getRecordID(String nameOrTable, int type, boolean auth);
     
     _Database getDB(Long recordId);
     

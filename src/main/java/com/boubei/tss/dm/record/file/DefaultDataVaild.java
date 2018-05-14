@@ -23,6 +23,8 @@ public class DefaultDataVaild implements IDataVaild {
 		List<Integer> errLineIndexs = new ArrayList<Integer>();
 		Map<String, List<Object>> colValues = new HashMap<String, List<Object>>();
 		
+		// TODO 非空 && 带默认值或valSQL的字段 如果在导入文件里没有，则自动加上
+		
 		for(int index = 1; index < rows.length; index++) { // 第一行为表头，不要
 			
 			String row = rows[index];
@@ -75,7 +77,7 @@ public class DefaultDataVaild implements IDataVaild {
     			
     			if( type != null) {
 	    			try {
-	    				value = DMUtil.preTreatValue(value, type) + "";
+	    				value = EasyUtils.obj2String(  DMUtil.preTreatValue(value, type) );
 	    			} catch(Exception e) {
 	    				errors.add(filedLabel + "数据类型【" +type+ "】异常:" + e.getMessage());
 	    			}
@@ -100,7 +102,7 @@ public class DefaultDataVaild implements IDataVaild {
     			
     			// 2、正则表达式校验
     			String checkReg = _db.creg.get(fieldCode);
-    			if( !EasyUtils.isNullOrEmpty(checkReg) && EasyUtils.isNullOrEmpty(value) ) {
+    			if( !EasyUtils.isNullOrEmpty(checkReg) && !EasyUtils.isNullOrEmpty(value) ) {
     				String regExp = checkReg.replaceAll("\\\\","\\\\\\\\");  // JS 正则转换为 JAVA正则
         	        Pattern p = Pattern.compile(regExp);  
         	        if( !p.matcher(value).matches() ) {

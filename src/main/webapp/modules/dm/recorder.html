@@ -840,10 +840,10 @@ function batchImport() {
     if(uniqueCodes) {
         url += "&uniqueCodes=" + uniqueCodes; // 定义在页面全局变量里：uniqueCodes="oto,sjphone";
     }
-    if(ignoreExist) {
+    if(ignoreExist === false || ignoreExist) {
         url += "&ignoreExist=" + ignoreExist; // 是否覆盖式导入：true:false
     }
-    if(together) {
+    if(together === false || together) {
         url += "&together=" + together; // 是否完整性导入（即不允许部分导入）：true:false
     }
     

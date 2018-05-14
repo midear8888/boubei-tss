@@ -154,10 +154,10 @@ public class ImportCSV implements AfterUpload {
         			if( _Field.isAutoSN(defaultVal) ) {
         				String preCode = defaultVal.replaceAll(_Field.SNO_yyMMddxxxx, "");
         				if(snList == null) {
-        					int snNum = rows.length - errLineSize - emptyLineIndexs.size();
+        					int snNum = rows.length - 1 - errLineSize - emptyLineIndexs.size();
 							snList = new SerialNOer().create(preCode, snNum);
         				}
-        				value = snList.get(index - 1);
+        				value = snList.get(insertCount);
         			}
     			}
     			
@@ -210,9 +210,9 @@ public class ImportCSV implements AfterUpload {
     	_db.insertBatch(valuesMaps);
 		
 		// 向前台返回成功信息
-    	String noInserts = ignoreExist ? ("忽略了第【" +EasyUtils.list2Str(ignoreLines)+ "】行") : ("覆盖" +updateCount+ "行");
-    	String errMsg = errLineSize > 0 ? "请刷新查看。" : "其中有" +errLineSize+ "行数据校验异常，请点【<a href=\"/tss/data/download/" +fileName+ "\">异常记录</a>】下载查看。";
-		return "parent.alert('导入完成：共新增" +insertCount+ "行，" +noInserts+ "。" +errMsg+ "'); parent.openActiveTreeNode();";
+    	String noInserts = ignoreExist ? ("忽略了第【" +EasyUtils.list2Str(ignoreLines)+ "】行，") : ("覆盖" +updateCount+ "行，");
+    	String errMsg = errLineSize == 0 ? "请刷新查看。" : "其中有" +errLineSize+ "行数据校验异常，请点【<a href=\"/tss/data/download/" +fileName+ "\">异常记录</a>】下载查看。";
+		return "parent.alert('导入完成：共新增" +insertCount+ "行，" + noInserts + errMsg + "'); parent.openActiveTreeNode();";
 	}
 	
 }

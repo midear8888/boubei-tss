@@ -270,7 +270,7 @@ public abstract class AbstractPool implements Pool {
         // 判断对象是否存在using池中，是的话将对象从using池中移出，否则抛出异常
 		Cacheable temp = getUsing().remove(key);
 		if( !item.equals(temp) ) {
-            logError("attempt to checkIn a item not from using pool, failed！" + getName() + "[" + item + " --> " + temp + "]");
+            logError("attempt to checkIn a item not from using pool, failed." + getName() + "[" + item + " --> " + temp + "]");
             return;
         }
 		
@@ -299,7 +299,7 @@ public abstract class AbstractPool implements Pool {
                 //事件监听器将唤醒所有等待中的线程，包括cleaner线程，checkout，remove等操作的等待线程
                 firePoolEvent(PoolEvent.CHECKIN);
                 
-                logDebug("cache-item[" + item.getKey() + "] was checkIn）！");
+                logDebug("cache-item[" + item.getKey() + "] was checkIn）.");
             } 
             catch (Exception e) {        
             	// 如果不能回收则销毁
