@@ -474,7 +474,7 @@ public abstract class _Database {
 		
 		SQLExcutor.excuteBatch(createInsertSQL(), paramsList , this.datasource);
 		
-		logCUD("", "create", " add some rows: " + valuesMaps);
+		logCUD("batch", "create", " add some rows: " + valuesMaps);
 	}
 	
 	protected String createInsertSQL() {

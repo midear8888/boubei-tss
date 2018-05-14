@@ -61,8 +61,15 @@ public class BusinessLogInterceptor implements MethodInterceptor {
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("returnVal", returnVal);
             
-            Table table = returnVal.getClass().getAnnotation(Table.class);
+            Class<? extends Object> rvClazz = returnVal.getClass();
+			Table table = rvClazz.getAnnotation(Table.class);
             if( table != null ) {
+            	// 检测数据表是否配置了忽略日志，eg：取号器等
+            	LogDisable logDisable = rvClazz.getAnnotation(LogDisable.class);
+            	if( logDisable != null ) {
+            		return returnVal;
+            	}
+            	
             	if( "${table}".equals(operateTable) ) {
             		operateTable = table.name();
             	}

@@ -12,10 +12,12 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import com.boubei.tss.dm.record.ARecordTable;
+import com.boubei.tss.modules.log.LogDisable;
 
 /**
  * 取号器：前缀YYYYMMDD四位递增数字
  */
+@LogDisable
 @Entity
 @Table(name = "x_serialno")
 @SequenceGenerator(name = "serialno_sequence", sequenceName = "serialno_sequence", initialValue = 1, allocationSize = 10)

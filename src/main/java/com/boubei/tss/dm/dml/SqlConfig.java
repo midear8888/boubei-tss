@@ -11,7 +11,6 @@
 package com.boubei.tss.dm.dml;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,29 +35,24 @@ public class SqlConfig {
 	
 	static Map<String, Object> sqlNestFmParams = new HashMap<String, Object>(); // SQL嵌套解析用
 	
-	public static String getScript(String reportName, int index) {
-		Cacheable cacheItem = cache.getObject(reportName);
+	public static String getScript(String sqlCode) {
+		Cacheable cacheItem = cache.getObject(sqlCode);
 		if(cacheItem == null) {
 			File sqlDir = new File(URLUtil.getResourceFileUrl("script").getPath());
 			List<File> sqlFiles = FileHelper.listFilesByTypeDeeply("xml", sqlDir);
+			
 			for(File sqlFile : sqlFiles) {
 				Document doc = XMLDocUtil.createDocByAbsolutePath(sqlFile.getPath());
-				List<Element> reportNodes = XMLDocUtil.selectNodes(doc, "//report");
-				for(Element reportNode : reportNodes) {
+				List<Element> sqlNodes = XMLDocUtil.selectNodes(doc, "//sql");
+				for(Element sqlNode : sqlNodes) {
 					
-					List<String> reportSQLs = new ArrayList<String>();
+					String code = sqlNode.attributeValue("code").trim();
+					String sql  = sqlNode.getText().trim();
 					
-					String id = reportNode.attributeValue("id").trim();
-					List<Element> sqlNodes = XMLDocUtil.selectNodes(reportNode, "sql");
-					for(Element sqlNode : sqlNodes) {
-						String sql = sqlNode.getText().trim();
-						reportSQLs.add(sql);
-						
-						sqlNestFmParams.put("${" + id + "_" + reportSQLs.size() + "}", sql);
-					}
+					sqlNestFmParams.put("${" + code + "}", sql);
 					
-					Cacheable cacheTemp = cache.putObject(id, reportSQLs);
-					if( reportName.equals(id) ) {
+					Cacheable cacheTemp = cache.putObject(code, sql);
+					if( sqlCode.equals(code) ) {
 						cacheItem = cacheTemp;
 					}
 				}
@@ -66,19 +60,13 @@ public class SqlConfig {
 		}
 		
 		if(cacheItem == null) {
-			log.error("没有找到报表【" + reportName + "】的SQL。");
+			log.error("没有找到编码为【" + sqlCode + "】的SQL。");
 			return null;
 		}
 		
-		List<?> reportSQLs = (List<?>) cacheItem.getValue();
-		if(reportSQLs != null && reportSQLs.size() >= index) {
-			String script = (String) reportSQLs.get(index - 1);
-			
-			// 自动解析script里的宏嵌套
-			script = MacrocodeCompiler.run(script, sqlNestFmParams, true);
-			
-			return script;
-		}
-		return null;
+		String script = (String) cacheItem.getValue();
+		script = MacrocodeCompiler.run(script, sqlNestFmParams, true); // 自动解析script里的宏嵌套
+		
+		return script;
 	}
 }

@@ -78,7 +78,7 @@ public class AccessLogRecorder extends OutputRecordsManager {
                 paramsMapList.add(paramsMap);
             }
 
-            String script = SqlConfig.getScript("saveAccessLog", 1);
+            String script = SqlConfig.getScript("saveAccessLog");
             String _script = "insert into dm_access_log " +
         			"(className, methodName, methodCnName, accessTime, runningTime, params, userId, ip) " +
         			"values (?, ?, ?, ?, ?, ?, ?, ?)";

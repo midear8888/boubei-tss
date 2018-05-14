@@ -89,10 +89,8 @@ public interface RecordService {
     
 	List<?> getAttachList(Long recordId, Long itemId);
 	
-	@Logable(operateObject="附件表", operateInfo="删除了：${returnVal?default(\"\")}")
 	RecordAttach deleteAttach(Long id);
 
-	@Logable(operateObject="附件表",  operateInfo="新增了：${args[0]?default(\"\")}")
 	RecordAttach createAttach(RecordAttach attach);
 	
 	RecordAttach getAttach(Long id);

@@ -1,5 +1,10 @@
-TOMCAT_URL = "/tss";
 
+window._alert = window.alert;
+if(tssJS) {
+  window.alert = tssJS.alert;  
+}
+
+TOMCAT_URL = "/tss";
 if(location.protocol === 'file:') {
     TOMCAT_URL = 'http://localhost:9000/tss';
 }

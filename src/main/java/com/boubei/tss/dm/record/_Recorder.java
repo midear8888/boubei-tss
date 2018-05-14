@@ -49,6 +49,7 @@ import com.boubei.tss.dm.record.workflow.WFLog;
 import com.boubei.tss.dm.record.workflow.WFManager;
 import com.boubei.tss.dm.record.workflow.WFStep;
 import com.boubei.tss.dm.report.log.AccessLogRecorder;
+import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.SecurityUtil;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.exception.ExceptionEncoder;
@@ -59,6 +60,8 @@ import com.boubei.tss.framework.web.display.grid.GridDataEncoder;
 import com.boubei.tss.framework.web.display.grid.IGridNode;
 import com.boubei.tss.framework.web.mvc.BaseActionSupport;
 import com.boubei.tss.modules.HitRateManager;
+import com.boubei.tss.modules.log.IBusinessLogger;
+import com.boubei.tss.modules.log.Log;
 import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.um.permission.PermissionHelper;
 import com.boubei.tss.util.DateUtil;
@@ -676,10 +679,16 @@ public class _Recorder extends BaseActionSupport {
 		}
 		
 		// 检查用户对当前附件所属记录是否有编辑权限
-		checkRowEditable(attach.getRecordId(), attach.getItemId());
+		Long recordId = attach.getRecordId();
+		checkRowEditable(recordId, attach.getItemId());
 		
 		recordService.deleteAttach(id);
 		FileHelper.deleteFile(new File(attach.getAttachPath()));
+		
+		// 记录附件删除日志，关联到附件所属的录入表
+		Log excuteLog = new Log( "删除附件, " + id, attach);
+		excuteLog.setOperateTable( recordService.getRecord(recordId).getName() );
+		((IBusinessLogger) Global.getBean("BusinessLogger")).output(excuteLog);
 		
 		printSuccessMessage();
     }
@@ -695,12 +704,17 @@ public class _Recorder extends BaseActionSupport {
 		}
 		
 		// 检查用户对当前附件所属记录是否有查看权限
-		if( !checkRowVisible(attach.getRecordId(), attach.getItemId()) ) {
+		Long recordId = attach.getRecordId();
+		if( !checkRowVisible(recordId, attach.getItemId()) ) {
 			throw new BusinessException(EX.DM_07);
 		} 
 		
 		FileHelper.downloadFile(response, attach.getAttachPath(), attach.getName());
-		HitRateManager.getInstanse("dm_record_attach").output(id);
+		HitRateManager.getInstanse("dm_record_attach").output(id); // 更新浏览次数
+
+		Record record = recordService.getRecord(recordId);
+		AccessLogRecorder.outputAccessLog(record.getName(), recordId.toString(), "下载附件_"+id, 
+				new HashMap<String, String>(), System.currentTimeMillis());
 	}
 
 	// 注：远程访问时需校验Token需要用到recordId；本地访问可不传
