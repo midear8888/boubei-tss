@@ -57,14 +57,14 @@ import com.boubei.tss.util.EasyUtils;
 	json.push({ "sqlCode": "s4", data: {} });
 	
 	var params = {};
-	params.ds = "connpool-btr-mysql";
+	params.ds = "connectionpool";
 	params.json = JSON.stringify(json);
 	tssJS.post("/tss/auth/dml/multi", params, function(result) { console.log(result); } );
 	
 	Object {result: maxid: 2, "Success", step1: 1, step2: 1, step4: 1, step5: 0}
  */
 @Controller
-@RequestMapping( {"/auth/dml/, /api/dml/"})
+@RequestMapping( {"/auth/dml/", "/api/dml/"})
 public class MultiSQLExcutor {
 	
 	Logger log = Logger.getLogger(this.getClass());

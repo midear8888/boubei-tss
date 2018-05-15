@@ -113,7 +113,7 @@ public class ImportCSV implements AfterUpload {
 			for(String err : errLines) {
 				sb.append(err).append("\n");
 			}
-			System.out.println( sb );
+			log.info( sb );
 			
 			fileName = "err-" + recordId + Environment.getUserId();
 	        String exportPath = DataExport.getExportPath() + "/" + fileName + ".csv";
