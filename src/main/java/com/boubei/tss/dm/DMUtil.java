@@ -44,9 +44,7 @@ import com.boubei.tss.framework.web.display.xform.XFormEncoder;
 import com.boubei.tss.modules.param.Param;
 import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.um.UMConstants;
-import com.boubei.tss.um.permission.IResource;
 import com.boubei.tss.um.permission.PermissionHelper;
-import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
@@ -81,33 +79,16 @@ public class DMUtil {
         }
 	}
 	
-	/**
-	 * 通过uToken令牌，检查指定资源是否被授权给第三方系统访问。
-	 */
-	public static boolean checkAPIToken(IResource r, String uName, String uToken) {
-		ILoginService loginService = (ILoginService) Global.getBean("LoginService");
-		
-		// 分别按资源的【ID】或【名称】 + uName 搜索一遍令牌
-		String resourceType = r.getResourceType(); // D1 | D2
-		List<String> tokenList = loginService.searchTokes(uName, r.getId().toString(), resourceType); 
-		tokenList.addAll( loginService.searchTokes(uName, r.getName(), resourceType) );
-		
-    	if( tokenList.contains(uToken) ) {
-    		// 模拟登录，初始化 Environment
-    		loginService.mockLogin(uName, uToken);
-    		return true;
-    	}
-    	return false;
-	}
-	
 	/*
 	 *  注：通过tssJS.ajax能自动过滤params里的空值，jQuery发送的ajax请求则不能
 	 *  $.getJSON("/tss/xdata/json/dm_etl_task?name=任务&xx=abc", {"jobname": "定时器"}, function(data) { console.log(data); }, "POST");
+	 *  
+	 *  注：自定义的接口入口处，需要单独调用 URLUtil.parseQueryString 来替代 Request.getParamter()
 	 */
     public static Map<String, String> getRequestMap(HttpServletRequest request, boolean isGet) {
     	// Tomcat 或 Jetty 默认已经对queryString上的参数 URLDecode 处理
     	Map<String, String[]> parameterMap = request.getParameterMap();
-    	boolean hasUToken = parameterMap.containsKey("uToken");
+    	boolean apiCall = parameterMap.containsKey("uName");
     	
     	Map<String, String> requestMap = new LinkedHashMap<String, String>();
     	
@@ -121,7 +102,7 @@ public class DMUtil {
 			
 			String[] values = parameterMap.get(key);
 			String value = null;
-			if( isGet || hasUToken ) { // (tomcat7 or httpClient call API(uToken) )
+			if( isGet || apiCall ) { // (tomcat7 or httpClient call API(uToken) )
 				try {
 					value = new String(values[0].getBytes("ISO-8859-1"), "UTF-8"); 
 				} catch (UnsupportedEncodingException e) {
@@ -171,10 +152,13 @@ public class DMUtil {
         
         // 支持列表in查询，分隔符支持中英文逗号、中英文分号、空格、顿号
         param = param.replaceAll("，", ",").replaceAll(" ", ",").replaceAll("、", ",");
-        if (param.contains(",")) {
-            return "\'" + param.replaceAll(",", "\',\'") + "\'";
-
-        } else {
+        if ( param.contains(",") ) {
+        	if( param.indexOf("'") < 0 ) {
+        		return "\'" + param.replaceAll(",", "\',\'") + "\'";
+        	}
+        	return param;
+        } 
+        else {
             return "\'" + param + "\'";
         }
     }

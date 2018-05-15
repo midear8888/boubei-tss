@@ -78,11 +78,6 @@ public interface ILoginService {
     OperatorDTO getOperatorDTOByLoginName(String loginName);
     
     /**
-     * 模拟用户登录
-     */
-    String mockLogin(String userCode, String uToken);
-    
-    /**
      * <p>
      * 登陆成功后，保存【用户对应角色列表】到RoleUserMapping表
      * </p>
@@ -174,14 +169,5 @@ public interface ILoginService {
      * @return
      */
     String[] getContactInfos(String receiverStr, boolean justID);
-    
-    /**
-     * 获取指定用户在当前系统拥有的令牌（API、SSO）列表，包括授权给本人及匿名用户的令牌
-     * @param uName
-     * @param resource ID|Name|Sys
-     * @param type Record|Report|SSO
-     * @return
-     */
-    List<String> searchTokes(String uName, String resource, String type);
 }
 

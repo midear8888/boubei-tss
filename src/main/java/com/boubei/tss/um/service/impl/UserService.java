@@ -35,6 +35,7 @@ import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.pagequery.PageInfo;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.sso.context.Context;
+import com.boubei.tss.modules.api.APIService;
 import com.boubei.tss.modules.param.Param;
 import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.modules.param.ParamManager;
@@ -52,7 +53,6 @@ import com.boubei.tss.um.entity.permission.RolePermission;
 import com.boubei.tss.um.helper.UMQueryCondition;
 import com.boubei.tss.um.permission.PermissionHelper;
 import com.boubei.tss.um.service.IGroupService;
-import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.um.service.IRoleService;
 import com.boubei.tss.um.service.IUserService;
 import com.boubei.tss.um.sso.UMPasswordIdentifier;
@@ -66,7 +66,7 @@ public class UserService implements IUserService{
 	@Autowired private IGroupDao groupDao;
 	
 	@Autowired private IGroupService groupService;
-	@Autowired private ILoginService loginService;
+	@Autowired private APIService apiService;
 	@Autowired private IRoleService  roleService;
 	@Autowired private ReportService reportService;
 	@Autowired private RecordService recordService;
@@ -120,7 +120,7 @@ public class UserService implements IUserService{
     }
 
     public User getUserByLoginName(String loginName) {
-        return userDao.getUserByLoginName(loginName);
+        return userDao.getUserByAccount(loginName, false);
     }
  
     public void initPasswordByGroupId(Long groupId, Long userId, String initPassword) {
@@ -153,15 +153,15 @@ public class UserService implements IUserService{
     }
     
     private void checkUserAccout(User user) {
-        if(userDao.getUserByLoginName(user.getLoginName()) != null) {
+        if(userDao.getUserByAccount(user.getLoginName(), false) != null) {
             throw new BusinessException(EX.U_29);
         }
         String eamil = user.getEmail();
-        if( !EasyUtils.isNullOrEmpty(eamil) && userDao.getUserByLoginName(eamil) != null) {
+        if( !EasyUtils.isNullOrEmpty(eamil) && userDao.getUserByAccount(eamil, false) != null) {
             throw new BusinessException(EX.U_30);
         }
         String mobile = user.getTelephone();
-		if( !EasyUtils.isNullOrEmpty(mobile) && userDao.getUserByLoginName(mobile) != null) {
+		if( !EasyUtils.isNullOrEmpty(mobile) && userDao.getUserByAccount(mobile, false) != null) {
             throw new BusinessException(EX.U_31);
         }
     }
@@ -400,7 +400,7 @@ public class UserService implements IUserService{
 		this.regUser(user);
 		
 		// 借用Admin的权限完成下面资源的注册
-		String token = loginService.mockLogin("Admin", "ImA");
+		String token = apiService.mockLogin("Admin", "ImA");
     	PermissionHelper ph = PermissionHelper.getInstance();
     	
     	Role rGroup = new Role();

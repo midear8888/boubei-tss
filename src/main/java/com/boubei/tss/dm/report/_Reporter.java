@@ -38,6 +38,7 @@ import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.web.display.grid.DefaultGridNode;
 import com.boubei.tss.framework.web.display.grid.GridDataEncoder;
 import com.boubei.tss.framework.web.display.grid.IGridNode;
+import com.boubei.tss.framework.web.filter.Filter8APITokenCheck;
 import com.boubei.tss.framework.web.mvc.BaseActionSupport;
 import com.boubei.tss.modules.log.IBusinessLogger;
 import com.boubei.tss.modules.log.Log;
@@ -90,25 +91,20 @@ public class _Reporter extends BaseActionSupport {
      * 2、根据每个报表的具体配置来确定使用具体的缓存策略。可分为：不缓存、按用户缓存、按参数缓存、按域缓存。
      * 注：加入企业域后，SQL里带上了${filterByDomain}，需要再加一种，按域缓存
      */
-    private Object checkLoginAndCache(Map<String, String> requestMap, Long reportId) {
+    private Object checkLoginAndCache(HttpServletRequest request, Long reportId) {
     	
     	Report report = reportService.getReport(reportId, false);
     	String script = (report.getScript()+"").toLowerCase();
     	
     	/* 其它系统调用接口时，传入其在TSS注册的用户ID; 检查令牌，令牌有效则自动完成登陆 */
-    	String uName  = requestMap.get("uName"), uToken = requestMap.get("uToken");
-    	if( !EasyUtils.isNullOrEmpty(uToken) && !EasyUtils.isNullOrEmpty(uName) ) {
-        	if( !DMUtil.checkAPIToken(report, uName, uToken) ) {
-    			throw new BusinessException(EX.DM_11);
-    		}
-    	} 
+    	Filter8APITokenCheck.checkAPIToken(request, report);
     	
     	/* 如果传入的参数要求不取缓存的数据，则返回当前时间戳作为userID，以触发缓存更新。*/
     	Object cacheFlag;
-    	if( "true".equals(requestMap.get("noCache")) ) {
+    	if( "true".equals(request.getParameter("noCache")) ) {
     		cacheFlag = System.currentTimeMillis(); // 按时间戳缓存，白存了，永远无法再次命中
     	}
-    	else if( "true".equals(requestMap.get("uCache")) 
+    	else if( "true".equals(request.getParameter("uCache")) 
     			|| Pattern.compile("from[\\s]*\\$\\{").matcher(script).find() ) { // 面向数据表查询
     		cacheFlag = Environment.getUserId();  // 按【用户 + 参数】缓存
     	}
@@ -126,7 +122,7 @@ public class _Reporter extends BaseActionSupport {
     	
     	long start = System.currentTimeMillis();
     	Map<String, String> requestMap = DMUtil.getRequestMap(request, false);
-		Object cacheFlag = checkLoginAndCache(requestMap, reportId);
+		Object cacheFlag = checkLoginAndCache(request, reportId);
 		SQLExcutor excutor = reportService.queryReport(reportId, requestMap, page, pagesize, cacheFlag);
     	
 		AccessLogRecorder.outputAccessLog(reportService, reportId, "showAsGrid", requestMap, start);
@@ -155,7 +151,7 @@ public class _Reporter extends BaseActionSupport {
         
     	long start = System.currentTimeMillis();
     	Map<String, String> requestMap = DMUtil.getRequestMap(request, true);
-		Object cacheFlag = checkLoginAndCache(requestMap, reportId);
+		Object cacheFlag = checkLoginAndCache(request, reportId);
 		SQLExcutor excutor = reportService.queryReport(reportId, requestMap, page, pagesize, cacheFlag);
 		
 		String fileName = reportId + "-" + start + ".csv";
@@ -249,7 +245,7 @@ public class _Reporter extends BaseActionSupport {
     	int _page = page != null ? EasyUtils.obj2Int(page) : 1;
     			
     	long start = System.currentTimeMillis();
-        Object cacheFlag = checkLoginAndCache(requestMap, reportId);
+        Object cacheFlag = checkLoginAndCache(request, reportId);
 		SQLExcutor excutor = reportService.queryReport(reportId, requestMap, _page, _pagesize, cacheFlag);
         
         // 对一些转换为json为报错的类型值进行预处理

@@ -14,9 +14,12 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.boubei.tss.EX;
 import com.boubei.tss.framework.Global;
+import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.context.Context;
-import com.boubei.tss.um.service.ILoginService;
+import com.boubei.tss.modules.api.APIService;
+import com.boubei.tss.um.permission.IResource;
 
 /** 
  * 对外发布接口，调用时令牌检测。
@@ -30,8 +33,7 @@ import com.boubei.tss.um.service.ILoginService;
  * 	可扩展性
  * 	高性能：大业务量时,需要交互的接口性能较高,需要双方的接口都能快速处理调用方发送的请求。
  * 
- * 
- * http://api?uName=JK&sign=md5(params+secret+timestamp)&timestamp=201603261407&参数1=value1&参数2=value2.......
+ * http://api?uName=JK&sign=md5(params+secret+timestamp)&timestamp=&参数1=value1&参数2=value2.......
  * 
  */
 //@WebFilter(filterName = "Filter8APITokenCheck", urlPatterns = {"/api/*"})
@@ -61,15 +63,40 @@ public class Filter8APITokenCheck implements Filter {
         String uToken = req.getParameter("uToken");
         
         if( uToken != null && uName != null ) {
-        	ILoginService loginService = (ILoginService) Global.getBean("LoginService");
+        	APIService apiService = (APIService) Global.getBean("APIService");
     		
     		//  搜索令牌
-    		List<String> tokenList = loginService.searchTokes(uName, servletPath, "D1"); 
+    		List<String> tokenList = apiService.searchTokes(uName, servletPath, "D1"); 
         	if( tokenList.contains(uToken) ) {
         		// 模拟登录，初始化 Environment
-        		loginService.mockLogin(uName, uToken);
+        		apiService.mockLogin(uName, uToken);
         		log.info(servletPath + ", " + uName + ", api token pass");
         	}
         }
+	}
+	
+	/**
+	 * 通过uToken令牌，检查指定资源是否被授权给第三方系统访问。
+	 */
+	public static void checkAPIToken(HttpServletRequest req, IResource r) {
+		APIService apiService = (APIService) Global.getBean("APIService");
+		
+		String uName  = req.getParameter("uName");
+	    String uToken = req.getParameter("uToken");
+		
+	    if( uToken == null && uName == null ) return;
+	    
+		// 分别按资源的【ID】或【名称】 + uName 搜索一遍令牌
+		String resourceType = r.getResourceType(); // D1 | D2
+		List<String> tokenList = apiService.searchTokes(uName, r.getId().toString(), resourceType); 
+		tokenList.addAll( apiService.searchTokes(uName, r.getName(), resourceType) );
+		
+    	if( tokenList.contains(uToken) ) {
+    		// 模拟登录，初始化 Environment
+    		apiService.mockLogin(uName, uToken);
+    		return;
+    	}
+    	
+    	throw new BusinessException(EX.DM_11);
 	}
 }

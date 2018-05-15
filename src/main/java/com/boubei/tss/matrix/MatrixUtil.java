@@ -31,7 +31,9 @@ public class MatrixUtil {
 	static String MATRIX_CALL = "matrix_call";
 	
 	private static PostMethod genPostMethod(String url) {
-		String[] matrixInfos = ParamConfig.getAttribute(MATRIX_CALL, "http://www.boubei.com,ANONYMOUS,0211bdae3d86730fe302940832025419").split(",");
+		String[] matrixInfos = ParamConfig.getAttribute(MATRIX_CALL, 
+				"http://www.boubei.com,ANONYMOUS,0211bdae3d86730fe302940832025419").split(",");
+		
 		PostMethod postMethod = new PostMethod(matrixInfos[0] + url);
     	postMethod.addParameter("uName", matrixInfos[1]);
 		postMethod.addParameter("uToken", matrixInfos[2]);

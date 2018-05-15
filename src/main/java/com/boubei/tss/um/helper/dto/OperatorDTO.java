@@ -11,12 +11,15 @@
 package com.boubei.tss.um.helper.dto;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.boubei.tss.framework.persistence.IEntity;
 import com.boubei.tss.framework.sso.Anonymous;
 import com.boubei.tss.framework.sso.IPWDOperator;
 import com.boubei.tss.um.UMConstants;
+import com.boubei.tss.util.BeanUtil;
 
 /**
  * 操作用户信息DTO
@@ -39,6 +42,22 @@ public class OperatorDTO implements IPWDOperator, Serializable {
     public OperatorDTO(Long userId, String loginName) {
     	this.id = userId;
     	this.loginName = loginName;
+    }
+    
+    public OperatorDTO(IEntity user) {
+        // 共有的属性直接拷贝
+        BeanUtil.copy(this, user);
+
+        // 用户对象特有的其他属性全部放到DTO的map里面保存
+        Map<String, Object> dtoMap = this.getAttributesMap();
+        Field[] fields = user.getClass().getDeclaredFields();
+        for (Field field : fields) {
+            String fieldName = field.getName();
+            try {
+                dtoMap.put(fieldName, BeanUtil.getPropertyValue(user, fieldName));
+            } catch (Exception e) {
+            }
+        }
     }
 
     /**

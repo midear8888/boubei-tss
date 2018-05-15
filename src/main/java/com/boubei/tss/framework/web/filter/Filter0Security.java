@@ -166,7 +166,8 @@ public class Filter0Security implements Filter {
     		return true;
     	}
 		else if( servletPath.indexOf(".") < 0 ) { // 无后缀，一般restful地址 或 /download
-    		if(servletPath.indexOf("/data/export/") >= 0 || request.getParameter("uToken") != null) { 
+    		boolean apiCall = request.getParameter("uName") != null;
+			if(servletPath.indexOf("/data/export/") >= 0 || apiCall) { 
     			return false; // 跨机器数据导出请求 & 接口调用，放行
     		}
     		

@@ -80,7 +80,7 @@ public interface IUserDao extends IDao<User>{
      * @param loginName 登录名
      * @return  User 用户实体对象
      */
-    User getUserByLoginName(String loginName);
+    User getUserByAccount(String account, boolean vaildate);
  
 
 }

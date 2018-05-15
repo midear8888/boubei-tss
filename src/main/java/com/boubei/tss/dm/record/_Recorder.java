@@ -58,6 +58,7 @@ import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.web.display.grid.DefaultGridNode;
 import com.boubei.tss.framework.web.display.grid.GridDataEncoder;
 import com.boubei.tss.framework.web.display.grid.IGridNode;
+import com.boubei.tss.framework.web.filter.Filter8APITokenCheck;
 import com.boubei.tss.framework.web.mvc.BaseActionSupport;
 import com.boubei.tss.modules.HitRateManager;
 import com.boubei.tss.modules.log.IBusinessLogger;
@@ -131,21 +132,16 @@ public class _Recorder extends BaseActionSupport {
         	};
     }
 	
-	/**
-	 * 当recordId < 0 时，通常是为定制的表（比如万马的员工表）虚拟一张录入表，用以保存附件
-	 */
 	public Map<String, String> prepareParams(HttpServletRequest request, Long recordId) {
 		Map<String, String> requestMap = DMUtil.getRequestMap(request, false);
 		
 		/* 其它系统调用接口时，传入其在TSS注册的用户ID; 检查令牌，令牌有效则自动完成登陆 */
-    	String uName  = requestMap.get("uName"), uToken = requestMap.get("uToken");
-    	if( !EasyUtils.isNullOrEmpty(uToken) && !EasyUtils.isNullOrEmpty(uName) && recordId > 0 ) {
+    	if( recordId > 0 ) {
     		Record record = recordService.getRecord(recordId);
-        	if( !DMUtil.checkAPIToken(record, uName, uToken) ) {
-    			throw new BusinessException(EX.DM_11);
-    		}
+        	Filter8APITokenCheck.checkAPIToken(request, record);
     	} 
-		                                                                                                                                                                                                                                                 
+    	/* 当recordId < 0 时，通常是为定制的表（比如万马的员工表）虚拟一张录入表，用以保存附件 */
+    	
     	return requestMap;
     }
 	

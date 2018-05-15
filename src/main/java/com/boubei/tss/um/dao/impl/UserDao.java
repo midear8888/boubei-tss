@@ -10,11 +10,15 @@
 
 package com.boubei.tss.um.dao.impl;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
+import com.boubei.tss.EX;
+import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.BaseDao;
+import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.um.dao.IUserDao;
 import com.boubei.tss.um.entity.GroupUser;
 import com.boubei.tss.um.entity.User;
@@ -39,10 +43,31 @@ public class UserDao extends BaseDao<User> implements IUserDao {
 		
 		return user;
 	}
-
-	public User getUserByLoginName(String account) {
-	    List<?> users = getEntities("from User o where ? in (o.loginName, o.telephone, o.email) ", account);
-        return users.size() > 0 ? (User) users.get(0) : null;
+ 
+	public User getUserByAccount(String account, boolean vaildate) {
+	    List<?> users = getEntities("from User o where o.loginName = ? ", account);
+	    if( users.isEmpty() ) {
+	    	users = getEntities("from User o where ? in (o.telephone, o.email) ", account);
+	    }
+	    
+        User user = users.size() > 0 ? (User) users.get(0) : null;
+        
+        if(vaildate) {
+        	if (user == null) {
+                throw new BusinessException(EX.U_00 + account);
+            } 
+            else if (ParamConstants.TRUE.equals(user.getDisabled())) {
+                throw new BusinessException(EX.U_26);
+            } 
+            else {
+    			Date accountLife = user.getAccountLife();
+    			if (accountLife !=  null && new Date().after(accountLife) ) {
+    			    throw new BusinessException(EX.U_27);
+    			}
+    		}
+        }
+        
+        return user;
 	}
 
 	public List<?> findUser2GroupByUserId(Long userId) {

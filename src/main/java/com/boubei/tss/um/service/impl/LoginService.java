@@ -10,7 +10,6 @@
 
 package com.boubei.tss.um.service.impl;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -19,8 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.http.HttpSession;
-
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,13 +25,9 @@ import org.springframework.stereotype.Service;
 import com.boubei.tss.EX;
 import com.boubei.tss.PX;
 import com.boubei.tss.framework.exception.BusinessException;
-import com.boubei.tss.framework.sso.Anonymous;
 import com.boubei.tss.framework.sso.IOperator;
-import com.boubei.tss.framework.sso.IdentityCard;
-import com.boubei.tss.framework.sso.TokenUtil;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.modules.param.Param;
-import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.dao.IGroupDao;
@@ -50,8 +43,6 @@ import com.boubei.tss.um.helper.dto.GroupDTO;
 import com.boubei.tss.um.helper.dto.OperatorDTO;
 import com.boubei.tss.um.permission.PermissionHelper;
 import com.boubei.tss.um.service.ILoginService;
-import com.boubei.tss.um.sso.FetchPermissionAfterLogin;
-import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.InfoEncoder;
@@ -134,20 +125,7 @@ public class LoginService implements ILoginService {
 	}
 	
 	private User getUserByLoginName(String loginName) {
-        User user = userDao.getUserByLoginName(loginName);
-        if (user == null) {
-            throw new BusinessException(EX.U_00 + loginName);
-        } 
-        else if (ParamConstants.TRUE.equals(user.getDisabled())) {
-            throw new BusinessException(EX.U_26);
-        } 
-        else {
-			Date accountLife = user.getAccountLife();
-			if (accountLife !=  null && new Date().after(accountLife) ) {
-			    throw new BusinessException(EX.U_27);
-			}
-		}
-        
+        User user = userDao.getUserByAccount(loginName, true);
         userDao.evict(user);
         return user;
 	}
@@ -178,51 +156,13 @@ public class LoginService implements ILoginService {
 
 	public OperatorDTO getOperatorDTOByID(Long userId) {
 		User user = userDao.getEntity(userId);
-		return createOperatorDTO(user);
+		return new OperatorDTO(user);
 	}
 
 	public OperatorDTO getOperatorDTOByLoginName(String loginName) {
 	    User user = getUserByLoginName(loginName);
-	    return createOperatorDTO(user);
+	    return new OperatorDTO(user);
 	}
-	
-	/* 拷贝User对象的所有属性到OperatorDTO */
-    private OperatorDTO createOperatorDTO(User user) {
-        OperatorDTO dto = new OperatorDTO();
-        
-        // 共有的属性直接拷贝
-        BeanUtil.copy(dto, user);
-
-        // 其他用户对象特有的属性全部放到DTO的map里面保存
-        Map<String, Object> dtoMap = dto.getAttributesMap();
-        Field[] fields = user.getClass().getDeclaredFields();
-        for (Field field : fields) {
-            String fieldName = field.getName();
-            try {
-                dtoMap.put(fieldName, BeanUtil.getPropertyValue(user, fieldName));
-            } catch (Exception e) {
-            }
-        }
-        
-        return dto;
-    }
-    
-    public String mockLogin(String userCode, String uToken) {
-    	IOperator user = getOperatorDTOByLoginName(userCode);
-		Long userId = user.getId();
-		
-		// 设置令牌到Session，使Environment生效
-		String token = TokenUtil.createToken(uToken, userId);
-		IdentityCard card = new IdentityCard(token, user);
-		Context.initIdentityInfo(card); 
-		
-		// saveUserRolesAfterLogin 及 设置session信息，获取用户域、组织、角色等信息
-		FetchPermissionAfterLogin obj = new FetchPermissionAfterLogin();
-        HttpSession session = obj.loadRights(userId); 
-        obj.loadGroups(userId, session);
-		
-		return token;
-    }
     
     public void saveUserRolesAfterLogin(Long logonUserId) {
     	List<Object[]> userRoles = getUserRolesAfterLogin( logonUserId );
@@ -279,8 +219,9 @@ public class LoginService implements ILoginService {
     }
     
     public List<String> getRoleNames(List<Long> roleIds) {
+    	Set<Long> _roleIds = new HashSet<Long>(roleIds);  // 防止：ConcurrentModificationException
     	Set<String> names = new HashSet<String>();
-    	for(Long roleId : roleIds) {
+    	for(Long roleId : _roleIds) {
     		Role role = roleDao.getEntity(roleId);
     		names.add(role.getName());
     	}
@@ -354,7 +295,7 @@ public class LoginService implements ILoginService {
     private List<OperatorDTO> translateUserList2DTO(List<User> users){
         List<OperatorDTO> returnList = new ArrayList<OperatorDTO>();
         for( User user : users ){
-            returnList.add(createOperatorDTO(user));
+            returnList.add(new OperatorDTO(user));
         }
         return returnList;
     }
@@ -429,24 +370,5 @@ public class LoginService implements ILoginService {
 			emails.add( email );
 		}
 		ids.add(user.getId());
-	}
-	
-	@SuppressWarnings("unchecked")
-	public List<String> searchTokes(String uName, String resource, String type) {
-		String hql = " select token from UserToken where user=? and resource=? and type=? and expireTime > ?";
-		Date now = new Date();
-		List<String> tokens = (List<String>) userDao.getEntities(hql, uName, resource, type, now );
-		tokens.addAll( (List<String>) userDao.getEntities(hql, Anonymous._CODE, resource, type, now ) );
-		
-		/*
-		 *  把用户的MD5密码也作为令牌，如果和uToken对的上，给予通过（适用于开放数据表链接给第三方用户录入，此时不宜逐个给用户发放令牌）
-		 *  令牌校验通过后，对访问的数据服务、数据表接口等资源是否有相应的操作权限，还要在_Recorder和_Reporter里进一步校验。
-		 *  自定义的接口 /api/*，需要在接口方法内，进行相应的角色和数据等控制
-		 */
-		OperatorDTO user = getOperatorDTOByLoginName(uName);
-		Object uToken = EasyUtils.checkNull(user.getAttribute("authToken"), user.getAttribute("password"));
-		tokens.add( (String) uToken );
-		
-		return tokens;
 	}
 }

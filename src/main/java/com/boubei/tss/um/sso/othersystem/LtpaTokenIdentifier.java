@@ -22,7 +22,8 @@ import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.sso.context.RequestContext;
 import com.boubei.tss.framework.sso.identifier.BaseUserIdentifier;
 import com.boubei.tss.framework.web.XHttpServletRequest;
-import com.boubei.tss.um.service.ILoginService;
+import com.boubei.tss.modules.api.APIService;
+import com.boubei.tss.um.helper.dto.OperatorDTO;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.Escape;
 
@@ -50,7 +51,7 @@ public class LtpaTokenIdentifier extends BaseUserIdentifier {
     public final static String LOGIN_NAME = "username";
     public final static String FROM_APP = "fromApp";
     
-    ILoginService loginSerivce = (ILoginService) Global.getBean("LoginService");
+    APIService apiService = (APIService) Global.getBean("APIService");
  
     protected IOperator validate() throws UserIdentificationException {
         RequestContext requestContext = Context.getRequestContext();
@@ -79,13 +80,13 @@ public class LtpaTokenIdentifier extends BaseUserIdentifier {
         uName = Escape.unescape(uName); // maybe is GBK
         IPWDOperator operator;
         try {
-        	operator = loginSerivce.getOperatorDTOByLoginName(uName);
+        	operator = new OperatorDTO( apiService.getUserByCode(uName) );
 		}  catch (BusinessException e) {
 			throw new UserIdentificationException(e.getMessage());
 		}
         
         // 检查令牌是否合法
-        List<String> tokenList = loginSerivce.searchTokes(uName, fromApp, "SSO"); 
+        List<String> tokenList = apiService.searchTokes(uName, fromApp, "SSO"); 
         if( !tokenList.contains(ltpaToken) ) {
         	throw new UserIdentificationException("非法LtpaToken!");
         }

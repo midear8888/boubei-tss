@@ -29,12 +29,15 @@ import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.web.servlet.AfterUpload;
 import com.boubei.tss.modules.sn.SerialNOer;
+import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
 
 /**
  * var url = URL_UPLOAD_FILE + "?afterUploadClass=com.boubei.tss.dm.record.file.ImportCSV";
    url += "&recordId=" + recordId;
+   url += "&uniqueCodes=oto,phone";
+   url += "&uniqueCodes=oto,phone";
    url += "&uniqueCodes=oto,phone";
     
  * 根据数据表提供的导入模板，填写后导入实现批量录入数据。
@@ -87,10 +90,21 @@ public class ImportCSV implements AfterUpload {
 		
 		// 校验数据
 		List<String> errLines = new ArrayList<String>(); // errorLine = lineIndex + errorMsg + row
+		List<Integer> errLineIndexs = new ArrayList<Integer>();
 		List<Integer> emptyLineIndexs = new ArrayList<Integer>();
 		
-		IDataVaild vailder = new DefaultDataVaild();
-		List<Integer> errLineIndexs = vailder.vaild(_db, rows, headers, errLines, emptyLineIndexs);
+		String vailderClass = request.getParameter("vailderClass");
+		vailderClass = (String) EasyUtils.checkNull(vailderClass, DefaultDataVaild.class.getName());
+		IDataVaild vailder = (IDataVaild) BeanUtil.newInstanceByName(vailderClass);
+
+		List<String> valSQLFields = new ArrayList<String>();
+		for(String code : _db.csql.keySet()) {
+			if( _db.csql.get(code) != null) {
+				String name = _db.cnm.get(code);
+				valSQLFields.add(name);
+			}
+		}
+		vailder.vaild(_db, rows, headers, valSQLFields, errLines, errLineIndexs, emptyLineIndexs);
 		
 		String fileName = null;
 		if(errLineIndexs.size() > 0) {
@@ -112,6 +126,7 @@ public class ImportCSV implements AfterUpload {
 		}
 		
 		// 执行导入到数据库
+		headers = rows[0].split(",");
 		return import2db(_db, ignoreExist, uniqueCodes, rows, headers, errLineIndexs, emptyLineIndexs, fileName);
 	}
 
@@ -212,7 +227,7 @@ public class ImportCSV implements AfterUpload {
 		// 向前台返回成功信息
     	String noInserts = ignoreExist ? ("忽略了第【" +EasyUtils.list2Str(ignoreLines)+ "】行，") : ("覆盖" +updateCount+ "行，");
     	String errMsg = errLineSize == 0 ? "请刷新查看。" : "其中有" +errLineSize+ "行数据校验异常，请点【<a href=\"/tss/data/download/" +fileName+ "\">异常记录</a>】下载查看。";
-		return "parent.alert('导入完成：共新增" +insertCount+ "行，" + noInserts + errMsg + "'); parent.openActiveTreeNode();";
+		return "parent.alert('导入完成：共新增" +insertCount+ "行，" + noInserts + errMsg + "');";
 	}
 	
 }
