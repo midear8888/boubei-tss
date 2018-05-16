@@ -44,14 +44,14 @@ import com.boubei.tss.util.EasyUtils;
 
 /**
  * 
-	insert into tbl_jx(name,score,day,createtime,creator,version) values ('${name}', ${score}, '${day}' , '${day}', 'Admin', 0)
+	insert into tbl_jx(name,score,day,createtime,creator,version) values ('${name}', ${score}, '${day}', '${day}', 'Admin', 0)
 	select IFNULL(max(id), 1) as maxid from tbl_jx
 	update tbl_jx t set t.score = ${score} where t.id = ${maxid}
 	delete from tbl_jx  where id = ${maxid} - 1
 	
 	var json = [];
-	json.push({ "sqlCode": "s1", data: {"org": "org1", "center": "A", "score": 59, "day": "2017-01-01"} });
-	json.push({ "sqlCode": "s1", data: {"org": "org2", "center": "B", "score": 58, "day": "2017-01-02"} });
+	json.push({ "sqlCode": "s1", data: {"name": "JK", "score": 59, "day": "2017-01-01"} });
+	json.push({ "sqlCode": "s1", data: {"name": "Jon", "score": 58, "day": "2017-01-02"} });
 	json.push({ "sqlCode": "s2", data: {} });
 	json.push({ "sqlCode": "s3", data: {"score": 100} });
 	json.push({ "sqlCode": "s4", data: {} });

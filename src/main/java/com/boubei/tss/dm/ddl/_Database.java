@@ -760,8 +760,9 @@ public abstract class _Database {
 		String _customizeTJ = (String) EasyUtils.checkNull(this.customizeTJ, " 1=1 ");
 		if( _customizeTJ.indexOf("ignoreDomain") < 0 ) { 
 			_customizeTJ += DMConstants.DOMAIN_CONDITION;
-			
 		}
+		
+		_customizeTJ = (String) EasyUtils.checkNull( DMUtil.fmParse(_customizeTJ), "1=1");
 		condition += " and ( ( " + DMUtil.fmParse(_customizeTJ + " )  or -1 = ${_userId!-10000} ") + " ) ";
 		
 		// 设置排序方式
