@@ -121,7 +121,7 @@ public class ImportCSV implements AfterUpload {
 			
 			// 根据配置，是够终止导入。默认要求一次性导入，不允许分批
 			if( !"false".equals( request.getParameter("together") ) ) {
-				return "parent.alert('导入失败，其中有" +errLineIndexs.size()+ "行数据校验出异常，请点<a href=\"/tss/data/download/" +fileName+ "\">【异常记录】</a>下载查看。'); ";
+				return "parent.alert('导入失败，其中有" +errLineIndexs.size()+ "行数据校验出异常，请点<a href=\"/tss/data/download/" +fileName+ "\" target=\"_blank\">【异常记录】</a>下载查看。'); ";
 			}
 		}
 		
@@ -226,7 +226,7 @@ public class ImportCSV implements AfterUpload {
 		
 		// 向前台返回成功信息
     	String noInserts = ignoreExist ? ("忽略了第【" +EasyUtils.list2Str(ignoreLines)+ "】行，") : ("覆盖" +updateCount+ "行，");
-    	String errMsg = errLineSize == 0 ? "请刷新查看。" : "其中有" +errLineSize+ "行数据校验异常，请点【<a href=\"/tss/data/download/" +fileName+ "\">异常记录</a>】下载查看。";
+    	String errMsg = errLineSize == 0 ? "请刷新查看。" : "其中有" +errLineSize+ "行数据校验异常，请点【<a href=\"/tss/data/download/" +fileName+ "\" target=\"_blank\">异常记录</a>】下载查看。";
 		return "parent.alert('导入完成：共新增" +insertCount+ "行，" + noInserts + errMsg + "');";
 	}
 	

@@ -275,11 +275,10 @@ public abstract class _Database {
 			}
    		}	
    		
-   		// 为domain字段创建索引
-   		String[] ddlSQLs = getSQLs("domain");
-   		try {
-   			SQLExcutor.excute(ddlSQLs[2], datasource);
-   		} catch(Exception e) { }
+   		// 为domain、creator、createTime字段分别创建索引
+   		try { SQLExcutor.excute( getSQLs("domain") [2], datasource); } catch(Exception e) { }
+   		try { SQLExcutor.excute( getSQLs("creator") [2], datasource); } catch(Exception e) { }
+   		try { SQLExcutor.excute( getSQLs("createtime") [2], datasource); } catch(Exception e) { }
    		
    		// 总是在新建表之后执行
    		CacheHelper.getNoDeadCache().destroyByKey(DMConstants.RECORD_TABLE_LIST);

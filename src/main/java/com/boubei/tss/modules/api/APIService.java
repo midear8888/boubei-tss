@@ -18,7 +18,7 @@ public interface APIService {
     List<String> searchTokes(String uName, String resource, String type);
     
     /**
-     * 模拟用户登录
+     * 模拟用户登录，初始化 Environment
      */
     String mockLogin(String userCode, String uToken);
 

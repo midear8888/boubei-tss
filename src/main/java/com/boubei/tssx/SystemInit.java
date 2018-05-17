@@ -20,7 +20,7 @@ import com.boubei.tss.modules.param.ParamService;
 
 @Controller
 @RequestMapping("/init")
-public class ParamsInit {
+public class SystemInit {
 	
 	/**
 	 * http://localhost:9000/tss/init/domain

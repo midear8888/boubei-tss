@@ -18,7 +18,7 @@ import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.helper.dto.OperatorDTO;
 import com.boubei.tss.um.permission.PermissionHelper;
 import com.boubei.tss.util.URLUtil;
-import com.boubei.tssx.ParamsInit;
+import com.boubei.tssx.SystemInit;
 
 @ContextConfiguration(
 	  locations={
@@ -35,7 +35,7 @@ public abstract class AbstractTest4 extends AbstractTransactionalJUnit4SpringCon
     
     @Autowired protected H2DBServer dbserver;
     
-    @Autowired protected ParamsInit systemInit;
+    @Autowired protected SystemInit systemInit;
     @Autowired protected ParamService paramService;
     
     @Autowired protected PermissionHelper permissionHelper;

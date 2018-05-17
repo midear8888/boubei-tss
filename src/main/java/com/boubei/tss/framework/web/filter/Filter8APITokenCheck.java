@@ -49,26 +49,27 @@ public class Filter8APITokenCheck implements Filter {
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         
-    	autoLogin(request);
+    	autoLogin((HttpServletRequest) request);
     	
     	chain.doFilter(request, response);
     }
 
     // tssJS.ajax需要把uName和uToken放在QueryString里，本过滤器可能Filter6Decoder前执行
-	public static void autoLogin(ServletRequest request) {
+	public static void autoLogin(HttpServletRequest req) {
 		
-		HttpServletRequest req = (HttpServletRequest) request;
-        String servletPath = req.getServletPath();
         String uName  = req.getParameter("uName");
         String uToken = req.getParameter("uToken");
         
+        if( uToken == null || uName == null ) return; // 两个都传了才检测
+        
         if( uToken != null && uName != null ) {
         	APIService apiService = (APIService) Global.getBean("APIService");
+        	String resourceType = "D1";
+        	String servletPath = req.getServletPath();
     		
     		//  搜索令牌
-    		List<String> tokenList = apiService.searchTokes(uName, servletPath, "D1"); 
+    		List<String> tokenList = apiService.searchTokes(uName, servletPath, resourceType); 
         	if( tokenList.contains(uToken) ) {
-        		// 模拟登录，初始化 Environment
         		apiService.mockLogin(uName, uToken);
         		log.info(servletPath + ", " + uName + ", api token pass");
         	}
@@ -76,23 +77,23 @@ public class Filter8APITokenCheck implements Filter {
 	}
 	
 	/**
-	 * 通过uToken令牌，检查指定资源是否被授权给第三方系统访问。
+	 * 通过uToken令牌，检查指定资源是否被授权给第三方系统访问。For 报表|数据表 的远程调用
 	 */
 	public static void checkAPIToken(HttpServletRequest req, IResource r) {
-		APIService apiService = (APIService) Global.getBean("APIService");
 		
 		String uName  = req.getParameter("uName");
 	    String uToken = req.getParameter("uToken");
 		
-	    if( uToken == null && uName == null ) return;
+	    if( uToken == null && uName == null ) return; // 只要传了其中一个就检测，只传一个则抛出异常
+	    
+	    APIService apiService = (APIService) Global.getBean("APIService");
+	    String resourceType = r.getResourceType(); // D1 | D2
 	    
 		// 分别按资源的【ID】或【名称】 + uName 搜索一遍令牌
-		String resourceType = r.getResourceType(); // D1 | D2
 		List<String> tokenList = apiService.searchTokes(uName, r.getId().toString(), resourceType); 
 		tokenList.addAll( apiService.searchTokes(uName, r.getName(), resourceType) );
 		
     	if( tokenList.contains(uToken) ) {
-    		// 模拟登录，初始化 Environment
     		apiService.mockLogin(uName, uToken);
     		return;
     	}

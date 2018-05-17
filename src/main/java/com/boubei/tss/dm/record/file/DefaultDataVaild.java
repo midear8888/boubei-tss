@@ -55,6 +55,9 @@ public class DefaultDataVaild implements IDataVaild {
 			for(int j = 0; j < labels.size(); j++) {
     			String filedLabel = labels.get(j);
     			String fieldCode = _db.ncm.get(filedLabel);
+    			if(fieldCode == null) {
+    				errors.add("列【" + filedLabel + "】名称在数据表定义里不存在。");
+    			}
     			
     			String value = (j >= fieldVals.length) ? "" : fieldVals[j].trim();
     			values.add(value);
@@ -63,7 +66,7 @@ public class DefaultDataVaild implements IDataVaild {
     			String valSQL = _db.csql.get(fieldCode);
     			if( EasyUtils.isNullOrEmpty(value) && !EasyUtils.isNullOrEmpty(valSQL) ) {
     				// 自动关联字段值（eg：根据客户 + 位置信息获取位置的编码值，条件列需要在被补列前面）
-    	    		String _sql = DMUtil.fmParse(valSQL, valuesMap).replaceAll("\\^", "'");
+    	    		String _sql = DMUtil.fmParse(valSQL.replaceAll("\\^", "'"), valuesMap);
     	    		List<Map<String, Object>> result = SQLExcutor.query(_db.datasource, _sql);
     	    		if( result.size() > 1 ) {
     	    			errors.add(filedLabel + "匹配到多个数据");
