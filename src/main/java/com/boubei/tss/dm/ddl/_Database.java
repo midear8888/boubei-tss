@@ -454,7 +454,10 @@ public abstract class _Database {
 			
 			paramsMap.put(++index, value);
 		}
-		paramsMap.put(++index, Environment.getDomain()); 
+		
+		// 定时器跑ETL往录入表写数据时，域信息已经指定
+		String domain = (String) EasyUtils.checkNull( valuesMap.get("domain"), Environment.getDomain() );
+		paramsMap.put(++index, domain); 
 		paramsMap.put(++index, new Timestamp(new Date().getTime())); 
 		paramsMap.put(++index, Environment.getUserCode());
 		paramsMap.put(++index, 0);
