@@ -26,13 +26,16 @@ public class SerialNOer {
 
 	@RequestMapping(value = "/{precode}/{count}")
 	@ResponseBody
-	public synchronized List<String> create(@PathVariable("precode") String precode, 
-			@PathVariable("count") int count) {
+	public List<String> create(@PathVariable("precode") String precode, @PathVariable("count") int count) {
+		return create(Environment.getDomain(), precode, count);
+	}
+		
+	public synchronized List<String> create(String domain, String precode, int count) {
 		
 		ICommonService commonService = Global.getCommonService();
+		domain = (String) EasyUtils.checkNull(domain, UMConstants.DEFAULT_DOMAIN);
 		
 		String hql = " from SerialNO where day = ? and precode = ? and domain = ? ";
-		String domain = (String) EasyUtils.checkNull(Environment.getDomain(), UMConstants.DEFAULT_DOMAIN);
 		
 		SerialNO first;
 		Date today = DateUtil.today();

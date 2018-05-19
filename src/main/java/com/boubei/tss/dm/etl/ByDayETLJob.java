@@ -50,7 +50,7 @@ public class ByDayETLJob extends AbstractETLJob {
 		return exsitDays;
 	}
 	
-	protected void excuteTask(Task task) {
+	protected TaskLog excuteTask(Task task) {
 		// 获取已经存在的日结日期 exsitDays
 		List<String> exsitDays = getExsitDays(task.getId());
 		Date currDay = DateUtil.noHMS(task.getStartDay());
@@ -92,7 +92,7 @@ public class ByDayETLJob extends AbstractETLJob {
 			} 
 			catch(Exception e) {
 				setException(tLog, task, e);
-				break;
+				return tLog;
 			}
 			finally {
 				 // 记录任务日志，不管是否成功
@@ -102,6 +102,7 @@ public class ByDayETLJob extends AbstractETLJob {
 		}
 
 		log.info("Done! Cost time: " + (System.currentTimeMillis() - start));
+		return null;
 	}
 	
 	/* 按天ETL */

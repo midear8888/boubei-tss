@@ -442,21 +442,25 @@ public abstract class _Database {
 	protected Map<Integer, Object> buildInsertParams(Map<String, String> valuesMap) {
 		Map<Integer, Object> paramsMap = new LinkedHashMap<Integer, Object>();
 		int index = 0;
+		
+		// 定时器跑ETL往录入表写数据时，域信息已经指定
+		String pointedDomain = valuesMap.get("domain");
+		
 		for(String field : this.fieldCodes) {
 			Object value = DMUtil.preTreatValue(valuesMap.get(field), fieldTypes.get(index));
 			
 			// 检查值为空的字段，是否配置自动取号规则
 			String defaultVal = this.fieldValues.get(index);
 			if( EasyUtils.isNullOrEmpty(value) &&  _Field.isAutoSN(defaultVal) ) {
+				String domain = (String) EasyUtils.checkNull(pointedDomain, Environment.getDomain()); // ETL时，输入数据指定好了域
 				String preCode = defaultVal.replaceAll(_Field.SNO_yyMMddxxxx, "");
-				value = new SerialNOer().create(preCode, 1).get(0);
+				value = new SerialNOer().create(domain, preCode, 1).get(0);
 			}
 			
 			paramsMap.put(++index, value);
 		}
 		
-		// 定时器跑ETL往录入表写数据时，域信息已经指定
-		String domain = (String) EasyUtils.checkNull( valuesMap.get("domain"), Environment.getDomain() );
+		String domain = (String) EasyUtils.checkNull( pointedDomain, Environment.getDomain() );
 		paramsMap.put(++index, domain); 
 		paramsMap.put(++index, new Timestamp(new Date().getTime())); 
 		paramsMap.put(++index, Environment.getUserCode());
@@ -665,6 +669,14 @@ public abstract class _Database {
 		// 对fields进行SQL注入检查
 		fields = DMUtil.checkSQLInject( fields );
 		
+		// 对fields 进行FM解析，其可能是个带子查询的语句，定义在自定义SQL里
+		if( fields.startsWith("macro_") ) {
+			List<Map<String, Object>> list = SQLExcutor.query(DMConstants.LOCAL_CONN_POOL, "select script from dm_sql_def where code=?", fields);
+			if( list.size() > 0 ) {
+				fields = (String) list.get(0).get("script");
+			}
+		}
+		
 		// 增加权限控制，针对有編輯权限的允許查看他人录入数据, '000' <> ? <==> 忽略创建人这个查询条件
 		boolean visible = Environment.isAdmin() || Environment.isRobot();
 		try {
@@ -732,7 +744,7 @@ public abstract class _Database {
 					boolean isStringType = ( paramType == null || "string".equals(paramType.toLowerCase()) );
 					
 					// 如果是一个逗号分隔的字符串，使用in查询
-					if( isStringType && valueStr.indexOf(",") > 0 ) {  
+					if( valueStr.indexOf(",") > 0 ) {  
 						condition += " and " + key + " in (" + ("\'" + valueStr.replaceAll(",", "\',\'") + "\'") + ") ";
 					}
 					else {

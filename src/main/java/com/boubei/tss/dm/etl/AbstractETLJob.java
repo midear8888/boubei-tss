@@ -66,7 +66,7 @@ public abstract class AbstractETLJob extends AbstractJob {
 	
 	protected abstract String etlType();
 
-	protected abstract void excuteTask(Task task);
+	protected abstract TaskLog excuteTask(Task task);
 	
 	protected void setException(TaskLog tLog, Task task, Exception e) {
 		tLog.setException("yes");

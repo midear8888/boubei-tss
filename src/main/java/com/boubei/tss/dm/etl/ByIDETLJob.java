@@ -54,7 +54,7 @@ public class ByIDETLJob extends AbstractETLJob {
 		return maxId;
 	}
 
-	protected void excuteTask(Task task) {
+	protected TaskLog excuteTask(Task task) {
 		Long maxID = EasyUtils.obj2Long( getMaxID(task) );
 		maxID = Math.max( maxID, EasyUtils.obj2Long(task.getStartID()) ); // 如果任务上设置的ID大于日志里记录的最大ID，则说明是人为单独设置了任务上的ID
 		
@@ -72,7 +72,7 @@ public class ByIDETLJob extends AbstractETLJob {
 		} 
 		catch(Exception e) {
 			setException(tLog, task, e);
-			// throw e;
+			return tLog;
 		}
 		finally {
 			 // 记录任务日志，不管是否成功
@@ -81,6 +81,7 @@ public class ByIDETLJob extends AbstractETLJob {
 		}
 
 		log.info(task.getName() + "Done! Cost time: " + (System.currentTimeMillis() - start));
+		return null;
 	}
 	
 	protected Long[] etlByID(Task task, Long startID) {
