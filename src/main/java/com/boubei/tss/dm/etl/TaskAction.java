@@ -40,7 +40,7 @@ public class TaskAction {
 		if( job instanceof AbstractETLJob ) {
 			TaskLog errLog = ((AbstractETLJob)job).excuteTask(task);
 			if( errLog != null ) {
-				throw new BusinessException(EX._ERROR_TAG + errLog.getDetail() );
+				throw new BusinessException(task.getJobName() + EX._ERROR_TAG + errLog.getDetail() );
 			}
 		}
 		else {

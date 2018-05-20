@@ -669,7 +669,7 @@ public abstract class _Database {
 		// 对fields进行SQL注入检查
 		fields = DMUtil.checkSQLInject( fields );
 		
-		// 对fields 进行FM解析，其可能是个带子查询的语句，定义在自定义SQL里
+		// 对fields 进行FM解析，其可能是个带子查询的语句，定义在自定义SQL里（避开SQL注入检查）
 		if( fields.startsWith("macro_") ) {
 			List<Map<String, Object>> list = SQLExcutor.query(DMConstants.LOCAL_CONN_POOL, "select script from dm_sql_def where code=?", fields);
 			if( list.size() > 0 ) {
@@ -738,13 +738,15 @@ public abstract class _Database {
 			int fieldIndex = this.fieldCodes.indexOf(key);
 			if(fieldIndex >= 0) {
 				String paramType = this.fieldTypes.get(fieldIndex);
+				paramType = EasyUtils.checkNull(paramType,  _Field.TYPE_STRING).toString().toLowerCase();
 				
 				String[] vals = DMUtil.preTreatScopeValue(valueStr); // 是否查询条件为：从和到				
 				if(vals.length == 1) {
-					boolean isStringType = ( paramType == null || "string".equals(paramType.toLowerCase()) );
+				
+					boolean isStringType = ( paramType == null || _Field.TYPE_STRING.equals(paramType) );
 					
 					// 如果是一个逗号分隔的字符串，使用in查询
-					if( valueStr.indexOf(",") > 0 ) {  
+					if( valueStr.indexOf(",") > 0 && (isStringType || _Field.TYPE_INT.equals(paramType)) ) {  
 						condition += " and " + key + " in (" + ("\'" + valueStr.replaceAll(",", "\',\'") + "\'") + ") ";
 					}
 					else {
@@ -856,7 +858,7 @@ public abstract class _Database {
             String fieldType  = fieldTypes.get(index);
             String fieldPattern = fieldPatterns.get(index);
             if( _Field.TYPE_DATE.equalsIgnoreCase(fieldType) ) { // GridNode里转换异常（date类型要求值也为date）
-            	fieldType = "string";  
+            	fieldType = _Field.TYPE_STRING;  
             } 
             if( _Field.TYPE_FILE.equalsIgnoreCase(fieldType) ) {
             	hasFileField = true;
