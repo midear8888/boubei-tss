@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 
+import com.boubei.tss.EX;
 import com.boubei.tss.dm.DataExport;
 import com.boubei.tss.dm.ddl._Database;
 import com.boubei.tss.dm.ddl._Field;
@@ -63,8 +64,6 @@ public class ImportCSV implements AfterUpload {
 		Record record = recordService.getRecord(recordId);
 		_Database _db = _Database.getDB(record);
 		
-		boolean ignoreExist = "true".equals( request.getParameter("ignoreExist") );
-		String uniqueCodes = request.getParameter("uniqueCodes");
 		String charSet = (String) EasyUtils.checkNull(request.getParameter("charSet"), DataExport.CSV_GBK); // 默认GBK
 
 		// 解析附件数据
@@ -121,13 +120,14 @@ public class ImportCSV implements AfterUpload {
 			
 			// 根据配置，是够终止导入。默认要求一次性导入，不允许分批
 			if( !"false".equals( request.getParameter("together") ) ) {
-				return "parent.alert('导入失败，其中有" +errLineIndexs.size()+ "行数据校验出异常，请点<a href=\"/tss/data/download/" +fileName+ "\" target=\"_blank\">【异常记录】</a>下载查看。'); ";
+				return "parent.alert('导入失败，" +EX.parse(EX.DM_29, errLineIndexs.size(), fileName)+ "'); ";
 			}
 		}
 		
 		// 执行导入到数据库
 		headers = rows[0].split(",");
-		return import2db(_db, ignoreExist, uniqueCodes, rows, headers, errLineIndexs, emptyLineIndexs, fileName);
+		String jsCallback = EasyUtils.obj2String( request.getParameter("callback") );
+		return import2db(_db, request, rows, headers, errLineIndexs, emptyLineIndexs, fileName) + jsCallback;
 	}
 
 	/**
@@ -140,8 +140,11 @@ public class ImportCSV implements AfterUpload {
 	 * @param errLineIndexs 校验错误的记录行
 	 * @return
 	 */
-	protected String import2db(_Database _db, boolean ignoreExist, String uniqueCodes, String[] rows, String[] headers, 
+	protected String import2db(_Database _db, HttpServletRequest request, String[] rows, String[] headers, 
 			List<Integer> errLineIndexs, List<Integer> emptyLineIndexs, String fileName) {
+		
+		boolean ignoreExist = "true".equals( request.getParameter("ignoreExist") );
+		String uniqueCodes = request.getParameter("uniqueCodes");
 		
 		int errLineSize = errLineIndexs.size();
 		int insertCount = 0, updateCount = 0;
@@ -183,6 +186,7 @@ public class ImportCSV implements AfterUpload {
 			if( !EasyUtils.isNullOrEmpty(uniqueCodes) ) {
 				// 检测记录是否已经存在
 				Map<String, String> params = new HashMap<String, String>();
+				
 				String[] codes = uniqueCodes.trim().split(",");
 				boolean hasNullParam = false;
 				for(String code : codes) {
@@ -226,7 +230,7 @@ public class ImportCSV implements AfterUpload {
 		
 		// 向前台返回成功信息
     	String noInserts = ignoreExist ? ("忽略了第【" +EasyUtils.list2Str(ignoreLines)+ "】行，") : ("覆盖" +updateCount+ "行，");
-    	String errMsg = errLineSize == 0 ? "请刷新查看。" : "其中有" +errLineSize+ "行数据校验异常，请点【<a href=\"/tss/data/download/" +fileName+ "\" target=\"_blank\">异常记录</a>】下载查看。";
+    	String errMsg = errLineSize == 0 ? "请刷新查看。" : EX.parse(EX.DM_29, errLineSize, fileName);
 		return "parent.alert('导入完成：共新增" +insertCount+ "行，" + noInserts + errMsg + "');";
 	}
 	

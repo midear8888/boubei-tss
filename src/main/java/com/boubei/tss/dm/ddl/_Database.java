@@ -658,7 +658,7 @@ public abstract class _Database {
 		if(params == null) {
 			params = new HashMap<String, String>();
 		}
-		String strictQuery = params.remove("strictQuery"); // 是否精确查询
+		String strictQuery = params.remove(_Field.STRICT_QUERY); // 是否精确查询
 		String _fields = params.remove("fields"); // eg: /tss/xdata/price_list?fields=name,fee as value
 		
 		List<String> visiableFields = getVisiableFields(false);
@@ -751,7 +751,7 @@ public abstract class _Database {
 					}
 					else {
 						Object val = DMUtil.preTreatValue(vals[0], paramType);
-						if( isStringType && !"true".equals(strictQuery) ) { // 字符串支持模糊查询
+						if( isStringType && "false".equals(strictQuery) ) { // 字符串支持模糊查询（_Recorder过来的前台查询默认用模糊查询，_Database自己发起的则严格查询）
 							condition += " and " + key + " like ? ";
 							val = "%"+val+"%";
 						} else {

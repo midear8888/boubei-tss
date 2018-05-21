@@ -16,6 +16,8 @@ import com.boubei.tss.util.EasyUtils;
 
 public class _Field {
 	
+	public static String STRICT_QUERY = "strictQuery";
+	
 	// 字段类型
 	public static String TYPE_STRING   = "string";
 	public static String TYPE_NUMBER   = "number";

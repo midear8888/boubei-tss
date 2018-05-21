@@ -155,6 +155,10 @@ public class _Recorder extends BaseActionSupport {
     	boolean pointedFileds = requestMap.containsKey("fields") ;
     	_Database _db = getDB(recordId);
     	
+    	// 默认模糊查询
+    	String strictQuery = (String) EasyUtils.checkNull(requestMap.get(_Field.STRICT_QUERY), "false"); 
+        requestMap.put(_Field.STRICT_QUERY, strictQuery);
+    	
         SQLExcutor ex = queryRecordData(_db, page, PAGE_SIZE, requestMap, pointedFileds);
  
         List<IGridNode> temp = new ArrayList<IGridNode>();
@@ -249,8 +253,12 @@ public class _Recorder extends BaseActionSupport {
     	boolean pointedFileds = requestMap.containsKey("fields") ;
     	int _pagesize = getPageSize(requestMap, PAGE_SIZE*20);
     	
-        _Database _db = getDB(recordId);
-        
+    	_Database _db = getDB(recordId);
+    	
+    	// 默认模糊查询
+    	String strictQuery = (String) EasyUtils.checkNull(requestMap.get(_Field.STRICT_QUERY), "false"); 
+        requestMap.put(_Field.STRICT_QUERY, strictQuery);
+    	
         SQLExcutor ex = queryRecordData(_db, page, _pagesize, requestMap, pointedFileds);
         
         if( requestMap.containsKey("rows") ) { // for EasyUI
@@ -292,6 +300,10 @@ public class _Recorder extends BaseActionSupport {
     	int _page = EasyUtils.obj2Int( EasyUtils.checkNull(requestMap.get("page"), "1") );
     	int _pagesize = getPageSize(requestMap, 10*10000);
     	
+    	// 默认模糊查询
+    	String strictQuery = (String) EasyUtils.checkNull(requestMap.get(_Field.STRICT_QUERY), "false"); 
+        requestMap.put(_Field.STRICT_QUERY, strictQuery);
+        
 		SQLExcutor ex = _db.select(_page, _pagesize, requestMap);
 
 		String fileName = DateUtil.format(new Date()) +"_"+ recordId + Environment.getUserId() + ".csv";

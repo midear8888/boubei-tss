@@ -69,7 +69,7 @@ public final class UMConstants {
 	
 	public static final Long ROLE_ROOT_ID             = -6L; //角色的ID(视图生成)
 	
-	public static final String DEFAULT_DOMAIN = "卜贝";
+	public static final String DEFAULT_DOMAIN = "无域";
 	
 	// ===========================================================================
     // 资源权限相关

@@ -96,15 +96,22 @@ public class DefaultDataVaild implements IDataVaild {
     				errors.add(filedLabel + "值不能为空");
     			}
     			if("true".equals(unique) && !EasyUtils.isNullOrEmpty(value)) {
-    				List<Object> colList = colValues.get(fieldCode);
+    				List<Object> colList = colValues.get(fieldCode + "_csv");
     				if(colList == null) {
-    					colValues.put(fieldCode, colList = new ArrayList<Object>());
+    					colValues.put(fieldCode + "_csv", colList = new ArrayList<Object>());
     				}
     				int rowIndex = colList.indexOf(value);
 					if( rowIndex >= 0) {
     					errors.add(filedLabel + "值不唯一，和第" +(rowIndex+1)+ "行数据重复");
     				} else {
     					colList.add(value);
+    					
+    					// 检查是否和数据库里既有数据重复
+    					Map<String, String> params = new HashMap<String, String>();
+    					params.put(fieldCode, value);
+						if( _db.select(1, 1, params).count > 0) {
+							errors.add(filedLabel + "值不唯一，在数据库里已存在");
+						}
     				}
     			}
     			
