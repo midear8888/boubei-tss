@@ -80,7 +80,7 @@ public class SyncUserRoleJob extends AbstractJob {
 	
 	int getCount(Long user, Long role) {
 		String sql = "select count(*) num from um_roleuser where roleId = ? and userId = ?";
-		Object result = SQLExcutor.query(DMConstants.LOCAL_CONN_POOL, sql, role, user).get(0).get("num");
+		Object result = SQLExcutor.queryL(sql, role, user).get(0).get("num");
 		return EasyUtils.obj2Int(result);
 	}
 	 

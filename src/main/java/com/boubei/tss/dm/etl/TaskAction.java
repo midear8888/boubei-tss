@@ -38,9 +38,12 @@ public class TaskAction {
 		
 		Object job = BeanUtil.newInstanceByName(jobClass);
 		if( job instanceof AbstractETLJob ) {
-			TaskLog errLog = ((AbstractETLJob)job).excuteTask(task);
-			if( errLog != null ) {
-				throw new BusinessException(task.getJobName() + EX._ERROR_TAG + errLog.getDetail() );
+			TaskLog log = ((AbstractETLJob)job).excuteTask(task);
+			if( log == null ) {
+				return EX.DM_30;
+			}
+			else if( "yes".equals( log.getException() ) ) {
+				throw new BusinessException(task.getJobName() + EX._ERROR_TAG + log.getDetail() );
 			}
 		}
 		else {

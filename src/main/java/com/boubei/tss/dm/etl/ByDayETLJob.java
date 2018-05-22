@@ -77,8 +77,9 @@ public class ByDayETLJob extends AbstractETLJob {
 		
 		long start = System.currentTimeMillis();
 		int index = 0;
+		TaskLog tLog = null;
 		for (final Date day : dateList) {
-			TaskLog tLog = new TaskLog(task);
+			tLog = new TaskLog(task);
 			tLog.setDataDay( DateUtil.format(day) ); //记录执行日期
 	        
 			try {
@@ -102,7 +103,7 @@ public class ByDayETLJob extends AbstractETLJob {
 		}
 
 		log.info("Done! Cost time: " + (System.currentTimeMillis() - start));
-		return null;
+		return tLog;
 	}
 	
 	/* 按天ETL */

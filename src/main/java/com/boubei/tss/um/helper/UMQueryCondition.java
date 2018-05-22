@@ -26,6 +26,8 @@ public class UMQueryCondition extends MacrocodeQueryCondition {
 	
 	private String loginName;  // 用户名
 	private String userName;   // 姓名
+	private String email;           // 邮件 
+    private String telephone;       // 联系电话 
 	private String employeeNo; // 员工编号
 	private Date   birthday;   // 出生年月
 	private String certificateNo; // 证件号
@@ -39,6 +41,8 @@ public class UMQueryCondition extends MacrocodeQueryCondition {
         
         map.put("${loginName}",  " and u.loginName  like :loginName");
         map.put("${userName}",   " and u.userName   like :userName");
+        map.put("${telephone}",  " and u.telephone  like :telephone");
+        map.put("${email}",  " and u.email like :email");
         map.put("${employeeNo}", " and u.employeeNo like :employeeNo");
         map.put("${birthday}",   " and u.birthday >= :birthday");
         map.put("${certificateNo}", " and u.certificateNo like :certificateNo");
@@ -55,10 +59,7 @@ public class UMQueryCondition extends MacrocodeQueryCondition {
 	}
  
 	public String getCertificateNo() {
-        if(certificateNo != null){
-        	certificateNo = "%" + certificateNo.trim() + "%";           
-        }
-		return certificateNo;
+		return wrapLike(certificateNo);
 	}
  
 	public void setCertificateNo(String certificateNo) {
@@ -66,10 +67,7 @@ public class UMQueryCondition extends MacrocodeQueryCondition {
 	}
  
 	public String getEmployeeNo() {
-        if(employeeNo != null){
-        	employeeNo = "%" + employeeNo.trim() + "%";           
-        }
-		return employeeNo;
+		return wrapLike(employeeNo);
 	}
  
 	public void setEmployeeNo(String employeeNo) {
@@ -85,10 +83,7 @@ public class UMQueryCondition extends MacrocodeQueryCondition {
 	}
  
 	public String getLoginName() {
-		if(loginName != null){
-			loginName = "%" + loginName.trim() + "%";           
-        }
-		return loginName;
+		return wrapLike(loginName);
 	}
  
 	public void setLoginName(String loginName) {
@@ -96,10 +91,7 @@ public class UMQueryCondition extends MacrocodeQueryCondition {
 	}
  
 	public String getUserName() {
-        if(userName != null){
-        	userName = "%" + userName.trim() + "%";           
-        }
-		return userName;
+		return wrapLike(userName);
 	}
  
 	public void setUserName(String userName) {
@@ -112,5 +104,21 @@ public class UMQueryCondition extends MacrocodeQueryCondition {
  
 	public void setGroupIds(Collection<Long> groupIds) {
 		this.groupIds = groupIds;
+	}
+
+	public String getEmail() {
+		return wrapLike(email);
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getTelephone() {
+		return wrapLike(telephone);
+	}
+
+	public void setTelephone(String telephone) {
+		this.telephone = telephone;
 	}
 }

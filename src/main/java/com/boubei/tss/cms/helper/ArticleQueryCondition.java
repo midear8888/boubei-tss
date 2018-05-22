@@ -59,16 +59,10 @@ public class ArticleQueryCondition extends MacrocodeQueryCondition {
     }
  
     public String getAuthor() {
-        if(author != null){
-            author = "%" + author.trim() + "%";           
-        }
-        return author;
+        return wrapLike(author);
     }
     public String getTitle() {
-        if(title != null){
-            title = "%" + title.trim() + "%";           
-        }
-        return title;
+        return wrapLike(title);
     }
     
     public void setAuthor(String author) {
@@ -124,10 +118,7 @@ public class ArticleQueryCondition extends MacrocodeQueryCondition {
     }
     
 	public String getKeyword() {
-		if(keyword != null){
-			keyword = "%" + keyword.trim() + "%";           
-        }
-		return keyword;
+		return wrapLike(keyword);
 	}
 	
 	public void setKeyword(String keyword) {
@@ -139,10 +130,7 @@ public class ArticleQueryCondition extends MacrocodeQueryCondition {
 	}
 
 	public String getSummary() {
-		if(summary != null){
-			keyword = "%" + summary.trim() + "%";           
-        }
-		return summary;
+		return wrapLike(summary);
 	}
 
 	public void setSummary(String summary) {

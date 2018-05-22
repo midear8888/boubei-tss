@@ -195,7 +195,7 @@ public class _Recorder extends BaseActionSupport {
         Map<Object, Object> itemAttach = new HashMap<Object, Object>();
         if(_db.needFile) {
         	String sql = "select itemId item, count(*) num from dm_record_attach where recordId = ? group by itemId";
-			List<Map<String, Object>> attachResult = SQLExcutor.query(DMConstants.LOCAL_CONN_POOL, sql, _db.recordId);
+			List<Map<String, Object>> attachResult = SQLExcutor.queryL(sql, _db.recordId);
         	for(Map<String, Object> temp : attachResult) {
         		itemAttach.put(temp.get("item").toString(), temp.get("num"));
         	}

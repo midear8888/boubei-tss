@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.boubei.tss.PX;
 import com.boubei.tss.cache.JCache;
 import com.boubei.tss.cache.extension.CacheHelper;
-import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.modules.param.Param;
@@ -48,7 +47,7 @@ public class DataSourceAction {
 				"	where parentId=(select id from component_param where code =?) " +
 				"	 and ? in (creatorId,-1) ";
 		
-		return SQLExcutor.query(DMConstants.LOCAL_CONN_POOL, sql, PX.CACHE_PARAM, Environment.getUserId());
+		return SQLExcutor.queryL( sql, PX.CACHE_PARAM, Environment.getUserId() );
 	}
 	
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
@@ -59,7 +58,7 @@ public class DataSourceAction {
 				"	select text name, value from component_param where parentId=? and creatorId in (?,-1) order by decode) t" +
 				" union all select 'restful-ws' as name, 'restful-WebService' as value from dual ";
 		
-		return SQLExcutor.query(DMConstants.LOCAL_CONN_POOL, sql, dsGroup.getId(), Environment.getUserId());
+		return SQLExcutor.queryL(sql, dsGroup.getId(), Environment.getUserId());
 	}
 	
 	@RequestMapping(value = "/connpool", method = RequestMethod.POST)

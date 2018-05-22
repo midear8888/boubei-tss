@@ -50,10 +50,7 @@ public class MessageQueryCondition extends MacrocodeQueryCondition {
 	}
 
 	public String getTitle() {
-		if (title != null) {
-			title = "%" + title.trim() + "%";
-		}
-		return title;
+		return wrapLike(title);
 	}
 
 	public void setTitle(String title) {
@@ -61,10 +58,7 @@ public class MessageQueryCondition extends MacrocodeQueryCondition {
 	}
 
 	public String getContent() {
-		if (content != null) {
-			content = "%" + content.trim() + "%";
-		}
-		return content;
+		return wrapLike(content);
 	}
 
 	public void setContent(String content) {

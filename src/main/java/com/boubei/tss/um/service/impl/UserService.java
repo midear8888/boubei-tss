@@ -337,6 +337,21 @@ public class UserService implements IUserService{
     	condition.setLoginName(null);
     	condition.setUserName(searchStr);
     	result = groupDao.searchUser(condition);
+    	if( result.getItems().size() > 0 ) {
+    		return result;
+    	}
+    	
+    	condition.setUserName(null);
+    	condition.setTelephone(searchStr);
+    	result = groupDao.searchUser(condition);
+    	if( result.getItems().size() > 0 ) {
+    		return result;
+    	}
+    	
+    	condition.setTelephone(null);
+    	condition.setEmail(searchStr);
+    	result = groupDao.searchUser(condition);
+    	
     	return result;
     }
     

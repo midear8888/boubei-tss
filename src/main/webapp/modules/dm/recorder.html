@@ -11,6 +11,8 @@
 
 <script src="../../tools/tssJS/tssJS.all.js"></script>
 <script src="../../tools/tssJS/tssJS.json2Form.js"></script>
+<script src="../../tools/tssJS/tssJS.data.js"></script>
+
 <script src="../../tools/tssUtils.js"></script>
 <script src="../../tools/util_date.js"></script>
 <script src="../../tools/common/md5.js"></script>
@@ -511,6 +513,7 @@ function loadDetailData(rowID) {
     showInForm();  // create
 }
 
+var _after_;  // 新增数据后续自定义操作（eg：改写管理表的状态）
 function saveSource(rowID, isCreate, version) {
     var xform = tssJS.F("page1Form");  
     if( !xform.checkForm() ) return;
@@ -543,6 +546,8 @@ function saveSource(rowID, isCreate, version) {
             tssJS.tssTip("本次修改的数据有异常，请刷新页面后重新编辑后保存。");
             return;
        }
+    } else {
+        _after_ && request.addParam("_after_", _after_);
     }
 
     syncButton([$1("page1BtSave")], request); // 同步按钮状态
@@ -829,6 +834,7 @@ function getImportTL() {
 var uniqueCodes, 
     ignoreExist,
     together,
+    otherConfig,
     afterUploadClass="com.boubei.tss.dm.record.file.ImportCSV";
 function batchImport() {
     function checkFileWrong(subfix) {
@@ -845,6 +851,9 @@ function batchImport() {
     }
     if(together === false || together) {
         url += "&together=" + together; // 是否完整性导入（即不允许部分导入）：true:false
+    }
+    if( otherConfig ) {
+        url += otherConfig;
     }
     
     var importDiv = createImportDiv("请点击图标选择CSV文件导入", checkFileWrong, url);

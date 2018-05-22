@@ -35,9 +35,6 @@ public class OperatorDTO implements IPWDOperator, Serializable {
     private String loginName; // 用户名: 即用户登陆系统的帐号
     private String userName;  // 姓名: 用户的实际姓名
     private String password;  // 密码
- 
-    public OperatorDTO() {
-    }
     
     public OperatorDTO(Long userId, String loginName) {
     	this.id = userId;

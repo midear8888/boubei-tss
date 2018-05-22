@@ -86,7 +86,7 @@ public class LogQueryCondition extends MacrocodeQueryCondition {
 
     public String getOperationCode() {
     	if(operationCode != null && operationCode.indexOf("%") < 0) { // 判断是否指定了模糊方式
-    		operationCode = "%" + operationCode.trim() + "%";           
+    		operationCode = wrapLike(operationCode);           
         }
         return operationCode;
     }
@@ -96,10 +96,7 @@ public class LogQueryCondition extends MacrocodeQueryCondition {
     }
 
     public String getOperateTable() {
-    	if(operateTable != null){
-    		operateTable = "%" + operateTable.trim() + "%";           
-        }
-        return operateTable;
+        return wrapLike(operateTable);
     }
 
     public void setOperateTable(String operateTable) {
@@ -107,10 +104,7 @@ public class LogQueryCondition extends MacrocodeQueryCondition {
     }
 
 	public String getContent() {
-		if(content != null){
-			content = "%" + content.trim() + "%";           
-        }
-        return content;
+        return wrapLike(content);
 	}
 
 	public void setContent(String content) {

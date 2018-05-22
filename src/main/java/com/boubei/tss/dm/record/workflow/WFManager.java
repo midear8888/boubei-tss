@@ -97,7 +97,7 @@ public class WFManager {
 		Map<Integer, Object> paramsMap = new HashMap<Integer, Object>();
     	paramsMap.put(1, recordId);
 		paramsMap.put(2, "%" +userName+ "%");
-    	List<Map<String, Object>> logs = SQLExcutor.query(DMConstants.LOCAL_CONN_POOL, sql, paramsMap);
+    	List<Map<String, Object>> logs = SQLExcutor.queryL(sql, paramsMap);
     	
     	List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
     	for(Map<String, Object> log : logs) {

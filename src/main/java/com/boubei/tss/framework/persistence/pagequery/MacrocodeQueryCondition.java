@@ -93,6 +93,13 @@ public abstract class MacrocodeQueryCondition  {
 	protected String getCreatorIdField() {
 		return "o.creatorId";
 	}
+	
+	public static String wrapLike(String val) {
+		if(val != null){
+			val = "%" + val.trim() + "%";           
+        }
+		return val;
+	}
 }
 
 	

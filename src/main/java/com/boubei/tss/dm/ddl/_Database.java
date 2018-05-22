@@ -276,9 +276,12 @@ public abstract class _Database {
    		}	
    		
    		// 为domain、creator、createTime字段分别创建索引
-   		try { SQLExcutor.excute( getSQLs("domain") [2], datasource); } catch(Exception e) { }
-   		try { SQLExcutor.excute( getSQLs("creator") [2], datasource); } catch(Exception e) { }
-   		try { SQLExcutor.excute( getSQLs("createtime") [2], datasource); } catch(Exception e) { }
+   		try { 
+   			SQLExcutor.excute( getSQLs("domain") [2], datasource);
+   			SQLExcutor.excute( getSQLs("creator") [2], datasource);
+   			SQLExcutor.excute( getSQLs("createtime") [2], datasource);
+   		} 
+   		catch(Exception e) { }
    		
    		// 总是在新建表之后执行
    		CacheHelper.getNoDeadCache().destroyByKey(DMConstants.RECORD_TABLE_LIST);
@@ -671,9 +674,9 @@ public abstract class _Database {
 		
 		// 对fields 进行FM解析，其可能是个带子查询的语句，定义在自定义SQL里（避开SQL注入检查）
 		if( fields.startsWith("macro_") ) {
-			List<Map<String, Object>> list = SQLExcutor.query(DMConstants.LOCAL_CONN_POOL, "select script from dm_sql_def where code=?", fields);
+			List<Map<String, Object>> list = SQLExcutor.queryL("select script from dm_sql_def where code=?", fields);
 			if( list.size() > 0 ) {
-				fields = (String) list.get(0).get("script");
+				fields = (String) list.get(0).get("script"); 
 			}
 		}
 		
@@ -695,12 +698,12 @@ public abstract class _Database {
 		}
 		
 		for(String _key : params.keySet()) {
-			String valueStr = params.get(_key);
+			String _valueStr = params.get(_key);
 			String key = _key.toLowerCase();  // code默认都是小写
-			if( EasyUtils.isNullOrEmpty(valueStr) ) continue;
+			if( EasyUtils.isNullOrEmpty(_valueStr) ) continue;
 			
 			// 对paramValue进行检测，防止SQL注入
-			valueStr = DMUtil.checkSQLInject(valueStr);
+			String valueStr = DMUtil.checkSQLInject(_valueStr);
 			
 			if( "creator".equals(key) && visible) {
 				paramsMap.put(1, valueStr);  // 替换登录账号，允许查询其它人创建的数据; 
@@ -732,6 +735,12 @@ public abstract class _Database {
 				condition += " and id = ? ";
 				valueStr = valueStr.replace("_copy", "");
 				paramsMap.put(paramsMap.size() + 1, EasyUtils.obj2Long(valueStr));
+				continue;
+			}
+			
+			// eg: othercondition=and curdate() between c3 and c4
+			if("othercondition".equals(key)) {
+				condition += " " + _valueStr + " ";
 				continue;
 			}
 			

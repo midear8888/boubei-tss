@@ -111,7 +111,7 @@ public class ParamManager {
         String sql = "select p.value from component_param p " +
         		" where p.type = 1 and p.code=? and p.disabled <> 1";
  
-        List<Map<String, Object>> result = SQLExcutor.query(DMConstants.LOCAL_CONN_POOL, sql, code);
+        List<Map<String, Object>> result = SQLExcutor.queryL(sql, code);
         if( result.isEmpty() ){
             throw new BusinessException( EX.parse(EX.F_10, code) );
         }

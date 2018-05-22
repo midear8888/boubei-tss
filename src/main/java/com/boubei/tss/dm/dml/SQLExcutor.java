@@ -34,6 +34,7 @@ import com.boubei.tss.EX;
 import com.boubei.tss.cache.Cacheable;
 import com.boubei.tss.cache.JCache;
 import com.boubei.tss.cache.Pool;
+import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.ddl._Database;
 import com.boubei.tss.dm.ddl._Field;
 import com.boubei.tss.dm.ext.query.AbstractSO;
@@ -87,6 +88,10 @@ public class SQLExcutor {
     		return result.get(0).get(columnName);
     	}
     	return null;
+    }
+    
+    public static List<Map<String, Object>> queryL(String sql, Object...params) {
+		return query(DMConstants.LOCAL_CONN_POOL, sql, params);
     }
     
     public static List<Map<String, Object>> query(String dataSource, String sql, Object...params) {

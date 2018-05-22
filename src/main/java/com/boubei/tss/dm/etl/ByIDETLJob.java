@@ -72,7 +72,6 @@ public class ByIDETLJob extends AbstractETLJob {
 		} 
 		catch(Exception e) {
 			setException(tLog, task, e);
-			return tLog;
 		}
 		finally {
 			 // 记录任务日志，不管是否成功
@@ -81,7 +80,7 @@ public class ByIDETLJob extends AbstractETLJob {
 		}
 
 		log.info(task.getName() + "Done! Cost time: " + (System.currentTimeMillis() - start));
-		return null;
+		return tLog;
 	}
 	
 	protected Long[] etlByID(Task task, Long startID) {

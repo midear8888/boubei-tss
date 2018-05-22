@@ -30,7 +30,7 @@ import com.boubei.tss.dm.record.ARecordTable;
  * 
 [
   {'label':'code','code':'code','nullable':'false','unique':'true','width':'180px'},
-  {'label':'script','code':'script','nullable':'false','width':'300px','height':'80px','cwidth':'500px'},
+  {'label':'script','code':'script','nullable':'false','width':'350px','height':'150px','cwidth':'500px'},
   {'label':'remark','code':'remark','width':'300px','height':'80px','cwidth':'200px'}
 ]
  * </p>
@@ -47,7 +47,7 @@ public class SQLDef extends ARecordTable {
 	@Column(length = 100, nullable = false, unique=true)
 	private String code;
 	
-	@Column(length = 1000, nullable = false)
+	@Column(length = 2000, nullable = false)
 	private String script;
 	
 	@Column(length = 1000)

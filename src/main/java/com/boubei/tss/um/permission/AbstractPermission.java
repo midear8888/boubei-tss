@@ -19,6 +19,9 @@ import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.SequenceGenerator;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+
 import com.boubei.tss.framework.persistence.IEntity;
 import com.boubei.tss.modules.param.ParamConstants;
 
@@ -47,6 +50,10 @@ public abstract class AbstractPermission implements IEntity {
     protected Integer isPass  = ParamConstants.FALSE; // 是否可传递（0-不可传递,1-可传递）
     
     protected String  resourceName; // 资源名称
+    
+    public String toString() {
+		return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+	}
  
     public Long getId() {
         return id;

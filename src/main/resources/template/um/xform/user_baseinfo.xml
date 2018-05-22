@@ -18,7 +18,7 @@
 		<column name="certificate" caption="证件种类" mode="combo" values="1|2" texts="工作证|身份证"/>
 		<column name="certificateNo" caption="证件号" maxLength="50"/>
 		<column name="accountLife" caption="账户有效期" mode="date" pattern="yyyy-MM-dd" editable="false"/>
-		<column name="authToken" caption="令牌" maxLength="50" editable="false"/>
+		<column name="authToken" caption="令牌" maxLength="50" editable="true"/>
 		
 		<column name="groupId" mode="hidden"/>
 		<column name="groupName" mode="hidden"/>
