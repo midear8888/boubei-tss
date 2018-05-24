@@ -10,6 +10,7 @@
 
 package com.boubei.tss.dm.report;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -17,10 +18,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeUtility;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,6 +48,7 @@ import com.boubei.tss.framework.web.mvc.BaseActionSupport;
 import com.boubei.tss.modules.log.IBusinessLogger;
 import com.boubei.tss.modules.log.Log;
 import com.boubei.tss.util.EasyUtils;
+import com.boubei.tss.util.MailUtil;
 import com.boubei.tss.util.URLUtil;
 
 @Controller
@@ -152,6 +158,8 @@ public class _Reporter extends BaseActionSupport {
     	long start = System.currentTimeMillis();
     	Map<String, String> requestMap = DMUtil.getRequestMap(request, true);
 		Object cacheFlag = checkLoginAndCache(request, reportId);
+		String email = requestMap.remove("email");
+		
 		SQLExcutor excutor = reportService.queryReport(reportId, requestMap, page, pagesize, cacheFlag);
 		
 		String fileName = reportId + "-" + start + ".csv";
@@ -169,9 +177,30 @@ public class _Reporter extends BaseActionSupport {
 			// 先输出查询结果到服务端的导出文件中
 			exportPath = DataExport.exportCSV(fileName, excutor.result, excutor.selectFields);
 		}
-        
-        // 下载上一步生成的附件
-        DataExport.downloadFileByHttp(response, exportPath);
+		
+		if( email != null ) {
+			String _ms = (String) EasyUtils.checkNull( requestMap.get("_ms"), MailUtil.DEFAULT_MS );
+			JavaMailSenderImpl sender = MailUtil.getMailSender(_ms);
+			MimeMessage mailMessage = sender.createMimeMessage();
+			
+			try {
+				// 设置utf-8或GBK编码，否则邮件会有乱码
+				MimeMessageHelper messageHelper = new MimeMessageHelper(mailMessage, true, "utf-8");
+				messageHelper.setFrom( MailUtil.getEmailFrom(_ms) ); // 发送者
+				messageHelper.setTo( email );                         // 接受者
+				messageHelper.setSubject(EX.TIMER_REPORT + ":" + reportService.getReport(reportId, false).getName());  // 主题
+				
+				messageHelper.addAttachment(MimeUtility.encodeWord(fileName), new File(exportPath));
+				messageHelper.setText("详细请查收附件", true);
+				sender.send(mailMessage);
+			}
+			catch(Exception e) {
+				log.error(" error when send report email ", e);
+			}
+		}
+		else { // 下载上一步生成的附件
+	        DataExport.downloadFileByHttp(response, exportPath);
+		}
         
         AccessLogRecorder.outputAccessLog(reportService, reportId, "exportAsCSV", requestMap, start);
     }

@@ -76,6 +76,7 @@ public class MailUtil {
 			return;
 		}
 		
+		JavaMailSenderImpl sender = MailUtil.getMailSender(_ms);
 		try {
 			SimpleMailMessage mail = new SimpleMailMessage();
 			mail.setFrom( getEmailFrom(_ms) ); // 发送者,这里还可以另起Email别名
@@ -83,7 +84,7 @@ public class MailUtil {
 			mail.setSubject(subject);    // 主题
 			mail.setText(text);         // 邮件内容
 			
-			getMailSender(_ms).send(mail);
+			sender.send(mail);
 		} 
 		catch (Exception e) {
 			log.error("发送文本邮件(" +subject+ ")出错了, " + receiver + "：" + e.getMessage());
@@ -109,10 +110,10 @@ public class MailUtil {
 		try {
 			// 设置utf-8或GBK编码，否则邮件会有乱码
 			MimeMessageHelper mh = new MimeMessageHelper(mailMsg, true, "utf-8");
-			mh.setFrom( MailUtil.getEmailFrom(_ms) );  // 发送者
-			mh.setTo( preCheatEmails(receiver) );                        // 接受者
-			mh.setSubject(subject);                    // 主题
-			mh.setText(html.toString(), true);
+			mh.setFrom( getEmailFrom(_ms) );       // 发送者
+			mh.setTo( preCheatEmails(receiver) );  // 接受者
+			mh.setSubject(subject);                // 主题
+			mh.setText( html.toString(), true );
 			
 			sender.send(mailMsg);
 		} 

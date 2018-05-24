@@ -203,7 +203,7 @@ public class ReportJob extends AbstractJob {
 		String exportPath = DataExport.exportCSV(fileName, ex.result, ex.selectFields);
 		
 		fileName = MimeUtility.encodeWord(fileName); // 使用MimeUtility.encodeWord()来解决附件名称的中文问题
-		messageHelper.addAttachment(MimeUtility.encodeWord(fileName), new File(exportPath));
+		messageHelper.addAttachment(fileName, new File(exportPath));
 	}
 	
 	
