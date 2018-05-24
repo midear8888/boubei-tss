@@ -9,7 +9,6 @@ import java.util.Map;
 import org.dom4j.Document;
 import org.dom4j.Element;
 
-import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.ddl._Database;
 import com.boubei.tss.dm.dml.SQLExcutor;

@@ -464,6 +464,7 @@ public class _Recorder extends BaseActionSupport {
 //            	wlog.setNextStepProcesser(processer); // 计算下一步处理人
             }
 			
+            exeAfterOperation(requestMap, _db, id);
 			printSuccessMessage();
     	}
     	catch(Exception e) {

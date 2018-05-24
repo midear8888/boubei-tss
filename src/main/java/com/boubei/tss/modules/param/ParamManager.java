@@ -16,7 +16,6 @@ import java.util.Map;
 
 import com.boubei.tss.EX;
 import com.boubei.tss.cache.extension.PCache;
-import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.exception.BusinessException;

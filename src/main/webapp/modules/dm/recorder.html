@@ -445,7 +445,9 @@ function loadDetailData(rowID) {
                 val && tssJS.getJSON("/tss/auth/xdata/json/"+recordId, params, 
                     function(result) {
                         if( isNew() ) { uniqueFlag = result.length > 0; }
-                        else { uniqueFlag = result.length > 1; }  // 修改行自身不算 
+                        else { 
+                            uniqueFlag = result.length > 0 && parseInt(_tempID) != result[0].id;  // 修改行自身不算 
+                         }  
                 
                         if(uniqueFlag) {
                             uniqueMsg = f.label+"为【" +val+ "】的记录已存在，不能重复";

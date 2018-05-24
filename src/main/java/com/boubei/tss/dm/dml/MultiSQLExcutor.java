@@ -32,6 +32,7 @@ import com.boubei.tss.EX;
 import com.boubei.tss.cache.Cacheable;
 import com.boubei.tss.cache.JCache;
 import com.boubei.tss.cache.Pool;
+import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.record.RecordService;
 import com.boubei.tss.framework.Global;
@@ -80,7 +81,7 @@ public class MultiSQLExcutor {
      */
 	@RequestMapping(value = "/multi", method = RequestMethod.POST)
     @ResponseBody
-    public Object exeMultiSQLs(HttpServletRequest request, String json, String ds) throws Exception {		
+    public Object exeMultiSQLs(HttpServletRequest request, String json, String ds) throws Exception {	
     	return _exeMultiSQLs(json, ds, new HashMap<String, Object>());
     }
     	
@@ -89,6 +90,7 @@ public class MultiSQLExcutor {
     	
     	ICommonService commonService = Global.getCommonService();
  
+    	ds = (String) EasyUtils.checkNull(ds, DMConstants.LOCAL_CONN_POOL);
     	Pool connpool = getDSPool(ds);
         Cacheable connItem = connpool.checkOut(0);
         Connection conn = (Connection) connItem.getValue();
