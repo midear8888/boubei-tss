@@ -35,7 +35,7 @@ public class EX {
 	public static String REG_TIMEOUT_MSG = "注册失败, 您在注册页停留时间过长，请刷新页面后重新注册。";
 	
 	public static String _ERROR_TAG = "【失败!!!】";
-	public static String TIMER_REPORT = "推送报表";
+	public static String TIMER_REPORT = "推送报表:";
 	public static String CACHE_CONFIG = "缓存池配置";
 	public static String COLUMN = "字段（列）";
 	public static String EXCEPTION = "异常：";

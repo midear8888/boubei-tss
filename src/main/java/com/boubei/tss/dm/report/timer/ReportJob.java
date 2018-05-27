@@ -120,7 +120,7 @@ public class ReportJob extends AbstractJob {
 			MimeMessageHelper messageHelper = new MimeMessageHelper(mailMessage, true, "utf-8");
 			messageHelper.setFrom( MailUtil.getEmailFrom(_ms) ); // 发送者
 			messageHelper.setTo(receiver);                       // 接受者
-			messageHelper.setSubject(EX.TIMER_REPORT + ":" + title);        // 主题
+			messageHelper.setSubject(EX.TIMER_REPORT + title);   // 主题
 			
 			// 邮件内容，注意加参数true
 			StringBuffer html = new StringBuffer();

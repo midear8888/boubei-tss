@@ -9,9 +9,11 @@
 */
 package com.boubei.tss.util;
 
+import java.io.File;
 import java.util.Arrays;
 
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeUtility;
 
 import org.apache.log4j.Logger;
 import org.springframework.mail.SimpleMailMessage;
@@ -30,10 +32,11 @@ public class MailUtil {
 	public static JavaMailSenderImpl getMailSender(String _ms) {
 		// 读取邮件服务器配置
 		String[] configs = getEmailInfos(_ms);
+		int port = EasyUtils.obj2Int( ParamConfig.getAttribute(PX.MAIL_SERVER_PORT +_ms , "25") );
 		
 		JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
 		mailSender.setHost( configs[0] );
-		mailSender.setPort(25);
+		mailSender.setPort( port );
 		
 		if( configs.length == 5 ) {
 			mailSender.setUsername( configs[3] );
@@ -91,7 +94,7 @@ public class MailUtil {
 		}
 	}
 	
-	public static void sendHTML(String subject, String htmlText, String receiver[], String _ms) {
+	public static void sendHTML(String subject, String htmlText, String receiver[], String _ms, File...attaches) {
 		// 邮件内容，注意加参数true
 		StringBuffer html = new StringBuffer();
 		html.append("<html>");
@@ -114,6 +117,10 @@ public class MailUtil {
 			mh.setTo( preCheatEmails(receiver) );  // 接受者
 			mh.setSubject(subject);                // 主题
 			mh.setText( html.toString(), true );
+			
+			for(File attach : attaches) {
+				mh.addAttachment(MimeUtility.encodeWord(attach.getName()), attach);
+			}
 			
 			sender.send(mailMsg);
 		} 

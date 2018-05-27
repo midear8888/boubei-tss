@@ -62,6 +62,7 @@ public interface PX {
     
     /** 邮件服务器配置 email.sys、email.default等 */
     static String MAIL_SERVER_ = "email.";
+    static String MAIL_SERVER_PORT = "email.port.";
     
     /** 对含有此处配置的关键字的错误异常进行邮件提醒 */
     static String ERROR_KEYWORD = "error.keyword";

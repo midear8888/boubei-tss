@@ -18,14 +18,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeUtility;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -149,6 +145,9 @@ public class _Reporter extends BaseActionSupport {
         print(new String[] {"ReportData", "PageInfo"}, new Object[] {gEncoder, pageInfo});
     }
     
+    /**
+     * 可直接导出发送电子邮件：http://localhost:9000/tss/data//export/42/1/10000?paramX=XXX&email=boubei@163.com
+     */
     @RequestMapping("/export/{reportId}/{page}/{pagesize}")
     public void exportAsCSV(HttpServletRequest request, HttpServletResponse response, 
             @PathVariable("reportId") Long reportId, 
@@ -179,24 +178,11 @@ public class _Reporter extends BaseActionSupport {
 		}
 		
 		if( email != null ) {
-			String _ms = (String) EasyUtils.checkNull( requestMap.get("_ms"), MailUtil.DEFAULT_MS );
-			JavaMailSenderImpl sender = MailUtil.getMailSender(_ms);
-			MimeMessage mailMessage = sender.createMimeMessage();
+			String subject = EX.TIMER_REPORT + reportService.getReport(reportId, false).getName();
+			String html = "详细请查收附件";
 			
-			try {
-				// 设置utf-8或GBK编码，否则邮件会有乱码
-				MimeMessageHelper messageHelper = new MimeMessageHelper(mailMessage, true, "utf-8");
-				messageHelper.setFrom( MailUtil.getEmailFrom(_ms) ); // 发送者
-				messageHelper.setTo( email );                         // 接受者
-				messageHelper.setSubject(EX.TIMER_REPORT + ":" + reportService.getReport(reportId, false).getName());  // 主题
-				
-				messageHelper.addAttachment(MimeUtility.encodeWord(fileName), new File(exportPath));
-				messageHelper.setText("详细请查收附件", true);
-				sender.send(mailMessage);
-			}
-			catch(Exception e) {
-				log.error(" error when send report email ", e);
-			}
+			String _ms = (String) EasyUtils.checkNull( requestMap.get("_ms"), MailUtil.DEFAULT_MS );
+			MailUtil.sendHTML(subject, html, email.split(","), _ms, new File(exportPath));
 		}
 		else { // 下载上一步生成的附件
 	        DataExport.downloadFileByHttp(response, exportPath);
