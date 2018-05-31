@@ -33,7 +33,7 @@ import com.google.zxing.qrcode.QRCodeWriter;
  * 生成图形验证码、条形码、二维码等图形
  */
 @Controller
-@RequestMapping("/imgcode")
+@RequestMapping("/img/api")
 public class ImageCodeAPI {
 	
 	/**

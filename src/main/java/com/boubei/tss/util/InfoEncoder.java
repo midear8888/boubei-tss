@@ -30,15 +30,11 @@ public class InfoEncoder {
     private static final String KEY_WORD  = "boubei-tss";
 	private static final String ALGORITHM = "Blowfish";
 
-    private Cipher getCipher(int Cipher_MODE) {
+    private Cipher getCipher(int Cipher_MODE) throws Exception {
         SecretKey deskey = new SecretKeySpec(KEY_WORD.getBytes(), ALGORITHM);
-        try {
-            Cipher cipher = Cipher.getInstance(ALGORITHM);
-            cipher.init(Cipher_MODE, deskey);
-            return cipher;
-        } catch (Exception e) {
-            throw new RuntimeException("加密器初始化失败", e);
-        } 
+        Cipher cipher = Cipher.getInstance(ALGORITHM);
+        cipher.init(Cipher_MODE, deskey);
+        return cipher;
     }
 
     /**

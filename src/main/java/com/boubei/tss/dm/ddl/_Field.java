@@ -46,6 +46,6 @@ public class _Field {
 	}
 	
 	public static boolean isAutoSN(String defaultVal) {
-		return (defaultVal+"").trim().endsWith(SNO_yyMMddxxxx);
+		return (defaultVal+"").toLowerCase().trim().endsWith(SNO_yyMMddxxxx.toLowerCase());
 	}
 }

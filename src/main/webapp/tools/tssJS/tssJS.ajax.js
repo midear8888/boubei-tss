@@ -28,7 +28,7 @@ CONTEXTPATH = "tss";
 
         request.params  = arg.params  || {};
         request.headers = arg.headers || {};
-        request.exEmpty = arg.exEmpty || true;
+        request.exEmpty = arg.exEmpty != false;
 
         if(arg.formNode) {
             request.setFormContent(arg.formNode);

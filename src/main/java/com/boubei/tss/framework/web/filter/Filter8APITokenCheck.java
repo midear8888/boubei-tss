@@ -71,7 +71,7 @@ public class Filter8APITokenCheck implements Filter {
     		List<String> tokenList = apiService.searchTokes(uName, servletPath, resourceType); 
         	if( tokenList.contains(uToken) ) {
         		apiService.mockLogin(uName, uToken);
-        		log.info(servletPath + ", " + uName + ", api token pass");
+        		log.debug(servletPath + ", " + uName + ", api token pass");
         	}
         }
 	}

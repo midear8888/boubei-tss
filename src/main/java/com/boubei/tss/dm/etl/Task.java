@@ -23,6 +23,8 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import com.boubei.tss.dm.record.ARecordTable;
+import com.boubei.tss.util.DateUtil;
+import com.boubei.tss.util.EasyUtils;
 
 /**
  * 1、report --> record   WashDataJob
@@ -163,7 +165,7 @@ public class Task extends ARecordTable {
 	}
 
 	public Date getStartDay() {
-		return startDay;
+		return (Date) EasyUtils.checkNull( startDay, DateUtil.today() );
 	}
 
 	public void setStartDay(Date startDay) {

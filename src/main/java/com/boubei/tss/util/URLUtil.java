@@ -67,12 +67,15 @@ public class URLUtil {
         index = (Integer) EasyUtils.checkTrue(index >= 0, index, path.lastIndexOf("target") + 7);
         path = path.substring(0, index) + file;
         
-        try {
-            onePathUrl = new URL(onePathUrl.getProtocol(), null, 0, path);
+        return getURL(path, onePathUrl.getProtocol());
+    }
+    
+    public static URL getURL(String path, String protocol) {
+    	try {
+            return new URL(protocol, null, 0, path);
         } catch (MalformedURLException e) {
-            throw new RuntimeException("getWebFileUrl方法定位path: " + path + " 失败", e);
+            throw new RuntimeException("getURL path:" + path + " failed.", e);
         }
-        return onePathUrl;
     }
     
     /**
@@ -84,12 +87,7 @@ public class URLUtil {
         String path = onePathUrl.getPath();
         path = path.substring(0, path.length() - 9);
         
-        try {
-            onePathUrl = new URL(onePathUrl.getProtocol(), null, 0, new File(path).getParent());
-        } catch (MalformedURLException e) {
-            throw new RuntimeException("getClassesPath方法定位path: " + path + " 失败", e);
-        }
-        return onePathUrl;
+        return getURL(new File(path).getParent(), onePathUrl.getProtocol());
     }
     
     /**

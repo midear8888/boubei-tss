@@ -1243,7 +1243,7 @@
         headers : {},
         params  : {}, 
         formNode : formNode,
-        exEmpty: true,
+        exEmpty: false,
         ondata : function() { },
         onresult : function() { },
         onexception : function() { },
@@ -1264,7 +1264,7 @@
 
         request.params  = arg.params  || {};
         request.headers = arg.headers || {};
-        request.exEmpty = arg.exEmpty || true;
+        request.exEmpty = arg.exEmpty != false;
 
         if(arg.formNode) {
             request.setFormContent(arg.formNode);
