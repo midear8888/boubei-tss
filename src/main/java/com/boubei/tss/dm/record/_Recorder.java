@@ -16,8 +16,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -482,7 +484,9 @@ public class _Recorder extends BaseActionSupport {
     		String ids, String field, String value) {
     	
     	Long recordId = recordService.getRecordID(record, false);
-    	prepareParams(request, recordId);
+    	Map<String, String> requestMap = prepareParams(request, recordId);
+    	
+    	value = requestMap.get("value");
     	
     	// 检查用户对当前记录是否有编辑权限，防止篡改别人创建的记录
 		if( !checkPermission(recordId, Record.OPERATION_EDATA) && !checkPermission(recordId, Record.OPERATION_CDATA) ) {
@@ -637,7 +641,24 @@ public class _Recorder extends BaseActionSupport {
 		String fileName = _db.recordName + "-tl.csv";
         String exportPath = DataExport.getExportPath() + "/" + fileName;
  
-        DataExport.exportCSV(exportPath, EasyUtils.list2Str(_db.fieldNames));
+        Set<String> fieldNameSet = new LinkedHashSet<String>();
+        String fieldNames = DMUtil.getExtendAttr(_db.remark, DMConstants.IMPORT_TL_FIELDS); // 允许在录入表备注里配置导入模板的列
+        if( fieldNames != null) {
+        	fieldNames = fieldNames.replaceAll("，", ",").replaceAll(" ", ",");
+        	fieldNameSet.addAll( Arrays.asList(fieldNames.split(",")) );
+        } else {
+        	fieldNameSet.addAll( _db.fieldNames );
+        }
+        		
+        String fieldIgnores = DMUtil.getExtendAttr(_db.remark, DMConstants.IMPORT_TL_IGNORES);
+        if( fieldIgnores != null) {
+        	String[] _fieldIgnores = fieldIgnores.replaceAll("，", ",").replaceAll(" ", ",").split(",");
+        	for(String ignore : _fieldIgnores) {
+        		fieldNameSet.remove(ignore);
+        	}
+        }
+        
+        DataExport.exportCSV(exportPath, EasyUtils.list2Str(fieldNameSet));
         
         DataExport.downloadFileByHttp(response, exportPath);
     }

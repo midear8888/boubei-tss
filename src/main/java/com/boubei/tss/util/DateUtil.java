@@ -52,6 +52,7 @@ public class DateUtil {
     public static Date parse(String str) {
     	if(EasyUtils.isNullOrEmpty(str)) return null;
     	
+    	str = str.trim();
     	if(str.indexOf(".") > 0) {
     		str = str.substring(0, str.indexOf(".")); // 截掉微秒
     	}

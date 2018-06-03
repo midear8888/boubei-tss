@@ -26,6 +26,29 @@ import com.boubei.tss.modules.param.ParamListener;
 import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.util.BeanUtil;
 
+/**
+ 
+var m2 = { label:"立即执行",  callback: runJob, icon: ICON + "icon_start.gif"};
+var m3 = { label:"停用", callback: function() { setJobStatus("1"); }, visible:function() { return $.G("grid").getColumnValue("disabled") == '0'; }, icon: "images/icon_stop.gif"  };
+var m4 = { label:"启用", callback: function() { setJobStatus("0"); }, visible:function() { return $.G("grid").getColumnValue("disabled") == '1'; }, icon: "images/icon_start.gif"  };
+$1("grid").contextmenu.addItem(m2);
+$1("grid").contextmenu.addItem(m3);
+$1("grid").contextmenu.addItem(m4);
+
+var queue = {};
+function runJob() {
+     var id = $.G("grid").getColumnValue("id");
+     !queue[id] && $.post('/tss/auth/job/' + id, {}, function(data) {  delete queue[id]; $.alert(data); } );
+     queue[id] = "running";
+}
+function setJobStatus(status) {
+     $.ajax({
+         url: '/tss/xdata/component_job_def/' + $.G("grid").getColumnValue("id"), 
+         params: {"disabled": status}, 
+         onsuccess: function() {  $.alert("操作成功"); loadGridData(1); } 
+      });
+}
+ */
 @Controller
 @RequestMapping("/auth/job")
 public class JobAction {

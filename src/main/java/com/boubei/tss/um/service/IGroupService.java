@@ -41,7 +41,7 @@ public interface IGroupService {
 	
 	/**
 	 * <p>
-	 * 查询操作用户拥有编辑权限所有角色
+	 * 查询操作用户拥有编辑权限所有角色（本身就被授予维护权限的角色以及ModuleDef里的角色）
 	 * </p>
 	 * @return List
 	 */

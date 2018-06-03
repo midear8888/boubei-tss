@@ -41,6 +41,10 @@ public final class DMConstants {
     
     // Grid 模板
 	public static final String GRID_RECORD_ATTACH = "template/dm/record_attach_grid.xml";
+	
+	// 数据表导入模板自定义
+	public static final String IMPORT_TL_FIELDS  = "import_tl_fields";
+	public static final String IMPORT_TL_IGNORES = "import_tl_ignores";
     
     //报表模板资源文件目录
 	public static final String REPORT_TL_DIR_DEFAULT = "more/bi_template";

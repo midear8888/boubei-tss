@@ -180,6 +180,8 @@ public class DMUtil {
   		}
   		
   		type = type.toString().toLowerCase();
+  		value = value.trim();
+  		
   		if(_Field.TYPE_NUMBER.equals(type) || _Field.TYPE_INT.equals(type)) {
   			try {
   				if(value.indexOf(".") > 0) {
@@ -200,7 +202,7 @@ public class DMUtil {
   			return new Timestamp(dateObj.getTime());
   		}
   		else {
-  			return value.trim();
+  			return value;
   		}
   	} 
   	

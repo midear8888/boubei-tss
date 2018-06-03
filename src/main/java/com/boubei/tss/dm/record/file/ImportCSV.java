@@ -38,8 +38,8 @@ import com.boubei.tss.util.FileHelper;
  * var url = URL_UPLOAD_FILE + "?afterUploadClass=com.boubei.tss.dm.record.file.ImportCSV";
    url += "&recordId=" + recordId;
    url += "&uniqueCodes=oto,phone";
-   url += "&uniqueCodes=oto,phone";
-   url += "&uniqueCodes=oto,phone";
+   url += "&together=false";
+   url += "&ignoreExist=true";
     
  * 根据数据表提供的导入模板，填写后导入实现批量录入数据。
  * CSV文件需满足条件：
