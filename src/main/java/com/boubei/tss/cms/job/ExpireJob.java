@@ -29,7 +29,7 @@ import com.boubei.tss.util.FileHelper;
  */
 public class ExpireJob extends AbstractCMSJob {
 
-	protected void excuteCMSJob(String jobConfig) {
+	protected String excuteCMSJob(String jobConfig) {
 		
         Long siteId = EasyUtils.obj2Long(jobConfig.trim());
         IChannelService channelService = getChannelService();
@@ -52,7 +52,7 @@ public class ExpireJob extends AbstractCMSJob {
             getArticleService().updateArticle(article, null, null);
         }
         
-        log.info("总共有 " + expireList.size() + " 条文章记录被设置为过期状态。");
+        return "总共有 " + expireList.size() + " 条文章记录被设置为过期状态。";
 	}
  
 	protected JobStrategy getJobStrategy() {

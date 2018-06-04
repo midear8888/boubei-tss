@@ -366,12 +366,14 @@ function isCreate(rowID) {
 var uniqueFlag = false, uniqueMsg, _tempID;
 function loadDetailData(rowID) {
     var form, dataNode = tssJS.cache.XmlDatas[rowID],
-        isCreateRow = isCreate(rowID);
+        isCreateRow = isCreate(rowID),
+        version;
     _tempID = isCreateRow ? $.now() : rowID;
 
     function showInForm(version) {
         xform = tssJS.json2Form("page1Form", recordDefine, null, customizeJS);
         xform.template.dataNode.id = _tempID;
+        xform.template.dataNode._version = version;
         tssJS.cache.XmlDatas[rowID] = xform.template.dataNode;
         attachReminder(_tempID, xform); // 离开提醒
 
@@ -489,6 +491,8 @@ function loadDetailData(rowID) {
         recordDefine.each(function(i, field){
             field.defaultValue = kvMap[field.code];
         });
+
+        version = dataNode._version;
     }
     else {
         if(rowID === '_new') {
@@ -512,7 +516,7 @@ function loadDetailData(rowID) {
         }
     }
 
-    showInForm();  // create
+    showInForm(version);  // create or 在多个已打开的记录之间切换Tab
 }
 
 var _after_;  // 新增数据后续自定义操作（eg：改写管理表的状态）

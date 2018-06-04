@@ -75,11 +75,10 @@ public abstract class AbstractJob implements Job {
         	
         	String jobConfig = (String) dataMap.get(jobName);
         	Long jobID = (Long) dataMap.get(jobName + "-ID");
-			excuteJob(jobConfig, jobID);
+        	resultMsg = excuteJob(jobConfig, jobID);
         	
         	int methodExcuteTime = (int) (System.currentTimeMillis() - preTime);
         	
-        	resultMsg = "Job[" +jobName+ "] end.";
         	log.info(resultMsg);
         	
         	if( needSuccessLog() ) {
@@ -104,7 +103,7 @@ public abstract class AbstractJob implements Job {
         }
     }
 
-    protected abstract void excuteJob(String jobConfig, Long jobID);
+    protected abstract String excuteJob(String jobConfig, Long jobID);
     
     public void excuteJob(String jobConfig) {
     	excuteJob(jobConfig, null);

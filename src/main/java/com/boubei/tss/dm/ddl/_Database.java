@@ -504,12 +504,11 @@ public abstract class _Database {
 		}
 		
 		// 如果_version值不为空，则用其实现乐观锁控制
-		String _version = valuesMap.remove("_version");
-		_version = (String) EasyUtils.checkNull(_version, valuesMap.remove("version"));
+		String _version = (String) EasyUtils.checkNull(valuesMap.remove("_version"), valuesMap.remove("version"));
 		if( !EasyUtils.isNullOrEmpty(_version) ) {
 			int version1 = EasyUtils.obj2Int(_version);
-			int version2 = EasyUtils.obj2Int(old.get("version"));
-			if( version1 < version2 ) {
+			int version0 = EasyUtils.obj2Int(old.get("version"));
+			if( version1 < version0 ) {
 				throw new BusinessException(EX.DM_17);
 			}
 		}

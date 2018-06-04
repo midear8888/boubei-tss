@@ -24,5 +24,5 @@ public interface Progressable {
 	 * @param params
 	 * @param progress
 	 */
-	void execute(Map<String, Object> params, Progress progress);
+	String execute(Map<String, Object> params, Progress progress);
 }

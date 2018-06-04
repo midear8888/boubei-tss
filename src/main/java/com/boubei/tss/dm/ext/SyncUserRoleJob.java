@@ -37,13 +37,14 @@ public class SyncUserRoleJob extends AbstractJob {
 	 * jobConfig的格式为 : 
 	 * 		sql @ datasource
 	 */
-	protected void excuteJob(String jobConfig, Long jobID) {
+	protected String excuteJob(String jobConfig, Long jobID) {
 		log.info("开始用户对角色信息同步......");
 		
 		String info[] = EasyUtils.split(jobConfig, "@");
 		if(info.length != 2)  {
-			log.info("用户对角色信息同步的配置信息有误。" + jobConfig);
-			return;
+			String msg = "用户对角色信息同步的配置信息有误。" + jobConfig;
+			log.info(msg);
+			return msg;
 		}
 		 
 		String sql = info[0];
@@ -75,7 +76,7 @@ public class SyncUserRoleJob extends AbstractJob {
 		SQLExcutor.excuteBatchII(insertSQL, addList, DMConstants.LOCAL_CONN_POOL);
 		SQLExcutor.excuteBatchII(deleteSQL, delList, DMConstants.LOCAL_CONN_POOL);
 		
-		log.info("完成用户对角色信息同步。");
+		return "完成用户对角色信息同步，新增用户角色关系" + addList.size() + "条， 删除" + delList.size() + "";
 	}
 	
 	int getCount(Long user, Long role) {

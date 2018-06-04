@@ -23,7 +23,7 @@ public class MonitorJob extends AbstractJob {
 	String domain = "www.boubei.com";
 	String keyword = "卜贝";
 	
-	protected void excuteJob(String jobConfig, Long jobID) {
+	protected String excuteJob(String jobConfig, Long jobID) {
 		try {
 			interval = Integer.parseInt(jobConfig.split(",")[0]);
 		} catch(Exception e) { }
@@ -40,6 +40,8 @@ public class MonitorJob extends AbstractJob {
 		checking(DMConstants.LOCAL_CONN_POOL, "TSS-BI", "Monitor-Err", "");
 		checking(DMConstants.LOCAL_CONN_POOL, "TSS-BI", "ETL-Err", "");
 		checking(DMConstants.LOCAL_CONN_POOL, "TSS-BI", "定时任务", "and t.operationCode like '%【失败!!!】%'");
+		
+		return "done";
 	}
 	
 	/**

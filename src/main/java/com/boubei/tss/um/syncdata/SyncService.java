@@ -101,7 +101,7 @@ public class SyncService implements ISyncService, Progressable {
     }
     
     @SuppressWarnings("unchecked")
-	public void execute(Map<String, Object> paramsMap, Progress progress) {
+	public String execute(Map<String, Object> paramsMap, Progress progress) {
     	Long mainGroupId = (Long) paramsMap.get("groupId");
     	String fromApp = (String) paramsMap.get("fromApp");
         List<?> groups = (List<?>)paramsMap.get("groups");
@@ -112,6 +112,8 @@ public class SyncService implements ISyncService, Progressable {
         
         syncGroups(groups, idMapping, progress, fromApp, domain);
         syncUsers (users, idMapping, progress);
+        
+        return "group num = " + groups.size() + ", user num = " + users.size();
     }
 
     private void syncGroups(List<?> otherGroups, Map<String, Long> idMapping, Progress progress, String fromApp, String domain) {

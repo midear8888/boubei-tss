@@ -10,6 +10,8 @@
 
 package com.boubei.tss.um.syncdata;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import com.boubei.tss.framework.Global;
@@ -36,10 +38,11 @@ public class SyncUserJob extends AbstractJob {
 	 * 		mainGroupId1,fromApp1
 	 * 		mainGroupId2,fromApp2
 	 */
-	protected void excuteJob(String jobConfig, Long jobID) {
+	protected String excuteJob(String jobConfig, Long jobID) {
 		log.info("------------------- 用户信息自动同步......");
 		
 		String[] jobConfigs = EasyUtils.split(jobConfig, "\n");
+		List<String> msgList = new ArrayList<String>();
 		
 		for(int i = 0; i < jobConfigs.length; i++) {
 			String info[] = EasyUtils.split(jobConfigs[i], ",");
@@ -56,9 +59,12 @@ public class SyncUserJob extends AbstractJob {
 	        }
 	        
 	        Map<String, Object> datasMap = syncService.getCompleteSyncGroupData(groupId, fromApp, fromGroupId);
-	        ((Progressable) syncService).execute(datasMap, new Progress(10000));
+	        String result = ((Progressable) syncService).execute(datasMap, new Progress(10000));
+	        
+	        msgList.add( "【" + fromApp + ", " + fromGroupId + "】" + result);
 		}
 		
 		log.info("------------------- 用户信息自动同步 Done");
+		return EasyUtils.list2Str(msgList);
 	}
 }

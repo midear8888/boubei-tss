@@ -25,7 +25,7 @@ import com.boubei.tss.util.EasyUtils;
  */
 public class SnapshotJob extends AbstractJob {
 	
-	protected void excuteJob(String jobConfig, Long jobID) {
+	protected String excuteJob(String jobConfig, Long jobID) {
 		Pool dataCache = JCache.getInstance().getPool(CacheLife.SHORTER.toString());
 		Set<Cacheable> items = dataCache.listItems();
 		for(Cacheable item : items) {
@@ -34,6 +34,8 @@ public class SnapshotJob extends AbstractJob {
 			
 			dataCache.destroyObject(item);
 		}
+		
+		return "done";
 	}
 	
 	public static void snapshot(String key, Object val) {

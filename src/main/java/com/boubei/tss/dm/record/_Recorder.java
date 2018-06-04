@@ -486,7 +486,8 @@ public class _Recorder extends BaseActionSupport {
     	Long recordId = recordService.getRecordID(record, false);
     	Map<String, String> requestMap = prepareParams(request, recordId);
     	
-    	value = requestMap.get("value");
+    	String _value = requestMap.get("value");
+    	value = (String) EasyUtils.checkNull(_value, value);
     	
     	// 检查用户对当前记录是否有编辑权限，防止篡改别人创建的记录
 		if( !checkPermission(recordId, Record.OPERATION_EDATA) && !checkPermission(recordId, Record.OPERATION_CDATA) ) {

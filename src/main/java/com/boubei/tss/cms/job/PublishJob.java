@@ -13,6 +13,7 @@ package com.boubei.tss.cms.job;
 import java.util.List;
 
 import com.boubei.tss.cms.entity.Article;
+import com.boubei.tss.cms.entity.Channel;
 import com.boubei.tss.cms.service.IChannelService;
 import com.boubei.tss.util.EasyUtils;
 
@@ -24,12 +25,14 @@ public class PublishJob extends AbstractCMSJob {
 
 	private static final int PAGE_SIZE = PublishManger.PAGE_SIZE;
 
-	protected void excuteCMSJob(String jobConfig) {
+	protected String excuteCMSJob(String jobConfig) {
 		
-        Long siteId = EasyUtils.obj2Long(jobConfig.trim());
-  
         IChannelService channelService = getChannelService();
         
+        Long siteId = EasyUtils.obj2Long(jobConfig.trim());
+        Channel site = channelService.getChannelById(siteId);
+        
+        int count = 0;
         List<Long> channelIds = channelService.getAllEnabledChannelIds(siteId);
         for ( Long channelId : channelIds ) {
             int totalRows = channelService.getPublishableArticlesCount(channelId);       
@@ -37,12 +40,15 @@ public class PublishJob extends AbstractCMSJob {
             if( totalRows % PAGE_SIZE > 0 ) {
                 totalPageNum = totalPageNum + 1;
             }
+            count += totalRows;
             
             for (int page = 1; page <= totalPageNum; page++) { // 逐页发布文章
                 List<Article> list = channelService.getPagePublishableArticles(channelId, page, PAGE_SIZE);
                 channelService.publishArticle(list);
             }
         }
+        
+        return "共发布了站点【" + site.getName() + "】下" +count+ "篇文章";
 	}
 
 	protected JobStrategy getJobStrategy() {

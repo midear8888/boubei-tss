@@ -81,7 +81,7 @@ public class AutoLoginHttpInvokerRequestExecutor extends AbstractHttpInvokerRequ
             } else {
                 throw new BusinessException(msg + "statusCode:" + statusCode + "\n url：" + config.getServiceUrl());
             }
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             throw new BusinessException(msg + "url:" + config.getServiceUrl(), e);
         } finally {
             httpPost.releaseConnection();

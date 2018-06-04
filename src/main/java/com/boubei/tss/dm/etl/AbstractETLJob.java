@@ -10,6 +10,7 @@
 
 package com.boubei.tss.dm.etl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -49,10 +50,11 @@ public abstract class AbstractETLJob extends AbstractJob {
         return new OperatorDTO(UMConstants.ROBOT_USER_ID, currTaskCreator); 
 	}
 
-	protected void excuteJob(String jobConfig, Long jobID) {
+	protected String excuteJob(String jobConfig, Long jobID) {
 		String hql = "from Task where type = ? and status = 'opened' and jobId = ? order by priority desc, id asc ";
 		List<?> tasks = commonService.getList(hql, etlType(), jobID);
 		
+		List<String> msgList = new ArrayList<String>();
 		for(Object obj : tasks) {
 			Task task = (Task) obj;
 			
@@ -60,8 +62,11 @@ public abstract class AbstractETLJob extends AbstractJob {
 			currTaskCreator = task.getCreator();
 			initContext();
 			
-			excuteTask( task );
+			TaskLog log = excuteTask( task );
+			msgList.add( task.getName() + ": " + log.getDetail() );
 		}
+		
+		return EasyUtils.list2Str(msgList) + " done";
 	}
 	
 	protected abstract String etlType();

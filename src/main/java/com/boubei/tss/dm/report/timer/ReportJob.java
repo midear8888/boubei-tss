@@ -12,6 +12,7 @@ package com.boubei.tss.dm.report.timer;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -62,11 +63,12 @@ public class ReportJob extends AbstractJob {
      *  2:报表二:x2@x.com
 	 *	3:报表三:x3@x.com,x4@x.com:param1=a,param2=b
 	 */
-	protected void excuteJob(String jobConfig, Long jobID) {
+	protected String excuteJob(String jobConfig, Long jobID) {
 		
 		String[] jobConfigs = EasyUtils.split(jobConfig, "\n");
 		
 		Map<String, ReceiverReports> map = new HashMap<String, ReportJob.ReceiverReports>();
+		List<String> msgList = new ArrayList<String>();
 		
 		// 收件人一致的定时报表合并起来发送
 		for(String jobX : jobConfigs) {
@@ -105,8 +107,13 @@ public class ReportJob extends AbstractJob {
 			
 			if(receiver != null && receiver.length > 0) {
 				send(info[0], receiver, rr);
+				
+				msgList.add( EasyUtils.list2Str(Arrays.asList(receiver)) + ":" 
+						+ EasyUtils.list2Str(rr.reportTitles));
 			}
 		}
+		
+		return EasyUtils.list2Str(msgList);
 	}
 	
 	private void send(String _ms, String[] receiver, ReceiverReports rr) {

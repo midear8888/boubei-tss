@@ -29,7 +29,7 @@ import com.boubei.tss.util.EasyUtils;
  */
 public class IndexJob extends AbstractCMSJob implements Progressable {
 
-	protected void excuteCMSJob(String jobConfig) {
+	protected String excuteCMSJob(String jobConfig) {
         Long siteId = EasyUtils.obj2Long(jobConfig.trim());
 		Set<ArticleContent> data = getData(siteId, false); // 重建索引 而非增量
                 
@@ -37,6 +37,8 @@ public class IndexJob extends AbstractCMSJob implements Progressable {
 		strategy.isIncrement = false;
 		strategy.site = getChannelService().getChannelById(siteId);
 		IndexHelper.createIndex(strategy, data, new Progress(data.size())); 
+		
+		return strategy.site.getName() + "里共有" + data.size() + "篇文章被创建了索引";
 	}
 	
     /**
@@ -70,11 +72,13 @@ public class IndexJob extends AbstractCMSJob implements Progressable {
      * 执行定时任务时启用进度条。
      */
     @SuppressWarnings("unchecked")
-    public void execute(Map<String, Object> params, final Progress progress) {
+    public String execute(Map<String, Object> params, final Progress progress) {
 	    JobStrategy strategy = getJobStrategy();
 	    strategy.site = getChannelService().getChannelById((Long) params.get("siteId"));
 	    
-	    Object data = params.get("data");
-	    IndexHelper.createIndex(strategy, (Set<ArticleContent>)data, progress); 
+	    Set<ArticleContent> data = (Set<ArticleContent>)params.get("data");
+	    IndexHelper.createIndex(strategy, data, progress); 
+	    
+	    return data.size() + " articles create index done.";
     }
 }

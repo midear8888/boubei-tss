@@ -10,6 +10,7 @@
 
 package com.boubei.tss.dm.ext;
 
+import com.boubei.tss.EX;
 import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.Global;
@@ -26,7 +27,7 @@ public class CleanPermissionJob extends AbstractJob {
 	
 	IUserService userService = (IUserService) Global.getBean("UserService");
  
-	protected void excuteJob(String jobConfig, Long jobID) {
+	protected String excuteJob(String jobConfig, Long jobID) {
  
 		log.info("------------------- 清理权限信息......");
 		
@@ -50,6 +51,8 @@ public class CleanPermissionJob extends AbstractJob {
 		
 		// 处理过期的用户、角色、转授策略等
 		userService.overdue();
+		
+		return EX.DEFAULT_SUCCESS_MSG;
 	}
 	 
 }

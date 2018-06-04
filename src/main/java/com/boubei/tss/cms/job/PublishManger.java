@@ -74,7 +74,7 @@ public class PublishManger implements Progressable {
         return manager.execute();
 	}
     
-    public void execute(Map<String, Object> params, final Progress progress) {
+    public String execute(Map<String, Object> params, final Progress progress) {
         Long    channelId = (Long) params.get("channelId");
         String  category = (String) params.get("category");
         Integer totalRows = (Integer) params.get("totalRows");
@@ -94,5 +94,7 @@ public class PublishManger implements Progressable {
         if( !progress.isCompleted() ) {
             progress.add(8888888); // 通过设置一个大数（远大于总数）来使进度完成
         }
+        
+        return totalRows + " articles published.";
     }
 }
