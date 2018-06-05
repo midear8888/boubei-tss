@@ -77,7 +77,8 @@ public class User extends OperateInfo implements ITreeNode, IGridNode, IXForm {
     private String authToken;
     private String authMethod = UMPasswordIdentifier.class.getName(); // 认证方式,一个实现对应的认证方式的类路径
     
-    private String fromUserId;  // 外部应用系统用户的ID (用于【平台用户】对应【其他系统用户】，其值可以是LDAP里的DN字符串)
+    private Long   belongUserId; // 上线，业务员
+    private String fromUserId;   // 外部应用系统用户的ID (用于【平台用户】对应【其他系统用户】，其值可以是LDAP里的DN字符串)
     
     private Integer disabled = ParamConstants.FALSE; // 帐户状态, 帐户状态(0-停用, 1-启用)
     
@@ -372,5 +373,13 @@ public class User extends OperateInfo implements ITreeNode, IGridNode, IXForm {
 
 	public void setAuthToken(String authToken) {
 		this.authToken = authToken;
+	}
+
+	public Long getBelongUserId() {
+		return belongUserId;
+	}
+
+	public void setBelongUserId(Long belongUserId) {
+		this.belongUserId = belongUserId;
 	}
 }
