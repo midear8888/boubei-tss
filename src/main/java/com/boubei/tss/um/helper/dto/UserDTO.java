@@ -24,7 +24,7 @@ public class UserDTO {
 	private String  userName;     // 用户的实际姓名
 	private String  employeeNo;   // 员工编号
 	private String  sex;          // 姓名
-	private Date    birthday;     // 出生年月 
+	private String  telephone;     // 电话
     private String  email;        // 邮件
     private String  groupId;      // 对应用户所在组id  
     
@@ -52,14 +52,6 @@ public class UserDTO {
  
 	public void setAccountLife(Date accountLife) {
 		this.accountLife = accountLife;
-	}
- 
-	public Date getBirthday() {
-		return birthday;
-	}
- 
-	public void setBirthday(Date birthday) {
-		this.birthday = birthday;
 	}
 	
 	public String getEmployeeNo() {
@@ -132,6 +124,14 @@ public class UserDTO {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public String getTelephone() {
+		return telephone;
+	}
+
+	public void setTelephone(String telephone) {
+		this.telephone = telephone;
 	}
 }
 

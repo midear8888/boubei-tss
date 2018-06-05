@@ -18,7 +18,7 @@
 		&lt;loginName defaultValue=""&gt;uid&lt;/loginName&gt;
 		&lt;email defaultValue=""&gt;email&lt;/email&gt;
 		&lt;sex defaultValue=""&gt;sex&lt;/sex&gt;
-		&lt;birthday defaultValue=""&gt;birthday&lt;/birthday&gt;
+		&lt;telephone defaultValue=""&gt;telephone&lt;/telephone&gt;
 		&lt;employeeNo defaultValue=""&gt;employeeNo&lt;/employeeNo&gt;
 		&lt;/attributes&gt; 
 	</userSql>

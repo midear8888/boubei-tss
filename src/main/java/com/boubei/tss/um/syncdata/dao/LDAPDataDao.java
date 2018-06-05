@@ -35,7 +35,6 @@ import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.um.helper.dto.GroupDTO;
 import com.boubei.tss.um.helper.dto.UserDTO;
 import com.boubei.tss.um.syncdata.SyncDataHelper;
-import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.XMLDocUtil;
 
@@ -54,7 +53,7 @@ public class LDAPDataDao implements IOutDataDao {
     public final static String LOGIN_NAME_USER   = "loginName";
     public final static String EAMIL_USER        = "email";
     public final static String SEX_USER          = "sex";
-    public final static String BIRTHDAY_USER     = "birthday";
+    public final static String TELE_PHONE         = "telephone";
     public final static String EMPLOYEE_NO_USER  = "employeeNo";
     public final static String USER_STATUS       = "disabled";
  
@@ -201,10 +200,10 @@ public class LDAPDataDao implements IOutDataDao {
             	user.setSex(sexValue);
 				
 
-                // birthday
-				String birthdayName = fieldNames.get(BIRTHDAY_USER);
-				String birthdayValue = getValueFromAttribute(attrs, birthdayName);
-            	user.setBirthday(DateUtil.parse(birthdayValue));
+                // telephone
+				String telephoneName = fieldNames.get(TELE_PHONE);
+				String telephoneValue = getValueFromAttribute(attrs, telephoneName);
+            	user.setTelephone(telephoneValue);
 				
                 // employeeNo
 				String employeeNoName = fieldNames.get(EMPLOYEE_NO_USER);

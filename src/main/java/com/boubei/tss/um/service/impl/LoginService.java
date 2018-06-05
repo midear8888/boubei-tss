@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -219,8 +220,8 @@ public class LoginService implements ILoginService {
     }
     
     public List<String> getRoleNames(List<Long> roleIds) {
-    	Set<Long> _roleIds = new HashSet<Long>(roleIds);  // 防止：ConcurrentModificationException
-    	Set<String> names = new HashSet<String>();
+    	Set<Long> _roleIds = new LinkedHashSet<Long>(roleIds);  // 防止：ConcurrentModificationException
+    	Set<String> names = new LinkedHashSet<String>();
     	for(Long roleId : _roleIds) {
     		Role role = roleDao.getEntity(roleId);
     		names.add(role.getName());

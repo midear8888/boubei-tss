@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.boubei.tss.framework.Global;
+import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.modules.progress.Progress;
 import com.boubei.tss.modules.progress.Progressable;
 import com.boubei.tss.modules.timer.AbstractJob;
@@ -50,14 +51,17 @@ public class SyncUserJob extends AbstractJob {
 			 
 			Long groupId = EasyUtils.obj2Long(info[0]);
 			Group group = groupService.getGroupById(groupId);
+			if ( group == null) {
+	            throw new BusinessException( "用户同步配置异常，找不到组，jobConfig=" + jobConfig );
+	        }
 			
-			String fromApp = (String) EasyUtils.checkNull(group.getFromApp(), info[1]);
 	        String fromGroupId = group.getFromGroupId();
 	        if ( EasyUtils.isNullOrEmpty(fromGroupId) ) {
 	            log.error("自动同步用户时，组【" + group.getName() + "】的对应外部应用组的ID（fromGroupId）为空。");
 	            continue;
 	        }
 	        
+	        String fromApp = (String) EasyUtils.checkNull(group.getFromApp(), info[1]);
 	        Map<String, Object> datasMap = syncService.getCompleteSyncGroupData(groupId, fromApp, fromGroupId);
 	        String result = ((Progressable) syncService).execute(datasMap, new Progress(10000));
 	        

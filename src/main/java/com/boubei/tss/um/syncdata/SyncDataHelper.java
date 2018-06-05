@@ -46,7 +46,7 @@ public class SyncDataHelper {
         user.setAccountLife(userDTO.getAccountLife());
         user.setEmail(userDTO.getEmail());
         user.setSex(userDTO.getSex());
-        user.setBirthday(userDTO.getBirthday());
+        user.setTelephone(userDTO.getTelephone());
         user.setEmployeeNo(userDTO.getEmployeeNo());
         
         if( !EasyUtils.isNullOrEmpty(userDTO.getAuthMethod()) ) {
