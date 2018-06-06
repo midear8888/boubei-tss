@@ -29,8 +29,6 @@ import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 import com.boubei.tss.framework.persistence.IEntity;
 import com.boubei.tss.framework.sso.Environment;
-import com.boubei.tss.framework.sso.context.Context;
-import com.boubei.tss.framework.sso.context.RequestContext;
 import com.boubei.tss.framework.web.display.grid.GridAttributesMap;
 import com.boubei.tss.framework.web.display.grid.IGridNode;
 import com.boubei.tss.framework.web.display.xform.IXForm;
@@ -87,14 +85,7 @@ public class Log implements IEntity, IXForm, IGridNode {
 	   		content = ToStringBuilder.reflectionToString(entity, ToStringStyle.SHORT_PREFIX_STYLE);
 	   	}
         this.setContent( content);
-        
-        RequestContext rc = Context.getRequestContext();
-        if(rc != null && rc.getRequest() != null) {
-        	String browser = rc.getRequest().getHeader("USER-AGENT");
-        	browser = (String) EasyUtils.checkNull(browser, "unkown");
-        	int length = Math.min(browser.length(), 200);
-			this.setOperatorBrowser(browser.substring(0, length-1));
-        }
+        this.setOperatorBrowser( Environment.getOrigin() );
     }
     
     public String toString() {

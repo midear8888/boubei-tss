@@ -67,7 +67,6 @@ public class RequestContext {
      * 获取请求ServletPath（相对路径 /login.do, /logout.in 等）
      *
      * @param request
-     * @return
      */
     public static String getServletPath(HttpServletRequest request) {
         return request.getServletPath();
@@ -87,7 +86,6 @@ public class RequestContext {
 
 	/**
 	 * 获取当前请求对应Session
-	 * @return
 	 */
 	public HttpSession getSession() {
 		return request.getSession();
@@ -95,7 +93,6 @@ public class RequestContext {
 
 	/**
 	 * 获取当前请求对应SessionID
-	 * @return
 	 */
 	public String getSessionId() {
 		HttpSession session = getSession();
@@ -109,7 +106,6 @@ public class RequestContext {
 
 	/**
 	 * 获取Session中存放的用户身份证对象
-	 * @return
 	 */
 	public IdentityCard getIdentityCard() {
 		HttpSession session = getSession();
@@ -124,7 +120,6 @@ public class RequestContext {
 	/**
 	 * 可以使用匿名用户访问此请求，如果用户已登录或自动登录成功，则使用注册用户登录后访问；
      * 如果注册用户登录不成功或没有登录，也可以使用匿名用户访问此。
-	 * @return
 	 */
 	public boolean canAnonymous() {
         return "true".equalsIgnoreCase(getValue(ANONYMOUS_REQUEST));
@@ -218,7 +213,6 @@ public class RequestContext {
 
 	/**
 	 * 获取当前请求的系统Code
-	 * @return
 	 */
 	public String getAppCode() {
 		return getValue(APPLICATION_CODE);
@@ -227,7 +221,6 @@ public class RequestContext {
 	/**
 	 * 获取真实访问服务路径，用于个别请求访问地址应用转向问题，当真实地址不能匹配过滤器地址时使用此替代方案。
      * 允许在header或parameter中指定真正要转向的地址。
-	 * @return
 	 */
 	public String getRealPath() {
 		return getValue(PROXY_REAL_PATH);
@@ -235,7 +228,6 @@ public class RequestContext {
 
 	/**
 	 * 判断请求是否为复合请求，如果是则返回True，否则返回False
-	 * @return
 	 */
 	public boolean isMultiRequest() {
 		return Config.TRUE.equalsIgnoreCase(request.getHeader(MULTI_REQUEST));
@@ -243,7 +235,6 @@ public class RequestContext {
 
 	/**
 	 * 判断请求是否为XMLHTTP请求方式
-	 * @return
 	 */
 	public boolean isXmlhttpRequest() {
 		return XMLHTTP_REQUEST.equals(request.getHeader(REQUEST_TYPE));
@@ -251,7 +242,6 @@ public class RequestContext {
 
 	/**
 	 * 判断是否为https方式
-	 * @return
 	 */
 	public boolean isSecure() {
 		return request.isSecure();

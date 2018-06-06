@@ -22,6 +22,9 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import com.boubei.tss.framework.persistence.IEntity;
+import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.um.UMConstants;
+import com.boubei.tss.util.EasyUtils;
 
 @Entity
 @Table(name = "dm_access_log")
@@ -49,6 +52,23 @@ public class AccessLog implements IEntity {
     
     private Long userId;      // 登录用户
     private String ip;        // 访问者IP地址
+    private String origin;    // 浏览器、微信、APP等
+    
+    public AccessLog() {
+    }
+    
+    public AccessLog(Long start, String params) {
+        this.setAccessTime( new Date(start) );
+        this.setRunningTime( System.currentTimeMillis() - start );
+        this.setParams(params);
+        
+        // 记录访问人，没有则记为匿名访问
+        Long userId = (Long) EasyUtils.checkNull(Environment.getUserId(), UMConstants.ANONYMOUS_USER_ID);
+		this.setUserId(userId);
+		this.setIp( Environment.getClientIp() );
+		
+		this.setOrigin( Environment.getOrigin() );
+    }
 
     public Long getId() {
         return id;
@@ -124,5 +144,13 @@ public class AccessLog implements IEntity {
 	
 	public Serializable getPK() {
 		return this.id;
+	}
+
+	public String getOrigin() {
+		return origin;
+	}
+
+	public void setOrigin(String origin) {
+		this.origin = origin;
 	}
 }

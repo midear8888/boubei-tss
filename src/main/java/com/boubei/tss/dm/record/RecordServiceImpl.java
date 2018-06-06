@@ -63,7 +63,7 @@ public class RecordServiceImpl implements RecordService {
 	
 	// 名字、表名二者有一个能对上即可
 	public Long getRecordID(String nameOrTable, int type, boolean auth) {
-		String hql = "select o.id from Record o where ? in (o.name, o.table) and type = ? order by o.id desc"; 
+		String hql = "select o.id from Record o where ? in (o.id, o.name, o.table) and type = ? order by o.id desc"; 
 		List<?> list = recordDao.getEntities(hql, nameOrTable, type); 
 		
 		if(!auth && list.size() > 0) {

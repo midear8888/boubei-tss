@@ -146,19 +146,21 @@ public class _Reporter extends BaseActionSupport {
     }
     
     /**
-     * 可直接导出发送电子邮件：http://localhost:9000/tss/data//export/42/1/10000?paramX=XXX&email=boubei@163.com
+     * 可直接导出发送电子邮件：http://localhost:9000/tss/data/export/42/1/10000?paramX=XXX&email=boubei@163.com
      */
-    @RequestMapping("/export/{reportId}/{page}/{pagesize}")
+    @RequestMapping("/export/{report}/{page}/{pagesize}")
     public void exportAsCSV(HttpServletRequest request, HttpServletResponse response, 
-            @PathVariable("reportId") Long reportId, 
+            @PathVariable("report") Object report, 
             @PathVariable("page") int page,
             @PathVariable("pagesize") int pagesize) {
         
-    	long start = System.currentTimeMillis();
     	Map<String, String> requestMap = DMUtil.getRequestMap(request, true);
+    	Long reportId = reportService.getReportId( report.toString() );
+    	
 		Object cacheFlag = checkLoginAndCache(request, reportId);
 		String email = requestMap.remove("email");
 		
+		long start = System.currentTimeMillis();
 		SQLExcutor excutor = reportService.queryReport(reportId, requestMap, page, pagesize, cacheFlag);
 		
 		String fileName = reportId + "-" + start + ".csv";
@@ -234,20 +236,7 @@ public class _Reporter extends BaseActionSupport {
     	/* 允许跨域访问。 经测试JQuery.ajax请求可以跨域调用成功，tssJS.ajax不行 */
     	response.addHeader("Access-Control-Allow-Origin", "*"); 
     	
-    	Long reportId = null;
-    	try { // 先假定是报表ID（Long型）
-    		reportId = reportService.getReportId("id", Long.valueOf(report), Report.TYPE1);
-    	} 
-    	catch(Exception e) { }
-    	
-    	// 按名字再查一遍
-    	if(reportId == null) {
-    		report = report.replaceFirst("rpn-", ""); // 如果报表的名称为数字，则写法如：rpn-122
-    		reportId = reportService.getReportId("name", report, Report.TYPE1);
-    	}
-    	if(reportId == null) {
-    		throw new BusinessException( EX.parse(EX.DM_18, report) );
-    	}
+    	Long reportId = reportService.getReportId(report);
     	
     	String jsonpCallback = request.getParameter("jsonpCallback"); // jsonp是用GET请求
     	Map<String, String> requestMap = DMUtil.getRequestMap(request, jsonpCallback != null);

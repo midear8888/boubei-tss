@@ -11,7 +11,6 @@
 package com.boubei.tss.dm.report.log;
 
 import java.lang.reflect.Method;
-import java.util.Date;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -21,7 +20,6 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 
 import com.boubei.tss.dm.DMUtil;
-import com.boubei.tss.framework.sso.Environment;
 
 @Component("accessLogInterceptor")
 public class AccessLogInterceptor implements MethodInterceptor {
@@ -59,19 +57,13 @@ public class AccessLogInterceptor implements MethodInterceptor {
         // 执行方法
         long start = System.currentTimeMillis();
         Object returnVal = invocation.proceed();
-        long runningTime = System.currentTimeMillis() - start;
 
         // 方法的访问日志记录成败不影响方法的正常访问，所以对记录日志过程中各种可能异常进行try catch
         try {
-            AccessLog log = new AccessLog();
+            AccessLog log = new AccessLog( start, params );
             log.setClassName(targetMethod.getDeclaringClass().getName());
     		log.setMethodName(methodName);
     		log.setMethodCnName(annotation.methodName());
-            log.setAccessTime(new Date(start));
-            log.setRunningTime(runningTime);
-            log.setParams(params);
-            log.setUserId(Environment.getUserId());
-            log.setIp(Environment.getClientIp());
 
             AccessLogRecorder.getInstanse().output(log);
         } 

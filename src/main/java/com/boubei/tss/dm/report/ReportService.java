@@ -28,6 +28,7 @@ public interface ReportService {
 	Report getReport(Long id);
     Report getReport(Long id, boolean auth);
     
+    Long getReportId(String idOrName);
     Long getReportId(String fname, Object idOrName, int type);
     
     @PermissionTag(

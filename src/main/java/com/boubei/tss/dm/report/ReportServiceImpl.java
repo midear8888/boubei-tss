@@ -24,7 +24,6 @@ import com.boubei.tss.framework.SecurityUtil;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.modules.param.ParamConstants;
-import com.boubei.tss.util.EasyUtils;
 
 @Service("ReportService")
 public class ReportServiceImpl implements ReportService {
@@ -58,13 +57,28 @@ public class ReportServiceImpl implements ReportService {
 		return this.getReport(id, auth);
     }
     
+    public Long getReportId(String idOrName) {
+    	Long reportId = null;
+    	try { // 先假定是报表ID（Long型）
+    		reportId = getReportId("id", Long.valueOf(idOrName), Report.TYPE1);
+    	} 
+    	catch(Exception e) { }
+    	
+    	// 按名字再查一遍
+    	if(reportId == null) {
+    		reportId = getReportId("name", idOrName, Report.TYPE1);
+    	}
+    	if(reportId == null) {
+    		throw new BusinessException( EX.parse(EX.DM_18, idOrName) );
+    	}
+    	
+    	return reportId;
+	}
+    
 	public Long getReportId(String fname, Object idOrName, int type) {
 		String hql = "select o.id from Report o where o." +fname+ " = ? and type = ? order by o.decode";
 		List<?> list = reportDao.getEntities(hql, idOrName, type); 
-		if(EasyUtils.isNullOrEmpty(list)) {
-			return null;
-		}
-		return (Long) list.get(0);
+		return list.isEmpty() ? null : (Long) list.get(0);
 	}
 	
 	// 加userId以便于缓存

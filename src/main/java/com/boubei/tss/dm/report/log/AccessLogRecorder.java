@@ -12,24 +12,21 @@ package com.boubei.tss.dm.report.log;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.boubei.tss.cache.extension.workqueue.AbstractTask;
+import com.boubei.tss.cache.extension.workqueue.OutputRecordsManager;
 import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.dml.SqlConfig;
 import com.boubei.tss.dm.report.Report;
 import com.boubei.tss.dm.report.ReportService;
-import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.modules.param.ParamConstants;
-import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.util.EasyUtils;
-import com.boubei.tss.cache.extension.workqueue.AbstractTask;
-import com.boubei.tss.cache.extension.workqueue.OutputRecordsManager;
 
 public class AccessLogRecorder extends OutputRecordsManager {
 
@@ -99,19 +96,11 @@ public class AccessLogRecorder extends OutputRecordsManager {
 		
 		// 方法的访问日志记录成败不影响方法的正常访问，所以对记录日志过程中各种可能异常进行try catch
         try {
-            AccessLog log = new AccessLog();
+            AccessLog log = new AccessLog(start, params);
             log.setClassName(cnName);
             log.setMethodCnName( name );
     		log.setMethodName( methodName );
-            log.setAccessTime( new Date(start) );
-            log.setRunningTime( System.currentTimeMillis() - start );
-            log.setParams(params);
             
-            // 记录访问人，没有则记为匿名访问
-            Long userId = (Long) EasyUtils.checkNull(Environment.getUserId(), UMConstants.ANONYMOUS_USER_ID);
-			log.setUserId(userId);
-			log.setIp( Environment.getClientIp() );
-
             AccessLogRecorder.getInstanse().output(log);
         } 
         catch(Exception e) { }
