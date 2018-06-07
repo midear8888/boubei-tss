@@ -147,6 +147,7 @@ public class _Reporter extends BaseActionSupport {
     
     /**
      * 可直接导出发送电子邮件：http://localhost:9000/tss/data/export/42/1/10000?paramX=XXX&email=boubei@163.com
+     * 支持用report name
      */
     @RequestMapping("/export/{report}/{page}/{pagesize}")
     public void exportAsCSV(HttpServletRequest request, HttpServletResponse response, 

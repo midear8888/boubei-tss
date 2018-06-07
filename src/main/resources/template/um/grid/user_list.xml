@@ -13,6 +13,7 @@
         -->
         <column caption="出生年月" name="birthday" mode="date" width="80px"/>
 		<column caption="所属组织" name="groupName" width="100px"/>
+		<column caption="组域" name="domain" width="100px"/>
 		<column caption="所属组织ID" name="groupId" display="none"/>
 		<column caption="应用系统ID" name="applicationId" display="none"/>
 		<column caption="对应系统用户ID" name="fromUserId" display="none"/>

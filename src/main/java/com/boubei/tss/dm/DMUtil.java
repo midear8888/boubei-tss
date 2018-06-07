@@ -184,7 +184,7 @@ public class DMUtil {
   		
   		if(_Field.TYPE_NUMBER.equals(type) || _Field.TYPE_INT.equals(type)) {
   			try {
-  				if(value.indexOf(".") > 0) {
+  				if(value.indexOf(".") >= 0) {
   	  				return EasyUtils.obj2Double(value);
   	  			}
   	  			return EasyUtils.obj2Long(value);

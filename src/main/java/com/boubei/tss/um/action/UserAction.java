@@ -18,7 +18,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -33,6 +32,7 @@ import com.boubei.tss.framework.Config;
 import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.persistence.pagequery.PageInfo;
 import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.framework.sso.LoginCustomizerFactory;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.web.display.grid.DefaultGridNode;
 import com.boubei.tss.framework.web.display.grid.GridDataEncoder;
@@ -48,7 +48,6 @@ import com.boubei.tss.um.entity.Group;
 import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.um.service.IUserService;
-import com.boubei.tss.um.sso.FetchPermissionAfterLogin;
 import com.boubei.tss.um.sso.online.DBOnlineUser;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.XMLDocUtil;
@@ -315,9 +314,7 @@ public class UserAction extends BaseActionSupport {
 	        CacheHelper.flushCache(CacheLife.SHORT.toString(), "ByUserId(" +userId+ ")");
             
             // 刷新session里的缓存
-            FetchPermissionAfterLogin obj = new FetchPermissionAfterLogin();
-            HttpSession session = obj.loadRights(userId); 
-            obj.loadGroups(userId, session);
+	        LoginCustomizerFactory.instance().getCustomizer().execute();
 		}
 		
 		List<Long> roleIds = loginService.getRoleIdsByUserId(userId);

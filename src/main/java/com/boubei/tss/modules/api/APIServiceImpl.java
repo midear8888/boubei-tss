@@ -3,19 +3,17 @@ package com.boubei.tss.modules.api;
 import java.util.Date;
 import java.util.List;
 
-import javax.servlet.http.HttpSession;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.boubei.tss.framework.sso.Anonymous;
 import com.boubei.tss.framework.sso.IdentityCard;
+import com.boubei.tss.framework.sso.LoginCustomizerFactory;
 import com.boubei.tss.framework.sso.TokenUtil;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.um.dao.IUserDao;
 import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.helper.dto.OperatorDTO;
-import com.boubei.tss.um.sso.FetchPermissionAfterLogin;
 import com.boubei.tss.util.EasyUtils;
 
 @Service("APIService")
@@ -56,9 +54,7 @@ public class APIServiceImpl implements APIService {
 		Context.initIdentityInfo(card); 
 		
 		// saveUserRolesAfterLogin 及 设置session信息，获取用户域、组织、角色等信息
-		FetchPermissionAfterLogin obj = new FetchPermissionAfterLogin();
-        HttpSession session = obj.loadRights(userId); 
-        obj.loadGroups(userId, session);
+        LoginCustomizerFactory.instance().getCustomizer().execute();
 		
 		return token;
     }

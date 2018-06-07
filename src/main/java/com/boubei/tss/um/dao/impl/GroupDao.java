@@ -220,7 +220,7 @@ public class GroupDao extends TreeSupportDao<Group> implements IGroupDao {
 	public List<User> getUsersByGroupIds(Collection<Long> groupIds){
         if( EasyUtils.isNullOrEmpty(groupIds) ) return new ArrayList<User>();
         
-        String hql = "select distinct u, g.id as groupId, g.name as groupName " +
+        String hql = "select distinct u, g.id as groupId, g.name as groupName,g.domain " +
         		" from User u, GroupUser gu, Group g " + 
         		" where u.id = gu.userId and gu.groupId = g.id and g.id in (:groupIds) ";
 
@@ -229,7 +229,7 @@ public class GroupDao extends TreeSupportDao<Group> implements IGroupDao {
 	}
 
 	public List<User> getUsersByGroupId(Long groupId) {
-		String hql = "select distinct u, g.id as groupId, g.name as groupName" +
+		String hql = "select distinct u, g.id as groupId, g.name as groupName,g.domain" +
 				" from User u, GroupUser gu, Group g " +
                 " where u.id = gu.userId and gu.groupId = g.id and g.id = ? ";
 		return fillGroupInfo2User(getEntities(hql, groupId));
@@ -248,7 +248,8 @@ public class GroupDao extends TreeSupportDao<Group> implements IGroupDao {
             Object[] objs = (Object[]) temp;
             User user = (User) objs[0];
             user.setGroupId( EasyUtils.obj2Long(objs[1]) );
-            user.setGroupName((String) objs[2]);
+            user.setGroupName( (String) objs[2] );
+            user.setDomain( (String) objs[3] );
             result.add(user);
         }    
         return result;
@@ -276,7 +277,7 @@ public class GroupDao extends TreeSupportDao<Group> implements IGroupDao {
     //******************************************* 按组或按查询条件查询用户 *******************************************
 
     public PageInfo getUsersByGroup(Long groupId, Integer pageNum, String...orderBy) {
-        String hql = "select distinct u, g.id as groupId, g.name as groupName "
+        String hql = "select distinct u, g.id as groupId, g.name as groupName, g.domain "
         		+ " from User u, GroupUser gu, Group g" 
         		+ " where u.id = gu.userId and gu.groupId = g.id and g.id = :groupId ";
         UMQueryCondition condition = new UMQueryCondition();
@@ -298,7 +299,7 @@ public class GroupDao extends TreeSupportDao<Group> implements IGroupDao {
         	 condition.setGroupIds(groupIds);
         }
         
-        String hql = "select distinct u, g.id as groupId, g.name as groupName "
+        String hql = "select distinct u, g.id as groupId, g.name as groupName, g.domain "
             + " from User u, GroupUser gu, Group g " 
             + " where u.id = gu.userId and gu.groupId = g.id and g.id in (:groupIds) " 
             + condition.toConditionString();

@@ -90,8 +90,9 @@ public class User extends OperateInfo implements ITreeNode, IGridNode, IXForm {
     private Date lastPwdChangeTime; // 最后修改密码时间
     
     // 以下值展示的时候用
-    @Transient private Long   groupId;         // 用户所在组id
-    @Transient private String groupName;       // 用户所在组名称
+    @Transient private Long   groupId;      // 用户所在组id
+    @Transient private String groupName;    // 用户所在组名称
+    @Transient private String domain;       // 用户所在域
 
     public Long getId() {
         return id;
@@ -381,5 +382,13 @@ public class User extends OperateInfo implements ITreeNode, IGridNode, IXForm {
 
 	public void setBelongUserId(Long belongUserId) {
 		this.belongUserId = belongUserId;
+	}
+
+	public String getDomain() {
+		return domain;
+	}
+
+	public void setDomain(String domain) {
+		this.domain = domain;
 	}
 }

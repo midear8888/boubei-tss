@@ -44,7 +44,7 @@ public class EasyUtils {
     public static final Double obj2Double(Object value) {
         Double rlt = 0D;
         try{
-            rlt = Double.valueOf(value == null ? "0" : value.toString().trim());
+            rlt = Double.valueOf(value == null ? "0" : value.toString().trim()); // value = .5 
         } catch (Exception e) {
             throw new RuntimeException("error double value: " + value + ", " + e.getMessage());
         }
