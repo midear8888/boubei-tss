@@ -138,6 +138,7 @@ public class Servlet4Upload extends HttpServlet {
 		String afterUploadClass = request.getParameter("afterUploadClass");
 		AfterUpload afterUpload = (AfterUpload) BeanUtil.newInstanceByName(afterUploadClass);
 		
-		return afterUpload.processUploadFile(request, newFilePath, orignFileName);
+		String jsCallback = EasyUtils.obj2String( request.getParameter("callback") );
+		return afterUpload.processUploadFile(request, newFilePath, orignFileName) + jsCallback;
 	}
 }

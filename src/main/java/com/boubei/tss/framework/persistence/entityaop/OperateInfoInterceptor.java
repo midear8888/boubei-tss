@@ -47,28 +47,31 @@ public class OperateInfoInterceptor extends MatchByDaoMethodNameInterceptor {
             if (args[i] instanceof IOperatable 
             		&& (manipulateKind == SAVE || manipulateKind == UPDATE)) {
                
-                IOperatable operateInfo = (IOperatable) args[i];
-                Serializable pk = ((IEntity)operateInfo).getPK();
+                IOperatable opObj = (IOperatable) args[i];
+                Serializable pk = ((IEntity)opObj).getPK();
                 
 				if( pk == null ) { // ID为null，说明是新建
-                    operateInfo.setCreateTime(new Date());
-                    operateInfo.setCreatorId(Environment.getUserId());
-                    operateInfo.setCreatorName(Environment.getUserName());   
-                    operateInfo.setDomain(Environment.getDomain());
+                    opObj.setCreateTime(new Date());
+                    opObj.setCreatorId(Environment.getUserId());
+                    opObj.setCreatorName(Environment.getUserName());  
+                    
+                    // 定时器写数据时，域信息已经指定
+                    String domain = (String) EasyUtils.checkNull( opObj.getDomain(), Environment.getDomain() );
+                    opObj.setDomain(domain);
                 } 
                 else {
-                    operateInfo.setUpdateTime(new Date());
-                    operateInfo.setUpdatorId(Environment.getUserId());
-                    operateInfo.setUpdatorName(Environment.getUserName());  
+                    opObj.setUpdateTime(new Date());
+                    opObj.setUpdatorId(Environment.getUserId());
+                    opObj.setUpdatorName(Environment.getUserName());  
                     
                     /* 修改后，createTime的时分秒没了（日期传递到前台时截去了时分秒，保存后就没有了），
                      * update时不要前台传入的createTime，而是从DB查出来复制回去
                      */
                     @SuppressWarnings("unchecked")
                     IDao<IEntity> dao = (IDao<IEntity>) target;
-                    IOperatable old = (IOperatable) dao.getEntity( operateInfo.getClass(), pk);
-                    old = (IOperatable) EasyUtils.checkNull(old, operateInfo); // 可能修改时记录已被其它人[删除]
-                    operateInfo.setCreateTime(old.getCreateTime());
+                    IOperatable old = (IOperatable) dao.getEntity( opObj.getClass(), pk);
+                    old = (IOperatable) EasyUtils.checkNull(old, opObj); // 可能修改时记录已被其它人[删除]
+                    opObj.setCreateTime(old.getCreateTime());
                 }
             }
         }

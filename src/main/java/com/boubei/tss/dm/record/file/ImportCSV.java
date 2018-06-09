@@ -126,8 +126,7 @@ public class ImportCSV implements AfterUpload {
 		
 		// 执行导入到数据库
 		headers = rows[0].split(",");
-		String jsCallback = EasyUtils.obj2String( request.getParameter("callback") );
-		return import2db(_db, request, rows, headers, errLineIndexs, emptyLineIndexs, fileName) + jsCallback;
+		return import2db(_db, request, rows, headers, errLineIndexs, emptyLineIndexs, fileName);
 	}
 
 	/**

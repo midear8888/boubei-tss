@@ -34,6 +34,8 @@ public interface IOperatable {
 	
 	void setDomain(String domain);
 	
+	String getDomain();
+	
 }
 
 	
