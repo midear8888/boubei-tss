@@ -21,6 +21,9 @@ var Field = function(info) {
             if( dv.indexOf("#") == 0 ) {
                 var _dvs = (dv+"||").split("||");  // #_day1||today-1  或 #_day1
                 dv = $.Cookie.getValue(_dvs[0].substring(1)) || _dvs[1]; // 通用查询条件写在cookie里
+            } 
+            else if( dv == 'userName' || dv == 'userCode' ) {
+            	dv = eval(dv);
             }
             this.defaultValue = (dv == "undefined" ? "" : dv);
         }

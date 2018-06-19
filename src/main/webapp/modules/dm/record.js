@@ -444,7 +444,7 @@ function configDefine() {
 
 	var fieldNodes = [];
 	_define.each(function(index, item){
-		var paramNode = {"id": index+1, "name": item.label, "value": JSON.stringify(item)};
+		var paramNode = {"id": "f"+(index+1), "name": item.label, "value": JSON.stringify(item)};
 		fieldNodes.push(paramNode); 
 	});
 

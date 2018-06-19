@@ -41,11 +41,6 @@ $(function() {
 
 	loadInitData();
 
-	getParam('sysTitle', function(title) {
-		if( title && title.indexOf("它山石") < 0 ) { // 基于TSS扩展的系统，BtrBI等
-        	$.createScriptJS("customize.js");
-        }
-    });	
     if(document.body.offsetHeight < 560) {
     	$("#ws").css("overflow-y", "auto");
     }

@@ -46,6 +46,7 @@ public class MonitorJob extends AbstractJob {
 	
 	/**
 	 * 每30分钟，轮询最近30分钟 Monitor-Err 日志， 有的话发邮件出来
+	 * checking(DMConstants.LOCAL_CONN_POOL, "TSS-BI", "定时任务", "and t.operationCode like '%【失败!!!】%'");
 	 */
 	public void checking(String ds, String sysName, String errName, String fitler) {
 		String sql = "select operationCode 类型, content 内容, operateTime 监测时间 " +
