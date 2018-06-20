@@ -216,7 +216,8 @@ public class _Recorder extends BaseActionSupport {
         				
         				String name = value.substring(0, splitIndex);
         				String id = value.substring(splitIndex + 1);
-        				urls += "<a href='/tss/xdata/attach/download/" +id+ "' target='_blank'>" +name+ "</a>&nbsp&nbsp";
+        				String downloadUrl = "/tss/xdata/attach/download/" + id;
+        				urls += "<a href='" +downloadUrl+ "' target='_blank'>" +name+ "</a>&nbsp&nbsp";
     				}
 
     				item.put(field, urls);

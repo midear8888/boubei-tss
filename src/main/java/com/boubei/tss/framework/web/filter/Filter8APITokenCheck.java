@@ -35,6 +35,10 @@ import com.boubei.tss.um.permission.IResource;
  * 
  * http://api?uName=JK&sign=md5(params+secret+timestamp)&timestamp=&参数1=value1&参数2=value2.......
  * 
+ * 登录分：
+ * 1、有会话Session: 账号、买吗登录 --> Token，浏览器
+ * 2、无会话远程Call: uName / sign(secret) 
+ * 
  */
 //@WebFilter(filterName = "Filter8APITokenCheck", urlPatterns = {"/api/*"})
 public class Filter8APITokenCheck implements Filter {

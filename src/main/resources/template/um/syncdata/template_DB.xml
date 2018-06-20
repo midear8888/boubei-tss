@@ -32,12 +32,12 @@
    <userSql>
      select distinct u.id, (select min(dept_id) from  t_dept where dept_name = dept) as groupId, 
            u.code loginName, u.code as password, u.name userName, null email, null sex, null birthday, u.code employeeNo, null authMethod, 0 disabled
-     from staff_mes u
+     from staff_info u
      where 1 >= :groupId
    </userSql>
 </params>
 
 同步员工基础信息表
 <groupSql>select distinct 2 id, 0 parentId, 'CX' name, null description, 0 disabled from dual where 2 = :groupId</groupSql>  
-<userSql>select distinct u.id, 2 groupId, u.phone loginName, u.code as password, u.name userName, null email, null sex, u.phone telephone, u.code employeeNo, null authMethod, 0 disabled from staff_mes u where 2 = :groupId</userSql> 
+<userSql>select distinct u.id, 2 groupId, u.phone loginName, u.code as password, u.name userName, null email, null sex, u.phone telephone, u.code employeeNo, null authMethod, 0 disabled from staff_info u where 2 = :groupId</userSql> 
 -->

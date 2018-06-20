@@ -99,6 +99,10 @@ public class Servlet4Upload extends HttpServlet {
 		String defaultUploadPath = request.getServletContext().getRealPath("");
 		
 		String uploadPath = ParamConfig.getAttribute(PX.UPLOAD_PATH, defaultUploadPath);
+		if(! ( new File(uploadPath).exists() )) {
+			uploadPath = defaultUploadPath;
+		}
+		
         String savePath = uploadPath + File.separator + "uploadFile";
         FileHelper.createDir(savePath);
  

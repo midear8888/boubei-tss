@@ -10,6 +10,7 @@
 
 package com.boubei.tss.dm;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -120,12 +121,20 @@ public class DMUtil {
     }
 	
 	public static String getExportPath() {
-		String exportPath = FileHelper.ioTmpDir();
+		return getConfigedPath(PX.ATTACH_PATH);
+	}
+	
+	public static String getConfigedPath(String pathParam) {
+		String defaultPath = FileHelper.ioTmpDir();
 		try {
-			exportPath = ParamManager.getValue(PX.ATTACH_PATH);
+			String configedPath = ParamManager.getValue(pathParam);
+			if( new File(configedPath).exists() ) {
+				defaultPath = configedPath;
+			}
 		} catch(Exception e) {
 		}
-		return exportPath;
+		
+		return defaultPath;
 	}
 	
 	// 判断是否为区间查询（从 。。。 到 。。。），value格式：[2017-06-22,2027-08-01]
