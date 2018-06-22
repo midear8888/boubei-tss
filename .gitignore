@@ -11,6 +11,8 @@ build
 *.db
 /webapp/src/main/webapp/upload
 /webapp/src/main/webapp/uploadFile
+src/main/webapp/upload
+src/main/webapp/uploadFile
 
 .DS_Store
 .sh

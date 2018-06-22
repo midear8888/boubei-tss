@@ -36,7 +36,7 @@ import com.boubei.tss.util.FileHelper;
 
 /**
  * var url = URL_UPLOAD_FILE + "?afterUploadClass=com.boubei.tss.dm.record.file.ImportCSV";
-   url += "&recordId=" + recordId;
+   url += "&record=" + rcTable;
    url += "&uniqueCodes=oto,phone";
    url += "&together=false";
    url += "&ignoreExist=true";
@@ -60,7 +60,10 @@ public class ImportCSV implements AfterUpload {
 	public String processUploadFile(HttpServletRequest request,
 			String filepath, String oldfileName) throws Exception {
 
-		Long recordId  = Long.parseLong(request.getParameter("recordId"));
+		String _record = request.getParameter("recordId");
+		_record = (String) EasyUtils.checkNull( _record, request.getParameter("record") );
+		
+		Long recordId = recordService.getRecordID(_record, false);
 		Record record = recordService.getRecord(recordId);
 		_Database _db = _Database.getDB(record);
 		

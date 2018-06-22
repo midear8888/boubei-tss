@@ -579,10 +579,11 @@ public class _Recorder extends BaseActionSupport {
      * @param recordId
      * @param csv
      * @return
+     * @throws Exception 
      */
     @RequestMapping(value = "/cud/{record}", method = RequestMethod.POST)
     @ResponseBody
-    public Object cudBatch(HttpServletRequest request, @PathVariable("record") Object record) {
+    public Object cudBatch(HttpServletRequest request, @PathVariable("record") Object record) throws Exception {
     	
     	Long recordId = recordService.getRecordID(record, false);
     	Map<String, String> requestMap = prepareParams(request, recordId);
@@ -620,6 +621,8 @@ public class _Recorder extends BaseActionSupport {
 			}
 		}
     	_db.insertBatch(insertList); // 所有新增是一个事务的，但删除和修改不在一个事务内
+    	
+    	exeAfterOperation(requestMap, _db, null);
     	
     	Map<String, Object> rtMap = new HashMap<String, Object>();
     	rtMap.put("created", insertList.size());
@@ -702,16 +705,15 @@ public class _Recorder extends BaseActionSupport {
 	
 	@RequestMapping(value = "/attach/{id}", method = RequestMethod.DELETE)
     public void deleteAttach(HttpServletRequest request, HttpServletResponse response, @PathVariable("id") Long id) {
-
-		preAPICall(request);
-		
 		RecordAttach attach = recordService.getAttach(id);
 		if(attach == null) {
 			throw new BusinessException(EX.DM_06);
 		}
+		Long recordId = attach.getRecordId();
+		
+		prepareParams(request, recordId); // 远程访问预登录
 		
 		// 检查用户对当前附件所属记录是否有编辑权限
-		Long recordId = attach.getRecordId();
 		checkRowEditable(recordId, attach.getItemId());
 		
 		recordService.deleteAttach(id);
@@ -728,15 +730,15 @@ public class _Recorder extends BaseActionSupport {
 	@RequestMapping("/attach/download/{id}")
 	public void downloadAttach(HttpServletRequest request, HttpServletResponse response, @PathVariable("id") Long id) throws IOException {
 		
-		preAPICall(request);
-		
 		RecordAttach attach = recordService.getAttach(id);
 		if(attach == null) {
 			throw new BusinessException(EX.DM_06);
 		}
+		Long recordId = attach.getRecordId();
+		
+		prepareParams(request, recordId); // 远程访问预登录
 		
 		// 检查用户对当前附件所属记录是否有查看权限
-		Long recordId = attach.getRecordId();
 		if( !checkRowVisible(recordId, attach.getItemId()) ) {
 			throw new BusinessException(EX.DM_07);
 		} 
@@ -747,15 +749,6 @@ public class _Recorder extends BaseActionSupport {
 		Record record = recordService.getRecord(recordId);
 		AccessLogRecorder.outputAccessLog(record.getName(), recordId.toString(), "下载附件_"+id, 
 				new HashMap<String, String>(), System.currentTimeMillis());
-	}
-
-	// 注：远程访问时需校验Token需要用到recordId；本地访问可不传
-	protected void preAPICall(HttpServletRequest request) {
-		String _recordId = request.getParameter("recordId");
-		if( !EasyUtils.isNullOrEmpty(_recordId) ) {
-			Long recordId = recordService.getRecordID( _recordId, false );
-			prepareParams(request, recordId); // 远程访问预登录
-		}
 	}
 	
 	/************************************* check permissions：安全级别 >= 6 才启用 **************************************/

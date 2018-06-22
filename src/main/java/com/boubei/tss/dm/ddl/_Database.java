@@ -555,9 +555,11 @@ public abstract class _Database {
 	}
 
 	public Map<String, Object> get(Long id) {
+		if(id == null) return new HashMap<String, Object>();
+		
 		String fields = EasyUtils.list2Str( getVisiableFields(false) );
 
-		String sql = "select " + fields + ",domain,creator,version from " + this.table + " where id=?";
+		String sql = "select " + fields + ",domain,creator,version,createtime from " + this.table + " where id=?";
 		List<Map<String, Object>> list = SQLExcutor.query(this.datasource, sql, id);
 		if( EasyUtils.isNullOrEmpty(list) ) {
 			return null;
