@@ -56,7 +56,6 @@ public class JobAction {
 	@RequestMapping(value = "/{key}", method = RequestMethod.POST)
 	@ResponseBody
 	public Object exucteJob(@PathVariable String key) {
-		
 		List<?> list = Global.getCommonService().getList("from JobDef where ? in (id, code) and disabled <> 1 ", key);
 		if( list.isEmpty() ) {
 			return EX.EXCEPTION;

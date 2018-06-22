@@ -180,7 +180,7 @@
         var item12 = {
             label:"辅助功能",
             callback:null,
-            visible:function() { return isMainGroup() && editable(true); }
+            visible:function() { return isMainGroup() && editable(true) || getTreeNodeId() == -8; }
         }
         var subitem12_1 = {
             label:"初始化密码...",
@@ -189,7 +189,8 @@
         }
         var subitem12_2 = {
             label:"用户同步",
-            callback:function() { syncGroup(); }
+            callback:function() { syncGroup(); },
+            visible:function() { return !!getTreeAttribute("fromApp"); }
         }
         var subitem12_4 = {
             label:"综合查询",

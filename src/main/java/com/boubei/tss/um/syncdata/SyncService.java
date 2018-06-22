@@ -193,9 +193,11 @@ public class SyncService implements ISyncService, Progressable {
             List<?> temp = groupDao.getEntities("from User t where t.loginName=?", userDto.getLoginName());
             if( !EasyUtils.isNullOrEmpty(temp) ) {
             	User existUser = (User) temp.get(0);
-            	if( userDto.getId().equals(existUser.getFromUserId()) ) { 
+            	String fromUserId = existUser.getFromUserId();
+				if( fromUserId == null || fromUserId.equals( userDto.getId() ) ) { 
 					existUser.setUserName(userDto.getUserName());
 					existUser.setDisabled(userDto.getDisabled());
+					existUser.setFromUserId(userDto.getId());
 					
 					String email = (String) EasyUtils.checkNull(existUser.getEmail(), userDto.getEmail());
 					existUser.setEmail(email);
