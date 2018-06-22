@@ -11,6 +11,7 @@
 package com.boubei.tss.dm.report.log;
 
 import java.lang.reflect.Method;
+import java.util.Date;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -20,6 +21,7 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 
 import com.boubei.tss.dm.DMUtil;
+import com.boubei.tss.util.DateUtil;
 
 @Component("accessLogInterceptor")
 public class AccessLogInterceptor implements MethodInterceptor {
@@ -44,7 +46,10 @@ public class AccessLogInterceptor implements MethodInterceptor {
         	}
         	
         	if(arg instanceof String || arg instanceof Number) {
-        		 buffer.append(arg);
+        		buffer.append(arg);
+        	}
+        	else if(arg instanceof Date) {
+       		 	buffer.append( DateUtil.formatCare2Second((Date) arg) );
         	}
         	else {
         		String argString = ToStringBuilder.reflectionToString(arg, ToStringStyle.SHORT_PREFIX_STYLE);

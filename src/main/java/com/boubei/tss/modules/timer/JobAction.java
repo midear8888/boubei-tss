@@ -53,14 +53,20 @@ function setJobStatus(status) {
 @RequestMapping("/auth/job")
 public class JobAction {
 	
-	@RequestMapping(value = "/{id}", method = RequestMethod.POST)
+	@RequestMapping(value = "/{key}", method = RequestMethod.POST)
 	@ResponseBody
-	public Object exucteJob(@PathVariable Long id) {
-		JobDef jobDef = (JobDef) Global.getCommonService().getEntity(JobDef.class, id);
+	public Object exucteJob(@PathVariable String key) {
+		
+		List<?> list = Global.getCommonService().getList("from JobDef where ? in (id, code) and disabled <> 1 ", key);
+		if( list.isEmpty() ) {
+			return EX.EXCEPTION;
+		}
+		
+		JobDef jobDef = (JobDef) list.get(0);
 		String jobClass = jobDef.getJobClassName();
 		
 		Object job = BeanUtil.newInstanceByName(jobClass);
-		((AbstractJob)job).excuteJob( jobDef.getCustomizeInfo(), id );
+		((AbstractJob)job).excuteJob( jobDef.getCustomizeInfo(), jobDef.getId() );
 		
 		return EX.DEFAULT_SUCCESS_MSG;
 	}

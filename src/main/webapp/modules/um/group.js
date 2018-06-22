@@ -140,7 +140,7 @@
             label:"编辑",
             callback:editGroupInfo,
             icon:ICON + "edit.gif",
-            visible:function(){return editable(true);}
+            visible:function() { return editable(true) || getTreeNodeId() == -8;}
         }
         var item4 = {
             label:"删除",
