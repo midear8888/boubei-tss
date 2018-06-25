@@ -40,7 +40,7 @@
 同步员工基础信息表（自动同步各个域下员工到对应的域组下）: JobConfig : -8,STAFF，【$企业域】上触发手动同步
 <?xml version="1.0" encoding="UTF-8"?>
 <params>
-	<url>jdbc:mysql://localhost:3306/bd</url>
+	<url>jdbc:mysql://localhost:3306/tms</url>
 	<driver>com.mysql.jdbc.Driver</driver>
 	<user>root</user>
 	<password>boubei@com</password>
@@ -49,11 +49,11 @@ select distinct id, parentId, name, null description, 0 disabled  from um_group 
 	</groupSql>
 	<userSql>
 select distinct u.id, 
-  (select id from um_group where domain = u.domain) groupId, 
-  u.code loginName, u.code as password, u.name userName, null email, null sex, u.phone telephone, u.code employeeNo, null authMethod, 
+   (select id from um_group where domain = u.domain and levelNo = 4) groupId,  
+  u.phone loginName, u.phone as password, u.name userName, email, sex, u.phone telephone, u.code employeeNo, null authMethod, 
   case when outdate is not null then 1 else 0 end  disabled 
 from staff_info u 
-where domain is not null and 999 > :groupId
+where u.domain is not null and u.phone is not null and 999 > :groupId
 	</userSql>
 </params>
 -->

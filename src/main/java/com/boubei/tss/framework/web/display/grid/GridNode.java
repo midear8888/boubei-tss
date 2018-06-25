@@ -90,7 +90,8 @@ public class GridNode {
 		String mode = column.getMode();
 		
         Object value = values[index];
-		if (GridColumn.GRID_COLUMN_MODE_DATE.equals(mode) && value instanceof Date 
+		if ( GridColumn.GRID_COLUMN_MODE_DATE.equals(mode)
+				&& value instanceof Date 
 				&& pattern != null && !"null".equals(pattern)) {
 			
 			return DateUtil.format((Date) value, pattern);

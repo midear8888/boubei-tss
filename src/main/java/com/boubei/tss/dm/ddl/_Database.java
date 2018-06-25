@@ -868,8 +868,9 @@ public abstract class _Database {
             String fieldRole2 = fieldRole2s.get(index);
             String fieldType  = fieldTypes.get(index);
             String fieldPattern = fieldPatterns.get(index);
-            if( _Field.TYPE_DATE.equalsIgnoreCase(fieldType) ) { // GridNode里转换异常（date类型要求值也为date）
-            	fieldType = _Field.TYPE_STRING;  
+            
+            if( _Field.TYPE_DATETIME.equalsIgnoreCase(fieldType) ) { // GridNode里转换异常（date类型要求值也为date）
+            	fieldType = _Field.TYPE_DATE;  
             } 
             if( _Field.TYPE_FILE.equalsIgnoreCase(fieldType) ) {
             	hasFileField = true;

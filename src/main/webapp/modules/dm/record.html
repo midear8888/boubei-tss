@@ -168,6 +168,11 @@ textarea.fullscreenable {  width:95%; height:300px; margin-left: 2%; padding-lef
 				<input name="_isparam" id="_isparam" type="checkbox" value="true">
 			</td>
 		</tr>
+		<tr class="nohidden" id="regpattern">
+			<td>校验正则：</td> <td> <input type="text" id="_checkReg"/> </td>
+			<td>出错提示：</td> <td> <input type="text" id="_errorMsg"/> </td>
+			<td>格式化：</td> <td> <input type="text" id="_pattern" placeholder="例: ##,###.00"/> </td>
+		</tr>
 		<tr class="nohidden">
 			<td>谁能编辑：</td> <td> <select id="_role1" style="width: 140px;"></select> </td>
 			<td>谁能查看：</td> <td> <select id="_role2" style="width: 140px;"></select> </td>
@@ -196,11 +201,6 @@ textarea.fullscreenable {  width:95%; height:300px; margin-left: 2%; padding-lef
 			<td> 
 				<input type="range" id="_height" min="18" max="180" value="18" step="1"/><span id="_height_">18</span>px
 			</td>
-		</tr>
-		<tr class="optionCfg" id="regpattern">
-			<td>校验正则：</td> <td> <input type="text" id="_checkReg"/> </td>
-			<td>出错提示：</td> <td> <input type="text" id="_errorMsg"/> </td>
-			<td>格式化：</td> <td> <input type="text" id="_pattern" placeholder="例: ##,###.00"/> </td>
 		</tr>
 		<tr class="optionCfg">
 			<td>选项列表：</td> 

@@ -124,17 +124,17 @@ function query() {
 
 var FIELDS_2 = [[],
     [
-        { field: '服务名称', title: '服务名称', width: 100 },
+        { field: '服务名称', title: '服务名称', width: 100 , sortable: true},
         { field: '参数', title: '参数', width: 350 },
-        { field: '访问时间', title: '访问时间', width: 100 },
+        { field: '访问时间', title: '访问时间', width: 100, sortable: true},
         { field: '运行时长', title: '运行时长', width: 60, align: "right"},
-        { field: '访问人', title: '访问人', width: 60 }
+        { field: '访问人', title: '访问人', width: 60, sortable: true }
     ],
     [
         { field: '操作对象', title: '操作对象', width: 80 },
-        { field: '操作人', title: '操作人', width: 70 },
+        { field: '操作人', title: '操作人', width: 70, sortable: true },
         { field: '操作内容', title: '操作内容', width: 350},
-        { field: '操作时间', title: '操作时间', width: 100 },
+        { field: '操作时间', title: '操作时间', width: 100, sortable: true},
         { field: '浏览器', title: '浏览器', width: 180 },
         { field: 'ip', title: 'ip', width: 90 }
     ],
