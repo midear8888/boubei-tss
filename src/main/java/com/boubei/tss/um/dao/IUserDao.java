@@ -82,5 +82,9 @@ public interface IUserDao extends IDao<User>{
      */
     User getUserByAccount(String account, boolean vaildate);
  
-
+    /**
+     * 检查新增或修改用户时，用户账号、Email、phone是否有重复。
+     * @param user
+     */
+    void checkUserAccout(User user);
 }

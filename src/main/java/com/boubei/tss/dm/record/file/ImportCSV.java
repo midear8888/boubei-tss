@@ -69,7 +69,7 @@ public class ImportCSV implements AfterUpload {
 		
 		String charSet = (String) EasyUtils.checkNull(request.getParameter("charSet"), DataExport.CSV_GBK); // 默认GBK
 
-		// 解析附件数据
+		// 解析附件数据  TODO 如果上传的是一个 XLS
 		File targetFile = new File(filepath);
 		String dataStr = FileHelper.readFile(targetFile, charSet); 
 		dataStr = dataStr.replaceAll(";", ","); // mac os 下excel另存为csv是用分号;分隔的

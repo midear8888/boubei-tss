@@ -22,6 +22,7 @@ import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.um.dao.IUserDao;
 import com.boubei.tss.um.entity.GroupUser;
 import com.boubei.tss.um.entity.User;
+import com.boubei.tss.util.EasyUtils;
 
 @Repository("UserDao")
 public class UserDao extends BaseDao<User> implements IUserDao {
@@ -43,6 +44,32 @@ public class UserDao extends BaseDao<User> implements IUserDao {
 		
 		return user;
 	}
+	
+    public void checkUserAccout(User user) {
+    	boolean isNew = user.getId() == null;
+    	
+        String loginName = user.getLoginName();
+		User existUser = this.getUserByAccount(loginName, false);
+		if( existUser != null && ( isNew || !existUser.equals(user) ) ) {
+            throw new BusinessException( EX.parse(EX.U_29, loginName) );
+        }
+		
+        String eamil = user.getEmail();
+        if( !EasyUtils.isNullOrEmpty(eamil) ) {
+        	existUser = this.getUserByAccount(eamil, false);
+        	if( existUser != null && ( isNew || !existUser.equals(user) ) ) {
+        		throw new BusinessException( EX.parse(EX.U_30, eamil) );
+        	}
+        }
+        
+        String mobile = user.getTelephone();
+        if( !EasyUtils.isNullOrEmpty(mobile) ) {
+        	existUser = this.getUserByAccount(mobile, false);
+        	if( existUser != null && ( isNew || !existUser.equals(user) ) ) {
+        		throw new BusinessException( EX.parse(EX.U_31, mobile));
+        	}
+        }
+    }
  
 	public User getUserByAccount(String account, boolean vaildate) {
 	    List<?> users = getEntities("from User o where o.loginName = ? ", account);

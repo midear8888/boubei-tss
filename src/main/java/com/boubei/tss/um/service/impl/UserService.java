@@ -152,20 +152,6 @@ public class UserService implements IUserService{
         }           
     }
     
-    private void checkUserAccout(User user) {
-        if(userDao.getUserByAccount(user.getLoginName(), false) != null) {
-            throw new BusinessException(EX.U_29);
-        }
-        String eamil = user.getEmail();
-        if( !EasyUtils.isNullOrEmpty(eamil) && userDao.getUserByAccount(eamil, false) != null) {
-            throw new BusinessException(EX.U_30);
-        }
-        String mobile = user.getTelephone();
-		if( !EasyUtils.isNullOrEmpty(mobile) && userDao.getUserByAccount(mobile, false) != null) {
-            throw new BusinessException(EX.U_31);
-        }
-    }
-    
 	/* 
 	 * 新建的用户或密码已修改的用户，则对用户名＋密码进行MD5加密 
 	 */
@@ -173,7 +159,7 @@ public class UserService implements IUserService{
         Long userId = user.getId();
         String password = user.getPassword();
         if( userId == null ) {
-            checkUserAccout(user);  //新建用户需要检测登陆名是否重复
+            userDao.checkUserAccout(user);  //新建用户需要检测登陆名是否重复
             
             user.setOrignPassword( password );
             user.setAccountLife(null);
@@ -377,7 +363,7 @@ public class UserService implements IUserService{
 	}
  
 	public void regUser(User user) {
-        checkUserAccout(user);
+		userDao.checkUserAccout(user);
         
         user.setOrignPassword( user.getPassword() );
         user.setAuthMethod(UMPasswordIdentifier.class.getName());

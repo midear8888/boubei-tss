@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.boubei.tss.dm.ddl._Field;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.sso.Environment;
@@ -31,6 +32,11 @@ public class SerialNOer {
 	}
 		
 	public synchronized List<String> create(String domain, String precode, int count) {
+		
+		// 如果域扩展表(x_domain)里明确维护了订单前缀，则优先使用
+		precode = precode.replace(_Field.SNO_yyMMddxxxx, "");  // 没有前缀
+		precode = (String) EasyUtils.checkNull( precode, Environment.getDomainInfo("domain_prefix"), _Field.SNO_yyMMddxxxx );
+		precode = precode.replace(_Field.SNO_yyMMddxxxx, "");
 		
 		ICommonService commonService = Global.getCommonService();
 		domain = (String) EasyUtils.checkNull(domain, UMConstants.DEFAULT_DOMAIN);

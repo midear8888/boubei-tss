@@ -108,9 +108,7 @@ public class ErrorMessageEncoder implements IDataEncoder {
     private static String getDescription(Throwable exception) {
         StringBuffer sb = new StringBuffer();
         while (exception != null) {
-            if (exception.getMessage() != null) {
-                sb.append(exception.getMessage());
-            }
+            sb.append( EasyUtils.obj2String(exception.getMessage()) );
             sb.append("\n\tat " + exception.getClass().getName() + "\n");
             exception = exception.getCause();
         }

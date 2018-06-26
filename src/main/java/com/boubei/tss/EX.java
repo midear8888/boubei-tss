@@ -147,9 +147,9 @@ public class EX {
 	public static String U_26 = "此帐号处于停用状态";
 	public static String U_27 = "此帐号已过期";
 	public static String U_28 = "不能向自己里面的枝节点移动";
-	public static String U_29 = "账号已被注册,请更换账号.";
-	public static String U_30 = "邮箱已被注册,请更换邮箱.";
-	public static String U_31 = "手机号码已被注册,请更换手机号码.";
+	public static String U_29 = "账号【${x1}】已被注册,请更换账号.";
+	public static String U_30 = "邮箱【${x1}】已被注册,请更换邮箱.";
+	public static String U_31 = "手机号码【${x1}】已被注册,请更换手机号码.";
 	public static String U_32 = "用户【${x1}】无法删除，可以尝试停用！";
 	public static String U_321= "您无法自己停（启）用您自己，请联系管理员！";
 	public static String U_322= "用户组【${x1}】无法删除，请先移除组下的用户！";

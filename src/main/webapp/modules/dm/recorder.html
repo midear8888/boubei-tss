@@ -383,8 +383,9 @@ function loadDetailData(rowID) {
             f.role2 && !checkRole(f.role2) && hideFiled(f.code);
 
             // 自动取号
-            if( isCreateRow && (f.defaultValue+'').indexOf("yyMMddxxxx") > 0 ) {
+            if( isCreateRow && (f.defaultValue+'').indexOf("yyMMddxxxx") >= 0 ) {
                 var precode = f.defaultValue.replace("yyMMddxxxx", "");
+                precode = precode || 'yyMMddxxxx';
                 tssJS.getJSON("/tss/sn/" +precode+ "/1", function(result) {
                     var sn = result[0];
                     updateField(f.code, sn);

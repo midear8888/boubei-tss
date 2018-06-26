@@ -201,8 +201,7 @@ public class RequestContext {
 	private String getValueFromCookie(String name) {
 		Cookie[] cookies = request.getCookies();
 		if (cookies != null) {
-			for (int i = 0; i < cookies.length; i++) {
-				Cookie cookie = cookies[i];
+			for ( Cookie cookie : cookies ) {
 				if (cookie.getName().equals(name)) {
 					return cookie.getValue();
 				}

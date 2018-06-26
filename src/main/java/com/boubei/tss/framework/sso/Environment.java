@@ -117,6 +117,10 @@ public class Environment {
     	return (String) getInSession(SSOConstants.USER_DOMAIN);
     }
     
+    public static String getDomainInfo(String attr) {
+    	return (String) getInSession(attr);
+    }
+    
     private static Object getInSession(String attrName) {
     	RequestContext requestContext = Context.getRequestContext();
         if (requestContext == null) {

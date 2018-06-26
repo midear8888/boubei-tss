@@ -27,6 +27,7 @@ import com.boubei.tss.modules.progress.Progressable;
 import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.dao.IApplicationDao;
 import com.boubei.tss.um.dao.IGroupDao;
+import com.boubei.tss.um.dao.IUserDao;
 import com.boubei.tss.um.entity.Application;
 import com.boubei.tss.um.entity.Group;
 import com.boubei.tss.um.entity.GroupUser;
@@ -45,6 +46,7 @@ import com.boubei.tss.util.XMLDocUtil;
 @Service("SyncService")
 public class SyncService implements ISyncService, Progressable {
 	
+	@Autowired private IUserDao  userDao;
     @Autowired private IGroupDao  groupDao;
     @Autowired private IApplicationDao  applicationDao;
     @Autowired private ResourcePermission resourcePermission;
@@ -201,15 +203,21 @@ public class SyncService implements ISyncService, Progressable {
 					
 					String email = (String) EasyUtils.checkNull(existUser.getEmail(), userDto.getEmail());
 					existUser.setEmail(email);
-					groupDao.refreshEntity(existUser);
+					String phone = (String) EasyUtils.checkNull(existUser.getTelephone(), userDto.getTelephone());
+					existUser.setTelephone(phone);
+					
+					userDao.checkUserAccout(existUser);
+					userDao.refreshEntity(existUser);
             	}
             }
             else {
             	User user = new User();
                 SyncDataHelper.setUserByDTO(user, userDto);
             	user.setGroupId(mainGroupId);
-            	groupDao.createObject(user);
-            	groupDao.createObject(new GroupUser(user.getId(), mainGroupId));
+            	
+            	userDao.checkUserAccout(user);
+            	userDao.create(user);
+            	userDao.createObject(new GroupUser(user.getId(), mainGroupId));
             }
             
             loginNames.add(userDto.getLoginName());
