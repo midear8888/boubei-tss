@@ -111,14 +111,8 @@ public class MultiSQLExcutor {
 	    	for(Map<Object, Object> item : list) {
 	    		Long sqlId = EasyUtils.obj2Long(item.get("sqlID"));
 	    		String sqlCode = (String) item.get("sqlCode");
-	    		SQLDef sqlInfo;
-	    		if( !EasyUtils.isNullOrEmpty(sqlCode) ) {
-	    			List<?> temp = commonService.getList("from SQLDef where code=?", sqlCode);
-	    			sqlInfo = (SQLDef) (temp.isEmpty() ? null : temp.get(0));
-	    		} 
-	    		else {
-	    			sqlInfo = (SQLDef) commonService.getEntity(SQLDef.class, sqlId);
-	    		}
+    			List<?> temp = commonService.getList("from SQLDef where code=?", sqlCode);
+    			SQLDef sqlInfo = (SQLDef) (temp.isEmpty() ? null : temp.get(0));
 	    		
 	    		if(sqlInfo == null) {
 	    			throw new BusinessException("code = " +sqlCode+ " or ID = " + sqlId + "'s SQLDef not exsit.");

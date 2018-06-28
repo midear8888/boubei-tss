@@ -32,6 +32,7 @@ import com.boubei.tss.framework.web.servlet.AfterUpload;
 import com.boubei.tss.modules.sn.SerialNOer;
 import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
+import com.boubei.tss.util.ExcelUtils;
 import com.boubei.tss.util.FileHelper;
 
 /**
@@ -69,7 +70,12 @@ public class ImportCSV implements AfterUpload {
 		
 		String charSet = (String) EasyUtils.checkNull(request.getParameter("charSet"), DataExport.CSV_GBK); // 默认GBK
 
-		// 解析附件数据  TODO 如果上传的是一个 XLS
+		// 解析附件数据   
+		// 如果上传的是一个 XLS，先将XLS转换为CSV文件
+		if( ExcelUtils.isXLS(filepath) ) { 
+			filepath = ExcelUtils.excel2CSV( filepath, charSet );
+		}
+		
 		File targetFile = new File(filepath);
 		String dataStr = FileHelper.readFile(targetFile, charSet); 
 		dataStr = dataStr.replaceAll(";", ","); // mac os 下excel另存为csv是用分号;分隔的
@@ -83,7 +89,8 @@ public class ImportCSV implements AfterUpload {
 		for(String fieldName : headers) {
 			if( !_db.ncm.containsKey(fieldName) ) messyCount++; // 表头名 在数据表字段定义里不存在
 		}
-		if( messyCount*1.0 / headers.length > 0.5 ) { // header一半以上都找不着，可能是CSV文件为UTF-8编码，以UTF-8再次尝试读取
+		// header一半以上都找不着，可能是CSV文件为UTF-8编码，以UTF-8再次尝试读取
+		if( messyCount*1.0 / headers.length > 0.5 && !DataExport.CSV_UTF8.equals(charSet) ) {
 			dataStr = FileHelper.readFile(targetFile, DataExport.CSV_UTF8); 
 			dataStr = dataStr.replaceAll(";", ",");
 			rows = EasyUtils.split(dataStr, "\n");

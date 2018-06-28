@@ -44,6 +44,7 @@ import com.boubei.tss.framework.web.mvc.BaseActionSupport;
 import com.boubei.tss.modules.log.IBusinessLogger;
 import com.boubei.tss.modules.log.Log;
 import com.boubei.tss.util.EasyUtils;
+import com.boubei.tss.util.ExcelUtils;
 import com.boubei.tss.util.MailUtil;
 import com.boubei.tss.util.URLUtil;
 
@@ -188,7 +189,7 @@ public class _Reporter extends BaseActionSupport {
 			MailUtil.sendHTML(subject, html, email.split(","), _ms, new File(exportPath));
 		}
 		else { // 下载上一步生成的附件
-	        DataExport.downloadFileByHttp(response, exportPath);
+	        DataExport.downloadFileByHttp(response, exportPath, excutor.result.size() >= 655350);
 		}
         
         AccessLogRecorder.outputAccessLog(reportService, reportId, "exportAsCSV", requestMap, start);
@@ -209,6 +210,7 @@ public class _Reporter extends BaseActionSupport {
  
 		// 先输出内容到服务端的导出文件中
         DataExport.exportCSV(exportPath, data);
+        exportPath = ExcelUtils.csv2Excel(exportPath);
         
         // 记录导出日志
  		Log excuteLog = new Log(name, Environment.getUserCode() + "导出了网页数据：" + fileName );

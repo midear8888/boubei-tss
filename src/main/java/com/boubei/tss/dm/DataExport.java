@@ -32,6 +32,7 @@ import com.boubei.tss.dm.ext.query.AbstractExportSO;
 import com.boubei.tss.dm.ext.query.AbstractVO;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.util.EasyUtils;
+import com.boubei.tss.util.ExcelUtils;
 import com.boubei.tss.util.FileHelper;
 
 public class DataExport {
@@ -111,14 +112,6 @@ public class DataExport {
         }
         return rlt;
     }
-    
-    public static String exportCSVII(String fileName, Object[][] data, List<String> cnFields) {
-    	String basePath = getExportPath();
-		String exportPath = basePath + "/" + fileName;
-		
-		_exportCSV(exportPath, data, cnFields );
-		return fileName;
-    }
 
     private static void _exportCSV(String path, Object[][] data, List<String> fields) {
     	List<Object[]> list = new ArrayList<Object[]>();
@@ -130,13 +123,16 @@ public class DataExport {
     }
  
     public static String exportCSV(String fileName, List<Map<String, Object>> data, List<String> fields) {
+    	return exportCSV(fileName, data, fields, CSV_GBK);
+    }
+    public static String exportCSV(String fileName, List<Map<String, Object>> data, List<String> fields, String charSet) {
     	List<Object[]> list = new ArrayList<Object[]>();
         for (Map<String, Object> row : data) {
         	list.add( row.values().toArray() );
         }
         
         String exportPath = DataExport.getExportPath() + "/" + fileName;
-    	exportCSV(exportPath, list, fields);
+    	exportCSV(exportPath, list, fields, charSet);
     	
     	return exportPath;
     }
@@ -203,11 +199,22 @@ public class DataExport {
      * @param exportName  导出名字
      */
     public static void downloadFileByHttp(HttpServletResponse response, String sourceFilePath) {
+    	downloadFileByHttp(response, sourceFilePath, false);
+    }
+    
+    public static void downloadFileByHttp(HttpServletResponse response, String sourceFilePath, boolean justCSV) {
+
         File sourceFile = new File(sourceFilePath);
         if( !sourceFile.exists() ) {
         	log.error("download file[" + sourceFilePath + "] not found.");
         	return;
         }
+        
+    	// 导出XLS文件（先一律转为XLS导出）
+    	if( ExcelUtils.isCSV(sourceFilePath) && !justCSV) {
+    		sourceFilePath = ExcelUtils.csv2Excel(sourceFilePath); 
+    		sourceFile = new File(sourceFilePath);
+    	}
         
         response.reset();
         response.setCharacterEncoding("utf-8");

@@ -323,6 +323,7 @@ public class _Recorder extends BaseActionSupport {
         // 过滤出用户可见的表头列
 		List<String> visiableFields = _db.getVisiableFields(true, pointed ? ex.selectFields : _db.fieldCodes);
 		String exportPath = DataExport.exportCSV(fileName, ex.result, visiableFields);
+		
         DataExport.downloadFileByHttp(response, exportPath);
 
         AccessLogRecorder.outputAccessLog("record-" + recordId, _db.recordName, "exportAsCSV", requestMap, start);

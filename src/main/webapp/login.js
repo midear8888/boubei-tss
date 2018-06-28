@@ -22,7 +22,7 @@ function init() {
     getParam("regable", function(result) {
         regable = result != "false";
         if(!regable) {
-            $("#b2_reg, #b3_reg").hide();
+            $("#b2_reg, #b3_reg, #a2").hide();
             $("#b1_reg").width("352px");
         }
     });
