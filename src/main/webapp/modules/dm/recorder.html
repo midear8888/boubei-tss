@@ -841,6 +841,7 @@ function getImportTL() {
 var uniqueCodes, 
     ignoreExist,
     together,
+    headerTL,
     otherConfig,
     afterUploadClass="com.boubei.tss.dm.record.file.ImportCSV";
 function batchImport() {
@@ -858,6 +859,9 @@ function batchImport() {
     }
     if(together === false || together) {
         url += "&together=" + together; // 是否完整性导入（即不允许部分导入）：true:false
+    }
+    if(headerTL) { // 模板表头字段映射，适用于第三方系统导出的数据导入至TSS数据表，映射表以外的字段则被忽略不进行导入
+        url += "&headerTL=" + headerTL; // eg: headerTL = 订单号:订单编码,货品:sku,数量:qty;
     }
     if( otherConfig ) {
         url += otherConfig;

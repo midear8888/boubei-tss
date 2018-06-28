@@ -5,12 +5,15 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import jxl.Cell;
+import jxl.CellType;
+import jxl.DateCell;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.write.WritableSheet;
@@ -118,7 +121,16 @@ public class ExcelUtils {
 				
 				for (int j = 0; j < rsColumns; j++) {
 					Cell cell = sheet1.getCell(j, i);
-					String value = cell.getContents();
+					
+					String value = null;
+					if (cell.getType() == CellType.DATE) { // 日期格式处理方式
+						DateCell dc = (DateCell) cell;
+						Date date = dc.getDate();
+						date = DateUtil.subDays(date, (double) 1 / 3);
+						value = DateUtil.format(date, "yyyy-MM-dd HH:mm:ss");
+					} else {
+						value = cell.getContents();
+					}
 					
 					if (i == 0) {
 						headers.add(value);

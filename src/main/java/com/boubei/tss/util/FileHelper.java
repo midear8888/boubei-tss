@@ -89,7 +89,7 @@ public class FileHelper {
         } catch (Exception e) {
             throw new RuntimeException("读取文件失败", e);
         }
-        return sb.toString();
+        return sb.toString().replace(""+(char)65279, "");  // UTF-8 BOM会在文件首加入一个字符(char)65279
     }
     
     /**
