@@ -33,16 +33,13 @@ public class DefaultDataVaild implements IDataVaild {
 		for(int index = 1; index < rows.length; index++) { // 第一行为表头，不要
 			
 			String row = rows[index];
-			String[] fieldVals = (row+ " ").split(",");
+			String[] fieldVals = (row+" ").split(",");
+			
 			
 			// 0、检查列数是否和表头列数相等
-			if( fieldVals.length != headers.length ) {
-				String err;
-				if(fieldVals.length > headers.length) {
-					err = "行数据列数大于表头列数量";
-				} else {
-					err = EX.DM_23;
-				}
+			if( fieldVals.length < headers.length ) {
+				String err = EX.DM_23;
+			
 				errLines.add( index + "," + err.replaceAll(",", "，") + "," + row );
 				errLineIndexs.add(index);
 				continue;
