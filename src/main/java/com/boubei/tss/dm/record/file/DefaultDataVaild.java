@@ -1,7 +1,6 @@
 package com.boubei.tss.dm.record.file;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -20,49 +19,44 @@ import com.boubei.tss.util.EasyUtils;
  */
 public class DefaultDataVaild implements IDataVaild {
 
-	public void vaild(_Database _db, String[] rows, String[] headers, List<String> valSQLFields,
-			List<String> errLines, List<Integer> errLineIndexs, List<Integer> emptyLineIndexs) {
+	public void vaild(_Database _db, List<List<String>> rows, List<String> headers, List<String> valSQLFields,
+			List<String> errLines, List<Integer> errLineIndexs) {
 		
 		Map<String, List<Object>> colValues = new HashMap<String, List<Object>>();
 		
 		List<String> labels = new ArrayList<String>();
-		labels.addAll( Arrays.asList(headers) );
+		labels.addAll( headers );
 		labels.addAll(valSQLFields);
-
-		rows[0] = EasyUtils.list2Str(labels);
-		for(int index = 1; index < rows.length; index++) { // 第一行为表头，不要
+		rows.set( 0, labels );
+		
+		for(int index = 1; index < rows.size(); index++) { // 第一行为表头，不要
 			
-			String row = rows[index];
-			String[] fieldVals = (row+ " ").split(",");
+			List<String> fieldVals = rows.get(index);
 			
 			// 0、检查列数是否和表头列数相等
-			if( fieldVals.length != headers.length ) {
+			if( fieldVals.size() != headers.size() ) {
 				String err;
-				if(fieldVals.length > headers.length) {
+				if(fieldVals.size() > headers.size()) {
 					err = "行数据列数大于表头列数量";
 				} else {
 					err = EX.DM_23;
 				}
-				errLines.add( index + "," + err.replaceAll(",", "，") + "," + row );
+				errLines.add( index + "," + err.replaceAll(",", "，") + "," + EasyUtils.list2Str(fieldVals) );
 				errLineIndexs.add(index);
 				continue;
 			}
 			
-			List<String> values = new ArrayList<String>();
 			List<String> errors = new ArrayList<String>();
 			Map<String, Object> valuesMap = new LinkedHashMap<String, Object>();
 			
 			for(int j = 0; j < labels.size(); j++) {
     			String filedLabel = labels.get(j);
-    			if( EasyUtils.isNullOrEmpty(filedLabel) ) continue;
-    			
     			String fieldCode = _db.ncm.get(filedLabel);
     			if(fieldCode == null) {
     				errors.add("列【" + filedLabel + "】名称在数据表定义里不存在。");
     			}
     			
-    			String value = (j >= fieldVals.length) ? "" : fieldVals[j].trim();
-    			values.add(value);
+    			String value = (j >= fieldVals.size()) ? "" : fieldVals.get(j);
     			
     			// 1、根据【默认值】补齐字段信息：关联字段值获取等
     			String valSQL = _db.csql.get(fieldCode);
@@ -131,22 +125,16 @@ public class DefaultDataVaild implements IDataVaild {
     			valuesMap.put(fieldCode, value);
         	}
 			
-			// 判断是否每个字段都没有数据，是的话为空行
-			if( EasyUtils.isNullOrEmpty( EasyUtils.list2Str(values, "") ) ) {
-				emptyLineIndexs.add(index);
-				continue;
-			}
-			
 			if( errors.size() > 0 ) {
-				String errLine = index + "," + EasyUtils.list2Str(errors, "|").replaceAll(",", "，") + "," + row;
+				String errLine = index + "," + EasyUtils.list2Str(errors, "|").replaceAll(",", "，") + "," + EasyUtils.list2Str(fieldVals);
 				
 				errLines.add(errLine);
 				errLineIndexs.add(index);
 				continue;
 			}
 			
-			rows[index] = EasyUtils.list2Str( valuesMap.values() );
-			
+			String valueStr = EasyUtils.list2Str( valuesMap.values() );
+			rows.set(index, EasyUtils.toList( valueStr ) );
 		}
 	}
 	

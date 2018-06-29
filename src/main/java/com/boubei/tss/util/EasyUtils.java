@@ -111,6 +111,22 @@ public class EasyUtils {
     public static Object checkTrue(boolean condition, Object result1, Object result2) {
     	return condition ? result1 : result2;
     }
+    
+    public static List<String> toList(String s) {
+    	return toList(s, ",");
+    }
+    public static List<String> toList(String s, String seperator) {
+    	ArrayList<String> list = new ArrayList<String>();
+    	if( isNullOrEmpty(s) ) {
+			return list;
+		}
+    	
+    	String[] vals = (" " +s+ " ").split(seperator);
+    	for(String val : vals) {
+    		list.add( val.trim() );
+    	}
+    	return list;
+    }
 
     /**
      * 将list转换以”,“号隔开的一组字符串。

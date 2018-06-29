@@ -58,6 +58,55 @@ public class ImportCSV implements AfterUpload {
 	Logger log = Logger.getLogger(this.getClass());
 	
 	RecordService recordService = (RecordService) Global.getBean("RecordService");
+	
+	private List<List<String>> readData(File targetFile, String charSet, String headerTL) {
+		
+		String dataStr = FileHelper.readFile(targetFile, charSet); 
+		dataStr = dataStr.replaceAll(";", ","); // mac os 下excel另存为csv是用分号;分隔的
+		String[] rows = EasyUtils.split(dataStr, "\n");
+		
+		// 先移除空行
+		List<List<String>> rowList = new ArrayList<List<String>>();
+		for(String row : rows) {
+			if( row.replaceAll(",", "").trim().length() > 0 ) {
+				rowList.add( EasyUtils.toList(row) );
+			}
+		}
+		
+		List<String> headers = new ArrayList<String>( rowList.get(0) );
+		
+		// 检查是否有表头转换模板（比如将一个三方系统导出数据导入到数据表），格式headerTL=订单号:订单编码,货品:sku,数量:qty
+		if( headerTL != null ) {
+			Map<String, String> headerMap = new HashMap<String, String>();
+			
+			String[] pairs = headerTL.split(",");
+			for( String _pair : pairs ) {
+				String[] pair = _pair.split(":");
+				headerMap.put(pair[1], pair[0]);
+			}
+			
+			int index = 0;
+			List<Integer> surplus = new ArrayList<Integer>();
+			for(String column : headers) {
+				String tssColumn = headerMap.get(column);
+				if( tssColumn == null || EasyUtils.isNullOrEmpty(column) ) {
+					surplus.add(0, index);
+				} else {
+					rowList.get(0).set(index, tssColumn);
+				}
+				index ++;
+			}
+			
+			//  对数据进行处理，如果表头为空，则值也全部置为空
+			for(List<String> row : rowList) {
+				for(int idx : surplus) {
+					row.remove(idx);
+				}
+			}
+		}
+		
+		return rowList;
+	}
 
 	public String processUploadFile(HttpServletRequest request,
 			String filepath, String oldfileName) throws Exception {
@@ -69,7 +118,8 @@ public class ImportCSV implements AfterUpload {
 		Record record = recordService.getRecord(recordId);
 		_Database _db = _Database.getDB(record);
 		
-		String charSet = (String) EasyUtils.checkNull(request.getParameter("charSet"), DataExport.CSV_GBK); // 默认GBK
+		String charSet  = (String) EasyUtils.checkNull(request.getParameter("charSet"), DataExport.CSV_GBK); // 默认GBK
+		String headerTL = request.getParameter("headerTL");
 
 		// 解析附件数据   
 		// 如果上传的是一个 XLS，先将XLS转换为CSV文件
@@ -78,48 +128,25 @@ public class ImportCSV implements AfterUpload {
 		}
 		
 		File targetFile = new File(filepath);
-		String dataStr = FileHelper.readFile(targetFile, charSet); 
-		dataStr = dataStr.replaceAll(";", ","); // mac os 下excel另存为csv是用分号;分隔的
-		String[] rows = EasyUtils.split(dataStr, "\n");
-		if(rows.length < 2) {
+		List<List<String>> rowList = readData(targetFile, charSet, headerTL);
+		if( rowList.size() < 2) {
 			return "parent.alert('导入文件没有数据');";
 		}
-		
-		String[] headers = rows[0].split(",");
-		
-		// 检查是否有表头转换模板（比如将一个三方系统导出数据导入到数据表），格式headerTL=订单号|订单编码,寄件网点|寄件站点
-		String headerTL = request.getParameter("headerTL");
-		if( headerTL != null ) {
-			Map<String, String> headerMap = new HashMap<String, String>();
-			
-			String[] pairs = headerTL.split(",");
-			for( String _pair : pairs ) {
-				String[] pair = _pair.split(":");
-				headerMap.put(pair[1], pair[0]);
-			}
-			
-			int index = 0;
-			for(String fieldName : headers) {
-				headers[index++] = EasyUtils.obj2String( headerMap.get(fieldName) );
-			}
-		}
-		
+		 
+		List<String> headers = rowList.get(0);
 		int messyCount = 0;
 		for(String fieldName : headers) {
 			if( !_db.ncm.containsKey(fieldName) ) messyCount++; // 表头名 在数据表字段定义里不存在
 		}
 		// header一半以上都找不着，可能是CSV文件为UTF-8编码，以UTF-8再次尝试读取
-		if( messyCount*1.0 / headers.length > 0.5 && !DataExport.CSV_UTF8.equals(charSet) ) {
-			dataStr = FileHelper.readFile(targetFile, DataExport.CSV_UTF8); 
-			dataStr = dataStr.replaceAll(";", ",");
-			rows = EasyUtils.split(dataStr, "\n");
-			headers = rows[0].split(",");
+		if( messyCount*1.0 / headers.size() > 0.5 && !DataExport.CSV_UTF8.equals(charSet) ) {
+			rowList = readData(targetFile, DataExport.CSV_UTF8, headerTL);
+			headers = rowList.get(0);
 		}
 		
 		// 校验数据
 		List<String> errLines = new ArrayList<String>(); // errorLine = lineIndex + errorMsg + row
 		List<Integer> errLineIndexs = new ArrayList<Integer>();
-		List<Integer> emptyLineIndexs = new ArrayList<Integer>();
 		
 		String vailderClass = request.getParameter("vailderClass");
 		vailderClass = (String) EasyUtils.checkNull(vailderClass, DefaultDataVaild.class.getName());
@@ -132,12 +159,12 @@ public class ImportCSV implements AfterUpload {
 				valSQLFields.add(name);
 			}
 		}
-		vailder.vaild(_db, rows, headers, valSQLFields, errLines, errLineIndexs, emptyLineIndexs);
+		vailder.vaild(_db, rowList, headers, valSQLFields, errLines, errLineIndexs);
 		
 		String fileName = null;
 		if(errLineIndexs.size() > 0) {
 			// 将 errorLines 输出到一个单独文件
-			StringBuffer sb = new StringBuffer("行号,导入失败原因," + rows[0]).append("\n");
+			StringBuffer sb = new StringBuffer("行号,导入失败原因," + EasyUtils.list2Str(rowList.get(0))).append("\n");
 			for(String err : errLines) {
 				sb.append(err).append("\n");
 			}
@@ -154,8 +181,8 @@ public class ImportCSV implements AfterUpload {
 		}
 		
 		// 执行导入到数据库
-		headers = rows[0].split(",");
-		return import2db(_db, request, rows, headers, errLineIndexs, emptyLineIndexs, fileName);
+		headers = rowList.get(0);
+		return import2db(_db, request, rowList, headers, errLineIndexs, fileName);
 	}
 
 	/**
@@ -168,8 +195,8 @@ public class ImportCSV implements AfterUpload {
 	 * @param errLineIndexs 校验错误的记录行
 	 * @return
 	 */
-	protected String import2db(_Database _db, HttpServletRequest request, String[] rows, String[] headers, 
-			List<Integer> errLineIndexs, List<Integer> emptyLineIndexs, String fileName) {
+	protected String import2db(_Database _db, HttpServletRequest request, List<List<String>> rows, List<String> headers, 
+			List<Integer> errLineIndexs, String fileName) {
 		
 		boolean ignoreExist = "true".equals( request.getParameter("ignoreExist") );
 		String uniqueCodes = request.getParameter("uniqueCodes");
@@ -181,17 +208,17 @@ public class ImportCSV implements AfterUpload {
 		
 		List<String> snList = null; // 自动取号
 		
-		for(int index = 1; index < rows.length; index++) { // 第一行为表头，不要
+		for(int index = 1; index < rows.size(); index++) { // 第一行为表头，不要
 			
-			if(errLineIndexs.contains(index) || emptyLineIndexs.contains(index)) continue;
+			if( errLineIndexs.contains(index) ) continue;
 			
-			String[] fieldVals = (rows[index]+ " ").split(",");
+			List<String> fieldVals = rows.get(index);
 			Map<String, String> valuesMap = new HashMap<String, String>();
-			for(int j = 0; j < fieldVals.length; j++) {
-    			String value = fieldVals[j].trim();
+			for(int j = 0; j < fieldVals.size(); j++) {
+    			String value = fieldVals.get(j).trim();
     			value = value.replaceAll("，", ","); // 导出时英文逗号替换成了中文逗号，导入时替换回来
     			
-    			String filedLabel = headers[j];
+    			String filedLabel = headers.get(j);
     			String fieldCode = _db.ncm.get(filedLabel);
     			
     			String defaultVal = _db.cval.get(fieldCode);
@@ -200,7 +227,7 @@ public class ImportCSV implements AfterUpload {
         			if( _Field.isAutoSN(defaultVal) ) {
         				String preCode = defaultVal.replaceAll(_Field.SNO_yyMMddxxxx, "");
         				if(snList == null) {
-        					int snNum = rows.length - 1 - errLineSize - emptyLineIndexs.size();
+        					int snNum = rows.size() - 1 - errLineSize;
 							snList = new SerialNOer().create(preCode, snNum);
         				}
         				value = snList.get(insertCount);
