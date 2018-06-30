@@ -13,6 +13,7 @@ package com.boubei.tss.dm.record.file;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -41,7 +42,7 @@ import com.boubei.tss.util.FileHelper;
    url += "&uniqueCodes=oto,phone";
    url += "&together=false";
    url += "&ignoreExist=true";
-   url += "&headerTL=订单号:订单编码,货品:sku,数量:qty; // 模板表头字段映射，适用于第三方系统导出的数据导入至TSS数据表，映射表以外的字段则被忽略不进行导入
+   url += "&headerTL=订单号:订单编码,货品:sku,数量:qty,类型:{良品}; // 模板表头字段映射，适用于第三方系统导出的数据导入至TSS数据表，映射表以外的字段则被忽略不进行导入
     
  * 根据数据表提供的导入模板，填写后导入实现批量录入数据。
  * CSV文件需满足条件：
@@ -75,20 +76,29 @@ public class ImportCSV implements AfterUpload {
 		
 		List<String> headers = new ArrayList<String>( rowList.get(0) );
 		
-		// 检查是否有表头转换模板（比如将一个三方系统导出数据导入到数据表），格式headerTL=订单号:订单编码,货品:sku,数量:qty
+		// 检查是否有表头转换模板（比如将一个三方系统导出数据导入到数据表），格式headerTL=订单号:订单编码,货品:sku,数量:qty,类型:{良品}
 		if( headerTL != null ) {
-			Map<String, String> headerMap = new HashMap<String, String>();
+			Map<String, String> columnMap = new HashMap<String, String>();
+			Map<String, String> adds = new LinkedHashMap<String, String>();
 			
 			String[] pairs = headerTL.split(",");
 			for( String _pair : pairs ) {
 				String[] pair = _pair.split(":");
-				headerMap.put(pair[1], pair[0]);
+				String tssColumn = pair[0].trim();
+				String xxxColumn = pair[1].trim();
+				
+				// 默认值
+				if( xxxColumn.startsWith("{") && xxxColumn.endsWith("}") ) {
+					adds.put(tssColumn, xxxColumn.substring(1, xxxColumn.length() -1));
+				} else { // 映射列
+					columnMap.put(xxxColumn, tssColumn);
+				}
 			}
 			
 			int index = 0;
 			List<Integer> surplus = new ArrayList<Integer>();
 			for(String column : headers) {
-				String tssColumn = headerMap.get(column);
+				String tssColumn = columnMap.get(column);
 				if( tssColumn == null || EasyUtils.isNullOrEmpty(column) ) {
 					surplus.add(0, index);
 				} else {
@@ -98,10 +108,20 @@ public class ImportCSV implements AfterUpload {
 			}
 			
 			//  对数据进行处理，如果表头为空，则值也全部置为空
+			index = 0;
 			for(List<String> row : rowList) {
-				for(int idx : surplus) {
-					row.remove(idx);
+				// 删除列
+				for(int idx : surplus) { 
+					if(idx < row.size())
+						row.remove(idx);
 				}
+				
+				// 增加列
+				for( String key : adds.keySet() ) {
+					row.add( index == 0 ? key : adds.get(key) );
+				}
+				
+				index ++;
 			}
 		}
 		
