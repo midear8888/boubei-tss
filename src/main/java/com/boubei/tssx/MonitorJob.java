@@ -14,14 +14,14 @@ import com.boubei.tss.util.MailUtil;
  * 生成异常信息放到系统异常日志里，再通过定时任务发送出去。
  * 每30分钟，轮询最近30分钟 Monitor-Err 日志， 有的话发邮件出来。
  * 
- * com.boubei.tssx.MonitorJob | 0 0/30 * * * ? | X
+ * com.boubei.tssx.MonitorJob | 0 0/30 * * * ? | 10,www.boubei.com,卜贝
  * 
  */
 public class MonitorJob extends AbstractJob {
 	
 	int interval = 30; // 间隔时间（分钟）
 	String domain = "www.boubei.com";
-	String keyword = "卜贝";
+	String sysName = "卜贝";
 	
 	protected String excuteJob(String jobConfig, Long jobID) {
 		try {
@@ -30,23 +30,23 @@ public class MonitorJob extends AbstractJob {
 		
 		try {
 			domain = jobConfig.split(",")[1];
-			keyword = jobConfig.split(",")[2];
+			sysName = jobConfig.split(",")[2];
 		} catch(Exception e) { }
 		
 		monitoringMySQL();
 		monitoringApache();
 		monitoringTomcat();
 		
-		checking(DMConstants.LOCAL_CONN_POOL, "TSS-BI", "Monitor-Err", "");
-		checking(DMConstants.LOCAL_CONN_POOL, "TSS-BI", "ETL-Err", "");
-		checking(DMConstants.LOCAL_CONN_POOL, "TSS-BI", "定时任务", "and t.operationCode like '%【失败!!!】%'");
+		checking(DMConstants.LOCAL_CONN_POOL, sysName, "Monitor-Err", "");
+		checking(DMConstants.LOCAL_CONN_POOL, sysName, "ETL-Err", "");
+		checking(DMConstants.LOCAL_CONN_POOL, sysName, "定时任务", "and t.operationCode like '%【失败!!!】%'");
 		
 		return "done";
 	}
 	
 	/**
 	 * 每30分钟，轮询最近30分钟 Monitor-Err 日志， 有的话发邮件出来
-	 * checking(DMConstants.LOCAL_CONN_POOL, "TSS-BI", "定时任务", "and t.operationCode like '%【失败!!!】%'");
+	 * checking(DMConstants.LOCAL_CONN_POOL, sysName, "定时任务", "and t.operationCode like '%【失败!!!】%'");
 	 */
 	public void checking(String ds, String sysName, String errName, String fitler) {
 		String sql = "select operationCode 类型, content 内容, operateTime 监测时间 " +
@@ -68,7 +68,7 @@ public class MonitorJob extends AbstractJob {
 	/** 主从同步、是否宕机 */
 	void monitoringMySQL() {
 //		MonitorUtil.monitoringMySQL("connpool-tssbi-master", "connpool-tssbi-slave");
-		MonitorUtil.testDBConn("connpool-tssbi-master");
+		MonitorUtil.testDBConn( DMConstants.LOCAL_CONN_POOL );
 		
 		log.info("monitoring MySQL finished. ");
 	}
@@ -80,7 +80,7 @@ public class MonitorJob extends AbstractJob {
 	 * Manage页Tomcat状态变成err等各种异常） 
 	 */
 	void monitoringApache() {
-		// MonitorUtil.monitoringApache(domain); // nginx
+		// MonitorUtil.monitoringApache(domain); // boubei.com 是 nginx
 		log.info("monitoring Apache finished. ");
 	}
 	
@@ -89,7 +89,7 @@ public class MonitorJob extends AbstractJob {
 	 */
 	void monitoringTomcat() {
 		MonitorUtil.monitoringRestfulUrl("http://" +domain+ "/tss/si/version", null);
-		MonitorUtil.monitoringRestfulUrl("http://" +domain+ "/tss/param/json/simple/sysTitle", keyword);
+		MonitorUtil.monitoringRestfulUrl("http://" +domain+ "/tss/param/json/simple/sysTitle", sysName);
 		
 		log.info("monitoring Tomcat finished. ");
 	}

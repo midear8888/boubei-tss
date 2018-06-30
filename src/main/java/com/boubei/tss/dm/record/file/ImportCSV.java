@@ -107,7 +107,7 @@ public class ImportCSV implements AfterUpload {
 				index ++;
 			}
 			
-			//  对数据进行处理，如果表头为空，则值也全部置为空
+			// 对数据进行处理，如果表头为空，则值也全部置为空；加上表头模板里设置的新增列
 			index = 0;
 			for(List<String> row : rowList) {
 				// 删除列
@@ -115,6 +115,13 @@ public class ImportCSV implements AfterUpload {
 					if(idx < row.size())
 						row.remove(idx);
 				}
+				
+				int columnSize = rowList.get(0).size();
+				if( row.size() > columnSize ) {
+					rowList.set(index, row.subList(0, columnSize));
+				}
+				
+				// 如果行的数据列大于表头的数据量，则销掉多的列
 				
 				// 增加列
 				for( String key : adds.keySet() ) {

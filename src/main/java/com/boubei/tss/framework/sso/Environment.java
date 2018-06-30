@@ -179,7 +179,7 @@ public class Environment {
     public static String getOrigin(String browser) {
     	browser = (browser + "").toLowerCase();
     	if(browser.indexOf("micromessenger") >= 0) { // 微信客户端
-    	   return "微信";
+    		browser = "微信," + browser;
     	} 
     	
     	int length = Math.min(browser.length(), 200);
