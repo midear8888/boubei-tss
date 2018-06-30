@@ -100,7 +100,8 @@ public class ImportCSV implements AfterUpload {
 			//  对数据进行处理，如果表头为空，则值也全部置为空
 			for(List<String> row : rowList) {
 				for(int idx : surplus) {
-					row.remove(idx);
+					if( idx < row.size() )
+						row.remove(idx);
 				}
 			}
 		}
