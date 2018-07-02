@@ -112,6 +112,9 @@ public class ExcelPOI extends Excel {
 	}
 
 	private static String getCellVal(Cell cell) {
+		if(cell==null){
+			return "";
+		}
 		//判断cell类型
         switch(cell.getCellTypeEnum()) {
 	        case NUMERIC:
