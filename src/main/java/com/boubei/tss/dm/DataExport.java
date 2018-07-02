@@ -32,7 +32,6 @@ import com.boubei.tss.dm.ext.query.AbstractExportSO;
 import com.boubei.tss.dm.ext.query.AbstractVO;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.util.EasyUtils;
-import com.boubei.tss.util.ExcelUtils;
 import com.boubei.tss.util.FileHelper;
 
 public class DataExport {
@@ -157,7 +156,7 @@ public class DataExport {
             for (Object[] row : data) {
             	List<Object> values = new ArrayList<Object>();
             	for(Object value : row) {
-            		String valueS = DMUtil.preCheatVal(value);
+            		String valueS = DMUtil.preCheatVal(value); // 对每个含特殊字符（, \r\n \"等）的格子值进行预处理
 					values.add(valueS); 
             	}
                 fw.write(EasyUtils.list2Str(values));
@@ -211,8 +210,8 @@ public class DataExport {
         }
         
     	// 导出XLS文件（先一律转为XLS导出）
-    	if( ExcelUtils.isCSV(sourceFilePath) && !justCSV) {
-    		sourceFilePath = ExcelUtils.csv2Excel(sourceFilePath); 
+    	if( Excel.isCSV(sourceFilePath) && !justCSV) {
+    		sourceFilePath = Excel.csv2Excel(sourceFilePath); 
     		sourceFile = new File(sourceFilePath);
     	}
         

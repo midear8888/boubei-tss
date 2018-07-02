@@ -26,6 +26,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 
 import com.boubei.tss.EX;
 import com.boubei.tss.dm.DataExport;
+import com.boubei.tss.dm.Excel;
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.report.ReportService;
 import com.boubei.tss.dm.report.log.AccessLogRecorder;
@@ -35,7 +36,6 @@ import com.boubei.tss.modules.timer.AbstractJob;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
-import com.boubei.tss.util.ExcelUtils;
 import com.boubei.tss.util.MailUtil;
 
 /**
@@ -209,7 +209,7 @@ public class ReportJob extends AbstractJob {
 		// 附件内容(注意：此处生成的附件不会被自动删除，将一直存在于 export 目录下，需手动清除)
 		String fileName = title + "-" + DateUtil.format(new Date()) + ".csv";
 		String exportPath = DataExport.exportCSV(fileName, ex.result, ex.selectFields);
-		exportPath = ExcelUtils.csv2Excel(exportPath); 
+		exportPath = Excel.csv2Excel(exportPath); 
 		fileName = new File(exportPath).getName();
 		
 		fileName = MimeUtility.encodeWord(fileName); // 使用MimeUtility.encodeWord()来解决附件名称的中文问题

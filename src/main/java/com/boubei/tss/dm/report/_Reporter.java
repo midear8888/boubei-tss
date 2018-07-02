@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.boubei.tss.EX;
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.DataExport;
+import com.boubei.tss.dm.Excel;
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.report.log.AccessLogRecorder;
 import com.boubei.tss.framework.Global;
@@ -44,7 +45,6 @@ import com.boubei.tss.framework.web.mvc.BaseActionSupport;
 import com.boubei.tss.modules.log.IBusinessLogger;
 import com.boubei.tss.modules.log.Log;
 import com.boubei.tss.util.EasyUtils;
-import com.boubei.tss.util.ExcelUtils;
 import com.boubei.tss.util.MailUtil;
 import com.boubei.tss.util.URLUtil;
 
@@ -210,7 +210,7 @@ public class _Reporter extends BaseActionSupport {
  
 		// 先输出内容到服务端的导出文件中
         DataExport.exportCSV(exportPath, data);
-        exportPath = ExcelUtils.csv2Excel(exportPath);
+        exportPath = Excel.csv2Excel(exportPath);
         
         // 记录导出日志
  		Log excuteLog = new Log(name, Environment.getUserCode() + "导出了网页数据：" + fileName );

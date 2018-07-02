@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 
 import com.boubei.tss.EX;
 import com.boubei.tss.dm.DataExport;
+import com.boubei.tss.dm.Excel;
 import com.boubei.tss.dm.ddl._Database;
 import com.boubei.tss.dm.ddl._Field;
 import com.boubei.tss.dm.record.Record;
@@ -33,7 +34,6 @@ import com.boubei.tss.framework.web.servlet.AfterUpload;
 import com.boubei.tss.modules.sn.SerialNOer;
 import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
-import com.boubei.tss.util.ExcelUtils;
 import com.boubei.tss.util.FileHelper;
 
 /**
@@ -109,6 +109,7 @@ public class ImportCSV implements AfterUpload {
 			
 			// 对数据进行处理，如果表头为空，则值也全部置为空；加上表头模板里设置的新增列
 			index = 0;
+			int columnSize = 0;
 			for(List<String> row : rowList) {
 				// 删除列
 				for(int idx : surplus) { 
@@ -116,12 +117,13 @@ public class ImportCSV implements AfterUpload {
 						row.remove(idx);
 				}
 				
-				int columnSize = rowList.get(0).size();
-				if( row.size() > columnSize ) {
-					rowList.set(index, row.subList(0, columnSize));
+				// 如果行的数据列大于表头的数据量，则削掉多的列
+				if(index == 0) {
+					columnSize = row.size();
 				}
-				
-				// 如果行的数据列大于表头的数据量，则销掉多的列
+				if( index > 0 && row.size() > columnSize ) {
+					rowList.set(index, row = row.subList(0, columnSize));
+				}
 				
 				// 增加列
 				for( String key : adds.keySet() ) {
@@ -149,9 +151,9 @@ public class ImportCSV implements AfterUpload {
 		String headerTL = request.getParameter("headerTL");
 
 		// 解析附件数据   
-		// 如果上传的是一个 XLS，先将XLS转换为CSV文件
-		if( ExcelUtils.isXLS(filepath) ) { 
-			filepath = ExcelUtils.excel2CSV( filepath, charSet );
+		// 如果上传的是一个 Excel，先转换为CSV文件
+		if( Excel.isXLS(filepath) || Excel.isXLSX(filepath) ) { 
+			filepath = Excel.excel2CSV( filepath, charSet );
 		}
 		
 		File targetFile = new File(filepath);
