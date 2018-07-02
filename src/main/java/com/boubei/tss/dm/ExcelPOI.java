@@ -16,6 +16,7 @@ import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.boubei.tss.util.DateUtil;
@@ -121,9 +122,12 @@ public class ExcelPOI extends Excel {
 	            else { // 数字
 	            	return String.valueOf(cell.getNumericCellValue());
 	            }
+	        case FORMULA:
+	        	return ( (XSSFCell)cell ).getCTCell().getV();
 	        case STRING:
+	        	return cell.getStringCellValue();
 	        default:
-	            return cell.getStringCellValue();
+	        	return cell.toString();
         }
 	}
 }

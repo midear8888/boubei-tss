@@ -846,7 +846,7 @@ var uniqueCodes,
     afterUploadClass="com.boubei.tss.dm.record.file.ImportCSV";
 function batchImport() {
     function checkFileWrong(subfix) {
-        return subfix != ".csv" && subfix != ".xls";
+        return subfix != ".csv" && subfix != ".xls" && subfix != "xlsx";  // 文件名后四位
     }
 
     var url = URL_UPLOAD_FILE + "?afterUploadClass=" + afterUploadClass;
@@ -867,7 +867,7 @@ function batchImport() {
         url += otherConfig;
     }
     
-    var importDiv = createImportDiv("请点击图标选择CSV或XLS文件导入", checkFileWrong, url);
+    var importDiv = createImportDiv("请点击图标选择CSV或Excel文件导入", checkFileWrong, url);
     tssJS(importDiv).show();
 }
 
