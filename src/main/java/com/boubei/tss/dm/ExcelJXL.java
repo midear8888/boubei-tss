@@ -102,7 +102,7 @@ public class ExcelJXL extends Excel {
 		
 		Map<String, Object> result = new HashMap<String, Object>();
 		result.put("data", data);
-		result.put("cnFields", headers);
+		result.put("headers", headers);
 		return result;
 	}
 	

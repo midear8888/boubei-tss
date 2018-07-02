@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 
 import com.boubei.tss.EX;
+import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.DataExport;
 import com.boubei.tss.dm.Excel;
 import com.boubei.tss.dm.ddl._Database;
@@ -42,7 +43,7 @@ import com.boubei.tss.util.FileHelper;
    url += "&uniqueCodes=oto,phone";
    url += "&together=false";
    url += "&ignoreExist=true";
-   url += "&headerTL=订单号:订单编码,货品:sku,数量:qty,类型:{良品}; // 模板表头字段映射，适用于第三方系统导出的数据导入至TSS数据表，映射表以外的字段则被忽略不进行导入
+   url += "&headerTL=订单号:订单编码,货品:sku,数量:qty,类型:{良品},买家:${userCode}; // 模板表头字段映射，适用于第三方系统导出的数据导入至TSS数据表，映射表以外的字段则被忽略不进行导入
     
  * 根据数据表提供的导入模板，填写后导入实现批量录入数据。
  * CSV文件需满足条件：
@@ -76,7 +77,7 @@ public class ImportCSV implements AfterUpload {
 		
 		List<String> headers = new ArrayList<String>( rowList.get(0) );
 		
-		// 检查是否有表头转换模板（比如将一个三方系统导出数据导入到数据表），格式headerTL=订单号:订单编码,货品:sku,数量:qty,类型:{良品}
+		// 检查是否有表头转换模板（比如将一个三方系统导出数据导入到数据表），格式headerTL=订单号:订单编码,货品:sku,数量:qty,类型:{良品},买家:${userCode}
 		if( headerTL != null ) {
 			Map<String, String> columnMap = new HashMap<String, String>();
 			Map<String, String> adds = new LinkedHashMap<String, String>();
@@ -87,10 +88,14 @@ public class ImportCSV implements AfterUpload {
 				String tssColumn = pair[0].trim();
 				String xxxColumn = pair[1].trim();
 				
-				// 默认值
+				// 新增列：含默认值
 				if( xxxColumn.startsWith("{") && xxxColumn.endsWith("}") ) {
 					adds.put(tssColumn, xxxColumn.substring(1, xxxColumn.length() -1));
-				} else { // 映射列
+				} 
+				else if( xxxColumn.startsWith("${") && xxxColumn.endsWith("}") ) {
+					adds.put(tssColumn, DMUtil.fmParse(xxxColumn));
+				}
+				else { // 映射列
 					columnMap.put(xxxColumn, tssColumn);
 				}
 			}

@@ -48,7 +48,7 @@ public abstract class Excel {
 		
 		Map<String, Object> result = instance.readExcel(sourceFile);
 		List<Map<String, Object>> data = (List<Map<String, Object>>) result.get("data");
-		List<String> headers = (List<String>) result.get("cnFields");
+		List<String> headers = (List<String>) result.get("headers");
 		return DataExport.exportCSV(targetFileName, data, headers, charSet);
 	}
 	

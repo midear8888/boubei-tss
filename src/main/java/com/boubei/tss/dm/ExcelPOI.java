@@ -19,6 +19,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
@@ -84,7 +85,7 @@ public class ExcelPOI extends Excel {
 				
 				for (int j = 0; j < rsColumns; j++) {
 					Cell cell = _row.getCell(j);
-					String value = getCellVal(cell);
+					String value = getCellVal(cell, i, j);
 					
 					if (i == 0) {
 						headers.add(value);
@@ -98,7 +99,7 @@ public class ExcelPOI extends Excel {
 			}
 		} 
 		catch (Exception e) {
-			log.error(e.getMessage(), e.getCause());
+			log.error( "readExcel error: " + e.getMessage(), e.getCause() );
 		} 
 		finally {
 			try { is.close(); } catch (Exception e) {}
@@ -107,30 +108,34 @@ public class ExcelPOI extends Excel {
 		
 		Map<String, Object> result = new HashMap<String, Object>();
 		result.put("data", data);
-		result.put("cnFields", headers);
+		result.put("headers", headers);
 		return result;
 	}
 
-	private static String getCellVal(Cell cell) {
-		if(cell==null){
-			return "";
+	static String getCellVal(Cell cell, int i, int j) {
+		if(cell == null) return "";
+		
+		try {
+			//判断cell类型
+	        switch(cell.getCellTypeEnum()) {
+		        case NUMERIC:
+		            // 判断cell是否为日期格式
+		            if(org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted(cell)){
+		                return DateUtil.format( cell.getDateCellValue() );
+		            } 
+		            else { // 数字
+		            	return String.valueOf(cell.getNumericCellValue());
+		            }
+		        case FORMULA:
+		        	return ( (XSSFCell)cell ).getCTCell().getV();
+		        case STRING:
+		        	return cell.getStringCellValue();
+		        default:
+		        	return cell.toString();
+	        }
+		} 
+		catch( Exception e ) {
+			throw new BusinessException( "Excel.getCellVal error, location = [" + i + "," + j + "], cell = " + cell, e);
 		}
-		//判断cell类型
-        switch(cell.getCellTypeEnum()) {
-	        case NUMERIC:
-	            // 判断cell是否为日期格式
-	            if(org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted(cell)){
-	                return DateUtil.format( cell.getDateCellValue() );
-	            } 
-	            else { // 数字
-	            	return String.valueOf(cell.getNumericCellValue());
-	            }
-	        case FORMULA:
-	        	return ( (XSSFCell)cell ).getCTCell().getV();
-	        case STRING:
-	        	return cell.getStringCellValue();
-	        default:
-	        	return cell.toString();
-        }
 	}
 }
