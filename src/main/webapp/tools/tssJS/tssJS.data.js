@@ -144,8 +144,9 @@
         },
 
         /* 依据Code列表获取（运单、SKU、车辆）等基本信息，支持超过1000 */
-        getByCodes: function(url, _codes, callback) {
+        getByCodes: function(url, codeFiled, _codes, callback) {
             var result = [], i = 0, codes = [];
+            codeFiled = codeFiled || "code";
 
             if(!_codes || _codes.length == 0) {
                 callback([]);
@@ -158,7 +159,9 @@
 
             while( i < codes.length ) {
                 var sub = codes.slice(i, i=i+500);
-                sub.length && tssJS.getJSON( url, {"param1": sub.join(",")},
+                var params = {};
+                params[codeFiled] = sub.join(",");
+                sub.length && tssJS.getJSON( url, params,
                     function(data2) {
                         data2.each(function(j, item) {
                             result.push(item);

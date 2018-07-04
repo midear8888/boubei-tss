@@ -14,12 +14,13 @@ import com.boubei.tss.util.MailUtil;
  * 生成异常信息放到系统异常日志里，再通过定时任务发送出去。
  * 每30分钟，轮询最近30分钟 Monitor-Err 日志， 有的话发邮件出来。
  * 
- * com.boubei.tssx.MonitorJob | 0 0/30 * * * ? | 10,www.boubei.com,卜贝
- * 
+ * 配置步骤：
+ * 1、Job：com.boubei.tssx.MonitorJob | 0 0/30 * * * ? | 10,www.boubei.com,卜贝
+ * 2、系统参数： Monitoring-Receivers
  */
 public class MonitorJob extends AbstractJob {
 	
-	int interval = 30; // 间隔时间（分钟）
+	int interval  = 30; // 间隔时间（分钟）
 	String domain = "www.boubei.com";
 	String sysName = "卜贝";
 	

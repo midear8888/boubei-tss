@@ -24,6 +24,15 @@ import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
 
+/**
+ * 1.org.apache.poi.ss.usermodel.Workbook 对应Excel文档；
+　　2.org.apache.poi.hssf.usermodel.HSSFWorkbook  对应xls格式的Excel文档；
+　　3.org.apache.poi.xssf.usermodel.XSSFWorkbook  对应xlsx格式的Excel文档；
+　　4.org.apache.poi.ss.usermodel.Sheet  对应Excel文档中的一个sheet；
+　　5.org.apache.poi.ss.usermodel.Row    对应一个sheet中的一行；
+　　6.org.apache.poi.ss.usermodel.Cell   对应一个单元格。
+ *
+ */
 public class ExcelPOI extends Excel {
 	
 	protected  String _csv2Excel(String sourceFile, String charSet) {

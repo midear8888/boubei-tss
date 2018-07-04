@@ -359,6 +359,13 @@ public class UserService implements IUserService{
 		Group domainGroup = groupService.createDomainGroup(domain);
     	user.setGroupId(domainGroup.getId());
     	
+    	// 默认创建一个客户组【customer】，小程序默认注册在各个域的客户组下
+    	Group customerGroup = new Group();
+    	customerGroup.setName("customer");
+    	customerGroup.setGroupType(Group.MAIN_GROUP_TYPE);
+    	customerGroup.setParentId( domainGroup.getId() );
+    	groupService.createNewGroup(customerGroup, "", "");
+    	
 		this.regUser(user);
 	}
  
