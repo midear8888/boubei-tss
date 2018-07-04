@@ -61,7 +61,7 @@ public class ImportCSV implements AfterUpload {
 	
 	RecordService recordService = (RecordService) Global.getBean("RecordService");
 	
-	private List<List<String>> readData(File targetFile, String charSet, String headerTL) {
+	protected List<List<String>> readData(File targetFile, String charSet, String headerTL) {
 		
 		String dataStr = FileHelper.readFile(targetFile, charSet); 
 		dataStr = dataStr.replaceAll(";", ","); // mac os 下excel另存为csv是用分号;分隔的
