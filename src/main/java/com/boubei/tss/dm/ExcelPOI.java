@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -133,7 +134,9 @@ public class ExcelPOI extends Excel {
 		                return DateUtil.format( cell.getDateCellValue() );
 		            } 
 		            else { // 数字
-		            	return String.valueOf(cell.getNumericCellValue());
+		            	NumberFormat nf = NumberFormat.getInstance();
+		            	String s = nf.format( cell.getNumericCellValue() );
+		            	return s.replace(",", "");
 		            }
 		        case FORMULA:
 		        	return ( (XSSFCell)cell ).getCTCell().getV();
