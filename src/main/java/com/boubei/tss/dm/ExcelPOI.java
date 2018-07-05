@@ -17,6 +17,7 @@ import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -27,8 +28,8 @@ import com.boubei.tss.util.FileHelper;
 
 /**
  * 1.org.apache.poi.ss.usermodel.Workbook 对应Excel文档；
-　　2.org.apache.poi.hssf.usermodel.HSSFWorkbook  对应xls格式的Excel文档；
-　　3.org.apache.poi.xssf.usermodel.XSSFWorkbook  对应xlsx格式的Excel文档；
+　　2.org.apache.poi.hssf.usermodel.HSSFWorkbook  对应xls格式的Excel文档； 65536
+　　3.org.apache.poi.xssf.usermodel.XSSFWorkbook  对应xlsx格式的Excel文档；1048576
 　　4.org.apache.poi.ss.usermodel.Sheet  对应Excel文档中的一个sheet；
 　　5.org.apache.poi.ss.usermodel.Row    对应一个sheet中的一行；
 　　6.org.apache.poi.ss.usermodel.Cell   对应一个单元格。
@@ -44,7 +45,7 @@ public class ExcelPOI extends Excel {
 		Workbook wb = null;
 		FileOutputStream ios = null;
 		try {
-			wb = new XSSFWorkbook();
+			wb = new SXSSFWorkbook(5000);  // 替代XSSFWorkbook，批量（满5000）输出到文件里，防止OOM
 			Sheet ws = wb.createSheet( csvName );
 			
 			String dataStr = FileHelper.readFile(csvFile, charSet);
@@ -80,6 +81,10 @@ public class ExcelPOI extends Excel {
 		Workbook wb = null;
 		try {
 			is = new FileInputStream(filepath);
+			if( is.available() > 1024 * 1024 ) { // 文件大于1M
+				
+			}
+			
 			wb = isXLS(filepath) ? new HSSFWorkbook(is) : new XSSFWorkbook(is);
 			
 			Sheet sheet1 = wb.getSheetAt(0);   // 获取第一张Sheet表
@@ -126,17 +131,16 @@ public class ExcelPOI extends Excel {
 		if(cell == null) return "";
 		
 		try {
-			//判断cell类型
-	        switch(cell.getCellTypeEnum()) {
+	        switch(cell.getCellTypeEnum()) { // 判断cell类型
 		        case NUMERIC:
 		            // 判断cell是否为日期格式
-		            if(org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted(cell)){
+		            if( org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted(cell) ) {
 		                return DateUtil.format( cell.getDateCellValue() );
 		            } 
-		            else { // 数字
-		            	NumberFormat nf = NumberFormat.getInstance();
-		            	String s = nf.format( cell.getNumericCellValue() );
-		            	return s.replace(",", "");
+		            else { // 数字,常规类型的数字会自动多出 .0（因转换后是double类型），需要格式化掉
+		            	double cellVal = cell.getNumericCellValue();
+						String val = NumberFormat.getInstance().format( cellVal );
+		            	return val.replace(",", "");
 		            }
 		        case FORMULA:
 		        	return ( (XSSFCell)cell ).getCTCell().getV();

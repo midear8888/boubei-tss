@@ -51,7 +51,7 @@ import com.boubei.tss.util.FileHelper;
  * 2、表头列的字段名需要 和 录入表定义的字段Label严格一致，且不能重复
  * 3、每一行数据的列数及顺序 == 表头的列数及顺序，不能多也不能少
  * 4、每个字段值不允许存在 换行符、英文逗号
- * 5、覆盖式导入，需定义判断规则，支持多个字段（ 定义在数据表页面【全局脚本】里：var uniqueCodes="oto,sjphone";）
+ * 5、覆盖式导入，需定义判断规则，支持多个字段（ 定义在数据表页面【全局脚本】里：uniqueCodes="oto,sjphone";）
  * 
  * TODO 批量插入，如果某一批（目前10000一批）出错，如何回滚所有已经插入的数据
  */
@@ -153,7 +153,9 @@ public class ImportCSV implements AfterUpload {
 		_Database _db = _Database.getDB(record);
 		
 		String charSet  = (String) EasyUtils.checkNull(request.getParameter("charSet"), DataExport.CSV_GBK); // 默认GBK
-		String headerTL = request.getParameter("headerTL");
+		
+		Map<String, String> requestMap = DMUtil.getRequestMap(request, false);
+		String headerTL = requestMap.get("headerTL"); // 防中文乱码
 
 		// 解析附件数据   
 		// 如果上传的是一个 Excel，先转换为CSV文件
@@ -202,7 +204,7 @@ public class ImportCSV implements AfterUpload {
 			for(String err : errLines) {
 				sb.append(err).append("\n");
 			}
-			log.info( sb );
+			log.debug( sb );
 			
 			fileName = "err-" + recordId + Environment.getUserId();
 	        String exportPath = DataExport.getExportPath() + "/" + fileName + ".csv";
