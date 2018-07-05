@@ -154,8 +154,8 @@ public class ImportCSV implements AfterUpload {
 		
 		String charSet  = (String) EasyUtils.checkNull(request.getParameter("charSet"), DataExport.CSV_GBK); // 默认GBK
 		
-		Map<String, String> requestMap = DMUtil.getRequestMap(request, false);
-		String headerTL = requestMap.get("headerTL"); // 防中文乱码
+		Map<String, String> requestMap = DMUtil.getRequestMap(request, false); 
+		String headerTL = requestMap.get("headerTL"); // 防中文乱码 
 
 		// 解析附件数据   
 		// 如果上传的是一个 Excel，先转换为CSV文件
@@ -204,7 +204,7 @@ public class ImportCSV implements AfterUpload {
 			for(String err : errLines) {
 				sb.append(err).append("\n");
 			}
-			log.debug( sb );
+			log.info( sb.substring(0, Math.min(300, sb.length())) );
 			
 			fileName = "err-" + recordId + Environment.getUserId();
 	        String exportPath = DataExport.getExportPath() + "/" + fileName + ".csv";

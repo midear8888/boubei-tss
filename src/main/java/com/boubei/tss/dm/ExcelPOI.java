@@ -81,8 +81,8 @@ public class ExcelPOI extends Excel {
 		Workbook wb = null;
 		try {
 			is = new FileInputStream(filepath);
-			if( is.available() > 1024 * 1024 ) { // 文件大于1M
-				
+			if( is.available() > 1024 * 1024 * 1 ) { // 1M 约等于 1万行*20列
+				throw new BusinessException("导入文件过大，已超过1M，请分开导入，或将Excel文件另存为CSV格式再进行导入");
 			}
 			
 			wb = isXLS(filepath) ? new HSSFWorkbook(is) : new XSSFWorkbook(is);
@@ -114,7 +114,7 @@ public class ExcelPOI extends Excel {
 			}
 		} 
 		catch (Exception e) {
-			log.error( "readExcel error: " + e.getMessage(), e.getCause() );
+			throw new BusinessException( "readExcel error: " + e.getMessage(), e.getCause());
 		} 
 		finally {
 			try { is.close(); } catch (Exception e) {}
