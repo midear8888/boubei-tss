@@ -149,12 +149,6 @@ function initMenus() {
 		icon: ICON + "icon_down.gif",
 		visible:function() { return isRecord() && getOperation("1") && canBatchImp(); }
 	}
-	var item8 = {
-		label:"批量导入数据",
-		callback: batchImport,
-		icon: ICON + "icon_up.gif",
-		visible:function() { return isRecord() && getOperation("1") && canBatchImp(); }
-	}
 	var item13 = {
         label:"导出数据表定义",
         callback:exportRecordDef,
@@ -171,7 +165,6 @@ function initMenus() {
 	var menu = new $.Menu();
 	menu.addItem(item1);
 	menu.addItem(item7);
-	menu.addItem(item8);
 	menu.addSeparator();
 	menu.addItem(item31);
 	menu.addItem(item32);
@@ -353,7 +346,7 @@ function importRecordDef() {
 
 	popupTree("/tss/param/xml/combo/datasource_list", "ParamTree", params, function(target) {
 	    function checkFileWrong(subfix) {
-			return subfix == ".json";
+			return subfix != ".json";
 		}
 
 		var ds = target.attrs["value"];
@@ -411,18 +404,6 @@ function showRecord() {
 function getImportTL() {
 	var recordId = getTreeNodeId();
 	$("#downloadFrame").attr( "src", encodeURI(URL_RECORD_CSV_TL + recordId ) );
-}
-
-function batchImport() {
-    function checkFileWrong(subfix) {
-        return subfix != ".csv";
-    }
-
-    var recordId = getTreeNodeId();
-    var url = URL_UPLOAD_FILE + "?afterUploadClass=com.boubei.tss.dm.record.file.ImportCSV";
-    url += "&recordId=" + recordId;
-    var importDiv = createImportDiv("请点击图标选择CSV文件导入", checkFileWrong, url);
-    $(importDiv).show();
 }
 
 // -------------------------------------------------   配置数据数据表   ------------------------------------------------

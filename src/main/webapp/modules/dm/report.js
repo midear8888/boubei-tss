@@ -782,7 +782,7 @@ function importReportDef() {
 
 	popupTree("/tss/param/xml/combo/datasource_list", "ParamTree", params, function(target) {
 	    function checkFileWrong(subfix) {
-			return subfix == ".json";
+			return subfix != ".json";
 		}
 
 		var ds = target.attrs["value"];

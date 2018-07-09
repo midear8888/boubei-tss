@@ -846,7 +846,7 @@ var uniqueCodes,
     afterUploadClass="com.boubei.tss.dm.record.file.ImportCSV";
 function batchImport() {
     function checkFileWrong(subfix) {
-        return subfix != ".csv" && subfix != ".xls" && subfix != "xlsx";  // 文件名后四位
+        return subfix != ".csv" && subfix != ".xls" && subfix != ".xlsx";  // 文件后缀
     }
 
     var url = URL_UPLOAD_FILE + "?afterUploadClass=" + afterUploadClass;

@@ -321,7 +321,7 @@ function createImportDiv(remark, checkFileWrong, importUrl) {
 		}
 
 		var length = fileValue.length;
-		var subfix = fileValue.substring(length - 4, length);
+		var subfix = ('.' + fileValue.split('.')[1]).toLowerCase();
 		if( checkFileWrong && checkFileWrong(subfix) ) {
 		   return $("#importDiv h2").notice(remark);
 		}
