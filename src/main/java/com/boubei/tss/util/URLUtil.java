@@ -99,9 +99,13 @@ public class URLUtil {
     	
     	if( !EasyUtils.isNullOrEmpty(queryString) ) {
 	    	try {
+	    		queryString = queryString.replaceAll("\\+", "plusjia");  // URLDecoder.decode会把 + 号吃掉
 				queryString = URLDecoder.decode(queryString, "UTF-8");
-				queryString = URLDecoder.decode(queryString, "UTF-8"); 
+				if( queryString.indexOf("%") >= 0 ) {
+					queryString = URLDecoder.decode(queryString, "UTF-8"); 
+				}
 				// 防止前台encodeURI了两次， encodeURI(" ") ==> 20%  vs  encodeURI(encodeURI(" "))  ==> "%2520"
+				queryString = queryString.replaceAll("plusjia", "\\+");
 			} 
 	    	catch (UnsupportedEncodingException e) { }
 	    	

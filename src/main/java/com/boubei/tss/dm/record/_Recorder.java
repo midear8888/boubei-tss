@@ -575,7 +575,7 @@ public class _Recorder extends BaseActionSupport {
     }
     
     /**
-     * 批量新增、修改、删除，All in one。
+     * 批量新增、修改、删除，All in one。 TODO 事务一致性
      * @param request
      * @param recordId
      * @param csv

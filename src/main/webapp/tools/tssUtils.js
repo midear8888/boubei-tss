@@ -320,8 +320,8 @@ function createImportDiv(remark, checkFileWrong, importUrl) {
 			 return $("#importDiv h2").notice("请选择导入文件!");				 
 		}
 
-		var length = fileValue.length;
-		var subfix = ('.' + fileValue.split('.')[1]).toLowerCase();
+		var index  = fileValue.lastIndexOf(".");
+		var subfix = fileValue.substring(index).toLowerCase();
 		if( checkFileWrong && checkFileWrong(subfix) ) {
 		   return $("#importDiv h2").notice(remark);
 		}

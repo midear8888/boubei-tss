@@ -88,13 +88,19 @@ public class MultiSQLExcutor {
     	
 	@SuppressWarnings("unchecked")
     public Object _exeMultiSQLs(String json, String ds, Map<String, Object> data) throws Exception {
-    	
+    	// 此方法调用时，不在Spring的IOC内
     	ICommonService commonService = Global.getCommonService();
  
     	ds = (String) EasyUtils.checkNull(ds, DMConstants.LOCAL_CONN_POOL);
     	Pool connpool = getDSPool(ds);
         Cacheable connItem = connpool.checkOut(0);
         Connection conn = (Connection) connItem.getValue();
+        
+        Map<String, String> sqlDefMap = new HashMap<String, String>();
+        List<SQLDef> sqlDefList = (List<SQLDef>) commonService.getList("from SQLDef");
+        for(SQLDef sd : sqlDefList) {
+        	sqlDefMap.put(sd.getCode(), sd.getScript());
+        }
         
         boolean autoCommit = true;
     	String sql = null;
@@ -109,17 +115,12 @@ public class MultiSQLExcutor {
 	    	List<Map<Object, Object>> list = new ObjectMapper().readValue(json, List.class);
 	    	int index = 1;
 	    	for(Map<Object, Object> item : list) {
-	    		Long sqlId = EasyUtils.obj2Long(item.get("sqlID"));
 	    		String sqlCode = (String) item.get("sqlCode");
-    			List<?> temp = commonService.getList("from SQLDef where code=?", sqlCode);
-    			SQLDef sqlInfo = (SQLDef) (temp.isEmpty() ? null : temp.get(0));
-	    		
-	    		if(sqlInfo == null) {
-	    			throw new BusinessException("code = " +sqlCode+ " or ID = " + sqlId + "'s SQLDef not exsit.");
+    			sql = sqlDefMap.get(sqlCode);
+	    		if(sql == null) {
+	    			throw new BusinessException("code = " +sqlCode+ " SQLDef not exsit.");
 	    		}
 	    		
-				sql = sqlInfo.getScript();
-				
 	    		Map<String, Object> params = (Map<String, Object>) item.get("data");
 	    		if( params == null ) {
 	    			params = new HashMap<String, Object>();
@@ -147,8 +148,8 @@ public class MultiSQLExcutor {
                     stepResults.put("step" + index, statement.getUpdateCount());
 	    		}
 	    		
-	    		Log excuteLog = new Log( sqlInfo.getCode(), sql ); // params.toString()
-    			excuteLog.setOperateTable( "SQLDef_" + sqlInfo.getCode() );
+	    		Log excuteLog = new Log( sqlCode, sql ); // params.toString()
+    			excuteLog.setOperateTable( "SQLDef_" + sqlCode );
     			logs.add(excuteLog);
     			
     			index++;
