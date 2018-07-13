@@ -220,10 +220,11 @@ public class _Reporter extends BaseActionSupport {
         return new String[] { fileName };
     }
     
-    @RequestMapping("/download/{fileName}")
-    public void download(HttpServletResponse response, @PathVariable("fileName") String fileName) {
+    @RequestMapping("/download")
+    public void download(HttpServletRequest request, HttpServletResponse response) {
+    	String fileName = DMUtil.getRequestMap(request, true).get("filename");
         String basePath = DataExport.getExportPath();
-        String exportPath = basePath + "/" + fileName + ".csv";
+        String exportPath = basePath + "/" + fileName ;
         DataExport.downloadFileByHttp(response, exportPath);
     }
     
