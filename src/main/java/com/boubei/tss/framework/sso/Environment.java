@@ -102,7 +102,7 @@ public class Environment {
     	List<Long> list = new ArrayList<Long>();
     	list.add(UMConstants.ANONYMOUS_ROLE_ID);
     	
-    	return (List<Long>) EasyUtils.checkNull(getInSession(SSOConstants.USER_RIGHTS), list);
+    	return (List<Long>) EasyUtils.checkNull(getInSession(SSOConstants.USER_RIGHTS_L), list);
     }
     
     @SuppressWarnings("unchecked")
@@ -110,7 +110,7 @@ public class Environment {
     	List<String> list = new ArrayList<String>();
     	list.add(Anonymous._NAME);
     	
-    	return (List<String>) EasyUtils.checkNull(getInSession(SSOConstants.USER_ROLES_), list);
+    	return (List<String>) EasyUtils.checkNull(getInSession(SSOConstants.USER_ROLES_L), list);
     }
     
     public static String getDomain() {

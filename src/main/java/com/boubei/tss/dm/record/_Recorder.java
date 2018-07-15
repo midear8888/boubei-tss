@@ -403,6 +403,9 @@ public class _Recorder extends BaseActionSupport {
     	return newID;
     }
 
+	/**
+	 * 注：_after_ data参数名不能有和requestMap里重复的，不然用不上，优先被fmParse掉了
+	 */
 	protected void exeAfterOperation( Map<String, String> requestMap, _Database _db, Long itemId) throws Exception {
 		String afterOption = requestMap.remove("_after_");
 		if( !EasyUtils.isNullOrEmpty(afterOption) ) {

@@ -223,8 +223,7 @@ public class _Reporter extends BaseActionSupport {
     @RequestMapping("/download")
     public void download(HttpServletRequest request, HttpServletResponse response) {
     	String fileName = DMUtil.getRequestMap(request, true).get("filename");
-        String basePath = DataExport.getExportPath();
-        String exportPath = basePath + "/" + fileName ;
+        String exportPath = DataExport.getExportPath() + "/" + fileName ;
         DataExport.downloadFileByHttp(response, exportPath);
     }
     

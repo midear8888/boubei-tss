@@ -142,6 +142,9 @@ public class EasyUtils {
     public static String list2Str(Collection<?> list, String seperator){
         if( isNullOrEmpty(list) ) return "";
         
+        // 先复制一份， 防止ConcurrentModificationException
+        list = new ArrayList<>(list);
+        
         StringBuffer sb = new StringBuffer();
         int index = 0;
         for(Object obj : list){

@@ -29,12 +29,16 @@ public interface SSOConstants {
     public static final String IDENTITY_GETTER = "class.name.IdentityGetter";
 
     /** 存在session里的用户权限（角色）名称  */
-    public static final String USER_RIGHTS = "userRights";  // List
-    public static final String USER_RIGHTS_S = "_userRights_";  // 逗号分隔字符串
-    public static final String USER_ROLES_ = "userRoleList";  // List
+    public static final String USER_RIGHTS_L = "userRoles";   // List<Long id>
+    public static final String USER_RIGHTS_S = "_userRoles";  // 逗号分隔字符串
+    
+    public static final String USER_ROLES_L = "userRoleNames";    // List<String name>
+    public static final String USER_ROLES_S = "_userRoleNames";  // 逗号分隔字符串
     
     /** 存在session里的用户账号名称 */
     public static final String LOGINNAME_IN_SESSION = "loginName";
+    public static final String USER_CODE = "userCode";
+    public static final String USER_NAME = "userName";
     public static final String USER_ID = "userId";
     public static final String USER_PASSWORD  = "password";
     

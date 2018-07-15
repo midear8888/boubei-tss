@@ -21,5 +21,7 @@ public interface ModuleService {
 	void unSelectModule(Long user, Long module);
 
 	void selectModule(Long user, Long module);
+	
+	void refreshModuleUserRoles( Long module );
 
 }

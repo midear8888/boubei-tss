@@ -76,7 +76,7 @@ public class Filter7AccessingCheck implements Filter {
         // 检测权限(无法使用Environment)
         List<Object> userRights = new ArrayList<Object>();
         try {
-            List<?> userRightsInSession = (List<?>) session.getAttribute(SSOConstants.USER_RIGHTS);
+            List<?> userRightsInSession = (List<?>) session.getAttribute(SSOConstants.USER_RIGHTS_L);
             if(userRightsInSession != null) {
                 userRights.addAll(userRightsInSession);
             }

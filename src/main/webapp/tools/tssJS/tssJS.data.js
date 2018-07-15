@@ -264,7 +264,7 @@
                 function(fileName) {  // 根据返回的导出文件名（压缩后的），生成下载链接。
                     if (fileName && fileName.length) {
                         var frameId = createExportFrame();
-                        $1(frameId).setAttribute("src", '/tss/data/download/' + fileName[0]);
+                        $('#'+frameId).attr("src", '/tss/data/download?filename='+encodeURI(fileName[0]));
                     }
                 }
             );

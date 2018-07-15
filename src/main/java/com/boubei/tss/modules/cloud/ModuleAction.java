@@ -41,6 +41,19 @@ public class ModuleAction {
 		return "Success";
 	}
 	
+	/**
+	 * 域用户选择模块后，获得了模块所含的角色；当模块新添加了角色后，自动刷给域用户
+		afterListener = function(itemId) {
+		    $.post("/tss/auth/module/refresh/" + itemId, {});
+		}
+	 */
+	@RequestMapping(value = "/refresh/{module}", method = RequestMethod.POST)
+	@ResponseBody
+	public Object refreshModuleUserRoles(@PathVariable Long module) {
+		service.refreshModuleUserRoles(module);
+		return "Success";
+	}
+	
 	@RequestMapping(method = RequestMethod.GET)
 	@ResponseBody
 	public List<?> listAvaliableModules() {

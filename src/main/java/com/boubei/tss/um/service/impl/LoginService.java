@@ -220,11 +220,15 @@ public class LoginService implements ILoginService {
     }
     
     public List<String> getRoleNames(List<Long> roleIds) {
-    	Set<Long> _roleIds = new LinkedHashSet<Long>(roleIds);  // 防止：ConcurrentModificationException
+    	Set<Long> _roleIds = new LinkedHashSet<Long>(roleIds);  // 先复制一份， 防止ConcurrentModificationException
     	Set<String> names = new LinkedHashSet<String>();
     	for(Long roleId : _roleIds) {
-    		Role role = roleDao.getEntity(roleId);
-    		names.add(role.getName());
+    		try {
+	    		Role role = roleDao.getEntity(roleId);
+	    		names.add(role.getName());
+    		} catch(Exception e) {
+    			log.error(roleIds + e.getMessage());
+    		}
     	}
          
         return new ArrayList<String>(names);

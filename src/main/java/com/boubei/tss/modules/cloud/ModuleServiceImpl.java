@@ -53,6 +53,29 @@ public class ModuleServiceImpl implements ModuleService {
 		}
 	}
 	
+	/**
+	 * 域用户选择模块后，获得了模块所含的角色；当模块新添加了角色后，自动刷给域用户。
+	 * 避免域用户需要重新选择模块才能获取新角色（先结束试用，再 我要试用）
+	 */
+	public void refreshModuleUserRoles( Long module ) {
+		List<?> domainUserIds = commonDao.getEntities("select userId from ModuleUser where moduleId = ?", module);
+		ModuleDef def = (ModuleDef) commonDao.getEntity(ModuleDef.class, module);
+		String[] roles = def.getRoles().split(",");
+		for(String role : roles) {
+			Long roleId = EasyUtils.obj2Long(role);
+			for( Object obj : domainUserIds ) {
+				Long userId = EasyUtils.obj2Long(obj);
+				List<?> temp = commonDao.getEntities("from RoleUser where roleId = ? and userId = ?", roleId, userId);
+				if( temp.isEmpty() ) {
+					RoleUser ru  = new RoleUser();
+					ru.setRoleId( roleId );
+					ru.setUserId( userId );
+					commonDao.create(ru);
+				}
+			}
+		}
+	}
+	
 	public void unSelectModule( Long user, Long module ) {
 		checkIsDomainAdmin();
 		

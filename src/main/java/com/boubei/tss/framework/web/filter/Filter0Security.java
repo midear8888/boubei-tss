@@ -109,7 +109,7 @@ public class Filter0Security implements Filter {
         	HttpSession session = req.getSession(false);
             if(session != null) {
             	userId = (Long) session.getAttribute(SSOConstants.USER_ID);
-                List<?> list = (List<?>) session.getAttribute(SSOConstants.USER_RIGHTS); // 用户拥有的角色列表
+                List<?> list = (List<?>) session.getAttribute(SSOConstants.USER_RIGHTS_L); // 用户拥有的角色列表
 				userRights.addAll( list );
             }
         } catch(Exception e) {  }
