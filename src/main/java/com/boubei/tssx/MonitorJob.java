@@ -24,23 +24,25 @@ public class MonitorJob extends AbstractJob {
 
 	protected String excuteJob(String jobConfig, Long jobID) {
 		String[] jobConfigs = EasyUtils.split(jobConfig, "\n");
+		int interval = 10;
 		
 		for(String jobX : jobConfigs) {
 			String[] info = jobX.split(",");
 			if(info.length != 3) continue;
 			
-			int interval   = Integer.parseInt(info[0]);  // 间隔时间（分钟）
+			interval = Integer.parseInt(info[0]);  // 间隔时间（分钟）
 			String domain  = info[1];
 			String sysName = info[2];
 			
 			monitoringMySQL();
 			monitoringApache(domain);
 			monitoringTomcat(domain, sysName);
-			
-			checking(DMConstants.LOCAL_CONN_POOL, sysName, "Monitor-Err", "", interval);
-			checking(DMConstants.LOCAL_CONN_POOL, sysName, "ETL-Err", "", interval);
-			checking(DMConstants.LOCAL_CONN_POOL, sysName, "定时任务", "and t.operationCode like '%【失败!!!】%'", interval);
 		}
+		
+		String sysName = "卜数科技";
+		checking(DMConstants.LOCAL_CONN_POOL, sysName, "Monitor-Err", "", interval);
+		checking(DMConstants.LOCAL_CONN_POOL, sysName, "ETL-Err", "", interval);
+		checking(DMConstants.LOCAL_CONN_POOL, sysName, "定时任务", "and t.operationCode like '%【失败!!!】%'", interval);
 		
 		return "done";
 	}

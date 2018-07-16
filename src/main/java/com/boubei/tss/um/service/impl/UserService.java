@@ -158,9 +158,10 @@ public class UserService implements IUserService{
 	public void createOrUpdateUser(User user, String groupIdsStr, String roleIdsStr) {
         Long userId = user.getId();
         String password = user.getPassword();
+        
+        userDao.checkUserAccout(user);  //新建用户需要检测登陆名是否重复（修改也需要检测，以防手机号和邮箱改成和其它账号重复）
+        
         if( userId == null ) {
-            userDao.checkUserAccout(user);  //新建用户需要检测登陆名是否重复
-            
             user.setOrignPassword( password );
             user.setAccountLife(null);
             user.setAuthMethod( UMPasswordIdentifier.class.getName() );
