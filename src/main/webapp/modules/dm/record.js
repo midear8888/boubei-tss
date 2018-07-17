@@ -161,6 +161,12 @@ function initMenus() {
         icon:ICON + "import.gif",
         visible:function() {return !isRecord() && getOperation("2");}
     }
+    var item15 = {
+        label:"导入Excel文件",
+        callback:importExcel2Record,
+        icon:ICON + "import.gif",
+        visible:function() {return !isRecord() && getOperation("2");}
+    }
 
 	var menu = new $.Menu();
 	menu.addItem(item1);
@@ -177,6 +183,7 @@ function initMenus() {
 	menu.addItem(item9);
 	menu.addItem(item13);
 	menu.addItem(item14);
+	menu.addItem(item15);
 	menu.addItem(item10);
 	menu.addItem(item5);
 	menu.addSeparator();
@@ -356,6 +363,23 @@ function importRecordDef() {
 		$(importDiv).show().center();
     });	
 }	
+
+function importExcel2Record() {
+	var params = {"isTree": false};
+	params._title = "请选择相应的数据源";
+
+	popupTree("/tss/param/xml/combo/datasource_list", "ParamTree", params, function(target) {
+	    function checkFileWrong(subfix) {
+			return subfix != ".csv" && subfix != ".xls" && subfix != ".xlsx";
+		}
+
+		var ds = target.attrs["value"];
+		var url = URL_UPLOAD_FILE + "?groupId=" + getTreeNodeId() + "&dataSource=" + ds;
+		url += "&afterUploadClass=com.boubei.tss.dm.ext.Excel2Record";
+		var importDiv = createImportDiv("只支持CSV、XLS或XLSX文件格式导入", checkFileWrong, url);
+		$(importDiv).show().center();
+    });	
+}
 
 function moveRecord() {
 	var tree = $.T("tree");

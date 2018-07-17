@@ -387,17 +387,6 @@
 			</plugin>
 
 			<plugin>
-				<groupId>com.atlassian.maven.plugins</groupId>
-				<artifactId>maven-clover2-plugin</artifactId>
-				<version>3.0.5</version>
-				<configuration>
-					<licenseLocation>/opt/clover.license</licenseLocation>
-					<generateHtml>true</generateHtml>
-					<generateXml>true</generateXml>
-				</configuration>
-			</plugin>
-
-			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
 				<version>2.1.1</version>
