@@ -121,7 +121,7 @@ public class Environment {
     	return (String) getInSession(attr);
     }
     
-    private static Object getInSession(String attrName) {
+    public static Object getInSession(String attrName) {
     	RequestContext requestContext = Context.getRequestContext();
         if (requestContext == null) {
             return null;

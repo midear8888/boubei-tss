@@ -11,37 +11,26 @@ import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
-import com.boubei.tss.dm.record.ARecordTable;
+import com.boubei.tss.framework.persistence.IEntity;
+import com.boubei.tss.framework.sso.Environment;
 
 /**
- * yyyy-MM-dd hh:mi:ss 谁执行了什么操作 备注信息 附件信息
  * 
- * 报表：《流程处理效率：平均每步处理时间》
- *  全年流程总体效率趋势图
-	流程时间效率及时间效率同比、环比
-	各岗位（角色）流程负荷情况
-	流程超时情况统计
-	岗位回退流程数据
-	错误流程数量情况
-	同岗位流程效率分析
-	
-核心操作：通过、驳回、会签、转办、中止、挂起，如何自动化测试工作流（所有路由组合）
-会签：多个人一起签
-批量操作：自行加按钮完成 batchOpt('批量审批', "status", "已通过", "r1,r2", "g1, g2", checkfn);
-
-【待办事项】面板 如何计算一个人当前有多少个待处理流程
-
+ * 核心操作：通过、驳回、会签(多个人一起签)、转办
+ * 
+ * TODO 【待办事项】面板
+ * 报表：
+ *     流程处理效率：平均每步处理时间
+ *     全年流程总体效率趋势图
+ * 	   流程时间效率及时间效率同比、环比
  */
-
 @Entity
-@Table(name = "dm_wf_log")
-@SequenceGenerator(name = "wf_log_sequence", sequenceName = "wf_log_sequence", initialValue = 1, allocationSize = 10)
-public class WFLog extends ARecordTable {
-	
-	public static Long WF_LOG_TID = -101L;  // 流程处理时允许上传附件，使用此处虚拟负数ID作为标识
+@Table(name = "dm_workflow_log")
+@SequenceGenerator(name = "workflow_log_sequence", sequenceName = "workflow_log_sequence", initialValue = 1, allocationSize = 10)
+public class WFLog implements IEntity {
 	
 	@Id
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "wf_log_sequence")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "workflow_log_sequence")
 	private Long id;
 	
 	@Column(nullable = false)
@@ -50,21 +39,32 @@ public class WFLog extends ARecordTable {
 	@Column(nullable = false)
 	private Long itemId;  // 对应的数据记录
 	
+	/* 流程处理人、处理时间、处理结果、处理意见 */
 	@Column(nullable = false)
-	private String processer;
+	private String processor;
 	
 	@Column(nullable = false)
-	private Date   processerTime; // 处理时间
+	private Date   processTime;
 	
-	@Column(length = 1000)
-	private String processResult;  // 处理结果
+	private String processResult;
 	
-	private String attachFile;  // 附件
+	private String processOpinion;
 	
-	private String onStep;    // 流程操作时的状态
-	private String nextStep;  // 流程操作后的状态
-	private String nextStepProcesser; // 可以是多人
-
+	public WFLog() { }
+	
+	public WFLog(WFStatus wfStatus, String opinion) {
+		this.setTableId(wfStatus.getTableId());
+		this.setItemId(wfStatus.getItemId());
+		this.setProcessor( Environment.getUserName() );
+		this.setProcessTime( new Date() );
+		this.setProcessResult( wfStatus.getCurrentStatus() );
+		this.setProcessOpinion(opinion);
+	}
+	
+	public String toString() {
+		return WFUtil.toString(this);
+	}
+	
 	public Serializable getPK() {
 		return this.getId();
 	}
@@ -93,12 +93,12 @@ public class WFLog extends ARecordTable {
 		this.itemId = itemId;
 	}
 
-	public String getProcesser() {
-		return processer;
+	public String getProcessor() {
+		return processor;
 	}
 
-	public void setProcesser(String processer) {
-		this.processer = processer;
+	public void setProcessor(String processor) {
+		this.processor = processor;
 	}
 
 	public String getProcessResult() {
@@ -109,44 +109,19 @@ public class WFLog extends ARecordTable {
 		this.processResult = processResult;
 	}
 
-	public String getNextStep() {
-		return nextStep;
+	public Date getProcessTime() {
+		return processTime;
 	}
 
-	public void setNextStep(String nextStep) {
-		this.nextStep = nextStep;
+	public void setProcessTime(Date processTime) {
+		this.processTime = processTime;
 	}
 
-	public String getNextStepProcesser() {
-		return nextStepProcesser;
+	public String getProcessOpinion() {
+		return processOpinion;
 	}
 
-	public void setNextStepProcesser(String nextStepProcesser) {
-		this.nextStepProcesser = nextStepProcesser;
+	public void setProcessOpinion(String processOpinion) {
+		this.processOpinion = processOpinion;
 	}
-
-	public String getAttachFile() {
-		return attachFile;
-	}
-
-	public void setAttachFile(String attachFile) {
-		this.attachFile = attachFile;
-	}
-
-	public Date getProcesserTime() {
-		return processerTime;
-	}
-
-	public void setProcesserTime(Date processerTime) {
-		this.processerTime = processerTime;
-	}
-
-	public String getOnStep() {
-		return onStep;
-	}
-
-	public void setOnStep(String onStep) {
-		this.onStep = onStep;
-	}
-
 }

@@ -7,8 +7,7 @@ mv src/main/resources/application.properties src/main/resources/application.prop
 
 cp -r ../boubei-tss/src/main/webapp/  src/main/webapp/
 
-# rm -r src/main/java/com/boubei/tss/
-
+rm -r src/main/java/com/boubei/tss/
 cp -r ../boubei-tss/src/main/java/com/boubei/tss  src/main/java/com/boubei/
 cp -r ../boubei-tss/src/main/resources  src/main/
 

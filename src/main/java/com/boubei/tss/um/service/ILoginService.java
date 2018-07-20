@@ -104,10 +104,8 @@ public interface ILoginService {
      * @return
      *      登陆用户拥有的所有权限 List(roleId)
      */
-    @Cached(cyclelife = CacheLife.SHORT)
     List<Long> getRoleIdsByUserId(Long userId);
     
-    @Cached(cyclelife = CacheLife.SHORT)
     List<String> getRoleNames(List<Long> roleIds);
     
     @Cached(cyclelife = CacheLife.SHORT)

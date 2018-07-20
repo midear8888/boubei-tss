@@ -47,9 +47,7 @@ import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.record.file.RecordAttach;
 import com.boubei.tss.dm.record.permission.RecordPermission;
 import com.boubei.tss.dm.record.permission.RecordResource;
-import com.boubei.tss.dm.record.workflow.WFLog;
-import com.boubei.tss.dm.record.workflow.WFManager;
-import com.boubei.tss.dm.record.workflow.WFStep;
+import com.boubei.tss.dm.record.workflow.WFService;
 import com.boubei.tss.dm.report.log.AccessLogRecorder;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.SecurityUtil;
@@ -78,6 +76,7 @@ public class _Recorder extends BaseActionSupport {
 	public static final int PAGE_SIZE = 50;
 	
 	@Autowired RecordService recordService;
+	@Autowired WFService wfService;
 	
 	_Database getDB(Long recordId, String... permitOptions) {
 		// 检测当前用户对当前录入表是否有指定的操作权限
@@ -130,7 +129,8 @@ public class _Recorder extends BaseActionSupport {
         		_record.getBatchImp(),
         		_record.getName(),
         		_record.getCustomizePage(),
-        		_db.getVisiableFields(false)
+        		_db.getVisiableFields(false),
+        		_record.getWorkflow()
         	};
     }
 	
@@ -186,7 +186,17 @@ public class _Recorder extends BaseActionSupport {
     private SQLExcutor queryRecordData(_Database _db, int page, int pagesize, Map<String, String> requestMap, boolean pointedFileds) {
     	
     	long start = System.currentTimeMillis();
-    	SQLExcutor ex = _db.select(page, pagesize, requestMap);
+    	SQLExcutor ex;
+    	if( requestMap.remove("my_wf_list") != null ) {
+    		ex = wfService.queryMyTasks(_db, requestMap, page, pagesize);
+    	} 
+    	else {
+    		ex = _db.select(page, pagesize, requestMap);
+    		
+    		/* 添加工作流信息 */
+            wfService.fixWFStatus(_db, ex.result);
+    	}
+    	
     	AccessLogRecorder.outputAccessLog(_db.recordName, _db.recordName, "select_"+pointedFileds, requestMap, start);
     	
     	if( pointedFileds || requestMap.containsKey("id")) {
@@ -228,12 +238,6 @@ public class _Recorder extends BaseActionSupport {
             Object attachNum = itemAttach.get(itemId);
             if(attachNum != null) {
             	item.put("fileNum", "<a href='javascript:void(0)' onclick='manageAttach(" + itemId + ")'>" + attachNum + "</a>");
-            }
-            
-            /* 添加工作流信息 */
-            if( _db.wfDefine != null ) {
-            	String currStatus = WFManager.getCurrStatus(_db, item);
-				item.put("wfstatus", "<a href='javascript:void(0)' onclick='showDetail()'>" + currStatus + "</a>");
             }
         }
 		
@@ -344,10 +348,7 @@ public class _Recorder extends BaseActionSupport {
         }
         
         /* 添加工作流信息 */
-        if( _db.wfDefine != null ) {
-        	WFStep currStep = WFManager.getCurrStep(_db, result);
-			result.put("wfStep", currStep);
-        }
+        wfService.appendWFInfo(_db, result, id);
         
         result.put("id", id);
 		return result;
@@ -395,6 +396,9 @@ public class _Recorder extends BaseActionSupport {
     		
     		// 新增时带附件操作，使用了自定义操作来支持多表数据操作；修改、删除不带附件操作，直接用MultiSQLExcutor执行即可
     		exeAfterOperation(requestMap, _db, newID);
+    		
+    		// 计算并初始化流程
+    		wfService.calculateWFStatus(newID, _db);
     	}
     	catch(Exception e) {
     		_db.delete(newID); // 回滚
@@ -446,36 +450,25 @@ public class _Recorder extends BaseActionSupport {
     	checkRowEditable(recordId, id);
     	
     	_Database _db = getDB(recordId);
+    	Map<String, Object> old = _db.get(id);
     	try {
-    		Map<String, Object> old = _db.get(id);
 			_db.update(id, requestMap );
-			
-			/* 生成工作流日志， TODO 如何含附件信息，附件还是挂在主记录上?? */
-            if( _db.wfDefine != null && requestMap.containsKey("wfUpdate") ) {
-            	WFLog wlog = new WFLog();
-            	wlog.setTableId(recordId);
-            	wlog.setItemId(id);
-            	wlog.setProcesser( Environment.getUserName() );
-            	wlog.setProcesserTime( new Date() );
-            	wlog.setProcessResult( requestMap.get("processResult") );
-            	wlog.setAttachFile( requestMap.get("attachFile") );  // TODO
-            	
-            	WFStep currStep = WFManager.getCurrStep(_db, old);
-            	wlog.setOnStep(currStep.status);
-            	
-            	WFStep nextStep = WFManager.getCurrStep(_db, _db.get(id));
-            	wlog.setNextStep(nextStep.status);
-            	
-//            	Set<String> roles = nextStep.role_btn.keySet();  // 优先使用同部门的，没有则取其它部门
-//            	Set<String> users = nextStep.user_btn.keySet();
-//            	wlog.setNextStepProcesser(processer); // 计算下一步处理人
-            }
-			
-            exeAfterOperation(requestMap, _db, id);
-			printSuccessMessage();
     	}
     	catch(Exception e) {
     		throwEx(e, _db + " update ");
+    	}
+    	
+    	try {
+            exeAfterOperation(requestMap, _db, id);
+            
+            // 计算并初始化流程
+    		wfService.calculateWFStatus(id, _db);
+    		
+			printSuccessMessage();
+    	}
+    	catch(Exception e) {
+    		_db.rollback(id, old); // 回滚
+    		throwEx(e, _db + " update after ");
     	}
     }
     
@@ -635,6 +628,68 @@ public class _Recorder extends BaseActionSupport {
     	return rtMap;
     }
     
+    /************************************* record workflow **************************************/
+	// 审核
+    @RequestMapping(value = "/approve/{record}/{id}", method = RequestMethod.POST)
+	public void approve(HttpServletRequest request, HttpServletResponse response, 
+			@PathVariable("record") Object record, 
+    		@PathVariable("id") Long id) {
+    	
+    	Long recordId = recordService.getRecordID(record, false);
+    	Map<String, String> requestMap = prepareParams(request, recordId);
+    	
+    	wfService.approve(recordId, id, requestMap.get("opinion"));
+    	
+    	printSuccessMessage("审批成功");
+	}
+	
+	// 驳回
+    @RequestMapping(value = "/reject/{record}/{id}", method = RequestMethod.POST)
+   	public void reject(HttpServletRequest request, HttpServletResponse response, 
+   			@PathVariable("record") Object record, 
+       		@PathVariable("id") Long id) {
+    	
+    	Long recordId = recordService.getRecordID(record, false);
+    	Map<String, String> requestMap = prepareParams(request, recordId);
+    	
+    	wfService.reject(recordId, id, requestMap.get("opinion"));
+    	
+    	printSuccessMessage("驳回成功");
+	}
+	
+	// 转审
+	@RequestMapping(value = "/transApprove/{record}/{id}", method = RequestMethod.POST)
+   	public void transApprove(HttpServletRequest request, HttpServletResponse response, 
+   			@PathVariable("record") Object record, 
+       		@PathVariable("id") Long id) {
+    	
+    	Long recordId = recordService.getRecordID(record, false);
+    	Map<String, String> requestMap = prepareParams(request, recordId);
+    	
+    	wfService.transApprove(recordId, id, requestMap.get("opinion"), requestMap.get("target"));
+    	
+    	printSuccessMessage("转审成功");
+	}
+	
+	// 撤销
+	@RequestMapping(value = "/cancel/{record}/{id}", method = RequestMethod.POST)
+   	public void cancel(HttpServletRequest request, HttpServletResponse response, 
+   			@PathVariable("record") Object record, 
+       		@PathVariable("id") Long id) {
+    	
+    	Long recordId = recordService.getRecordID(record, false);
+    	Map<String, String> requestMap = prepareParams(request, recordId);
+    	
+    	wfService.cancel(recordId, id, requestMap.get("opinion"));
+    	
+    	printSuccessMessage("撤销成功");
+	}
+	
+	// TODO 重新提交：复制一条数据，调用 insert 方法，同时复制附件
+	public void reApply() {
+		
+	}
+	
     /************************************* record batch import **************************************/
     
     /**

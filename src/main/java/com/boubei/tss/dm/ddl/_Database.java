@@ -37,7 +37,7 @@ import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.record.Record;
 import com.boubei.tss.dm.record.permission.RecordPermission;
 import com.boubei.tss.dm.record.permission.RecordResource;
-import com.boubei.tss.dm.record.workflow.WFDefine;
+import com.boubei.tss.dm.record.workflow.WFUtil;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.Anonymous;
@@ -59,7 +59,7 @@ public abstract class _Database {
 	public String datasource;
 	public String table;
 	public String customizeTJ;  // 1=1<#if 1=0>showCUV & ignoreDomain</#if>
-	public WFDefine wfDefine;
+	public String wfDefine;
 	
 	private boolean needLog;
 	public boolean needFile;
@@ -106,7 +106,7 @@ public abstract class _Database {
 		this.remark = record.getRemark();
 		
 		this.initFieldCodes();
-		this.wfDefine = WFDefine.parse( record.getWorkflow(), this );
+		this.wfDefine = record.getWorkflow();
 	}
 	
 	protected void initFieldCodes() {
@@ -309,7 +309,7 @@ public abstract class _Database {
 		this.customizeTJ = _new.getCustomizeTJ();
 		this.needLog  = ParamConstants.TRUE.equals(_new.getNeedLog());
 		this.needFile = ParamConstants.TRUE.equals(_new.getNeedFile());
-		this.wfDefine = WFDefine.parse( _new.getWorkflow(), this ); // 更新流程配置
+		this.wfDefine = _new.getWorkflow(); // 更新流程配置
 		
 		// 比较新旧字段定义的异同（新增的和删除的，暂时只关心新增的）
 		List<Map<Object, Object>> newFields = parseJson(_new.getDefine());
@@ -495,6 +495,22 @@ public abstract class _Database {
 		String insertSQL = "insert into " + this.table + "(" + fieldTags + "domain,createtime,creator,version) " +
 				" values (" + valueTags + " ?, ?, ?, ?)";
 		return insertSQL;
+	}
+	
+	public void rollback(Long id, Map<String, Object> old) {
+		Map<Integer, Object> paramsMap = new HashMap<Integer, Object>();
+		String tags = "";
+		for(String field: old.keySet()) {
+			paramsMap.put(paramsMap.size(), old.get(field));
+			if( tags.length() > 0 ) {
+				tags += ",";
+			}
+			tags += field + "=?";
+		}
+		paramsMap.put(paramsMap.size(), id);
+		
+		String updateSQL = "update " + this.table + " set " + tags + " where id=?";
+		SQLExcutor.excute(updateSQL, paramsMap, this.datasource);
 	}
 
 	public void update(Long id, Map<String, String> valuesMap) {
@@ -734,9 +750,13 @@ public abstract class _Database {
 			}
 			
 			if( "id".equals(key) ) {
-				condition += " and id = ? ";
-				valueStr = valueStr.replace("_copy", "");
-				paramsMap.put(paramsMap.size() + 1, EasyUtils.obj2Long(valueStr));
+				if( valueStr.indexOf(",") > 0 ) {  
+					condition += " and id in (" + valueStr + ") ";
+				} else {
+					condition += " and id = ? ";
+					valueStr = valueStr.replace("_copy", "");
+					paramsMap.put(paramsMap.size() + 1, EasyUtils.obj2Long(valueStr));
+				}
 				continue;
 			}
 			
@@ -804,14 +824,14 @@ public abstract class _Database {
 			String[] sortFields = _sortField.split(","); // 支持按多个字段排序
 			for(String sortField : sortFields) {
 				// 判断字段是否存在，无需再检查SQL注入
-				if( this.fieldCodes.contains(sortField) || "createtime,updatetime".indexOf(sortField) >= 0 ) { 
+				if( this.fieldCodes.contains(sortField) || "id,createtime,creator,updatetime,updator".indexOf(sortField) >= 0 ) { 
 					if("onlynull".equals(sortType)) {
 						condition += " and " + sortField + " is null ";
 					}
 					else if("notnull".equals(sortType)) {
 						condition += " and " + sortField + " is not null ";
 					}
-					else if( noPointed || _fields.indexOf(sortField) >= 0) {
+					else if( noPointed || _fields.indexOf(sortField) >= 0 ) {
 						sortFieldList.add( sortField + " " + sortType );
 					}
 				}
@@ -895,11 +915,11 @@ public abstract class _Database {
             index++;
         }
         
+        if( WFUtil.checkWorkFlow(this.wfDefine) ) {
+        	sb.append("<column name=\"wfstatus\" mode=\"string\" caption=\"流程状态\" width=\"60px\"/>").append("\n");
+        }
         if(this.needFile && !hasFileField) {
         	sb.append("<column name=\"fileNum\" mode=\"string\" caption=\"附件\" width=\"30px\"/>").append("\n");
-        }
-        if( !EasyUtils.isNullOrEmpty(this.wfDefine) ) {
-        	sb.append("<column name=\"wfstatus\" mode=\"string\" caption=\"流程状态\" width=\"60px\"/>").append("\n");
         }
         
         // 判断是否显示这5列, customizeTJ: 1=1<#if 1=0>showCUV< /#if>

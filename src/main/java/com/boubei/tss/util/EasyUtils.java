@@ -147,11 +147,13 @@ public class EasyUtils {
         
         StringBuffer sb = new StringBuffer();
         int index = 0;
-        for(Object obj : list){
+        for(Object obj : list) {
+        	if(obj == null) continue; // 剔除掉null
+        	
             if(index++ > 0) {
                 sb.append(seperator);
             }
-            sb.append(obj == null ? "" : obj);
+            sb.append( obj );
         }
         return sb.toString();
     }

@@ -101,7 +101,6 @@ public abstract class ARecordTable implements IEntity, IOperatable {
 		this.version = version;
 	}
 
-	
 	public void setCreatorId(Long creatorId) {
 	}
 

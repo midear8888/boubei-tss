@@ -376,7 +376,7 @@ function importExcel2Record() {
 		var ds = target.attrs["value"];
 		var url = URL_UPLOAD_FILE + "?groupId=" + getTreeNodeId() + "&dataSource=" + ds;
 		url += "&afterUploadClass=com.boubei.tss.dm.ext.Excel2Record";
-		var importDiv = createImportDiv("只支持CSV、XLS或XLSX文件格式导入", checkFileWrong, url);
+		var importDiv = createImportDiv("支持CSV、XLS或XLSX文件导入", checkFileWrong, url);
 		$(importDiv).show().center();
     });	
 }

@@ -35,7 +35,6 @@ import com.boubei.tss.um.dao.IGroupDao;
 import com.boubei.tss.um.dao.IRoleDao;
 import com.boubei.tss.um.dao.IUserDao;
 import com.boubei.tss.um.entity.Group;
-import com.boubei.tss.um.entity.Role;
 import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.entity.permission.RoleUserMapping;
 import com.boubei.tss.um.entity.permission.RoleUserMappingId;
@@ -206,32 +205,26 @@ public class LoginService implements ILoginService {
 
     @SuppressWarnings("unchecked")
 	private List<Object[]> getUserRolesAfterLogin(Long userId) {
-        String hql = "select distinct o.id.userId, o.id.roleId from ViewRoleUser o where o.id.userId = ?";
+        String hql = "select distinct o.id.userId, o.id.roleId from ViewRoleUser o where o.id.userId = ? order by o.id.roleId ";
         return (List<Object[]>) userDao.getEntities(hql, userId);
 	}
 
     public List<Long> getRoleIdsByUserId(Long userId) {
         List<Object[]> userRoles = getUserRolesAfterLogin(userId);
-        Set<Long> roleIds = new HashSet<Long>();
-        for( Object[] urInfo : userRoles ){
-            roleIds.add((Long) urInfo[1]);
+        Set<Long> roleIds = new LinkedHashSet<Long>();
+        for( Object[] objs : userRoles ){
+            roleIds.add( (Long) objs[1] );
         }
         return new ArrayList<Long>(roleIds);
     }
     
+    @SuppressWarnings("unchecked")
     public List<String> getRoleNames(List<Long> roleIds) {
-    	Set<Long> _roleIds = new LinkedHashSet<Long>(roleIds);  // 先复制一份， 防止ConcurrentModificationException
-    	Set<String> names = new LinkedHashSet<String>();
-    	for(Long roleId : _roleIds) {
-    		try {
-	    		Role role = roleDao.getEntity(roleId);
-	    		names.add(role.getName());
-    		} catch(Exception e) {
-    			log.error(roleIds + e.getMessage());
-    		}
+    	if( roleIds.isEmpty() ) {
+    		return new ArrayList<String>();
     	}
-         
-        return new ArrayList<String>(names);
+    	List<?> names = roleDao.getEntities("select name from Role where id in (" +EasyUtils.list2Str(roleIds)+ ") order by id");
+        return (List<String>) names;
     }
     
 	@SuppressWarnings("unchecked")
@@ -273,7 +266,7 @@ public class LoginService implements ILoginService {
  
     @SuppressWarnings("unchecked")
     public List<OperatorDTO> getUsersByRoleId(Long roleId) {
-        String hql = "select distinct u from RoleUser ru, User u" +
+        String hql = "select distinct u from ViewRoleUser ru, User u" +
                 " where ru.id.userId = u.id and ru.id.roleId = ? order by u.id";
        
         List<User> data = (List<User>) groupDao.getEntities( hql, roleId );
