@@ -14,18 +14,20 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import com.boubei.tss.framework.persistence.IEntity;
+import com.boubei.tss.util.EasyUtils;
 
 @Entity
 @Table(name = "dm_workflow_status")
 @SequenceGenerator(name = "workflow_status_sequence", sequenceName = "workflow_status_sequence", initialValue = 1, allocationSize = 10)
 public class WFStatus implements IEntity {
 	
-	public final static String NEW       = "待审核";
+	public final static String NEW       = "待审批";
 	public final static String APPROVING = "审批中";
 	public final static String TRANS     = "已转审";
 	public final static String PASSED    = "已通过";
 	public final static String REJECTED  = "已驳回";
 	public final static String CANCELED  = "已撤销";
+	public final static String UNAPPROVE = "未审批";
 	
 	@Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "workflow_status_sequence")
@@ -61,7 +63,11 @@ public class WFStatus implements IEntity {
 	public int currStepIndex;
 	
 	public List<String> toUsers() {
-		return Arrays.asList( to.split(",") );
+		return Arrays.asList( EasyUtils.obj2String(to).split(",") );
+	}
+	
+	public List<String> processorList() {
+		return Arrays.asList( EasyUtils.obj2String(processors).split(",") );
 	}
 	
 	public String toString() {

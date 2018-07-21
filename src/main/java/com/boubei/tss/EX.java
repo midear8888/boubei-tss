@@ -189,4 +189,5 @@ public class EX {
 	public static String WF_2 = "流程已开始处理，无法再撤销";
 	public static String WF_3 = "此流程已关闭，无法再操作";
 	public static String WF_4 = "你无权处理本流程";
+	public static String WF_5 = "转审人员不能为空";
 }

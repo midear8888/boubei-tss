@@ -13,6 +13,7 @@ import javax.persistence.Table;
 
 import com.boubei.tss.framework.persistence.IEntity;
 import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.util.EasyUtils;
 
 /**
  * 
@@ -58,7 +59,7 @@ public class WFLog implements IEntity {
 		this.setProcessor( Environment.getUserName() );
 		this.setProcessTime( new Date() );
 		this.setProcessResult( wfStatus.getCurrentStatus() );
-		this.setProcessOpinion(opinion);
+		this.setProcessOpinion( EasyUtils.obj2String(opinion) );
 	}
 	
 	public String toString() {

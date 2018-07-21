@@ -85,7 +85,7 @@ public class WFServiceImpl implements WFService {
 	}
 	
 	/**
-	 * 安装流程规则及当前申请人登录信息，获取审核人（或抄送人）列表
+	 * 安装流程规则及当前申请人登录信息，获取审批人（或抄送人）列表
 	 */
 	public List<String> getUsers(List<Map<String, String>> rule) {
 		List<String> users = new ArrayList<String>();
@@ -143,22 +143,24 @@ public class WFServiceImpl implements WFService {
 	}
 	
 	/**
-	 * 我审核的 = 待审核的（nextProcessor = 我） + 已审核的（processors.contains(我): 含已审核、已转审、已驳回）+ 抄送给我的（cc.contains(我)）
+	 * 我审批的 = 待审批的（nextProcessor = 我） + 已审批的（processors.contains(我): 含已审批、已转审、已驳回）+ 抄送给我的（cc.contains(我)）
 	 */
 	public SQLExcutor queryMyTasks(_Database _db, Map<String, String> params, int page, int pagesize) {
 
 		Long recordId = _db.recordId;
     	String userCode = Environment.getUserCode(); 
     	String wrapCode = MacrocodeQueryCondition.wrapLike(userCode);
-		List<?> statusList = commonDao.getEntities("from WFStatus where tableId = ? and ( ? in (nextProcessor, applier) or processors like ? or cc like ?) ", 
+		String hsql = "from WFStatus where tableId = ? and ( ? in (nextProcessor) or processors like ? or cc like ?) "; // ? in (nextProcessor, applier)
+		List<?> statusList = commonDao.getEntities(hsql, 
     			recordId, userCode, wrapCode, wrapCode);
 
     	List<Long> itemIds = new ArrayList<Long>();
     	Map<Long, WFStatus> statusMap = new HashMap<Long, WFStatus>();
     	for(Object obj : statusList) {
     		WFStatus status = (WFStatus) obj;
-    		itemIds.add(status.getId());
-    		statusMap.put(status.getId(), status);
+    		Long itemId = status.getItemId();
+			itemIds.add(itemId);
+    		statusMap.put(itemId, status);
     	}
     	itemIds.add(-999L); // 防止id条件为空把所有记录都查出来了
     	params.put("id", EasyUtils.list2Str(itemIds));
@@ -188,6 +190,7 @@ public class WFServiceImpl implements WFService {
 			itemIds.add( itemId );
 			itemsMap.put(itemId, item);
 		}
+		itemIds.add(-999L);
 		
 		List<?> statusList = commonDao.getEntities("from WFStatus where tableId = ? and itemId in (" +EasyUtils.list2Str(itemIds)+ ") ", _db.recordId);
     	
@@ -202,12 +205,24 @@ public class WFServiceImpl implements WFService {
 		
 		// 流程状态
 		WFStatus wfStatus = getWFStatus(_db.recordId, itemId);
+		String processors = EasyUtils.obj2String( wfStatus.getProcessors() );
 		item.put("wfstatus", wfStatus.getCurrentStatus());
 		item.put("nextProcessor", wfStatus.getNextProcessor());
-		item.put("processors", wfStatus.getProcessors());
+		item.put("processors", processors);
 		
 		// 流程日志
-		List<?> logs = commonDao.getEntities("from WFLog where tableId = ? and itemId = ?", _db.recordId, itemId);
+		List<?> logs = commonDao.getEntities("from WFLog where tableId = ? and itemId = ? order by id desc", _db.recordId, itemId);
+		
+		// 根据to审批人列表，模拟出审批步骤
+		String[] toList = wfStatus.getTo().split(",");
+		for( String to : toList ) {
+			if( !wfStatus.processorList().contains(to) ) {
+				WFLog log = new WFLog();
+				log.setProcessor(to);
+				log.setProcessResult(WFStatus.UNAPPROVE);
+			}
+		}
+		
 		item.put("wf_logs", logs);
 	}
 	
@@ -275,6 +290,10 @@ public class WFServiceImpl implements WFService {
 	}
 	
 	public void transApprove(Long recordId, Long id, String opinion, String target) {
+		
+		if( EasyUtils.isNullOrEmpty(target) ) {
+			throw new BusinessException(EX.WF_5);
+		}
 
 		WFStatus wfStatus = setWFStatus(recordId, id, false, false);
   
