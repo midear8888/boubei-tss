@@ -16,8 +16,8 @@ import javax.persistence.Transient;
 import com.boubei.tss.framework.persistence.IEntity;
 
 @Entity
-@Table(name = "dm_wf_status")
-@SequenceGenerator(name = "wf_status_sequence", sequenceName = "wf_status_sequence", initialValue = 1, allocationSize = 10)
+@Table(name = "dm_workflow_status")
+@SequenceGenerator(name = "workflow_status_sequence", sequenceName = "workflow_status_sequence", initialValue = 1, allocationSize = 10)
 public class WFStatus implements IEntity {
 	
 	public final static String NEW       = "待审核";
@@ -28,7 +28,7 @@ public class WFStatus implements IEntity {
 	public final static String CANCELED  = "已撤销";
 	
 	@Id
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "wf_status_sequence")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "workflow_status_sequence")
 	private Long id;
 	
 	@Column(nullable = false)
@@ -39,6 +39,7 @@ public class WFStatus implements IEntity {
 	
 	private String applier; // 申请人
 	
+	@Column(name = "to_")
 	private String to;
 	private String cc;
 	
