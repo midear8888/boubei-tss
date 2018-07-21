@@ -23,6 +23,7 @@ public class WFStatus implements IEntity {
 	
 	public final static String NEW       = "待审批";
 	public final static String APPROVING = "审批中";
+	public final static String APPROVED  = "已审批";
 	public final static String TRANS     = "已转审";
 	public final static String PASSED    = "已通过";
 	public final static String REJECTED  = "已驳回";
@@ -40,10 +41,12 @@ public class WFStatus implements IEntity {
 	private Long itemId;  // 对应的数据记录
 	
 	private String applier; // 申请人
+	private String applierName; // 申请人名称
 	
 	@Column(name = "to_")
 	private String to;
 	private String cc;
+	private String trans;
 	
 	private Integer stepCount; // 审批步数
 	
@@ -164,5 +167,21 @@ public class WFStatus implements IEntity {
 
 	public void setApplier(String applier) {
 		this.applier = applier;
+	}
+
+	public String getTrans() {
+		return trans;
+	}
+
+	public void setTrans(String trans) {
+		this.trans = trans;
+	}
+
+	public String getApplierName() {
+		return applierName;
+	}
+
+	public void setApplierName(String applierName) {
+		this.applierName = applierName;
 	} 
 }

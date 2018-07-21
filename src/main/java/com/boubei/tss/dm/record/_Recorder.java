@@ -671,6 +671,18 @@ public class _Recorder extends BaseActionSupport {
     	printSuccessMessage("转审成功");
 	}
 	
+	@RequestMapping(value = "/translist/{record}/{id}", method = RequestMethod.GET)
+	@ResponseBody
+   	public List<?> transList(HttpServletRequest request, HttpServletResponse response, 
+   			@PathVariable("record") Object record, 
+       		@PathVariable("id") Long id) {
+    	
+    	Long recordId = recordService.getRecordID(record, false);
+    	prepareParams(request, recordId);
+    	
+    	return wfService.getTransList(recordId, id);
+	}
+	
 	// 撤销
 	@RequestMapping(value = "/cancel/{record}/{id}", method = RequestMethod.POST)
    	public void cancel(HttpServletRequest request, HttpServletResponse response, 

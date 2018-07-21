@@ -30,4 +30,6 @@ public interface WFService {
 	
 	void cancel(Long recordId, Long id, String opinion);
 
+	List<?> getTransList(Long recordId, Long id);
+
 }

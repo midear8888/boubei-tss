@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.boubei.tss.EX;
+import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.ddl._Database;
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.exception.BusinessException;
@@ -34,6 +35,11 @@ public class WFServiceImpl implements WFService {
 		return  list.isEmpty() ? null : (WFStatus)list.get(0);
 	}
 	
+	public List<?> getTransList(Long recordId, Long itemId) {
+		WFStatus wfStatus = getWFStatus(recordId, itemId);
+		return getUserList(wfStatus.getTrans());
+	}
+	
 	public void calculateWFStatus(Long itemId, _Database _db) {
 		
 		String wfDefine = _db.wfDefine;
@@ -53,6 +59,7 @@ public class WFServiceImpl implements WFService {
 			wfStatus.setItemId( itemId );
 			wfStatus.setCurrentStatus(WFStatus.NEW);
 			wfStatus.setApplier( Environment.getUserCode() );
+			wfStatus.setApplierName( Environment.getUserName() );
 			commonDao.create(wfStatus);
 		}
 		
@@ -72,14 +79,17 @@ public class WFServiceImpl implements WFService {
 		
 		List<Map<String, String>> to = rules.get("to");
 		List<Map<String, String>> cc = rules.get("cc");
+		List<Map<String, String>> trans = rules.get("trans");
 		
 		List<String> tos = getUsers(to);
 		List<String> ccs = getUsers(cc);
+		List<String> transs = getUsers(trans);
 		
 		wfStatus.setNextProcessor( tos.get(0) );
 		wfStatus.setStepCount( tos.size() );
 		wfStatus.setTo( EasyUtils.list2Str(tos) );
 		wfStatus.setCc( EasyUtils.list2Str(ccs) );
+		wfStatus.setTrans(  EasyUtils.list2Str(transs)  );
 		
 		commonDao.update(wfStatus);
 	}
@@ -199,6 +209,12 @@ public class WFServiceImpl implements WFService {
     		itemsMap.get( status.getItemId() ).put("wfstatus", status.getCurrentStatus());
     	}
 	}
+	
+	private List<Map<String, Object>> getUserList(String userCodes) {
+		userCodes += ",noThis";
+		String sql = "select username, loginName usercode from um_user where loginName in (" +DMUtil.insertSingleQuotes(userCodes)+ ")";
+		return SQLExcutor.queryL(sql);
+	}
 
 	public void appendWFInfo(_Database _db, Map<String, Object> item, Long itemId) {
 		if( !WFUtil.checkWorkFlow(_db.wfDefine) ) return;
@@ -209,9 +225,15 @@ public class WFServiceImpl implements WFService {
 		item.put("wfstatus", wfStatus.getCurrentStatus());
 		item.put("nextProcessor", wfStatus.getNextProcessor());
 		item.put("processors", processors);
+		item.put("applier", wfStatus.getApplierName() );
+		
+		// 抄送人列表（中文姓名）
+		String cc = wfStatus.getCc();
+		item.put("cc_list", EasyUtils.attr2Str(getUserList(cc), "username"));
 		
 		// 流程日志
-		List<?> logs = commonDao.getEntities("from WFLog where tableId = ? and itemId = ? order by id desc", _db.recordId, itemId);
+		@SuppressWarnings("unchecked")
+		List<WFLog> logs = (List<WFLog>) commonDao.getEntities("from WFLog where tableId = ? and itemId = ? order by id desc", _db.recordId, itemId);
 		
 		// 根据to审批人列表，模拟出审批步骤
 		String[] toList = wfStatus.getTo().split(",");
@@ -220,6 +242,8 @@ public class WFServiceImpl implements WFService {
 				WFLog log = new WFLog();
 				log.setProcessor(to);
 				log.setProcessResult(WFStatus.UNAPPROVE);
+				
+				logs.add(log);
 			}
 		}
 		
@@ -274,6 +298,7 @@ public class WFServiceImpl implements WFService {
     	commonDao.update(wfStatus);
     	
     	WFLog wfLog = new WFLog(wfStatus, opinion);
+    	wfLog.setProcessResult( WFStatus.APPROVED );
 		commonDao.createObject(wfLog);
 	}
 	

@@ -169,6 +169,14 @@ public class EasyUtils {
         return list2Str(temp, ",");
     }
     
+    public static String attr2Str(Collection<Map<String, Object>> list, String key){
+    	List<Object> temp = new ArrayList<Object>();
+    	for(Map<String, Object> m : list) {
+    		temp.add( m.get(key) );
+    	}
+        return list2Str(temp, ",");
+    }
+    
     /**
      * 生成下拉所需要的value和 text
      * 用法如： EasyUtils.list2Combo(list, "year", "name", "|")
