@@ -741,7 +741,7 @@ Element.moveable = function(element, handle) {
  * popupTree('/tss/auth/role/list', 'RoleTree', {'_default': '12'}, function(d){} );
  * popupTree('/tss/auth/service/roles/tree', 'RoleTree', {'treeType':'multi', '_default': '8,54'}, function(d){} );
  */
-function popupTree(url, nodeName, params, callback) {
+function popupTree(url, nodeName, params, callback, method) {
 	removeDialog();
 	params = params || {};
 	var treeType = params.treeType||'single';
@@ -777,6 +777,7 @@ function popupTree(url, nodeName, params, callback) {
 	$.ajax({
 		url: url,
 		params: params,
+		method: method,
 		onresult : function() { 
 			$.showWaitingLayer();
 

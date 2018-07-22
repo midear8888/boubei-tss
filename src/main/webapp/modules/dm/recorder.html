@@ -24,11 +24,7 @@
     .gridContainer { vertical-align: top; }
     #gridTitle .tssbutton { margin-left: 3px; }
 
-    #ws {
-        width: 40%; max-width: 600px; min-width: 400px;
-        height: 100%;
-        position: fixed; right: 0; top: 0;
-    }
+    #ws { width: 40%; max-width: 600px; min-width: 400px; height: 100%; position: fixed; right: 0; top: 0; }
 
     #page1Form { height: 85%; overflow: auto; }
     #page1Form td[width="88"]>label { display: inline-block; width: 88px; }
@@ -42,31 +38,30 @@
     #attachGrid { height: 200px; background-color: #fff; }
     #attachFile { color: #fff; background-color: #323232; padding: 2px 0px 1px 0px; }
 
-    /*#btn_create { background-color: red; }*/
     #btSearch { line-height: 20px; height: 24px; }
-    .small { 
-        color: #333;
-        height: 16px;
-        border: 1px solid #ccc;
-        text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
-    }
-    #gridTitle .small { 
-        background: inherit;
-        margin: 0px 1px;
-        border-top: 0px;
-        border-bottom: 0px;
-    }
-    #gridTitle .small:hover {
-        background-color: #eee;
-    }
-    .small:hover {
-        background-color: inherit;
-        border-left: 1px solid #999;
-        border-right: 1px solid #999;
-    }
-
+    .small { color: #333; height: 16px; border: 1px solid #ccc; text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1); }
+    .small:hover { background-color: inherit; border-left: 1px solid #999; border-right: 1px solid #999; }
+    #gridTitle .small { background: inherit; margin: 0px 1px; border-top: 0px; border-bottom: 0px; }
+    #gridTitle .small:hover { background-color: #eee; }
+    
     #listBT1 { }
     #listBT2 { margin: 0 5px; }
+
+    #page1Form .ext { margin: 10px 4px 0 2px; }
+    #pcontainer { min-height: 36px; margin-top: 5px; }
+    #pcontainer li { float: left; margin-right: 15px; line-height: 25px; }
+
+    #lcontainer {  }
+    #lcontainer>header { margin-bottom: 10px }
+    #lcontainer li { line-height: 22px; }
+    #lcontainer li>header { text-indent: 2em; display: inline-block; }
+    #lcontainer li>p { text-indent: 92px; }
+    #lcontainer li>time {  margin-left: 30px; color: #999; }
+    #lcontainer li.done { color: green; }
+    #lcontainer li.todo { color: blue; }
+
+    #opinionLabel { width: 92px; display: inline-block; margin-top: 20px; }
+    #opinion { height: 50px; width: 320px; margin-top: 10px; }
 
 </style>
 
@@ -94,7 +89,7 @@ URL_WF_CANCEL = AUTH_PATH + "xdata/cancel/";
 URL_WF_APPROVE = AUTH_PATH + "xdata/approve/";
 URL_WF_REJECT = AUTH_PATH + "xdata/reject/";
 URL_WF_TRANS = AUTH_PATH + "xdata/transApprove/";
-URL_WF_TRANS_LIST = AUTH_PATH + "xdata/translist/";
+URL_WF_TRANS_LIST = AUTH_PATH + "xdata/translist/xml/";
 URL_WF_REAPPLY = AUTH_PATH + "xdata/reApply/";
 
 
@@ -275,8 +270,8 @@ function initMenus() {
     var rcTitle;
     if( hasWorkflow ) {
         rcTitle = "【<a onclick='listWorkflow()' id='listBT1' style='color: #666'> " +recordName+ "（刷新）</a>";
-        rcTitle += "<a onclick='listWorkflow()' id='listBT2'> 待审批列表</a>"
-        rcTitle += "<a onclick='listApply()' id='listBT3'> 已申请列表</a> 】"
+        rcTitle += "<a onclick='listWorkflow()' id='listBT2'> 我审批的列表</a>"
+        rcTitle += "<a onclick='listApply()' id='listBT3'> 我提交的列表</a> 】"
     } else {
         rcTitle = "【<a onclick='refreshTable()' id='listBT1'> " +recordName+ "（刷新）</a>】";
     }
@@ -550,6 +545,11 @@ function loadDetailData(rowID) {
             }
         }
 
+        tssJS("#cancelBt").click( function() { cancel(rowID); } ); 
+        tssJS("#approveBt").click( function() { approve(rowID); } ); 
+        tssJS("#rejectBt").click( function() { reject(rowID); } ); 
+        tssJS("#transBt").click( function() { transApprove(rowID); } ); 
+
         showExtension(attachList, wf_logs);
     }
 
@@ -589,28 +589,6 @@ function loadDetailData(rowID) {
     }
 
     showInForm(version, attachList, wf_logs);  // create or 在多个已打开的记录之间切换Tab
-}
-
-function showExtension(attachList, wf_logs) {
-    if(attachList) {
-        var pcontainer = $.createElement("ul", "", "pcontainer");
-        attachList.each(function(i, t){
-            var li = $.createElement("li");
-            $(li).html( t.downloadUrl );
-            $(pcontainer).appendChild(li);
-        });
-        tssJS("#page1Form").appendChild(pcontainer);
-    }
-
-    if(wf_logs) {
-        var lcontainer = $.createElement("ul", "", "lcontainer");
-        wf_logs.each(function(i, t){
-            var li = $.createElement("li");
-            $(li).text( t.processor + "." + t.processResult + ": " + (t.processOpinion||"") );
-            $(lcontainer).appendChild(li);
-        });
-        tssJS("#page1Form").appendChild(lcontainer);
-    }
 }
 
 var _after_;  // 新增数据后续自定义操作（eg：改写管理表的状态）
@@ -1097,12 +1075,12 @@ function delAttach() {
         <WorkSpace:Page id="page1">
             <div id="page1Form" editable="true"></div>
             <WorkSpace:PageStep>
-                <input type="button" class="tssbutton small white wf" value="同 意" id="approveBt" onclick="approve();"/>
-                <input type="button" class="tssbutton small white wf" value="驳 回" id="rejectBt" onclick="reject();"/>
-                <input type="button" class="tssbutton small white wf" value="转 审" id="transBt" onclick="transApprove();"/>
+                <input type="button" class="tssbutton small white wf" value="同 意" id="approveBt"/>
+                <input type="button" class="tssbutton small white wf" value="驳 回" id="rejectBt"/>
+                <input type="button" class="tssbutton small white wf" value="转 审" id="transBt"/>
 
                 <input type="button" class="tssbutton small white cs" value="保 存" id="saveBt"/>
-                <input type="button" class="tssbutton small white cs" value="撤 销" id="cancelBt" onclick="cancel();"/>
+                <input type="button" class="tssbutton small white cs" value="撤 销" id="cancelBt"/>
                 <input type="button" class="tssbutton small white cs" value="关 闭" id="closeBt" onclick="ws.closeActiveTab();"/>
             </WorkSpace:PageStep>
         </WorkSpace:Page>
@@ -1131,17 +1109,81 @@ function delAttach() {
 
 <script type="text/javascript">
   
-function cancel() {
-    console.log(0)
+function cancel(rowID) {
+    executeWF(URL_WF_CANCEL, rowID);
 } 
-function approve() {
-    console.log(1)
+function approve(rowID) {
+    executeWF(URL_WF_APPROVE, rowID);
 }
-function reject() {
-    console.log(2)
+function transApprove(rowID) {
+    // 转审人员选择 
+    var params = {_title: "请选择转审人员"};
+    popupTree(URL_WF_TRANS_LIST + recordId +"/"+ rowID, "UserTree", params, function(target) {
+        console.log(target.id);
+        // target && executeWF(URL_WF_TRANS, rowID, {"target": target.id});
+    }, "GET");
 } 
-function transApprove() {
-    console.log(3)
+function reject(rowID) {
+    executeWF(URL_WF_REJECT, rowID);
+}
+
+function executeWF(url, rowID, _params) {
+    var opinion = $("#opinion").value();
+    var params = {"opinion": opinion};
+    tssJS.each( _params||{}, function(key, val) {
+        params.key = val;
+    });
+
+    tssJS.post(url + recordId +"/"+ rowID, params, function(rtObj){
+        tssJS.alert( rtObj.result );
+
+        delete tssJS.cache.XmlDatas[rowID];
+        ws.closeTab("viewRow_" + rowID);  
+        loadGridData( $1("GridPageList").value || 1 ); // 更新Grid  
+    });
+}
+
+function showExtension(attachList, wf_logs) {
+    if(attachList) {
+        var pcontainer = $.createElement("ul", "ext", "pcontainer");
+        var li = $.createElement("li", "header");
+        $(li).html( "附件列表：" );
+        $(pcontainer).appendChild(li);
+
+        attachList.each(function(i, t){
+            var li = $.createElement("li");
+            // var html = "<img src='" +t.downloadUrl+ "'>";
+            var html = "<a href='" +t.downloadUrl+ "' target='_blank'>" +t.name+ "</a>";
+            $(li).html( html );
+            $(pcontainer).appendChild(li);
+        });
+        tssJS("#page1Form").appendChild(pcontainer);
+    }
+
+    if(wf_logs) {
+        var lcontainer = $.createElement("ul", "ext", "lcontainer");
+        var header = $.createElement("header");
+        $(header).html( "审批流程：" );
+        $(lcontainer).appendChild(header);
+
+        wf_logs.each(function(i, t){
+            var li = $.createElement("li", t.id ? "done": "todo");
+            var html = "<header>" +t.processor + " . " + t.processResult+ "</header>";
+            html += "<time>" +(t.processTime||"").replace(".0", "")+ "</time>";
+            html += "<p>" +(t.processOpinion||"")+ "</p>";
+
+            $(li).html( html );
+            $(lcontainer).appendChild(li);
+        });
+        tssJS("#page1Form").appendChild(lcontainer);
+
+        var label = $.createElement("label", "", "opinionLabel");
+        $(label).html( "审批意见" );
+        tssJS("#page1Form").appendChild(label);
+
+        var opinionEL = $.createElement("textarea", "", "opinion");
+        tssJS("#page1Form").appendChild(opinionEL);
+    }
 }
 
 </script>

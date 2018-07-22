@@ -158,30 +158,50 @@ public class WFServiceImpl implements WFService {
 	}
 	
 	/**
-	 * 我审批的 = 待审批的（nextProcessor = 我） + 已审批的（processors.contains(我): 含已审批、已转审、已驳回）+ 抄送给我的（cc.contains(我)）
+	 * 我审批的: 
+	 * 		1、待审批的  nextProcessor = 我
+	 * 		2、已审批的  processors.contains(我): 含已审批、已转审、已驳回）
+	 * 		3、抄送给我的 cc.contains(我)
 	 * 注：剔除已撤销的
 	 */
 	public SQLExcutor queryMyTasks(_Database _db, Map<String, String> params, int page, int pagesize) {
-
-		Long recordId = _db.recordId;
-    	String userCode = Environment.getUserCode(); 
+		String userCode = Environment.getUserCode(); 
     	String wrapCode = MacrocodeQueryCondition.wrapLike(userCode);
-		String hsql = "from WFStatus where tableId = ? and ( ? in (nextProcessor) or processors like ? or cc like ?) and currentStatus <> ? "; // ? in (nextProcessor, applier)
-		List<?> statusList = commonDao.getEntities(hsql, 
-    			recordId, userCode, wrapCode, wrapCode, WFStatus.CANCELED);
+    	
+    	/* 支持按类型分开查询: wfing: 待审批  wfdone: 已审批  cc: 抄送  */
+		String _condition = "<#if wfing?? >  or nextProcessor = '" +userCode+ "' </#if> " +
+				           "<#if wfdone?? > or processors like '" +wrapCode+ "' </#if> " +
+				           "<#if wfcc?? >   or cc like '" +wrapCode+ "' </#if> ";
+		
+		String condition = EasyUtils.fmParse(_condition, params);
+		if( EasyUtils.isNullOrEmpty(condition) ) {
+			params.put("wfing", "true");
+			params.put("wfdone", "true");
+			params.put("wfcc", "true");
+			condition = EasyUtils.fmParse(_condition, params);
+		}
+		String hsql = "from WFStatus where ( 1=0 " +condition+ " )  and tableId = ? and currentStatus <> ? "; 
+
+		List<?> statusList = commonDao.getEntities(hsql, _db.recordId, WFStatus.CANCELED);
 
     	List<Long> itemIds = new ArrayList<Long>();
     	Map<Long, WFStatus> statusMap = new HashMap<Long, WFStatus>();
+    	boolean isApprover = false; // 判断当前用户是否为审批人
+    	
     	for(Object obj : statusList) {
     		WFStatus status = (WFStatus) obj;
     		Long itemId = status.getItemId();
 			itemIds.add(itemId);
     		statusMap.put(itemId, status);
+    		
+    		if( status.toUsers().contains(userCode) ) {
+    			isApprover = true;
+    		}
     	}
     	itemIds.add(-999L); // 防止id条件为空把所有记录都查出来了
     	params.put("id", EasyUtils.list2Str(itemIds));
     	
-    	SQLExcutor ex = _db.select(page, pagesize, params);
+    	SQLExcutor ex = _db.select(page, pagesize, params, isApprover);
 		List<Map<String, Object>> items = ex.result;
     	
     	// 加上每一行的流程状态： 审批中、已通过、已撤销、已驳回、已转审

@@ -120,6 +120,10 @@ public abstract class BaseActionSupport {
 		}
     }
     
+    protected void printJSON(String str) {
+    	getWriter().append("{\"result\": \"" +str+ "\"}");
+    }
+    
     /** 生成分页信息 */
     protected String generatePageInfo(int totalRows, int page, int pagesize, int currentPageRows) {
         int totalPages = totalRows / pagesize;

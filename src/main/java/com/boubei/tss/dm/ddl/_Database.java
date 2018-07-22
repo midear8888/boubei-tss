@@ -673,6 +673,9 @@ public abstract class _Database {
 	 * @return
 	 */
 	public SQLExcutor select(int page, int pagesize, Map<String, String> params) {
+		return select(page, pagesize, params, false);
+	}
+	public SQLExcutor select(int page, int pagesize, Map<String, String> params, boolean isApprover) {
 		Map<Integer, Object> paramsMap = new HashMap<Integer, Object>();
 		paramsMap.put(1, EasyUtils.checkNull(Environment.getUserCode(), Anonymous._CODE));
 		
@@ -699,7 +702,7 @@ public abstract class _Database {
 		}
 		
 		// 增加权限控制，针对有編輯权限的允許查看他人录入数据, '000' <> ? <==> 忽略创建人这个查询条件
-		boolean visible = Environment.isAdmin() || Environment.isRobot();
+		boolean visible = Environment.isAdmin() || Environment.isRobot() || isApprover;
 		try {
 			List<String> permissions = PermissionHelper.getInstance().getOperationsByResource(recordId,
 	                RecordPermission.class.getName(), RecordResource.class);
