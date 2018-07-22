@@ -134,6 +134,7 @@ public class PermissionServiceImpl implements PermissionService {
         for ( String resource2Opts : resources2opts ) {  // 格式如 resource1|2224
             if ( EasyUtils.isNullOrEmpty(resource2Opts) ) continue; 
             
+            resource2Opts = resource2Opts.trim();
 			int index = resource2Opts.indexOf("|");
 			Long roleId = Long.valueOf(resource2Opts.substring(0, index));
             String optStates = resource2Opts.substring(index + 1);

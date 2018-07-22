@@ -23,6 +23,7 @@ import javax.persistence.Table;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.framework.persistence.IEntity;
@@ -39,6 +40,7 @@ import com.boubei.tss.util.DateUtil;
 @Entity
 @Table(name = "dm_record_attach")
 @SequenceGenerator(name = "record_attach_seq")
+@JsonIgnoreProperties(value={"pk", "fileExt", "attachPath", "officeDoc", "attributes"})
 public class RecordAttach implements IEntity, IGridNode {
 	
 	public static final Integer ATTACH_TYPE_PIC = 1;	// 文章附件图片类型

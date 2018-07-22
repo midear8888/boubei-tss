@@ -48,6 +48,8 @@ import com.boubei.tss.dm.record.file.RecordAttach;
 import com.boubei.tss.dm.record.permission.RecordPermission;
 import com.boubei.tss.dm.record.permission.RecordResource;
 import com.boubei.tss.dm.record.workflow.WFService;
+import com.boubei.tss.dm.record.workflow.WFStatus;
+import com.boubei.tss.dm.record.workflow.WFUtil;
 import com.boubei.tss.dm.report.log.AccessLogRecorder;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.SecurityUtil;
@@ -130,7 +132,7 @@ public class _Recorder extends BaseActionSupport {
         		_record.getName(),
         		_record.getCustomizePage(),
         		_db.getVisiableFields(false),
-        		_record.getWorkflow()
+        		WFUtil.checkWorkFlow(_record.getWorkflow())
         	};
     }
 	
@@ -235,10 +237,8 @@ public class _Recorder extends BaseActionSupport {
     		}
     		
             Object itemId = item.get("id").toString();
-            Object attachNum = itemAttach.get(itemId);
-            if(attachNum != null) {
-            	item.put("fileNum", "<a href='javascript:void(0)' onclick='manageAttach(" + itemId + ")'>" + attachNum + "</a>");
-            }
+            Object attachTag = EasyUtils.checkNull(itemAttach.get(itemId), "上传");
+            item.put("fileNum", "<a href='javascript:void(0)' onclick='manageAttach(" + itemId + ")'>" + attachTag + "</a>");
         }
 		
 		return ex;
@@ -347,6 +347,9 @@ public class _Recorder extends BaseActionSupport {
         	throw new BusinessException( EX.parse(EX.DM_13_2, id) );
         }
         
+        /* 添加附件信息 */
+        result.put("attachList", recordService.getAttachList(recordId, id));
+        
         /* 添加工作流信息 */
         wfService.appendWFInfo(_db, result, id);
         
@@ -434,7 +437,7 @@ public class _Recorder extends BaseActionSupport {
 		String errorMsg = op + " error: " + firstCause;
 		errorMsg = errorMsg.replaceAll("com.boubei.tss.framework.exception.BusinessException: ", "");
 		
-		log.error(errorMsg);
+		log.error(errorMsg, e);
 		throw new BusinessException(errorMsg);
     }
     
@@ -851,10 +854,15 @@ public class _Recorder extends BaseActionSupport {
 		if(!flag) {
 			throw new BusinessException(EX.parse(EX.DM_05, itemId));
 		}
+		
+		WFStatus wfStatus = wfService.getWFStatus(recordId, itemId);
+		if(wfStatus != null && !WFStatus.NEW.equals(wfStatus.getCurrentStatus())) {
+			throw new BusinessException(EX.WF_1);
+		}
 	}
 	
 	/**
-	 * 因db.select方法里对数据进行了权限过滤，所以能按ID查询出来的都是有权限查看的
+	 * 因db.select方法里对数据进行了权限过滤（以及按域过滤），所以能按ID查询出来的都是有权限查看的；
 	 */
 	private boolean checkRowVisible(Long recordId, Long itemId) {
 		if( !SecurityUtil.isHardMode() || recordId < 0 

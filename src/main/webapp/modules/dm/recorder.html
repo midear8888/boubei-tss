@@ -64,6 +64,10 @@
         border-left: 1px solid #999;
         border-right: 1px solid #999;
     }
+
+    #listBT1 { }
+    #listBT2 { margin: 0 5px; }
+
 </style>
 
 <SCRIPT type="text/javascript">
@@ -77,18 +81,28 @@ URL_DATA_XML   = AUTH_PATH + "xdata/xml/";
 URL_DATA_JSON  = AUTH_PATH + "xdata/json/";
 URL_DATA_CSV   = AUTH_PATH + "xdata/export/";
 URL_RECORD_CSV_TL = AUTH_PATH + "xdata/import/tl/";
+URL_GET_SOURCE    = AUTH_PATH + "xdata/";
 URL_SAVE_SOURCE   = AUTH_PATH + "xdata/";
-URL_BATCH_OPERATE = AUTH_PATH + "xdata/batch/";
 URL_DELETE_SOURCE = AUTH_PATH + "xdata/";
+URL_BATCH_OPERATE = AUTH_PATH + "xdata/batch/";
 URL_GET_DEFINES   = AUTH_PATH + "xdata/define/";
 URL_GET_USER_HAS  = AUTH_PATH + "user/has";
 URL_GET_RECORD_ID = AUTH_PATH + "rc/id";  // {id}
 URL_GET_OPERATION = AUTH_PATH + "rc/operations/";  // {id}
 
+URL_WF_CANCEL = AUTH_PATH + "xdata/cancel/";
+URL_WF_APPROVE = AUTH_PATH + "xdata/approve/";
+URL_WF_REJECT = AUTH_PATH + "xdata/reject/";
+URL_WF_TRANS = AUTH_PATH + "xdata/transApprove/";
+URL_WF_TRANS_LIST = AUTH_PATH + "xdata/translist/";
+URL_WF_REAPPLY = AUTH_PATH + "xdata/reApply/";
+
+
 if( IS_TEST ) {
     URL_DATA_XML      = "data/data_grid.xml?";
     URL_DATA_JSON     = "data/data_list.json?";
     URL_DATA_CSV      = "data/_success.xml?";
+    URL_GET_SOURCE   = "data/_success.xml?";
     URL_SAVE_SOURCE   = "data/_success.xml?";
     URL_DELETE_SOURCE = "data/_success.xml?";
     URL_BATCH_OPERATE = "data/_success.xml?";   
@@ -110,7 +124,8 @@ var _operation = ['1','2','3','4','5'],
     userGroups = [], 
     userRoles = [], 
     userRoleNames = [], 
-    userAssistGroups = [];
+    userAssistGroups = [],
+    hasWorkflow;
 
 // 监听器
 var preListener, // 在表单保存前触发，如不通过，则终止保存
@@ -191,6 +206,7 @@ function init() {
                     recordName    = result[5];
                     customizePage = result[6];
                     visiableFields= result[7];
+                    hasWorkflow   = result[8];
 
                     // if has customize page
                     if( (customizePage||"").indexOf("html") > 0 ) {
@@ -212,7 +228,7 @@ function init() {
                     initMenus();
                     initWorkSpace();
 
-                    loadGridData(1); 
+                    hasWorkflow ? listWorkflow() : refreshTable(); 
                     openItemId && showDetail(openItemId);
 
                     /* 添加tssGrid定制的script，需要放initMenus后，以便对menu进行定制。
@@ -230,10 +246,42 @@ function init() {
 function refreshTable() {
     params = {};
     loadGridData(1);
+    tssJS("#gridTitle>button").hide();
 } 
 
+function listWorkflow() {
+    tssJS("#listBT2").css("color", "blue");
+    tssJS("#listBT3").css("color", "#666");
+    params = {"my_wf_list": true};
+    loadGridData(1);
+    ws.closeAllTabs();
+
+    tssJS("#gridTitle>input").hide();
+    tssJS("#gridTitle>button").show();
+    tssJS("#btn_ex, #btn_search").show();
+}
+function listApply() {
+    tssJS("#listBT3").css("color", "blue");
+    tssJS("#listBT2").css("color", "#666");
+    params = {"creator": userCode};
+    loadGridData(1);
+    ws.closeAllTabs();
+
+    tssJS("#gridTitle>input").show();
+    tssJS("#gridTitle>button").hide();
+}
+
 function initMenus() {
-    tssJS("#rcTitle").html("【<a href='javascript:void(0)' onclick='refreshTable()'> " +recordName+ "（刷新）</a>】");
+    var rcTitle;
+    if( hasWorkflow ) {
+        rcTitle = "【<a onclick='listWorkflow()' id='listBT1' style='color: #666'> " +recordName+ "（刷新）</a>";
+        rcTitle += "<a onclick='listWorkflow()' id='listBT2'> 待审批列表</a>"
+        rcTitle += "<a onclick='listApply()' id='listBT3'> 已申请列表</a> 】"
+    } else {
+        rcTitle = "【<a onclick='refreshTable()' id='listBT1'> " +recordName+ "（刷新）</a>】";
+    }
+    tssJS("#rcTitle").html(rcTitle);
+    tssJS("#rcTitle>a").attr("href", "javascript:void(0)");
 
     if( !_operation.contains("1") ) {
         tssJS("#btn_create").hide();
@@ -309,6 +357,12 @@ function canEditRow(rowID) {
         if( !id )  {
             return false; // 透析模式
         }
+
+        var wfstatus = tssJS.G("grid").getColumnValue("wfstatus");  
+        if( wfstatus && wfstatus != '待审批' ) { // 流程数据只有待审批状态时能修改
+            return false;
+        }
+
         return (_operation.contains("1") && userCode == creator) || _operation.contains("5");
     }
 }
@@ -367,13 +421,17 @@ var uniqueFlag = false, uniqueMsg, _tempID;
 function loadDetailData(rowID) {
     var form, dataNode = tssJS.cache.XmlDatas[rowID],
         isCreateRow = isCreate(rowID),
-        version;
+        version, attachList, wf_logs;
+
     _tempID = isCreateRow ? $.now() : rowID;
 
-    function showInForm(version) {
+    function showInForm(version, attachList, wf_logs) {
         xform = tssJS.json2Form("page1Form", recordDefine, null, customizeJS);
         xform.template.dataNode.id = _tempID;
         xform.template.dataNode._version = version;
+        xform.template.dataNode.attachList = attachList;
+        xform.template.dataNode.wf_logs = wf_logs;
+
         tssJS.cache.XmlDatas[rowID] = xform.template.dataNode;
         attachReminder(_tempID, xform); // 离开提醒
 
@@ -445,7 +503,7 @@ function loadDetailData(rowID) {
                 var params = {"strictQuery": "true"};
                 params[code] = val;
 
-                val && tssJS.getJSON("/tss/auth/xdata/json/"+recordId, params, 
+                val && tssJS.getJSON( URL_DATA_JSON + recordId, params, 
                     function(result) {
                         if( isNew() ) { uniqueFlag = result.length > 0; }
                         else { 
@@ -462,22 +520,37 @@ function loadDetailData(rowID) {
 
         // 设置保存/关闭按钮操作
         if( canEditRow(rowID) && (!disableSave || !disableSave())) {
-            tssJS("#page1BtSave").show().click( function() { saveSource(rowID, isCreateRow, version);  } );
+            tssJS("#saveBt").show().click( function() { saveSource(rowID, isCreateRow, version);  } );
         } else {
-            tssJS("#page1BtSave").hide();
+            tssJS("#saveBt").hide();
         }
-        tssJS("#page1BtCancel").click( function() { 
-            ws.closeActiveTab(); 
-        } );
 
         tssJS('#btnViewAttach').remove();         
         if(needFile) {
             var newBtn = tssJS.createElement('button', 'tssbutton small white', 'btnViewAttach');
-            tssJS(newBtn).html("管理附件").click( function() {      
+            tssJS(newBtn).html("附 件").click( function() {      
                 manageAttach( _tempID, "form", isCreateRow);
             } );  
             tssJS("WorkSpace\\:PageStep").appendChild(newBtn);
         }  
+
+        if( params.my_wf_list && !isCreateRow ) {
+            disableForm();
+            tssJS("#ws .wf").show();
+            tssJS("#ws .cs").hide();
+            tssJS("#cancelBt").hide();            
+        } 
+        else {
+            tssJS("#ws .wf").hide();
+            tssJS("#ws .cs").show();
+            if( hasWorkflow && isCreateRow ) {
+                tssJS("#cancelBt").hide();
+            } else {
+                tssJS("#cancelBt").show();
+            }
+        }
+
+        showExtension(attachList, wf_logs);
     }
 
     // 如果已经在打开的tab页里了
@@ -494,6 +567,8 @@ function loadDetailData(rowID) {
         });
 
         version = dataNode._version;
+        attachList = dataNode.attachList;
+        wf_logs = dataNode.wf_logs;
     }
     else {
         if(rowID === '_new') {
@@ -502,22 +577,40 @@ function loadDetailData(rowID) {
             });
         }
         else { // 初次加载从后台获取（Grid上的值无法保留换行符）    
-            tssJS.getJSON(URL_DATA_JSON + recordId + "/1", {"id": rowID}, function(data) {
-                if(!data.length) {
-                    return alert("该记录不存在，可能已被其他人删除。");
-                }
-                var item = data[0];
+            tssJS.getJSON(URL_GET_SOURCE + recordId + ("/"+rowID).replace("_copy", ""), {}, function(item) {
                 recordDefine.each(function(i, field){
                     field.defaultValue = item[field.code];
                 }); 
 
-                showInForm(item.version);  // update
-            });
+                showInForm(item.version, item.attachList, item.wf_logs);  // update
+            }, 'GET');
             return;
         }
     }
 
-    showInForm(version);  // create or 在多个已打开的记录之间切换Tab
+    showInForm(version, attachList, wf_logs);  // create or 在多个已打开的记录之间切换Tab
+}
+
+function showExtension(attachList, wf_logs) {
+    if(attachList) {
+        var pcontainer = $.createElement("ul", "", "pcontainer");
+        attachList.each(function(i, t){
+            var li = $.createElement("li");
+            $(li).html( t.downloadUrl );
+            $(pcontainer).appendChild(li);
+        });
+        tssJS("#page1Form").appendChild(pcontainer);
+    }
+
+    if(wf_logs) {
+        var lcontainer = $.createElement("ul", "", "lcontainer");
+        wf_logs.each(function(i, t){
+            var li = $.createElement("li");
+            $(li).text( t.processor + "." + t.processResult + ": " + (t.processOpinion||"") );
+            $(lcontainer).appendChild(li);
+        });
+        tssJS("#page1Form").appendChild(lcontainer);
+    }
 }
 
 var _after_;  // 新增数据后续自定义操作（eg：改写管理表的状态）
@@ -557,7 +650,7 @@ function saveSource(rowID, isCreate, version) {
         _after_ && request.addParam("_after_", _after_);
     }
 
-    syncButton([$1("page1BtSave")], request); // 同步按钮状态
+    syncButton([$1("saveBt")], request); // 同步按钮状态
     detachReminder(_tempID); // 解除提醒
 
     request.onsuccess = function(info) { 
@@ -762,7 +855,11 @@ function showQueryForm() {
             var searchFormXML = tssJS.cache.XmlDatas["searchFormXML"];
             var dataNode = searchFormXML.querySelector("data");
         
+            // 清空查询条件，除了my_wf_list
+            var my_wf_list = params.my_wf_list;
             params = {};
+            params.my_wf_list = my_wf_list;
+
             var nodes = dataNode.querySelectorAll("row *");
             for(var i = 0; i < nodes.length; i++) {
                 var node = nodes[i];
@@ -978,12 +1075,12 @@ function delAttach() {
         <tr>
           <td id="gridTitle">
 <span class="icon"></span><span id="rcTitle">资源列表</span>
+<button class="tssbutton small white" onclick="batchApprove()" id="btn_batch_approve">批量审批</button>
 
 <input type="button" class="tssbutton small white" value="新 增" id="btn_create" onclick="showDetail('_new')"/>
 <input type="button" class="tssbutton small white" value="删 除" id="btn_batch_del" onclick="removeBatch()"/>
 <input type="button" class="tssbutton small white" value="查 询" id="btn_search" onclick="showQueryForm()"/>
 <input type="button" class="tssbutton small white" value="导出数据" id="btn_ex" onclick="backup(params)"/>
-<!-- <input type="button" class="tssbutton small white" value="备 份" id="btn_bk" onclick="backup()"/> -->
 <input type="button" class="tssbutton small white" value="Excel模板" id="btn_tl" onclick="getImportTL()"/>
 <input type="button" class="tssbutton small white" value="Excel导入" id="btn_imp" onclick="batchImport()"/>
 
@@ -1000,8 +1097,13 @@ function delAttach() {
         <WorkSpace:Page id="page1">
             <div id="page1Form" editable="true"></div>
             <WorkSpace:PageStep>
-                <input type="button" class="tssbutton small white" value="保 存" id="page1BtSave"/>&nbsp;
-                <input type="button" class="tssbutton small white" value="关 闭" id="page1BtCancel"/>&nbsp;
+                <input type="button" class="tssbutton small white wf" value="同 意" id="approveBt" onclick="approve();"/>
+                <input type="button" class="tssbutton small white wf" value="驳 回" id="rejectBt" onclick="reject();"/>
+                <input type="button" class="tssbutton small white wf" value="转 审" id="transBt" onclick="transApprove();"/>
+
+                <input type="button" class="tssbutton small white cs" value="保 存" id="saveBt"/>
+                <input type="button" class="tssbutton small white cs" value="撤 销" id="cancelBt" onclick="cancel();"/>
+                <input type="button" class="tssbutton small white cs" value="关 闭" id="closeBt" onclick="ws.closeActiveTab();"/>
             </WorkSpace:PageStep>
         </WorkSpace:Page>
     </WorkSpace:Box>
@@ -1026,6 +1128,23 @@ function delAttach() {
     </div>
 
     <iframe id="downloadFrame" style="display:none"></iframe>
+
+<script type="text/javascript">
+  
+function cancel() {
+    console.log(0)
+} 
+function approve() {
+    console.log(1)
+}
+function reject() {
+    console.log(2)
+} 
+function transApprove() {
+    console.log(3)
+}
+
+</script>
 
 </body>
 </html>

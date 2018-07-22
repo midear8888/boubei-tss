@@ -58,7 +58,7 @@
 		            <li onclick="tab(7)"> 表单控制脚本 </li>
 		            <li onclick="tab(8)"> 页面控制脚本 </li>
 		            <li onclick="tab(9)"> 数据过滤条件 </li>
-		            <li onclick="tab(10)"> 流程设计 </li>
+		            <li onclick="tab(10)"> 审批流程设计 </li>
 		        </ul>
 			</TD>
 		</TR>
@@ -106,8 +106,7 @@
 				<a onclick="configWorkflow()"  style="margin: 4px 0 0 2%;">流程设计器</a>
 				<a onclick="previewWorkflow()"  style="margin:4px 10px 0 10px;">预览</a>
 				<p style="display: inline-block; height:18px;">
-					注：此处可定义流程控制，可定义各种审批流。
-					<a href="http://www.boubei.com/tss/article.portal?articleId=107" target="_blank">详细说明</a>
+					注：此处可定义各种审批流程控制，含审批、抄送、转审等。
 				</p>
 			</TD>
 		</TR>

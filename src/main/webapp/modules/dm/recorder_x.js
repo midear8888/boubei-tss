@@ -142,7 +142,7 @@ function hideDelButton() {
  * 禁止编辑录入表单
  */
 function disableForm() {
-    tssJS("#page1BtSave").hide(); 
+    tssJS("#saveBt").hide(); 
     tssJS.F("page1Form").setEditable("false");
 }
 

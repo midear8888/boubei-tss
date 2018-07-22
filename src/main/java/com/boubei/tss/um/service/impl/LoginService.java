@@ -267,7 +267,7 @@ public class LoginService implements ILoginService {
     @SuppressWarnings("unchecked")
     public List<OperatorDTO> getUsersByRoleId(Long roleId) {
         String hql = "select distinct u from ViewRoleUser ru, User u" +
-                " where ru.id.userId = u.id and ru.id.roleId = ? order by u.id";
+                " where ru.id.userId = u.id and ru.id.roleId = ? order by u.id desc ";
        
         List<User> data = (List<User>) groupDao.getEntities( hql, roleId );
         return translateUserList2DTO(data);

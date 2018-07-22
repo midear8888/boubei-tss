@@ -16,8 +16,6 @@ public interface WFService {
 
 	SQLExcutor queryMyTasks(_Database _db, Map<String, String> params, int page, int pagesize);
 
-	List<Object[]> getSameGroupUserByRole(Long roleId, String creator);
-
 	List<String> getUsers(List<Map<String, String>> rule);
 
 	void calculateWFStatus(Long itemId, _Database _db);

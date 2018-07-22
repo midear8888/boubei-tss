@@ -22,6 +22,10 @@ import com.boubei.tss.um.helper.dto.OperatorDTO;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.EasyUtils;
 
+/**
+ * TODO 
+ * 1、审批人禁止查看自己无审批权限的记录附件（审批角色对流程表有浏览权限）
+ */
 @Service("WFService")
 public class WFServiceImpl implements WFService {
 	
@@ -51,7 +55,7 @@ public class WFServiceImpl implements WFService {
 		WFStatus wfStatus = getWFStatus(_db.recordId, itemId);
 		if(wfStatus != null) {
 			if( wfStatus.getProcessors() != null ) {
-				throw new BusinessException(EX.WF_1); // TODO 附件修改也要禁止
+				throw new BusinessException(EX.WF_1); 
 			}
 		} else {
 			wfStatus = new WFStatus();
@@ -99,6 +103,7 @@ public class WFServiceImpl implements WFService {
 	 */
 	public List<String> getUsers(List<Map<String, String>> rule) {
 		List<String> users = new ArrayList<String>();
+		if(rule == null) return users;
 		
 		String creator = Environment.getUserCode(); 
 		
@@ -125,7 +130,7 @@ public class WFServiceImpl implements WFService {
 	/**
 	 * 按角色获取拥有此角色的所有用户 及 组织
 	 */
-	public List<Object[]> getSameGroupUserByRole(Long roleId, String creator) {
+	private List<Object[]> getSameGroupUserByRole(Long roleId, String creator) {
 		
 		List<Object[]> result = new ArrayList<Object[]>();
 		if( Environment.getOwnRoles().contains(roleId) ) { // 如果自己就拥有该角色，则无需此角色的人审批
@@ -149,20 +154,21 @@ public class WFServiceImpl implements WFService {
 	        }
 		}
 		
-		return result;
+		return result.subList(0, 1); // 只取第一个
 	}
 	
 	/**
 	 * 我审批的 = 待审批的（nextProcessor = 我） + 已审批的（processors.contains(我): 含已审批、已转审、已驳回）+ 抄送给我的（cc.contains(我)）
+	 * 注：剔除已撤销的
 	 */
 	public SQLExcutor queryMyTasks(_Database _db, Map<String, String> params, int page, int pagesize) {
 
 		Long recordId = _db.recordId;
     	String userCode = Environment.getUserCode(); 
     	String wrapCode = MacrocodeQueryCondition.wrapLike(userCode);
-		String hsql = "from WFStatus where tableId = ? and ( ? in (nextProcessor) or processors like ? or cc like ?) "; // ? in (nextProcessor, applier)
+		String hsql = "from WFStatus where tableId = ? and ( ? in (nextProcessor) or processors like ? or cc like ?) and currentStatus <> ? "; // ? in (nextProcessor, applier)
 		List<?> statusList = commonDao.getEntities(hsql, 
-    			recordId, userCode, wrapCode, wrapCode);
+    			recordId, userCode, wrapCode, wrapCode, WFStatus.CANCELED);
 
     	List<Long> itemIds = new ArrayList<Long>();
     	Map<Long, WFStatus> statusMap = new HashMap<Long, WFStatus>();
@@ -240,7 +246,7 @@ public class WFServiceImpl implements WFService {
 		for( String to : toList ) {
 			if( !wfStatus.processorList().contains(to) ) {
 				WFLog log = new WFLog();
-				log.setProcessor(to);
+				log.setProcessor( EasyUtils.attr2Str(getUserList(to), "username") );
 				log.setProcessResult(WFStatus.UNAPPROVE);
 				
 				logs.add(log);

@@ -6304,6 +6304,13 @@
                 curTab.inactive();
             }
         },
+
+        closeAllTabs: function() {
+            for(var item in this.tabs) {
+                var curTab = this.tabs[item];
+                curTab.close();
+            }
+        },
          
         /* 激活上一个Phase标签 */
         prevPhase: function() {

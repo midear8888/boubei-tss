@@ -678,13 +678,6 @@ function moveTreeNode(tree, id, targetId, url) {
 }
 
 /*********************** 和UM相关 的 公用函数 **********************************/
-var userHas;
-tssJS.getJSON("/tss/auth/user/has", 
-    function(info) {
-        userHas = info;
-    }, 
-    "GET"
-);
 
 function showOnlineUser() {
 	$.ajax({

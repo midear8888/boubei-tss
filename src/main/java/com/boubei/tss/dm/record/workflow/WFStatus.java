@@ -23,7 +23,7 @@ public class WFStatus implements IEntity {
 	
 	public final static String NEW       = "待审批";
 	public final static String APPROVING = "审批中";
-	public final static String APPROVED  = "已审批";
+	public final static String APPROVED  = "已同意";
 	public final static String TRANS     = "已转审";
 	public final static String PASSED    = "已通过";
 	public final static String REJECTED  = "已驳回";
