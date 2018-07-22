@@ -10,7 +10,6 @@
 
 package com.boubei.tss.um.action;
 
-import java.util.Arrays;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -31,7 +30,6 @@ import com.boubei.tss.um.entity.Message;
 import com.boubei.tss.um.helper.MessageQueryCondition;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.um.service.IMessageService;
-import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.MailUtil;
 import com.boubei.tss.util.XMLDocUtil;
 
@@ -68,18 +66,7 @@ public class MessageAction extends BaseActionSupport {
     @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
     public void sendMessage(String title, String content, String receivers) {
-    	if( EasyUtils.isNullOrEmpty(receivers) ) return;
-    	
-    	String[] ids = loginService.getContactInfos(receivers, true);
-    	if(ids == null || ids.length == 0) {
-    		ids = receivers.split(","); // 有可能接收人为ID（如：站内信直接回复）
-    	}
-    	
-		Message message = new Message();
-		message.setTitle(title);
-		message.setContent(content);
-		message.setReceiverIds(EasyUtils.list2Str(Arrays.asList(ids)));
-		messageService.sendMessage(message );
+		messageService.sendMessage(title, content, receivers);
     }
     
     @RequestMapping(value = "/list", method = RequestMethod.GET)

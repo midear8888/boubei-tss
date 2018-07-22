@@ -20,6 +20,7 @@ import com.boubei.tss.framework.persistence.pagequery.MacrocodeQueryCondition;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.um.helper.dto.OperatorDTO;
 import com.boubei.tss.um.service.ILoginService;
+import com.boubei.tss.um.service.IMessageService;
 import com.boubei.tss.util.EasyUtils;
 
 /**
@@ -32,6 +33,7 @@ public class WFServiceImpl implements WFService {
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	@Autowired ILoginService loginSerivce;
+	@Autowired IMessageService msgService;
 	@Autowired ICommonDao commonDao;
  
 	public WFStatus getWFStatus(Long tableId, Long itemId) {
@@ -59,6 +61,7 @@ public class WFServiceImpl implements WFService {
 			}
 		} else {
 			wfStatus = new WFStatus();
+			wfStatus.setTableName(_db.recordName);
 			wfStatus.setTableId(_db.recordId);
 			wfStatus.setItemId( itemId );
 			wfStatus.setCurrentStatus(WFStatus.NEW);
@@ -95,7 +98,7 @@ public class WFServiceImpl implements WFService {
 		wfStatus.setCc( EasyUtils.list2Str(ccs) );
 		wfStatus.setTrans(  EasyUtils.list2Str(transs)  );
 		
-		commonDao.update(wfStatus);
+		updateWFStatus(wfStatus);
 	}
 	
 	/**
@@ -321,7 +324,7 @@ public class WFServiceImpl implements WFService {
     	}
     	wfStatus.setCurrentStatus(currentStatus);
     	wfStatus.setNextProcessor(nextProcessor);
-    	commonDao.update(wfStatus);
+    	updateWFStatus(wfStatus);
     	
     	WFLog wfLog = new WFLog(wfStatus, opinion);
     	wfLog.setProcessResult( WFStatus.APPROVED );
@@ -334,7 +337,7 @@ public class WFServiceImpl implements WFService {
   
     	wfStatus.setCurrentStatus(WFStatus.REJECTED);
     	wfStatus.setNextProcessor(null);
-    	commonDao.update(wfStatus);
+    	updateWFStatus(wfStatus);
     	
 		WFLog wfLog = new WFLog(wfStatus, opinion);
 		commonDao.createObject(wfLog);
@@ -352,7 +355,7 @@ public class WFServiceImpl implements WFService {
     	wfStatus.setNextProcessor(target);
     	wfStatus.setTo( wfStatus.getTo().replaceAll(Environment.getUserCode(), Environment.getUserCode() + "," + target) );
     	wfStatus.setStepCount( wfStatus.getStepCount() + 1 );
-    	commonDao.update(wfStatus);
+    	updateWFStatus(wfStatus);
     	
 		WFLog wfLog = new WFLog(wfStatus, opinion);
 		commonDao.createObject(wfLog);
@@ -367,9 +370,28 @@ public class WFServiceImpl implements WFService {
   
     	wfStatus.setCurrentStatus(WFStatus.CANCELED);
     	wfStatus.setNextProcessor(null);
-    	commonDao.update(wfStatus);
+    	updateWFStatus(wfStatus);
     	
 		WFLog wfLog = new WFLog(wfStatus, opinion);
 		commonDao.createObject(wfLog);
+	}
+	
+	private void updateWFStatus(WFStatus wfStatus) {
+		commonDao.update(wfStatus);
+		
+		String tableName = wfStatus.getTableName();
+		Long tableId = wfStatus.getTableId();
+		Long itemId = wfStatus.getItemId();
+		
+		// 分别给流程发起人及下一步处理人，发送站内信、邮件、短信等通知
+		if( !Environment.getUserCode().equals(wfStatus.getApplier()) ) {
+			String title = "您提交的流程【" + tableName + "】" + wfStatus.getCurrentStatus();
+			String content = title + "，<a href='/tss/modules/dm/recorder.html?id=" +tableId+ "&itemId=" +itemId+ "' target='_blank'>查看最新进度</a>";
+			msgService.sendMessage(title, content, wfStatus.getApplier());
+		}
+		
+		String title = "有新的流程【" + tableName + "】待您审批";
+		String content = title + "，<a href='/tss/modules/dm/recorder.html?id=" +tableId+ "&itemId=" +itemId+ "' target='_blank'>点击打开处理</a>";
+		msgService.sendMessage(title, content, wfStatus.getNextProcessor());
 	}
 }

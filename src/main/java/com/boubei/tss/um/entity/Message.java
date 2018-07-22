@@ -22,6 +22,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import com.boubei.tss.dm.record.workflow.WFUtil;
 import com.boubei.tss.framework.persistence.IEntity;
 import com.boubei.tss.framework.web.display.grid.GridAttributesMap;
 import com.boubei.tss.framework.web.display.grid.IGridNode;
@@ -53,6 +54,10 @@ public class Message implements IEntity, IGridNode {
  
 	@Transient
 	private String receiverIds; // 接收者ID列表
+	
+	public String toString() {
+		return WFUtil.toString(this);
+	}
 	
 	public String getContent() {
 		return content;
@@ -118,14 +123,6 @@ public class Message implements IEntity, IGridNode {
 		this.title = title;
 	}
  
-    public String getReceiverIds() {
-        return receiverIds;
-    }
-
-    public void setReceiverIds(String receiverIds) {
-        this.receiverIds = receiverIds;
-    }
-
 	public Date getReadTime() {
 		return readTime;
 	}
@@ -158,4 +155,12 @@ public class Message implements IEntity, IGridNode {
 	public boolean readed() {
 		return this.readTime != null;
 	}
+	
+    public String getReceiverIds() {
+        return receiverIds;
+    }
+
+    public void setReceiverIds(String receiverIds) {
+        this.receiverIds = receiverIds;
+    }
 }

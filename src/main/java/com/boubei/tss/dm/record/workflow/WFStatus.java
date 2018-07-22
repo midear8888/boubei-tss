@@ -36,6 +36,7 @@ public class WFStatus implements IEntity {
 	
 	@Column(nullable = false)
 	private Long tableId;  // 流程对应数据表
+	private String tableName;
 	
 	@Column(nullable = false)
 	private Long itemId;  // 对应的数据记录
@@ -183,5 +184,13 @@ public class WFStatus implements IEntity {
 
 	public void setApplierName(String applierName) {
 		this.applierName = applierName;
+	}
+
+	public String getTableName() {
+		return tableName;
+	}
+
+	public void setTableName(String tableName) {
+		this.tableName = tableName;
 	} 
 }

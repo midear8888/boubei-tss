@@ -22,7 +22,7 @@ public interface IMessageService {
 	 * 发送短消息
 	 * @param message
 	 */
-	void sendMessage(Message message);
+	void sendMessage(String title, String content, String receivers);
 	
 	/**
 	 * 查看短消息 并将标志位改成已读

@@ -24,6 +24,7 @@ import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.um.dao.IGroupDao;
 import com.boubei.tss.um.entity.Message;
 import com.boubei.tss.um.helper.MessageQueryCondition;
+import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.um.service.IMessageService;
 import com.boubei.tss.util.EasyUtils;
  
@@ -32,12 +33,20 @@ public class MessageService implements IMessageService {
 	
 	Logger log = Logger.getLogger(this.getClass());
 	
+	@Autowired ILoginService loginService;
 	@Autowired private ICommonDao commonDao;
 	@Autowired private IGroupDao groupDao;
  
-	public void sendMessage(Message message){
-		String[] receiverIds = message.getReceiverIds().split(",");
-		for(String receiverId : receiverIds) {
+	public void sendMessage(String title, String content, String receivers){
+		
+		if( EasyUtils.isNullOrEmpty(receivers) ) return;
+    	
+    	String[] ids = loginService.getContactInfos(receivers, true);
+    	if(ids == null || ids.length == 0) {
+    		ids = receivers.split(","); // 有可能接收人为ID（如：站内信直接回复）
+    	}
+
+		for(String receiverId : ids) {
 			Long _receiveId;
 			try {
 				_receiveId = EasyUtils.obj2Long(receiverId);
@@ -48,8 +57,8 @@ public class MessageService implements IMessageService {
 			Message temp = new Message();
 			temp.setReceiverId(_receiveId);
 			temp.setReceiver(receiverId);
-			temp.setTitle(message.getTitle());
-			temp.setContent(message.getContent());
+			temp.setTitle( title );
+			temp.setContent( content );
 			
 			temp.setSenderId(Environment.getUserId());
 			temp.setSender(Environment.getUserName());
