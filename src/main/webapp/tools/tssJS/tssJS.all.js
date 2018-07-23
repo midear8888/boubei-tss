@@ -4660,6 +4660,7 @@
                             }
                         });
                     }
+                    value = value.replace(/\^/gi, "\"");
                     $(cell).html(value);
                     
                     var showTitle = column.getAttribute("showTitle");

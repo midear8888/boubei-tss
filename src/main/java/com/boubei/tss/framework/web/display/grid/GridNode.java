@@ -101,7 +101,8 @@ public class GridNode {
 		    return MathUtil.formatNumber(value, pattern);
 		}
 		
-		return XmlUtil.toFormXml(value).replaceAll("&quot;", "'"); // Grid 显示时值不能有双引号
+		return XmlUtil.toFormXml(value).replaceAll("&quot;", "^"); 
+		/* Grid 显示时值不能有双引号，前台将^转回双引号: content="<a onclick=^parent.openUrl('more/bi_nav.html...')^ " */
 	}
 
 	/**

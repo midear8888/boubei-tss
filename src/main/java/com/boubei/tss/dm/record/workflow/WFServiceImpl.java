@@ -383,15 +383,18 @@ public class WFServiceImpl implements WFService {
 		Long tableId = wfStatus.getTableId();
 		Long itemId = wfStatus.getItemId();
 		
+		String url = "javascript:void(0)"; // "'/tss/modules/dm/recorder.html?id=" +tableId+ "&itemId=" +itemId+ "' target='_blank'";
+		String onclick = "parent.openUrl('more/bi_nav.html?_default=" +tableId+ "&_defaultItem=" +itemId+ "')";
+		
 		// 分别给流程发起人及下一步处理人，发送站内信、邮件、短信等通知
 		if( !Environment.getUserCode().equals(wfStatus.getApplier()) ) {
 			String title = "您提交的流程【" + tableName + "】" + wfStatus.getCurrentStatus();
-			String content = title + "，<a href='/tss/modules/dm/recorder.html?id=" +tableId+ "&itemId=" +itemId+ "' target='_blank'>查看最新进度</a>";
+			String content = title + "，<a href=\"" +url+ "\" onclick=\"" +onclick+ "\">查看最新进度</a>";
 			msgService.sendMessage(title, content, wfStatus.getApplier());
 		}
 		
 		String title = "有新的流程【" + tableName + "】待您审批";
-		String content = title + "，<a href='/tss/modules/dm/recorder.html?id=" +tableId+ "&itemId=" +itemId+ "' target='_blank'>点击打开处理</a>";
+		String content = title + "，<a href=\"" +url+ "\" onclick=\"" +onclick+ "\">点击打开处理</a>";
 		msgService.sendMessage(title, content, wfStatus.getNextProcessor());
 	}
 }

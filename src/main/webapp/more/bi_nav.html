@@ -79,10 +79,11 @@ var report_portlet_url = "../modules/dm/report_portlet.html?leftBar=true&id=",
 	_menus;
 
 var group = tssJS.Query.get("group"),
-    _default = tssJS.Query.get("_default");
+    _default = tssJS.Query.get("_default"),
+    _defaultItem = tssJS.Query.get("_defaultItem");
 
 if( _default ) {
-	_default = resourceUrl(_default);
+	_default = resourceUrl(_default) + (_defaultItem ? "&itemId=" + _defaultItem : "");
 } 
 else {
 	_default = (group == "-1" ? "" : "x/domain.html");
