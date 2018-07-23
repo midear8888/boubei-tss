@@ -528,7 +528,7 @@ function closeDefine() {
 	$("#recordDefinesDiv").hide();
 }
 
-var RECORD_PARAM_FIELDS = ['label', 'code', 'type', 'nullable', 'unique', 'defaultValue', 'isparam', 'role1', 'role2',
+var RECORD_PARAM_FIELDS = ['label', 'code', 'type', 'nullable', 'unique', 'defaultValue', 'isparam', 'readonly', 'role1', 'role2',
 	'calign', 'cwidth', 'checkReg', 'errorMsg', 'pattern', 'width', 'height', 'options', 'multiple', 'onchange'];
 
 function editFieldConfig() {
@@ -620,7 +620,10 @@ function editFieldConfig() {
 			};
 		}
 		
-    	fieldEl.onblur = function() {
+		/* 属性值改变 && 当前元素失去焦点(onblur)，才可以激活onchange事件 
+		 * onblur 在safari里不支持checkbox
+		 */
+    	fieldEl.onchange = function() {
     		var newValue;
     		if( $(fieldEl).attr("type") == 'checkbox' ) { // checkbox
 				newValue = fieldEl.checked ? 'true' : "";

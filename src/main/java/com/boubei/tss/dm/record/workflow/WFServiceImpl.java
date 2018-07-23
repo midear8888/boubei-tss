@@ -203,8 +203,8 @@ public class WFServiceImpl implements WFService {
     	}
     	itemIds.add(-999L); // 防止id条件为空把所有记录都查出来了
     	params.put("id", EasyUtils.list2Str(itemIds));
-    	
     	SQLExcutor ex = _db.select(page, pagesize, params, isApprover);
+    	params.remove("id");
 		List<Map<String, Object>> items = ex.result;
     	
     	// 加上每一行的流程状态： 审批中、已通过、已撤销、已驳回、已转审
@@ -251,7 +251,9 @@ public class WFServiceImpl implements WFService {
 		// 流程状态
 		WFStatus wfStatus = getWFStatus(_db.recordId, itemId);
 		String processors = EasyUtils.obj2String( wfStatus.getProcessors() );
-		item.put("wfstatus", wfStatus.getCurrentStatus());
+		String curStatus = wfStatus.getCurrentStatus();
+		
+		item.put("wfstatus", curStatus);
 		item.put("nextProcessor", wfStatus.getNextProcessor());
 		item.put("processors", processors);
 		item.put("applier", wfStatus.getApplierName() );
@@ -265,14 +267,16 @@ public class WFServiceImpl implements WFService {
 		List<WFLog> logs = (List<WFLog>) commonDao.getEntities("from WFLog where tableId = ? and itemId = ? order by id desc", _db.recordId, itemId);
 		
 		// 根据to审批人列表，模拟出审批步骤
-		String[] toList = wfStatus.getTo().split(",");
-		for( String to : toList ) {
-			if( !wfStatus.processorList().contains(to) ) {
-				WFLog log = new WFLog();
-				log.setProcessor( EasyUtils.attr2Str(getUserList(to), "username") );
-				log.setProcessResult(WFStatus.UNAPPROVE);
-				
-				logs.add(log);
+		if( WFStatus.NEW.equals( curStatus ) || WFStatus.APPROVING.equals( curStatus ) || WFStatus.TRANS.equals( curStatus ) ) {
+			String[] toList = wfStatus.getTo().split(",");
+			for( String to : toList ) {
+				if( !wfStatus.processorList().contains(to) ) {
+					WFLog log = new WFLog();
+					log.setProcessor( EasyUtils.attr2Str(getUserList(to), "username") );
+					log.setProcessResult(WFStatus.UNAPPROVE);
+					
+					logs.add(log);
+				}
 			}
 		}
 		
@@ -347,6 +351,9 @@ public class WFServiceImpl implements WFService {
 		
 		if( EasyUtils.isNullOrEmpty(target) ) {
 			throw new BusinessException(EX.WF_5);
+		}
+		if( getWFStatus(recordId, id).toUsers().contains(target) ) {
+			throw new BusinessException( EX.parse(EX.WF_6, target));
 		}
 
 		WFStatus wfStatus = setWFStatus(recordId, id, false, false);

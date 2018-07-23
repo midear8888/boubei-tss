@@ -120,8 +120,11 @@ public class _Recorder extends BaseActionSupport {
 
 	@RequestMapping("/define/{record}")
 	@ResponseBody
-	public Object getDefine(@PathVariable("record") Object record) {
-		Long recordId = recordService.getRecordID(record, true);
+	public Object getDefine(HttpServletRequest request, @PathVariable("record") Object record) {
+		
+		Long recordId = recordService.getRecordID(record, false);
+		prepareParams(request, recordId);
+		
 		Record _record = recordService.getRecord(recordId);
 		if (!_record.isActive()) {
 			throw new BusinessException(EX.DM_10);
@@ -184,7 +187,8 @@ public class _Recorder extends BaseActionSupport {
 
 		long start = System.currentTimeMillis();
 		SQLExcutor ex;
-		if (requestMap.remove("my_wf_list") != null) {
+		boolean isWFQuery = requestMap.remove("my_wf_list") != null;
+		if (isWFQuery) {
 			ex = wfService.queryMyTasks(_db, requestMap, page, pagesize);
 		} else {
 			ex = _db.select(page, pagesize, requestMap);
@@ -195,7 +199,7 @@ public class _Recorder extends BaseActionSupport {
 
 		AccessLogRecorder.outputAccessLog(_db.recordName, _db.recordName, "select_" + pointedFileds, requestMap, start);
 
-		if (pointedFileds || requestMap.containsKey("id")) {
+		if (pointedFileds || requestMap.containsKey("id") ) {
 			return ex;
 		}
 
@@ -232,7 +236,7 @@ public class _Recorder extends BaseActionSupport {
 			}
 
 			Object itemId = item.get("id").toString();
-			Object attachTag = EasyUtils.checkNull(itemAttach.get(itemId), "上传");
+			Object attachTag = EasyUtils.checkNull(itemAttach.get(itemId), isWFQuery ? "0" : "上传");
 			item.put("fileNum", "<a href='javascript:void(0)' onclick='manageAttach(" + itemId + ")'>" + attachTag + "</a>");
 		}
 
@@ -781,6 +785,13 @@ public class _Recorder extends BaseActionSupport {
 		((IBusinessLogger) Global.getBean("BusinessLogger")).output(excuteLog);
 
 		printSuccessMessage();
+	}
+	
+	// for 不支持method=DELETE的客户端，微信小程序等
+	@RequestMapping(value = "/attach/del/{id}", method = RequestMethod.POST)
+	public void deleteAttach4WX(HttpServletRequest request, HttpServletResponse response, 
+			@PathVariable("id") Long id) {
+		deleteAttach(request, response, id);
 	}
 
 	@RequestMapping("/attach/download/{id}")

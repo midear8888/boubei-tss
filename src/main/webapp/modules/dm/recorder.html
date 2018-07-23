@@ -61,7 +61,7 @@
     #lcontainer li.todo { color: blue; }
 
     #opinionLabel { width: 92px; display: inline-block; margin-top: 20px; }
-    #opinion { height: 50px; width: 320px; margin-top: 10px; }
+    #opinion { height: 50px; width: 320px; margin-top: 15px; }
 
 </style>
 
@@ -416,16 +416,15 @@ var uniqueFlag = false, uniqueMsg, _tempID;
 function loadDetailData(rowID) {
     var form, dataNode = tssJS.cache.XmlDatas[rowID],
         isCreateRow = isCreate(rowID),
-        version, attachList, wf_logs;
+        version, _item;
 
     _tempID = isCreateRow ? $.now() : rowID;
 
-    function showInForm(version, attachList, wf_logs) {
+    function showInForm(version, _item) {
         xform = tssJS.json2Form("page1Form", recordDefine, null, customizeJS);
         xform.template.dataNode.id = _tempID;
         xform.template.dataNode._version = version;
-        xform.template.dataNode.attachList = attachList;
-        xform.template.dataNode.wf_logs = wf_logs;
+        xform.template.dataNode._item = _item;
 
         tssJS.cache.XmlDatas[rowID] = xform.template.dataNode;
         attachReminder(_tempID, xform); // 离开提醒
@@ -550,7 +549,7 @@ function loadDetailData(rowID) {
         tssJS("#rejectBt").click( function() { reject(rowID); } ); 
         tssJS("#transBt").click( function() { transApprove(rowID); } ); 
 
-        showExtension(attachList, wf_logs);
+        showExtension(_item);
     }
 
     // 如果已经在打开的tab页里了
@@ -567,8 +566,7 @@ function loadDetailData(rowID) {
         });
 
         version = dataNode._version;
-        attachList = dataNode.attachList;
-        wf_logs = dataNode.wf_logs;
+        _item = dataNode._item;
     }
     else {
         if(rowID === '_new') {
@@ -582,13 +580,13 @@ function loadDetailData(rowID) {
                     field.defaultValue = item[field.code];
                 }); 
 
-                showInForm(item.version, item.attachList, item.wf_logs);  // update
+                showInForm(item.version, item);  // update
             }, 'GET');
             return;
         }
     }
 
-    showInForm(version, attachList, wf_logs);  // create or 在多个已打开的记录之间切换Tab
+    showInForm(version, _item);  // create or 在多个已打开的记录之间切换Tab
 }
 
 var _after_;  // 新增数据后续自定义操作（eg：改写管理表的状态）
@@ -1053,7 +1051,7 @@ function delAttach() {
         <tr>
           <td id="gridTitle">
 <span class="icon"></span><span id="rcTitle">资源列表</span>
-<button class="tssbutton small white" onclick="batchApprove()" id="btn_batch_approve">批量审批</button>
+<button class="tssbutton small white" onclick="batchApprove()" id="btn_batch_approve">批量审批通过</button>
 
 <input type="button" class="tssbutton small white" value="新 增" id="btn_create" onclick="showDetail('_new')"/>
 <input type="button" class="tssbutton small white" value="删 除" id="btn_batch_del" onclick="removeBatch()"/>
@@ -1110,40 +1108,84 @@ function delAttach() {
 <script type="text/javascript">
   
 function cancel(rowID) {
-    executeWF(URL_WF_CANCEL, rowID);
+    executeWF(URL_WF_CANCEL, rowID, {}, "撤销");
 } 
 function approve(rowID) {
-    executeWF(URL_WF_APPROVE, rowID);
+    executeWF(URL_WF_APPROVE, rowID, {}, "同意");
 }
 function transApprove(rowID) {
     // 转审人员选择 
     var params = {_title: "请选择转审人员"};
     popupTree(URL_WF_TRANS_LIST + recordId +"/"+ rowID, "UserTree", params, function(target) {
         console.log(target.id);
-        // target && executeWF(URL_WF_TRANS, rowID, {"target": target.id});
+        target && executeWF(URL_WF_TRANS, rowID, {"target": target.id}, "转审");
     }, "GET");
 } 
 function reject(rowID) {
-    executeWF(URL_WF_REJECT, rowID);
+    executeWF(URL_WF_REJECT, rowID, {}, "驳回");
 }
 
-function executeWF(url, rowID, _params) {
+function executeWF(url, rowID, _params, op) {
     var opinion = $("#opinion").value();
+    if( !opinion && url != URL_WF_CANCEL) {
+        return tssJS.alert("请填写您的审批意见");
+    }
+
     var params = {"opinion": opinion};
     tssJS.each( _params||{}, function(key, val) {
-        params.key = val;
+        params[key] = val;
     });
 
-    tssJS.post(url + recordId +"/"+ rowID, params, function(rtObj){
-        tssJS.alert( rtObj.result );
+    tssJS.confirm("您确定【" +op+ "】此流程申请吗？", "操作确认", function(){
+        tssJS.post(url + recordId +"/"+ rowID, params, function(rtObj){
+            tssJS.alert( rtObj.result );
 
-        delete tssJS.cache.XmlDatas[rowID];
-        ws.closeTab("viewRow_" + rowID);  
-        loadGridData( $1("GridPageList").value || 1 ); // 更新Grid  
+            delete tssJS.cache.XmlDatas[rowID];
+            ws.closeTab("viewRow_" + rowID);  
+            loadGridData( $1("GridPageList").value || 1 ); // 更新Grid  
+        });
     });
 }
 
-function showExtension(attachList, wf_logs) {
+function batchApprove() {
+    var ids = (tssJS.G("grid").getCheckedRows()||"").trim();
+    if( !ids ) {
+        return alert("您没有选中任何记录，请勾选后再进行批量审批。");
+    }
+    ids = ids.split(",");
+
+    var wfStatus = tssJS.G("grid").getCheckedRowsValue("wfstatus");
+    if( wfStatus.contains("已驳回") ) {
+        return alert("您选中的记录含有【已驳回】的记录。");
+    }
+    if( wfStatus.contains("已通过") ) {
+        return alert("您选中的记录含有【已通过】的记录。");
+    }
+    if( wfStatus.contains("已转审") ) {
+        return alert("您选中的记录含有【已转审】的记录。");
+    }
+
+    tssJS.prompt("请输入审批意见", "审批意见", function(opinion) {
+        if(!opinion) {
+            return tssJS.alert("批量审批失败，请填写审批意见");
+        }
+
+        var params = {"opinion": opinion}, count;
+        ids.each(function(i, id) {
+            tssJS.post(URL_WF_APPROVE + recordId +"/"+ id, params, function(rtObj){
+                if( ++count == ids.length) {
+                    tssJS.alert( rtObj.result );
+                }
+            });
+        });
+
+    }, "");
+}
+
+function showExtension(_item) {
+    var attachList = _item.attachList, 
+        wf_logs = _item.wf_logs;
+
     if(attachList) {
         var pcontainer = $.createElement("ul", "ext", "pcontainer");
         var li = $.createElement("li", "header");
@@ -1178,7 +1220,7 @@ function showExtension(attachList, wf_logs) {
         tssJS("#page1Form").appendChild(lcontainer);
 
         var label = $.createElement("label", "", "opinionLabel");
-        $(label).html( "审批意见" );
+        $(label).html( _item.creator == userCode ? "撤销原因" : "审批意见" );
         tssJS("#page1Form").appendChild(label);
 
         var opinionEL = $.createElement("textarea", "", "opinion");

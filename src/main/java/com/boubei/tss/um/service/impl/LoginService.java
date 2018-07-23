@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import com.boubei.tss.EX;
 import com.boubei.tss.PX;
 import com.boubei.tss.framework.exception.BusinessException;
+import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.sso.IOperator;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.modules.param.Param;
@@ -266,10 +267,12 @@ public class LoginService implements ILoginService {
  
     @SuppressWarnings("unchecked")
     public List<OperatorDTO> getUsersByRoleId(Long roleId) {
-        String hql = "select distinct u from ViewRoleUser ru, User u" +
-                " where ru.id.userId = u.id and ru.id.roleId = ? order by u.id desc ";
+        String hql = "select distinct u from ViewRoleUser ru, User u, GroupUser gu, Group g" +
+                " where ru.id.userId = u.id and ru.id.roleId = ? " +
+                " 	and u.id = gu.userId and gu.groupId = g.id and g.groupType = 1 and g.domain = ? " +
+                " order by u.id desc ";
        
-        List<User> data = (List<User>) groupDao.getEntities( hql, roleId );
+        List<User> data = (List<User>) groupDao.getEntities( hql, roleId, Environment.getDomain());
         return translateUserList2DTO(data);
     }
     
