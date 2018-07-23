@@ -107,6 +107,9 @@ public class WFServiceImpl implements WFService {
 		String creator = Environment.getUserCode(); 
 		
 		for(Map<String, String> m : rule) {
+			if( m.containsKey("when") && !"true".equals(m.get("when")) ) {
+				continue;
+			}
 			
 			String user = m.get("user"); // 用户需要配置在域扩展表里，使用loginName
 			if( !EasyUtils.isNullOrEmpty(user) ) {
@@ -262,7 +265,7 @@ public class WFServiceImpl implements WFService {
 		
 		// 流程日志
 		@SuppressWarnings("unchecked")
-		List<WFLog> logs = (List<WFLog>) commonDao.getEntities("from WFLog where tableId = ? and itemId = ? order by id desc", _db.recordId, itemId);
+		List<WFLog> logs = (List<WFLog>) commonDao.getEntities("from WFLog where tableId = ? and itemId = ? order by id ", _db.recordId, itemId);
 		
 		// 根据to审批人列表，模拟出审批步骤
 		if( WFStatus.NEW.equals( curStatus ) || WFStatus.APPROVING.equals( curStatus ) || WFStatus.TRANS.equals( curStatus ) ) {
@@ -347,7 +350,7 @@ public class WFServiceImpl implements WFService {
 	
 	public void transApprove(Long recordId, Long id, String opinion, String target) {
 		
-		if( EasyUtils.isNullOrEmpty(target) || loginSerivce.getOperatorDTOByLoginName(target) == null ) {
+		if( EasyUtils.isNullOrEmpty(target) || this.getUserList(target).isEmpty() ) {
 			throw new BusinessException(EX.parse(EX.WF_5, target));
 		}
 		if( getWFStatus(recordId, id).toUsers().contains(target) ) {

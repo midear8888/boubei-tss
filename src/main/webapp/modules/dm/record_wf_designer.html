@@ -1,0 +1,93 @@
+<!DOCTYPE HTML>
+<HTML xmlns:WorkSpace xmlns:Tree xmlns:Grid>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>数据录入表</title>
+
+<link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+
+<style type="text/css">
+	body {
+		padding: 10px;
+	}
+	input.combo, input.string {
+		height: 23px; width: 180px;
+	}
+	td {
+		height: 32px;
+	}
+
+</style>
+
+</head>
+
+<body>
+<div id="designerForm"></div>
+
+<script type="text/javascript">
+
+	var wf_def = parent.wf_def || "{}";
+
+	var desiner_form = [];
+	desiner_form.push('<xform><declare>');
+	desiner_form.push('  <column name="sp1" caption="一级审批" mode="combotree"/>');
+	desiner_form.push('  <column name="sp1_tj" caption="条件"/>');
+	desiner_form.push('  <column name="sp2" caption="二级审批" mode="combotree"/>');
+	desiner_form.push('  <column name="sp2_tj" caption="条件"/>');
+	desiner_form.push('  <column name="sp3" caption="三级审批" mode="combotree"/>');
+	desiner_form.push('  <column name="sp3_tj" caption="条件"/>');
+	desiner_form.push('  <column name="cc" caption="抄送人员" mode="combotree" multiple="true"/>');
+	desiner_form.push('  <column name="cc_tj" caption="条件"/>');
+	desiner_form.push('  <column name="zs" caption="转审人员" mode="combotree" multiple="true"/>');
+	desiner_form.push('  <column name="zs_tj" caption="条件"/>');
+	desiner_form.push('</declare>');
+	desiner_form.push('<layout>');
+	desiner_form.push('<TR><TD width="70"><label binding="sp1"/></TD><TD><input binding="sp1"/></TD><TD width="50"><label binding="sp1_tj"/></TD><TD><input binding="sp1_tj"/></TD></TR>');
+	desiner_form.push('<TR><TD width="70"><label binding="sp2"/></TD><TD><input binding="sp2"/></TD><TD width="50"><label binding="sp2_tj"/></TD><TD><input binding="sp2_tj"/></TD></TR>');
+	desiner_form.push('<TR><TD width="70"><label binding="sp3"/></TD><TD><input binding="sp3"/></TD><TD width="50"><label binding="sp3_tj"/></TD><TD><input binding="sp3_tj"/></TD></TR>');
+	desiner_form.push('<TR><TD width="70"><label binding="cc"/></TD><TD><input binding="cc"/></TD><TD width="50"><label binding="cc_tj"/></TD><TD><input binding="cc_tj"/></TD></TR>');
+	desiner_form.push('<TR><TD width="70"><label binding="zs"/></TD><TD><input binding="zs"/></TD><TD width="50"><label binding="zs_tj"/></TD><TD><input binding="zs_tj"/></TD></TR>');
+	desiner_form.push('</layout>');
+	desiner_form.push('<data><row/></data></xform>');
+	desiner_form = desiner_form.join("\n");
+
+	var cacheID = "designerForm";
+	 
+	var formXML = $.XML.toNode(desiner_form);
+	var rowNode = formXML.querySelector("data row");
+
+	$.each( {}, function(key, value) {
+		$.XML.setCDATA(rowNode, key, value);
+	});
+
+	$.cache.XmlDatas[cacheID] = formXML;
+	var xform = $.F(cacheID, formXML);	
+
+	var elIds = ['sp1', 'sp2', 'sp3', 'zs', 'cc'];
+	var roleIds = [], roles = [], roleMap = {};
+	$.getJSON("/tss/auth/service/roles", {}, function(data) {
+		data.each(function(i, r) {
+			roleIds.push( r[0] );
+			roles.push( r[1] );
+			roleMap[r[0]] = r[1];
+
+		});
+
+		elIds.each( function(i, elId){
+			xform.updateField(elId, [
+	            {"name": "mode", "value": "combotree"},
+	            {"name": "texts", "value": roles.join('|')},
+	            {"name": "values", "value": roleIds.join('|')}
+	        ]);
+		});
+
+		var workflow = $.parseJSON( wf_def );
+
+	}, "GET");
+
+</script>
+</body>
+</html>

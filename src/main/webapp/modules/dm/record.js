@@ -290,11 +290,20 @@ function loadRecordDetail(isCreate, type, readonly, isPage) {
 			}
 
 			if( !isCreate && type == "1" ) preview();
+
+			wf_def = xform.getData("workflow");
+			$("#desinerForm>iframe").attr("src", "record_wf_designer.html");
 		},
 		onexception : function() { 
 			closeRecordFormDiv();
 		}
 	});
+}
+
+var wf_def;
+function update_wf_def() {
+	var formatResult = JSON.stringify(wf_def).replace(/\"/g, "'");
+	$.F("recordForm").updateDataExternal("workflow", formatResult);
 }
 
 function saveRecord(treeNodeID) {

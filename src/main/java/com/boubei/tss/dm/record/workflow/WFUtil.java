@@ -19,7 +19,9 @@ public class WFUtil {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static Map<String, List<Map<String, String>>> parseWorkflow(String wfDefine, Map<String, Object> context, String rcName) {
+	public static Map<String, List<Map<String, String>>> parseWorkflow(String wfDefine, 
+			Map<String, Object> context, String rcName) {
+		
 		Map<String, List<Map<String, String>>> rules;
 		try {
 			String workflow = EasyUtils.fmParse(wfDefine, context);
@@ -27,6 +29,17 @@ public class WFUtil {
 		} 
 		catch (Exception e) {
 			throw new BusinessException(rcName + " workflow parse error: " + e.getMessage());
+		}
+		
+		for(String key : rules.keySet()) {
+			List<Map<String, String>> list = rules.get(key);
+			for( Map<String, String> m : list ) {
+				String when = m.get("when");
+				if( !EasyUtils.isNullOrEmpty(when) ) {
+					when = EasyUtils.fmParse( "<#if (" + when + ")>true</#if>", context);
+					m.put("when", when);
+				}
+			}
 		}
 		
 		return rules;
