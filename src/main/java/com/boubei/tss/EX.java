@@ -189,6 +189,6 @@ public class EX {
 	public static String WF_2 = "流程已开始处理，无法再撤销";
 	public static String WF_3 = "此流程已结束，无法再操作";
 	public static String WF_4 = "您无权处理本流程，当前流程审批人员不是您";
-	public static String WF_5 = "转审人员不能为空";
+	public static String WF_5 = "转审人员【${x1}】不存在";
 	public static String WF_6 = "【${x1}】已在审批人名单中，无需再转审";
 }

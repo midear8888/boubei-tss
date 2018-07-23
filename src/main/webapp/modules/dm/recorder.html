@@ -244,10 +244,13 @@ function refreshTable() {
     tssJS("#gridTitle>button").hide();
 } 
 
-function listWorkflow() {
+function listWorkflow(type) {
     tssJS("#listBT2").css("color", "blue");
     tssJS("#listBT3").css("color", "#666");
     params = {"my_wf_list": true};
+    if( type) {
+        params[type] = true;
+    }
     loadGridData(1);
     ws.closeAllTabs();
 
@@ -1052,6 +1055,9 @@ function delAttach() {
           <td id="gridTitle">
 <span class="icon"></span><span id="rcTitle">资源列表</span>
 <button class="tssbutton small white" onclick="batchApprove()" id="btn_batch_approve">批量审批通过</button>
+<button class="tssbutton small white" onclick="listWorkflow('wfing')" id="btn_wfing">待处理</button>
+<button class="tssbutton small white" onclick="listWorkflow('wfdone')" id="btn_wfdone">已处理</button>
+<button class="tssbutton small white" onclick="listWorkflow('wfcc')" id="btn_cc">抄送我</button>
 
 <input type="button" class="tssbutton small white" value="新 增" id="btn_create" onclick="showDetail('_new')"/>
 <input type="button" class="tssbutton small white" value="删 除" id="btn_batch_del" onclick="removeBatch()"/>
@@ -1194,8 +1200,8 @@ function showExtension(_item) {
 
         attachList.each(function(i, t){
             var li = $.createElement("li");
-            // var html = "<img src='" +t.downloadUrl+ "'>";
-            var html = "<a href='" +t.downloadUrl+ "' target='_blank'>" +t.name+ "</a>";
+            var filename = t.name.length <= 32 ? t.name : t.fileName;
+            var html = "<a href='" +t.downloadUrl+ "' target='_blank'>" +filename+ "</a>";
             $(li).html( html );
             $(pcontainer).appendChild(li);
         });

@@ -267,12 +267,14 @@ public class LoginService implements ILoginService {
  
     @SuppressWarnings("unchecked")
     public List<OperatorDTO> getUsersByRoleId(Long roleId) {
+    	String domain = Environment.getDomain();
         String hql = "select distinct u from ViewRoleUser ru, User u, GroupUser gu, Group g" +
                 " where ru.id.userId = u.id and ru.id.roleId = ? " +
-                " 	and u.id = gu.userId and gu.groupId = g.id and g.groupType = 1 and g.domain = ? " +
+                " 	and u.id = gu.userId and gu.groupId = g.id and g.groupType = 1 " +
+                "  and g.domain " + (domain != null ? " = '"+ domain + "'" : " is null" ) +
                 " order by u.id desc ";
-       
-        List<User> data = (List<User>) groupDao.getEntities( hql, roleId, Environment.getDomain());
+        
+		List<User> data = (List<User>) groupDao.getEntities( hql, roleId);
         return translateUserList2DTO(data);
     }
     

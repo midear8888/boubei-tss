@@ -265,7 +265,6 @@ function loadRecordDetail(isCreate, type, readonly, isPage) {
 
 				defContainer().appendChild($(".template")[0].cloneNode(true));
 				defContainer().find("table").attr("id", "t12").hide();
-				if( !isCreate ) preview();
 			}
 
 			if(isPage) { // 链接综合功能页
@@ -289,6 +288,8 @@ function loadRecordDetail(isCreate, type, readonly, isPage) {
 					saveRecord(treeNodeID);
 				});
 			}
+
+			if( !isCreate && type == "1" ) preview();
 		},
 		onexception : function() { 
 			closeRecordFormDiv();

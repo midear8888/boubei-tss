@@ -55,11 +55,7 @@ public class WFServiceImpl implements WFService {
 		
 		/* 如果是修改记录，则先查询流程状态是否已经存在；如果已存在，检查是否已有过处理（含审批、驳回、转审），有则禁止修改 */
 		WFStatus wfStatus = getWFStatus(_db.recordId, itemId);
-		if(wfStatus != null) {
-			if( wfStatus.getProcessors() != null ) {
-				throw new BusinessException(EX.WF_1); 
-			}
-		} else {
+		if(wfStatus == null) {
 			wfStatus = new WFStatus();
 			wfStatus.setTableName(_db.recordName);
 			wfStatus.setTableId(_db.recordId);
@@ -186,21 +182,18 @@ public class WFServiceImpl implements WFService {
 		String hsql = "from WFStatus where ( 1=0 " +condition+ " )  and tableId = ? and currentStatus <> ? "; 
 
 		List<?> statusList = commonDao.getEntities(hsql, _db.recordId, WFStatus.CANCELED);
-
+		
+		boolean isApprover = statusList.size() > 0; // 判断当前用户是否为审批人
     	List<Long> itemIds = new ArrayList<Long>();
     	Map<Long, WFStatus> statusMap = new HashMap<Long, WFStatus>();
-    	boolean isApprover = false; // 判断当前用户是否为审批人
     	
     	for(Object obj : statusList) {
     		WFStatus status = (WFStatus) obj;
     		Long itemId = status.getItemId();
 			itemIds.add(itemId);
     		statusMap.put(itemId, status);
-    		
-    		if( status.toUsers().contains(userCode) ) {
-    			isApprover = true;
-    		}
     	}
+    	
     	itemIds.add(-999L); // 防止id条件为空把所有记录都查出来了
     	params.put("id", EasyUtils.list2Str(itemIds));
     	SQLExcutor ex = _db.select(page, pagesize, params, isApprover);
@@ -212,6 +205,8 @@ public class WFServiceImpl implements WFService {
     		Object itemId = item.get("id");
 			WFStatus wfStatus = statusMap.get(itemId);
 			item.put("wfstatus", wfStatus.getCurrentStatus());
+			item.put("wfapplier", wfStatus.getApplierName());
+			item.put("wfapplyTime", item.get("createtime"));
 			item.put("nextProcessor", wfStatus.getNextProcessor());
 			item.put("processors", wfStatus.getProcessors());
     	}
@@ -234,8 +229,11 @@ public class WFServiceImpl implements WFService {
 		List<?> statusList = commonDao.getEntities("from WFStatus where tableId = ? and itemId in (" +EasyUtils.list2Str(itemIds)+ ") ", _db.recordId);
     	
     	for(Object obj : statusList) {
-    		WFStatus status = (WFStatus) obj;
-    		itemsMap.get( status.getItemId() ).put("wfstatus", status.getCurrentStatus());
+    		WFStatus wfStatus = (WFStatus) obj;
+    		Map<String, Object> item = itemsMap.get( wfStatus.getItemId() );
+			item.put("wfstatus", wfStatus.getCurrentStatus());
+			item.put("wfapplier", wfStatus.getApplierName());
+			item.put("wfapplyTime", item.get("createtime"));
     	}
 	}
 	
@@ -349,8 +347,8 @@ public class WFServiceImpl implements WFService {
 	
 	public void transApprove(Long recordId, Long id, String opinion, String target) {
 		
-		if( EasyUtils.isNullOrEmpty(target) ) {
-			throw new BusinessException(EX.WF_5);
+		if( EasyUtils.isNullOrEmpty(target) || loginSerivce.getOperatorDTOByLoginName(target) == null ) {
+			throw new BusinessException(EX.parse(EX.WF_5, target));
 		}
 		if( getWFStatus(recordId, id).toUsers().contains(target) ) {
 			throw new BusinessException( EX.parse(EX.WF_6, target));

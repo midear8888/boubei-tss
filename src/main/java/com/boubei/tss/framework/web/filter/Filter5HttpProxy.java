@@ -176,9 +176,7 @@ public class Filter5HttpProxy implements Filter {
 			    
 				dealWithRedirect(appServer, response, client, httpMethod);
 			} 
-			else {
-				throw new BusinessServletException(appServer.getName() + "（" + appServer.getCode() + "）连接错误，错误代码：" + statusCode);
-			}
+			
 		} finally {
 			httpMethod.releaseConnection();
 		}

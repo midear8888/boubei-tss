@@ -919,7 +919,9 @@ public abstract class _Database {
         }
         
         if( WFUtil.checkWorkFlow(this.wfDefine) ) {
-        	sb.append("<column name=\"wfstatus\" mode=\"string\" caption=\"流程状态\" width=\"60px\"/>").append("\n");
+        	sb.append("<column name=\"wfstatus\" mode=\"string\" caption=\"流程状态\" width=\"40px\"/>").append("\n");
+        	sb.append("<column name=\"wfapplier\" mode=\"string\" caption=\"发起人\" width=\"30px\"/>").append("\n");
+        	sb.append("<column name=\"wfapplyTime\" mode=\"date\" format=\"yyyy-mm-dd\" caption=\"发起时间\" width=\"45px\"/>").append("\n");
         }
         if(this.needFile && !hasFileField) {
         	sb.append("<column name=\"fileNum\" mode=\"string\" caption=\"附件\" width=\"30px\"/>").append("\n");
