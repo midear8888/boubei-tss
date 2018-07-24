@@ -57,7 +57,7 @@ public class ByDayETLJob extends AbstractETLJob {
 
 		Set<Date> dateList = new LinkedHashSet<Date>();
 		List<Date> repeatList = new ArrayList<Date>();
-		Date today = DateUtil.today();
+		Date today = DateUtil.addDays(DateUtil.today(), 1); // 包含今天,今天的数据也会汇总一份
 		while (currDay.before(today)) {
 			if ( !exsitDays.contains( DateUtil.format(currDay) ) ) {
 				dateList.add(currDay); // 缺失的天

@@ -165,7 +165,7 @@ public class Task extends ARecordTable {
 	}
 
 	public Date getStartDay() {
-		return (Date) EasyUtils.checkNull( startDay, DateUtil.today() );
+		return (Date) EasyUtils.checkNull( startDay, DateUtil.addDays(DateUtil.today(), 1) );
 	}
 
 	public void setStartDay(Date startDay) {

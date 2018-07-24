@@ -206,8 +206,8 @@ public class ImportCSV implements AfterUpload {
 			}
 			log.info( sb.substring(0, Math.min(300, sb.length())) );
 			
-			fileName = "err-" + recordId + Environment.getUserId();
-	        String exportPath = DataExport.getExportPath() + "/" + fileName + ".csv";
+			fileName = "err-" + recordId + Environment.getUserId()+ ".csv";
+	        String exportPath = DataExport.getExportPath() + "/" + fileName ;
 	        DataExport.exportCSV(exportPath, sb.toString()); // 先输出内容到服务端的导出文件中
 			
 			// 根据配置，是够终止导入。默认要求一次性导入，不允许分批
