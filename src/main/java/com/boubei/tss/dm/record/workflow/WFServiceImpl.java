@@ -107,7 +107,7 @@ public class WFServiceImpl implements WFService {
 		String creator = Environment.getUserCode(); 
 		
 		for(Map<String, String> m : rule) {
-			if( m.containsKey("when") && !"true".equals(m.get("when")) ) {
+			if(m == null || (m.containsKey("when") && !"true".equals(m.get("when"))) ) {
 				continue;
 			}
 			

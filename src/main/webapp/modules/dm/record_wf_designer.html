@@ -106,10 +106,12 @@
 
 	function updateField(xform, elID, val) {
 		xform.updateDataExternal(elID, val);    
-    	xform.updateData( $1(elID) );
+    	// xform.updateData( $1(elID) );
 	}
 
 	function recordEdit(xform) {
+		to = []; cc = []; trans = [];
+
 		var val = xform.getData("sp1");
 		if(  val && val.trim() ) {
 			to[0] = {"roleId": val, "role": roleMap[val]};
@@ -160,8 +162,8 @@
 		workflow.cc = cc;
 		workflow.trans = trans;
 
-		wf_def = JSON.stringify(workflow, null, '\t');
-		console.log( wf_def );
+		wf_def = JSON.stringify(workflow, null, 4).replace("'", "\"");
+		// console.log( wf_def );
 		parent.update_wf_def && parent.update_wf_def( wf_def ); 
 	}
 

@@ -302,8 +302,7 @@ function loadRecordDetail(isCreate, type, readonly, isPage) {
 
 var wf_def;
 function update_wf_def(wf_def) {
-	var wf_def = wf_def.replace(/\"/g, "'");
-	$.F("recordForm").updateDataExternal("workflow", wf_def);
+	$.F("recordForm").updateDataExternal("workflow", wf_def.revertEntry());
 }
 
 function saveRecord(treeNodeID) {
