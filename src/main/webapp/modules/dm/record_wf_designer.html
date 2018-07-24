@@ -17,7 +17,7 @@
 		height: 23px; width: 180px;
 	}
 	td {
-		height: 32px;
+		height: 35px;
 	}
 
 </style>
@@ -162,9 +162,12 @@
 		workflow.cc = cc;
 		workflow.trans = trans;
 
-		wf_def = JSON.stringify(workflow, null, 4).replace("'", "\"");
-		// console.log( wf_def );
-		parent.update_wf_def && parent.update_wf_def( wf_def ); 
+		if( to.length || cc.length ) {
+			wf_def = JSON.stringify(workflow, null, 4).replace("'", "\"");
+		} else {
+			wf_def = "";
+		}
+		parent.update_wf_def ? parent.update_wf_def( wf_def ) : console.log( wf_def ); 
 	}
 
 </script>

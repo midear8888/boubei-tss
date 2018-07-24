@@ -291,8 +291,8 @@ function loadRecordDetail(isCreate, type, readonly, isPage) {
 
 			if( !isCreate && type == "1" ) preview();
 
-			wf_def = xform.getData("workflow").revertEntry();
-			$("#desinerForm>iframe").attr("src", "record_wf_designer.html");
+			wf_def = (xform.getData("workflow")||"").revertEntry();
+			$("#designerForm>iframe").attr("src", "record_wf_designer.html");
 		},
 		onexception : function() { 
 			closeRecordFormDiv();
