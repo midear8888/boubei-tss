@@ -291,7 +291,7 @@ function loadRecordDetail(isCreate, type, readonly, isPage) {
 
 			if( !isCreate && type == "1" ) preview();
 
-			wf_def = xform.getData("workflow");
+			wf_def = xform.getData("workflow").revertEntry();
 			$("#desinerForm>iframe").attr("src", "record_wf_designer.html");
 		},
 		onexception : function() { 
@@ -301,9 +301,9 @@ function loadRecordDetail(isCreate, type, readonly, isPage) {
 }
 
 var wf_def;
-function update_wf_def() {
-	var formatResult = JSON.stringify(wf_def).replace(/\"/g, "'");
-	$.F("recordForm").updateDataExternal("workflow", formatResult);
+function update_wf_def(wf_def) {
+	var wf_def = wf_def.replace(/\"/g, "'");
+	$.F("recordForm").updateDataExternal("workflow", wf_def);
 }
 
 function saveRecord(treeNodeID) {

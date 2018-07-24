@@ -690,7 +690,7 @@ function editParamConfig() {
 			};
 		}
 
-    	fieldEl.onblur = function() {
+    	fieldEl.onchange = function() {
     		var newValue;
     		if( $(fieldEl).attr("type") == 'checkbox' ) { // checkbox
 				newValue = fieldEl.checked ? 'true' : "";
