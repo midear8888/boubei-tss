@@ -80,10 +80,8 @@ public class _Recorder extends BaseActionSupport {
 
 	public static final int PAGE_SIZE = 50;
 
-	@Autowired
-	RecordService recordService;
-	@Autowired
-	WFService wfService;
+	@Autowired RecordService recordService;
+	@Autowired WFService wfService;
 
 	_Database getDB(Long recordId, String... permitOptions) {
 		// 检测当前用户对当前录入表是否有指定的操作权限

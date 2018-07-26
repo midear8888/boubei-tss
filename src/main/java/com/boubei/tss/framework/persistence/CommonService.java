@@ -15,9 +15,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.boubei.tss.framework.persistence.ICommonDao;
-import com.boubei.tss.framework.persistence.IEntity;
-
 @Service("CommonService")
 public class CommonService implements ICommonService {
 	

@@ -68,6 +68,8 @@ a:hover { text-decoration:underline; }
 .tssicon:before { vertical-align: middle; }
 
 .navlist li .tssicon { padding-left: 2px; padding-right: 0; }
+
+.wfCount { color: red; }
 		 
 </STYLE>
 
@@ -118,10 +120,12 @@ function initMenu() {
 		menuHTML.push('<ul class="navlist">');
 	    menu1.children && $.each(menu1.children, function(j, menu2) {
 	    	var icon = (menu2[5]||'');  // 自定义图标
+	    	var wfCount = menu2[6] ? '(' +menu2[6]+ ')' : '';
 
 	    	menuHTML.push('<li>');
 	    	menuHTML.push('<div>' +icon+ '<a ref="' + menu2[0] + '" href="#">');
 	    	menuHTML.push('  <span class="nav">' + menu2[1] + '</span>');
+	    	menuHTML.push('  <span class="wfCount">' + wfCount + '</span>');
 	    	menuHTML.push('</a></div>');
 			menuHTML.push('</li>');
 	    });

@@ -30,6 +30,7 @@ import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.record.permission.RecordPermission;
 import com.boubei.tss.dm.record.permission.RecordResource;
+import com.boubei.tss.dm.record.workflow.WFService;
 import com.boubei.tss.framework.web.display.tree.LevelTreeParser;
 import com.boubei.tss.framework.web.display.tree.StrictLevelTreeParser;
 import com.boubei.tss.framework.web.display.tree.TreeEncoder;
@@ -44,6 +45,7 @@ import com.boubei.tss.util.EasyUtils;
 public class RecordAction extends BaseActionSupport {
     
     @Autowired private RecordService recordService;
+    @Autowired private WFService wfService;
     
     @RequestMapping("/all")
     public void getAllRecordTree(HttpServletResponse response) {
@@ -74,14 +76,15 @@ public class RecordAction extends BaseActionSupport {
     	List<Object> result = new ArrayList<Object>();
     	
     	List<Record> list = getPermitedRecords();
+    	Map<Object, Object> countMap = wfService.getMyWFCount();
     	for(Record record : list) {
     		if( !record.isActive() ) continue;
     		
 			Long id = record.getId();
     		String name = record.getName();
-			Long parentId = record.getParentId();
+			Long pId = record.getParentId();
 			String icon = DMUtil.getExtendAttr(record.getRemark(), "icon");
-			result.add(new Object[] { id, name, parentId, record.getType(), "record", icon });
+			result.add(new Object[] { id, name, pId, record.getType(), "record", icon, countMap.get(id) });
     	}
     	
     	return result;

@@ -41,6 +41,18 @@ public class WFServiceImpl implements WFService {
 		return  list.isEmpty() ? null : (WFStatus)list.get(0);
 	}
 	
+	/** 当前流到登录用户的流程汇总 */
+	public Map<Object, Object> getMyWFCount() {
+		String sql = "SELECT tableId record, count(*) num FROM dm_workflow_status where nextProcessor = ? group by tableId";
+		List<Map<String, Object>> list = SQLExcutor.queryL(sql, Environment.getUserCode());
+
+		Map<Object, Object> result = new HashMap<Object, Object>();
+		for( Map<String, Object> m : list ) {
+			result.put( m.get("record") , m.get("num"));
+		}
+		return result;
+	}
+	
 	public List<?> getTransList(Long recordId, Long itemId) {
 		WFStatus wfStatus = getWFStatus(recordId, itemId);
 		return getUserList(wfStatus.getTrans());
@@ -401,7 +413,7 @@ public class WFServiceImpl implements WFService {
 			msgService.sendMessage(title, content, wfStatus.getApplier());
 		}
 		
-		String title = "有新的流程【" + tableName + "】待您审批";
+		String title = wfStatus.getApplierName() + "的【" + tableName + "】待您审批";
 		String content = title + "，<a href=\"" +url+ "\" onclick=\"" +onclick+ "\">点击打开处理</a>";
 		msgService.sendMessage(title, content, wfStatus.getNextProcessor());
 	}

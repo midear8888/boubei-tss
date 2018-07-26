@@ -940,7 +940,7 @@ public abstract class _Database {
         
         // ID列默认隐藏
         sb.append("<column name=\"id\" display=\"none\"/>").append("\n");
-        sb.append("<column name=\"domain\" caption=\"域\" " +( Environment.isAdmin() ? "" : "display=\"none\"" )+ "/>").append("\n");
+        sb.append("<column name=\"domain\" caption=\"域\" " +( Environment.isAdmin() ? "" : "display=\"none\"" )+ " width=\"30px\"/>").append("\n");
         
         sb.append("</declare>\n<data></data></grid>");
         

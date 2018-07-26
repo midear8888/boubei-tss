@@ -553,6 +553,19 @@ function loadDetailData(rowID) {
         tssJS("#transBt").click( function() { transApprove(rowID); } ); 
 
         showExtension(_item);
+
+        // 控制流程按钮
+        if(  _item.creator == userCode ) {
+            tssJS("#ws .wf").hide();
+            if( _item.wfstatus && _item.wfstatus != '待审批' ) {
+                tssJS("#cancelBt, #saveBt, #btnViewAttach").hide();
+                tssJS("#opinion").attr("disabled", "true").css("background-color", "#eee");
+            }
+        }
+        if(  _item.nextProcessor != userCode ) {
+            tssJS("#approveBt, #rejectBt, #transBt").hide();
+            tssJS("#opinion").attr("disabled", "true").css("background-color", "#eee");
+        }
     }
 
     // 如果已经在打开的tab页里了
@@ -1085,7 +1098,7 @@ function delAttach() {
 
                 <input type="button" class="tssbutton small white cs" value="保 存" id="saveBt"/>
                 <input type="button" class="tssbutton small white cs" value="撤 销" id="cancelBt"/>
-                <input type="button" class="tssbutton small white cs" value="关 闭" id="closeBt" onclick="ws.closeActiveTab();"/>
+                <!-- <input type="button" class="tssbutton small white cs" value="关 闭" id="closeBt" onclick="ws.closeActiveTab();"/> -->
             </WorkSpace:PageStep>
         </WorkSpace:Page>
     </WorkSpace:Box>
