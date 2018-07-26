@@ -135,14 +135,22 @@ function createQueryForm(reportId, paramConfig, callback) {
 
     var searchForm = genQueryForm(getTreeNodeName(), paramConfig);
 
-    $panel.find(".btSearch").click( function () {
+    $(".btSearch").click( function () {
         if(callback) {
             searchForm.checkForm() && callback( getParams() ); // 在回调函数里读取数据并展示
         } else {
             searchReport(reportId, false);  // 直接Grid展示
         }
     });
-    $panel.find(".btDownload").click( function () {
+    $(".btDownload").click( function () {
         searchReport(reportId, true);
     });
+}
+
+function openQueryForm() {
+    if( $("#searchFormDiv .tssForm").length ) {
+        $('#searchFormDiv').show();
+    } else {
+        $.alert("请双击您要查询的报表节点");
+    }
 }

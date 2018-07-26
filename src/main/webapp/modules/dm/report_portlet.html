@@ -97,7 +97,9 @@ body { width:100%; overflow: hidden; }
 <table id="t1">
   <tr>
     <td id="gridTitle">
-      <span class="icon"></span><span class="title">查询结果</span><span class="buttonBox" id="gridToolBar"></span>
+      <span class="icon"></span><span class="title">查询结果</span>
+<input type="button" class="tssbutton small white btDownload" value="导出数据"  style="margin-left: 15px;" />
+      <span class="buttonBox" id="gridToolBar"></span>
     </td>
   </tr>
   <tr>
@@ -376,11 +378,13 @@ function initPortlet() {
         $("#li3").hide();
     }
     
+    showQueryForm( params );
+
     if(allReady) {
         searchReport( params );
-    } else {
-        showQueryForm( params );
-    }
+
+        setTimeout( function() { $("#searchFormDiv").hide(); }, 3000); // 关闭查询窗口
+    } 
     
     // 是否自动刷新
     if(refresh) {
@@ -434,7 +438,7 @@ function showQueryForm(_params) {
             searchReport(params);
         }
     });
-    $searchForm.find(".btDownload").click( function () {
+    $(".btDownload").click( function () {
         if( searchForm.checkForm() ) {
             var params = getParams();
             exportReport(reportId, params);

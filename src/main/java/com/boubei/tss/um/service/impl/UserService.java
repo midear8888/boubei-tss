@@ -367,6 +367,8 @@ public class UserService implements IUserService{
     	customerGroup.setParentId( domainGroup.getId() );
     	groupService.createNewGroup(customerGroup, "", "");
     	
+    	// TODO 创建一行域扩展信息 DomainInfo
+    	
 		this.regUser(user);
 	}
  

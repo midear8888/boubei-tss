@@ -39,8 +39,8 @@ function genQueryForm(title, paramDefine) {
     var buttonBox = [];
     buttonBox[buttonBox.length] = "<TR>";
     buttonBox[buttonBox.length] = "  <TD colspan='2' height='46'><div class='buttonBox'>";
-    buttonBox[buttonBox.length] = "     <a class='tssbutton small blue btSearch'>查 询</a> - ";
-    buttonBox[buttonBox.length] = "     <a class='tssbutton small blue btDownload'>查询并导出</a>";
+    buttonBox[buttonBox.length] = "     <a class='tssbutton small white btSearch' id='btSearch'>查 询</a> - ";
+    buttonBox[buttonBox.length] = "     <a class='tssbutton small white btDownload' id='btDownload'>查询并导出</a>";
     buttonBox[buttonBox.length] = "  </div></TD>";
     buttonBox[buttonBox.length] = "</TR>";
 
