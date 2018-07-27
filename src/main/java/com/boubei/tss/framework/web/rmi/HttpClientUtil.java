@@ -219,6 +219,24 @@ public class HttpClientUtil {
         }
     }
     
+	/**
+	 * <p>
+	 * 设置需要返回的Cookie对象到response中
+	 * 
+	 * </p>
+	 * @param res   HttpServletResponse 返回对象
+	 * @param name  String 名称
+	 * @param value String 值
+	 */
+	public static void setCookie(HttpServletResponse response, String name, String value) {
+		HttpServletRequest req = Context.getRequestContext().getRequest();
+		javax.servlet.http.Cookie cookie = HttpClientUtil.createCookie(name, value, req.getContextPath());
+		cookie.setMaxAge(-1);
+		cookie.setSecure(req.isSecure());
+		
+        response.addCookie(cookie);
+	}
+	
     
     /**
      * TODO tomcat7下如果往cookie写入中文，会出现异常：Control character in cookie value or attribute.

@@ -455,7 +455,7 @@ public abstract class _Database {
 			// 检查值为空的字段，是否配置自动取号规则
 			String defaultVal = this.fieldValues.get(index);
 			if( EasyUtils.isNullOrEmpty(value) &&  _Field.isAutoSN(defaultVal) ) {
-				String domain = (String) EasyUtils.checkNull(pointedDomain, Environment.getDomain()); // ETL时，输入数据指定好了域
+				String domain = (String) EasyUtils.checkNull(pointedDomain, Environment.getDomainOrign()); // ETL时，输入数据指定好了域
 				String preCode = defaultVal.replaceAll(_Field.SNO_yyMMddxxxx, "");
 				value = new SerialNOer().create(domain, preCode, 1).get(0);
 			}
@@ -463,7 +463,7 @@ public abstract class _Database {
 			paramsMap.put(++index, value);
 		}
 		
-		String domain = (String) EasyUtils.checkNull( pointedDomain, Environment.getDomain() );
+		String domain = (String) EasyUtils.checkNull( pointedDomain, Environment.getDomainOrign() );
 		paramsMap.put(++index, domain); 
 		paramsMap.put(++index, new Timestamp(new Date().getTime())); 
 		paramsMap.put(++index, Environment.getUserCode());

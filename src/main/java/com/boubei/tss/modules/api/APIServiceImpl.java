@@ -3,14 +3,22 @@ package com.boubei.tss.modules.api;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.boubei.tss.PX;
+import com.boubei.tss.framework.Config;
 import com.boubei.tss.framework.sso.Anonymous;
 import com.boubei.tss.framework.sso.IdentityCard;
 import com.boubei.tss.framework.sso.LoginCustomizerFactory;
 import com.boubei.tss.framework.sso.TokenUtil;
 import com.boubei.tss.framework.sso.context.Context;
+import com.boubei.tss.framework.sso.context.RequestContext;
+import com.boubei.tss.framework.sso.online.IOnlineUserManager;
+import com.boubei.tss.framework.sso.online.OnlineUserManagerFactory;
+import com.boubei.tss.framework.web.rmi.HttpClientUtil;
 import com.boubei.tss.um.dao.IUserDao;
 import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.helper.dto.OperatorDTO;
@@ -18,6 +26,8 @@ import com.boubei.tss.util.EasyUtils;
 
 @Service("APIService")
 public class APIServiceImpl implements APIService {
+	
+	Log log = LogFactory.getLog(this.getClass());
 	
 	@Autowired IUserDao userDao;
 	
@@ -47,15 +57,24 @@ public class APIServiceImpl implements APIService {
     public String mockLogin(String userCode, String uToken) {
     	User user = getUserByCode(userCode);
 		Long userId = user.getId();
+		String sessionId = Context.getRequestContext().getSession().getId();
 		
 		// 设置令牌到Session，使Environment生效
-		String token = TokenUtil.createToken(uToken, userId);
+		String token = TokenUtil.createToken(sessionId, userId);
 		IdentityCard card = new IdentityCard(token, new OperatorDTO(user));
 		Context.initIdentityInfo(card); 
 		
 		// saveUserRolesAfterLogin 及 设置session信息，获取用户域、组织、角色等信息
         LoginCustomizerFactory.instance().getCustomizer().execute();
-		
+        
+        // 设置Cookie
+        HttpClientUtil.setCookie(Context.getResponse(), RequestContext.USER_TOKEN, token);
+        
+        // 注册在线用户库
+        IOnlineUserManager onlineUserManager = OnlineUserManagerFactory.getManager();
+		String appCode = Config.getAttribute(PX.APPLICATION_CODE);
+		onlineUserManager.register(token, appCode, sessionId, userId, user.getUserName());
+        
 		return token;
     }
 

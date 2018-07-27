@@ -11,7 +11,6 @@
 package com.boubei.tss.um.sso;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import javax.servlet.http.HttpSession;
@@ -24,7 +23,6 @@ import com.boubei.tss.framework.sso.SSOConstants;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.modules.log.IBusinessLogger;
 import com.boubei.tss.modules.log.Log;
-import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.EasyUtils;
 
@@ -32,10 +30,7 @@ import com.boubei.tss.util.EasyUtils;
  * <p>
  * 登录后将TSS中相关用户对角色信息复制到本地应用的数据库中
  * </p>
- * userRights: list<Long>用户角色ID列表
- * loginName: String 用户账号
- * GROUP_LEVEL: int 用户所属组层级
- * GROUP_LAST_NAME: string 用户所属组名称
+ * ILoginCustomizer自定义类还有可能向 RoleUserMapping 写入一些其它地方设置的用户对角色（比如员工表Staff_info）
  */
 public class FetchPermissionAfterLogin implements ILoginCustomizer {
     
@@ -46,13 +41,10 @@ public class FetchPermissionAfterLogin implements ILoginCustomizer {
      * 加载用户的角色权限信息（用户登录后，角色设置有变化，可单独执行本方法刷新）
      */
     public HttpSession loadRights(Long logonUserId) {
-    	 // 1.获取登陆用户的权限（拥有的角色）
-    	Collection<Long> roleIds = loginSerivce.getRoleIdsByUserId(logonUserId); // 不宜缓存，多线程时容易ConcurrentModificationException
-        roleIds.add(UMConstants.ANONYMOUS_ROLE_ID); // 默认加上匿名角色
+
+    	// 保存到用户权限（拥有的角色）对应表
+        List<Long> roleIds = loginSerivce.saveUserRolesAfterLogin(logonUserId);
         List<String> roleNames = loginSerivce.getRoleNames(roleIds);
-        
-        // 2.保存到用户权限（拥有的角色）对应表
-        loginSerivce.saveUserRolesAfterLogin(logonUserId);
         
         // 将用户角色信息塞入到session里        
         HttpSession session = Context.getRequestContext().getSession();

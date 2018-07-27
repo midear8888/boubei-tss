@@ -21,7 +21,6 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -106,7 +105,7 @@ public class Filter4AutoLogin implements Filter {
 	            /* 登录自定义操作 */
 	            customizerExcuteAfterLogin();
 	            /* 保存Cookie信息到客户端 */
-	            setCookie((HttpServletResponse)response, RequestContext.USER_TOKEN, card.getToken());
+	            HttpClientUtil.setCookie((HttpServletResponse)response, RequestContext.USER_TOKEN, card.getToken());
 	        }
 			
 			chain.doFilter(request, response);
@@ -147,7 +146,7 @@ public class Filter4AutoLogin implements Filter {
     	/* 如果请求中带的token和session中的token一致，说明此token已成功登陆过，pass直接访问 */
 		if (token.equals(Context.getRequestContext().getAgoToken())) {
 	        /* 保存Cookie信息到客户端(redirect.html里通过发一个header里带token的request到login.do来实现单点登录)  */
-            setCookie(Context.getResponse(), RequestContext.USER_TOKEN, token);
+			HttpClientUtil.setCookie(Context.getResponse(), RequestContext.USER_TOKEN, token);
             log.debug(currentAppCode + "【登录模块】已在线，直接访问");
         } 
 		else {
@@ -209,21 +208,4 @@ public class Filter4AutoLogin implements Filter {
 		}
 	}
 
-	/**
-	 * <p>
-	 * 设置需要返回的Cookie对象到response中
-	 * 
-	 * </p>
-	 * @param res   HttpServletResponse 返回对象
-	 * @param name  String 名称
-	 * @param value String 值
-	 */
-	private void setCookie(HttpServletResponse response, String name, String value) {
-		HttpServletRequest req = Context.getRequestContext().getRequest();
-		Cookie cookie = HttpClientUtil.createCookie(name, value, req.getContextPath());
-		cookie.setMaxAge(-1);
-		cookie.setSecure(req.isSecure());
-		
-        response.addCookie(cookie);
-	}
 }

@@ -56,7 +56,7 @@ public class OperateInfoInterceptor extends MatchByDaoMethodNameInterceptor {
                     opObj.setCreatorName(Environment.getUserName());  
                     
                     // 定时器写数据时，域信息已经指定
-                    String domain = (String) EasyUtils.checkNull( opObj.getDomain(), Environment.getDomain() );
+                    String domain = (String) EasyUtils.checkNull( opObj.getDomain(), Environment.getDomainOrign() );
                     opObj.setDomain(domain);
                 } 
                 else {

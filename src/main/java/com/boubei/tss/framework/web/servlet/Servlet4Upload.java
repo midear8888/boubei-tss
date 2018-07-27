@@ -70,7 +70,7 @@ public class Servlet4Upload extends HttpServlet {
 		HttpServletRequest req = (HttpServletRequest) request;
         String servletPath = req.getServletPath() + "";
         if( servletPath.endsWith("/remote/upload") ) { // 远程上传进行自动登录
-        	Filter8APITokenCheck.autoLogin(request);
+        	Filter8APITokenCheck.checkAPIToken( req );
         }
 		
         String script;

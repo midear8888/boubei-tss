@@ -112,7 +112,7 @@ public class _Reporter extends BaseActionSupport {
     		cacheFlag = Environment.getUserId();  // 按【用户 + 参数】缓存
     	}
     	else {
-    		cacheFlag = EasyUtils.checkNull(Environment.getDomain(), -1L); // 按查询【域 + 参数】缓存
+    		cacheFlag = Environment.getDomain(); // 按查询【域 + 参数】缓存
     	}
     	return cacheFlag;
     }

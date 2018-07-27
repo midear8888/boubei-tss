@@ -28,7 +28,7 @@ public class SerialNOer {
 	@RequestMapping(value = "/{precode}/{count}")
 	@ResponseBody
 	public List<String> create(@PathVariable("precode") String precode, @PathVariable("count") int count) {
-		return create(Environment.getDomain(), precode, count);
+		return create(Environment.getDomainOrign(), precode, count);
 	}
 		
 	public synchronized List<String> create(String domain, String precode, int count) {

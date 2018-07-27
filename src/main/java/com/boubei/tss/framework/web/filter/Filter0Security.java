@@ -36,6 +36,7 @@ import com.boubei.tss.framework.SecurityUtil;
 import com.boubei.tss.framework.sso.SSOConstants;
 import com.boubei.tss.framework.sso.context.RequestContext;
 import com.boubei.tss.modules.param.ParamConfig;
+import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.EasyUtils;
 
@@ -140,10 +141,11 @@ public class Filter0Security implements Filter {
     }
  
     /**
-     * 登陆即可访问
+     * 登陆即可访问: 除掉匿名角色，还必须有其它角色
      */
     private boolean checkPermission(Set<?> userRights, String servletPath) {
-    	return userRights.size() > 1; // 匿名角色共有，所以登录用户必须要有2个角色或以上
+    	userRights.remove(UMConstants.ADMIN_ROLE_ID);
+    	return userRights.size() > 0;
 	}
     
     private boolean isNeedPermission(String servletPath, HttpServletRequest request) {

@@ -619,9 +619,17 @@ public class _Recorder extends BaseActionSupport {
 
 		Long recordId = recordService.getRecordID(record, false);
 		Map<String, String> requestMap = prepareParams(request, recordId);
-
-		wfService.approve(recordId, id, requestMap.get("opinion"));
-
+		
+		String opinion = requestMap.remove("opinion");
+		
+		// 审批时允许审批者补充填写 wf_ 打头的数据表字段
+		if( requestMap.size() > 0 ) {
+			_Database db = recordService.getDB(recordId);
+			db.update(id, requestMap);
+		}
+				
+		wfService.approve(recordId, id, opinion);
+		
 		printJSON("审批成功");
 	}
 

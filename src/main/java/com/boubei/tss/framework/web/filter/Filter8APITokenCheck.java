@@ -18,6 +18,7 @@ import com.boubei.tss.EX;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.context.Context;
+import com.boubei.tss.framework.sso.context.RequestContext;
 import com.boubei.tss.modules.api.APIService;
 import com.boubei.tss.um.permission.IResource;
 
@@ -53,49 +54,48 @@ public class Filter8APITokenCheck implements Filter {
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         
-    	autoLogin((HttpServletRequest) request);
-    	
+    	checkAPIToken( (HttpServletRequest) request );
     	chain.doFilter(request, response);
     }
-
-    // tssJS.ajax需要把uName和uToken放在QueryString里，本过滤器可能Filter6Decoder前执行
-	public static void autoLogin(HttpServletRequest req) {
-		
-        String uName  = req.getParameter("uName");
-        String uToken = req.getParameter("uToken");
-        
-        if( uToken == null || uName == null ) return; // 两个都传了才检测
-        
-        if( uToken != null && uName != null ) {
-        	APIService apiService = (APIService) Global.getBean("APIService");
-        	String resourceType = "D1";
-        	String servletPath = req.getServletPath();
-    		
-    		//  搜索令牌
-    		List<String> tokenList = apiService.searchTokes(uName, servletPath, resourceType); 
-        	if( tokenList.contains(uToken) ) {
-        		apiService.mockLogin(uName, uToken);
-        		log.debug(servletPath + ", " + uName + ", api token pass");
-        	}
-        }
+    
+    public static void checkAPIToken(HttpServletRequest req) {
+    	String resourceType = "D1";
+    	String resource = req.getServletPath();
+ 
+    	checkAPIToken(req, resourceType, resource);
 	}
 	
 	/**
 	 * 通过uToken令牌，检查指定资源是否被授权给第三方系统访问。For 报表|数据表 的远程调用
 	 */
 	public static void checkAPIToken(HttpServletRequest req, IResource r) {
+	    String resourceType = r.getResourceType(); // D1 | D2
+	    String resource = r.getId().toString();
+
+	    checkAPIToken(req, resourceType, resource);
+	}
+	
+	public static void checkAPIToken(HttpServletRequest req, String resourceType, String resource) {
 		
+		/* 注：tssJS.ajax需要把uName和uToken放在QueryString里，本过滤器可能在Filter6Decoder前执行（此时XML格式参数还没解析出来）*/
 		String uName  = req.getParameter("uName");
 	    String uToken = req.getParameter("uToken");
+	    if( uToken == null || uName == null ) {
+	    	return;
+	    }
 		
-	    if( uToken == null && uName == null ) return; // 只要传了其中一个就检测，只传一个则抛出异常
+		RequestContext requestContext = Context.getRequestContext();
+		String cToken = requestContext.getUserToken(); // token in cookie
+		String sToken = requestContext.getAgoToken(); // token in session
+		log.info("token in cookie = " + cToken);
+		log.info("token in session = " + sToken);
+		
+		if( cToken != null && cToken.equals(sToken) ) return; // 非初次登录
 	    
-	    APIService apiService = (APIService) Global.getBean("APIService");
-	    String resourceType = r.getResourceType(); // D1 | D2
+    	APIService apiService = (APIService) Global.getBean("APIService");
 	    
-		// 分别按资源的【ID】或【名称】 + uName 搜索一遍令牌
-		List<String> tokenList = apiService.searchTokes(uName, r.getId().toString(), resourceType); 
-		tokenList.addAll( apiService.searchTokes(uName, r.getName(), resourceType) );
+		// 分别按资源的【ID】+ uName 搜索一遍令牌
+		List<String> tokenList = apiService.searchTokes(uName, resource, resourceType); 
 		
     	if( tokenList.contains(uToken) ) {
     		apiService.mockLogin(uName, uToken);

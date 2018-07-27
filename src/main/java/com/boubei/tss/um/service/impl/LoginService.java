@@ -15,7 +15,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,6 +59,7 @@ import com.boubei.tss.util.MathUtil;
  * </p>
  */
 @Service("LoginService")
+@SuppressWarnings("unchecked")
 public class LoginService implements ILoginService {
 	
 	protected Logger log = Logger.getLogger(this.getClass());
@@ -166,66 +166,35 @@ public class LoginService implements ILoginService {
 	    return new OperatorDTO(user);
 	}
     
-    public void saveUserRolesAfterLogin(Long logonUserId) {
-    	List<Object[]> userRoles = getUserRolesAfterLogin( logonUserId );
-        this.saveRoles4LonginUser(userRoles, logonUserId);
-    }
-    
-    public void saveRoles4LonginUser(List<Object[]> roleUserList, Long logonUserId){
+    public List<Long> saveUserRolesAfterLogin(Long logonUserId) {
+    	
     	userDao.executeHQL("delete RoleUserMapping o where o.id.userId = ?",  logonUserId);
         
-		// 检查用户是否已经匿名登录了（所有用户登陆的时候都有匿名角色），没有的话插入一条【匿名角色对用户】的记录
-        if( !checkExistInList(roleUserList, logonUserId) ) {
-        	roleUserList.add( new Long[]{ logonUserId, UMConstants.ANONYMOUS_ROLE_ID } );
-        }
+    	List<Long> roleIds = getRoleIdsByUserId( logonUserId );
+
+        // 默认插入一条【匿名角色】给每一个登录用户
+        roleIds.add(0, UMConstants.ANONYMOUS_ROLE_ID );
+        Set<Long> roleSet = new HashSet<Long>( roleIds ); // 去重
         
-        List<RoleUserMappingId> list = new ArrayList<RoleUserMappingId>();
-        for(Object[] roleUserInfo : roleUserList) {
+        for(Long roleId : roleSet) {
 			RoleUserMappingId id = new RoleUserMappingId();
-			id.setUserId( (Long) roleUserInfo[0] );
-			id.setRoleId( (Long) roleUserInfo[1] );
-			if(list.contains(id)) {
-				continue;
-			} 
+			id.setUserId(logonUserId);
+			id.setRoleId(roleId);
 			
 			RoleUserMapping entity = new RoleUserMapping();
 			entity.setId(id);
 			
 			userDao.createObject(entity);
-			list.add(id);
 		}
-	}
-	
-	private boolean checkExistInList(List<Object[]> roleUserList, Long logonUserId) {
-		for(Object[] roleUserInfo : roleUserList) {
-			if(logonUserId.equals(roleUserInfo[0]) && UMConstants.ANONYMOUS_ROLE_ID.equals(roleUserInfo[1])){
-				return true;
-			}
-		}
-		return false;
-	}
-
-    @SuppressWarnings("unchecked")
-	private List<Object[]> getUserRolesAfterLogin(Long userId) {
-        String hql = "select distinct o.id.userId, o.id.roleId from ViewRoleUser o where o.id.userId = ? order by o.id.roleId ";
-        return (List<Object[]>) userDao.getEntities(hql, userId);
-	}
-
-	public Collection<Long> getRoleIdsByUserId(Long userId) {
-        List<Object[]> userRoles = getUserRolesAfterLogin(userId);
-        Set<Long> roleIds = new LinkedHashSet<Long>();
-        for( Object[] objs : userRoles ){
-            roleIds.add( (Long) objs[1] );
-        }
-        
-        /* ILoginCustomizer自定义类还有可能向 RoleUserMapping 写入一些其它地方设置的用户对角色（比如员工表Staff_info）
-        String hql = "select distinct roleId from RoleUserMapping where userId = ?";
-        roleIds.addAll( (List<Long>) userDao.getEntities(hql, userId) ); */
         
         return roleIds;
+	}
+
+	public List<Long> getRoleIdsByUserId(Long userId) {
+		String hql = "select distinct o.id.roleId from ViewRoleUser o where o.id.userId = ? order by o.id.roleId ";
+        return (List<Long>) userDao.getEntities(hql, userId);
     }
     
-    @SuppressWarnings("unchecked")
     public List<String> getRoleNames(Collection<Long> roleIds) {
     	if( roleIds.isEmpty() ) {
     		return new ArrayList<String>();
@@ -234,7 +203,6 @@ public class LoginService implements ILoginService {
         return (List<String>) names;
     }
     
-	@SuppressWarnings("unchecked")
 	public List<Object[]> getAssistGroupIdsByUserId(Long userId) {
         String hql = "select distinct g.id, g.name from Group g, GroupUser gu " +
         		" where g.id = gu.groupId and gu.userId = ? and g.groupType = ?";
@@ -271,9 +239,8 @@ public class LoginService implements ILoginService {
         return translateUserList2DTO(users);
     }
  
-    @SuppressWarnings("unchecked")
     public List<OperatorDTO> getUsersByRoleId(Long roleId) {
-    	String domain = Environment.getDomain();
+    	String domain = Environment.getDomainOrign();
         String hql = "select distinct u from ViewRoleUser ru, User u, GroupUser gu, Group g" +
                 " where ru.id.userId = u.id and ru.id.roleId = ? " +
                 " 	and u.id = gu.userId and gu.groupId = g.id and g.groupType = 1 " +
@@ -309,7 +276,6 @@ public class LoginService implements ILoginService {
         return returnList;
     }
     
-    @SuppressWarnings("unchecked")
 	public String[] getContactInfos(String receiverStr, boolean justID) {
     	if(receiverStr == null) return null;
     	

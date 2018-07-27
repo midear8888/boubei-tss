@@ -366,7 +366,8 @@
             if ( $.isNullOrEmpty(value) ) return alert("密码不能为空。");
             
             $.ajax({
-                url : URL_INIT_PASSWORD + treeNode.id + "/0/" + value, 
+                url : URL_INIT_PASSWORD + treeNode.id + "/0", 
+                params : {"password": value.trim()},
                 waiting: true
             });
         });

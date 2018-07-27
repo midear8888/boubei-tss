@@ -80,32 +80,24 @@ public interface ILoginService {
     
     /**
      * <p>
-     * 登陆成功后，保存【用户对应角色列表】到RoleUserMapping表
+     * 登陆成功后，保存【用户对应角色列表】到RoleUserMapping表，同时删除旧的关系
      * </p>
      * @param logonUserId 
      */
-    void saveUserRolesAfterLogin(Long logonUserId);
-    
-    /**
-     * 保存【用户对应角色列表】到RoleUserMapping表，删除旧的关系
-     * 
-     * 注：支持其它系统在自定义操作里，设置特定角色进来（比如万马系统按员工的岗位自动匹配相应角色，而不是授权产生）
-     * 
-     * @param roleUsers
-     * @param logonUserId
-     */
-    void saveRoles4LonginUser(List<Object[]> roleUsers, Long logonUserId);
-    
+    List<Long> saveUserRolesAfterLogin(Long logonUserId);
+
     /**
      * <p>
      * 获取登陆用户的所有的角色列表
+     * 
+     * 注：不宜缓存，多线程时容易ConcurrentModificationException
      * </p>
      * @param userId
      *          用户ID
      * @return
      *      登陆用户拥有的所有权限 List(roleId)
      */
-    Collection<Long> getRoleIdsByUserId(Long userId);
+    List<Long> getRoleIdsByUserId(Long userId);
     
     List<String> getRoleNames(Collection<Long> roleIds);
     

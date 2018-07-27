@@ -103,7 +103,8 @@ if( IS_TEST ) {
 
 // 录入表定义信息
 var recordId=1, recordName="录入表", openItemId,
-    recordDefine, customizeJS, customizeGrid, needFile, batchImp, visiableFields;
+    recordDefine, customizeJS, customizeGrid, needFile, batchImp, visiableFields, 
+    wfFields = []; // 流程审批可编辑字段
 
 // 用户权限信息
 var _operation = ['1','2','3','4','5'], 
@@ -211,6 +212,10 @@ function init() {
                         var fval = tssJS.Query.get(fcode);
                         if(fval) {
                             params[fcode] = decodeURI( fval );
+                        }
+
+                        if( fcode.indexOf('wf_') == 0 || field.wfeditable ) {
+                            wfFields.push(fcode);
                         }
                     });
 
@@ -527,6 +532,10 @@ function loadDetailData(rowID) {
 
         if( params.my_wf_list && !isCreateRow ) {
             disableForm();
+            wfFields.each(function(i, code) {
+                $("#"+code).removeClass("field_disabled").attr("disabled", null);
+            });
+
             tssJS("#ws .wf").show();
             tssJS("#ws .cs").hide();
             tssJS("#cancelBt").hide();            
@@ -1124,7 +1133,12 @@ function cancel(rowID) {
     executeWF(URL_WF_CANCEL, rowID, {}, "撤销");
 } 
 function approve(rowID) {
-    executeWF(URL_WF_APPROVE, rowID, {}, "同意");
+    var params = {}
+    var xform = tssJS.F("page1Form");  
+    wfFields.each(function(i, code) {
+        params[code] = xform.getData(code);
+    });
+    executeWF(URL_WF_APPROVE, rowID, params, "同意");
 }
 function transApprove(rowID) {
     // 转审人员选择 

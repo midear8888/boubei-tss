@@ -113,8 +113,12 @@ public class Environment {
     	return (List<String>) EasyUtils.checkNull(getInSession(SSOConstants.USER_ROLES_L), list);
     }
     
-    public static String getDomain() {
+    public static String getDomainOrign() {
     	return (String) getInSession(SSOConstants.USER_DOMAIN);
+    }
+    
+    public static String getDomain() {
+    	return (String) EasyUtils.checkNull(getDomainOrign(), UMConstants.DEFAULT_DOMAIN);
     }
     
     public static String getDomainInfo(String attr) {
