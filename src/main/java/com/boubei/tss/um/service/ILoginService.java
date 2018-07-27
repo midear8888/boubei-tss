@@ -10,6 +10,7 @@
 
 package com.boubei.tss.um.service;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.boubei.tss.cache.aop.Cached;
@@ -104,9 +105,9 @@ public interface ILoginService {
      * @return
      *      登陆用户拥有的所有权限 List(roleId)
      */
-    List<Long> getRoleIdsByUserId(Long userId);
+    Collection<Long> getRoleIdsByUserId(Long userId);
     
-    List<String> getRoleNames(List<Long> roleIds);
+    List<String> getRoleNames(Collection<Long> roleIds);
     
     @Cached(cyclelife = CacheLife.SHORT)
     List<Object[]> getAssistGroupIdsByUserId(Long userId);

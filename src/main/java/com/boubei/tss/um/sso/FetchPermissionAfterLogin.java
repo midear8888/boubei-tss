@@ -10,6 +10,8 @@
 
 package com.boubei.tss.um.sso;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.servlet.http.HttpSession;
@@ -45,7 +47,7 @@ public class FetchPermissionAfterLogin implements ILoginCustomizer {
      */
     public HttpSession loadRights(Long logonUserId) {
     	 // 1.获取登陆用户的权限（拥有的角色）
-        List<Long> roleIds = loginSerivce.getRoleIdsByUserId(logonUserId); // 不宜缓存，多线程时容易ConcurrentModificationException
+    	Collection<Long> roleIds = loginSerivce.getRoleIdsByUserId(logonUserId); // 不宜缓存，多线程时容易ConcurrentModificationException
         roleIds.add(UMConstants.ANONYMOUS_ROLE_ID); // 默认加上匿名角色
         List<String> roleNames = loginSerivce.getRoleNames(roleIds);
         
@@ -60,7 +62,7 @@ public class FetchPermissionAfterLogin implements ILoginCustomizer {
         session.setAttribute(SSOConstants.LOGINNAME_IN_SESSION, Environment.getUserCode());
         
         // 可能会在其它ILoginCustomizer的实现类里取出新增roleId进去，ConcurrentModificationException
-        session.setAttribute(SSOConstants.USER_RIGHTS_L, roleIds );  
+        session.setAttribute(SSOConstants.USER_RIGHTS_L, new ArrayList<Long>(roleIds) );  
         session.setAttribute(SSOConstants.USER_RIGHTS_S, EasyUtils.list2Str(roleIds));
         session.setAttribute(SSOConstants.USER_ROLES_L, roleNames);
         session.setAttribute(SSOConstants.USER_ROLES_S, EasyUtils.list2Str(roleNames));

@@ -11,6 +11,7 @@
 package com.boubei.tss.um.service.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -210,7 +211,7 @@ public class LoginService implements ILoginService {
         return (List<Object[]>) userDao.getEntities(hql, userId);
 	}
 
-	public List<Long> getRoleIdsByUserId(Long userId) {
+	public Collection<Long> getRoleIdsByUserId(Long userId) {
         List<Object[]> userRoles = getUserRolesAfterLogin(userId);
         Set<Long> roleIds = new LinkedHashSet<Long>();
         for( Object[] objs : userRoles ){
@@ -221,11 +222,11 @@ public class LoginService implements ILoginService {
         String hql = "select distinct roleId from RoleUserMapping where userId = ?";
         roleIds.addAll( (List<Long>) userDao.getEntities(hql, userId) ); */
         
-        return new ArrayList<Long>(roleIds);
+        return roleIds;
     }
     
     @SuppressWarnings("unchecked")
-    public List<String> getRoleNames(List<Long> roleIds) {
+    public List<String> getRoleNames(Collection<Long> roleIds) {
     	if( roleIds.isEmpty() ) {
     		return new ArrayList<String>();
     	}
