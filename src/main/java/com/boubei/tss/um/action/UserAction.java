@@ -18,6 +18,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -33,6 +34,7 @@ import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.persistence.pagequery.PageInfo;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.sso.LoginCustomizerFactory;
+import com.boubei.tss.framework.sso.SSOConstants;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.web.display.grid.DefaultGridNode;
 import com.boubei.tss.framework.web.display.grid.GridDataEncoder;
@@ -317,11 +319,11 @@ public class UserAction extends BaseActionSupport {
 	        LoginCustomizerFactory.instance().getCustomizer().execute();
 		}
 		
-		List<Long> roleIds = loginService.getRoleIdsByUserId(userId);
-		
+		HttpSession session = Context.getRequestContext().getSession();
+
 		Object[] userHas = new Object[13];
 		userHas[0] = loginService.getGroupsByUserId(userId);  //List<[groupId, groupName]>，截掉"主用户组"
-		userHas[1] = roleIds; //List<roleId>
+		userHas[1] = session.getAttribute(SSOConstants.USER_RIGHTS_L); // List<roleId>
 		userHas[2] = userId;
 		userHas[3] = Environment.getUserCode();
 		userHas[4] = Environment.getUserName();
@@ -331,7 +333,7 @@ public class UserAction extends BaseActionSupport {
 		userHas[8] = Environment.getUserInfo("address");
 		userHas[9] = Environment.getUserInfo("email");
 		userHas[10]= Environment.getUserInfo("employeeNo");
-		userHas[11]= loginService.getRoleNames(roleIds);
+		userHas[11]= session.getAttribute(SSOConstants.USER_ROLES_L);
 		userHas[12]= Environment.getDomain();
 		
 		return userHas;

@@ -210,12 +210,17 @@ public class LoginService implements ILoginService {
         return (List<Object[]>) userDao.getEntities(hql, userId);
 	}
 
-    public List<Long> getRoleIdsByUserId(Long userId) {
+	public List<Long> getRoleIdsByUserId(Long userId) {
         List<Object[]> userRoles = getUserRolesAfterLogin(userId);
         Set<Long> roleIds = new LinkedHashSet<Long>();
         for( Object[] objs : userRoles ){
             roleIds.add( (Long) objs[1] );
         }
+        
+        /* ILoginCustomizer自定义类还有可能向 RoleUserMapping 写入一些其它地方设置的用户对角色（比如员工表Staff_info）
+        String hql = "select distinct roleId from RoleUserMapping where userId = ?";
+        roleIds.addAll( (List<Long>) userDao.getEntities(hql, userId) ); */
+        
         return new ArrayList<Long>(roleIds);
     }
     

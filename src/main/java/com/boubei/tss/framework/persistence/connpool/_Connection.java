@@ -17,11 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.sql.DataSource;
-
 import org.apache.log4j.Logger;
-import org.hibernate.cfg.Environment;
-import org.hibernate.util.NamingHelper;
 
 import com.boubei.tss.EX;
 import com.boubei.tss.framework.exception.BusinessException;
@@ -40,16 +36,12 @@ public class _Connection extends ConfigurableContants {
 	
 	/**
 	 * 如果配置的是数据源，则优先从数据源获取连接；否则手动创建一个连接。
+	 * propertiesX：可以是个配置文件，或者："org.h2.Driver,jdbc:h2:mem:h2db;DB_CLOSE_DELAY=-1,sa,123";
 	 */
 	private _Connection(String propertiesX) {
 		if(propertiesX.endsWith(".properties")) {
 			Properties dbProperties = super.init(propertiesX);
-		    
-			if (dbProperties.getProperty(Environment.DATASOURCE) != null) {
-				provider = new DatasourceConnectionProvider(dbProperties);
-			} else {
-				provider = new DriverManagerConnectionProvider(dbProperties);
-			}
+			provider = new DriverManagerConnectionProvider(dbProperties);
 		}
 		else {
 			provider = new DriverManagerConnectionProvider(propertiesX);
@@ -92,28 +84,7 @@ public class _Connection extends ConfigurableContants {
 	 *  hibernate.connection.password db2  
 	 * </pre>
 	 */
-	static class DatasourceConnectionProvider implements IConnectionProvider {
-		
-		Properties p;
-		
-		public DatasourceConnectionProvider(Properties p) {
-			this.p = p;
-		}
-		
-		public Connection getConnection() {
-			String user = p.getProperty(Environment.USER);
-			String pass = p.getProperty(Environment.PASS);
-			String jndiName = p.getProperty(Environment.DATASOURCE);
-			
-			try {
-				DataSource ds = (DataSource) NamingHelper.getInitialContext(p).lookup(jndiName);
-				return ds.getConnection(user, pass);
-			} 
-			catch (Exception e) {
-				throw new BusinessException("Error when get connection from datasource: " + jndiName, e);
-			}
-		}
-	}
+//	class DatasourceConnectionProvider implements IConnectionProvider { }
  
 	class DriverManagerConnectionProvider implements IConnectionProvider {
  

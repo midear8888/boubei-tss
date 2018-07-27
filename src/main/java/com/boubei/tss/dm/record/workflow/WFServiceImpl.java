@@ -184,8 +184,8 @@ public class WFServiceImpl implements WFService {
     	
     	/* 支持按类型分开查询: wfing: 待审批  wfdone: 已审批  cc: 抄送  */
 		String _condition = "<#if wfing?? >  or nextProcessor = '" +userCode+ "' </#if> " +
-				           "<#if wfdone?? > or processors like '" +wrapCode+ "' </#if> " +
-				           "<#if wfcc?? >   or cc like '" +wrapCode+ "' </#if> ";
+				            "<#if wfdone?? > or processors like '" +wrapCode+ "' </#if> " +
+				            "<#if wfcc?? >   or cc like '" +wrapCode+ "' </#if> ";
 		
 		String condition = EasyUtils.fmParse(_condition, params);
 		if( EasyUtils.isNullOrEmpty(condition) ) {
