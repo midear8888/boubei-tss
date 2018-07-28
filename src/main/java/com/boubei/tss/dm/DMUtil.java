@@ -236,6 +236,13 @@ public class DMUtil {
       	fmDataMap.put(DMConstants.USER_CODE, Environment.getUserCode());
 		fmDataMap.put(DMConstants.FROM_USER_ID, Environment.getUserInfo(DMConstants.FROM_USER_ID));
 		
+		for( Long role : Environment.getOwnRoles() ) {
+			fmDataMap.put("role_" + role, role);
+		}
+		for( String role : Environment.getOwnRoleNames() ) {
+			fmDataMap.put( role, role );
+		}
+		
 		// 加入域账号过滤数据表条件的标准片段
 		fmDataMap.put(DMConstants.FILTER_BY_DOMAIN, DMConstants.DOMAIN_CONDITION);
 		

@@ -87,7 +87,8 @@ public class Filter8APITokenCheck implements Filter {
 		RequestContext requestContext = Context.getRequestContext();
 		String cToken = requestContext.getUserToken(); // token in cookie
 		String sToken = requestContext.getAgoToken(); // token in session
-		log.info("token in cookie = " + cToken);
+		log.info(resourceType + ", " + resource + ", " + uName + ", " + uToken);
+		log.info("token in cookie  = " + cToken);
 		log.info("token in session = " + sToken);
 		
 		if( cToken != null && cToken.equals(sToken) ) return; // 非初次登录

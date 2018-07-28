@@ -51,7 +51,7 @@ public class FetchPermissionAfterLogin implements ILoginCustomizer {
         session.setAttribute(SSOConstants.USER_ID, logonUserId);
         session.setAttribute(SSOConstants.USER_CODE, Environment.getUserCode());
         session.setAttribute(SSOConstants.USER_NAME, Environment.getUserName());
-        session.setAttribute(SSOConstants.LOGINNAME_IN_SESSION, Environment.getUserCode());
+        session.setAttribute(SSOConstants.USER_ACCOUNT, Environment.getUserCode());
         
         // 可能会在其它ILoginCustomizer的实现类里取出新增roleId进去，ConcurrentModificationException
         session.setAttribute(SSOConstants.USER_RIGHTS_L, new ArrayList<Long>(roleIds) );  

@@ -81,7 +81,7 @@ public class Filter7AccessingCheck implements Filter {
                 userRights.addAll(userRightsInSession);
             }
             
-            String operatorName = (String) session.getAttribute(SSOConstants.LOGINNAME_IN_SESSION);
+            String operatorName = (String) session.getAttribute(SSOConstants.USER_ACCOUNT);
             if(operatorName != null) {
                 userRights.add(operatorName);
             }

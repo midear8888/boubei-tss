@@ -36,11 +36,11 @@ public interface SSOConstants {
     public static final String USER_ROLES_S = "_userRoleNames";  // 逗号分隔字符串
     
     /** 存在session里的用户账号名称 */
-    public static final String LOGINNAME_IN_SESSION = "loginName";
-    public static final String USER_CODE = "userCode";
-    public static final String USER_NAME = "userName";
-    public static final String USER_ID = "userId";
-    public static final String USER_PASSWORD  = "password";
+    public static final String USER_ACCOUNT = "loginName";
+    public static final String USER_CODE    = "userCode";
+    public static final String USER_NAME    = "userName";
+    public static final String USER_ID      = "userId";
+    public static final String USER_PASSWORD= "password";
     
     public static final String USER_DOMAIN  = "DOMAIN";
     public static final String USERS_OF_DOMAIN  = "USERS_OF_DOMAIN";

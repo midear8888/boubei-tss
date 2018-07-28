@@ -30,6 +30,7 @@ public class RequestContext {
 
 	/** 用户令牌属性名 */
 	public static final String USER_TOKEN = "token";
+	public static final String JSESSIONID = "JSESSIONID";
 
 	/** 请求所属系统编号属性名 */
 	public static final String APPLICATION_CODE = "appCode";

@@ -42,7 +42,7 @@ public class GetLoginInfo extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         ILoginService service = (ILoginService) Global.getBean("LoginService");
         
-        String loginName = request.getParameter(SSOConstants.LOGINNAME_IN_SESSION);
+        String loginName = request.getParameter(SSOConstants.USER_ACCOUNT);
         try {
         	String[] info = service.getLoginInfoByLoginName(loginName);
             XmlHttpEncoder encoder = new XmlHttpEncoder(); 

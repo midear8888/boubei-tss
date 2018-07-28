@@ -51,7 +51,7 @@ public class PasswordPassport {
         	}
         } 
         
-        String loginName = requestContext.getValue(SSOConstants.LOGINNAME_IN_SESSION);
+        String loginName = requestContext.getValue(SSOConstants.USER_ACCOUNT);
         String password  = requestContext.getValue(SSOConstants.USER_PASSWORD);
         if (loginName == null || password == null) {
             throw new BusinessException(EX.U_02);

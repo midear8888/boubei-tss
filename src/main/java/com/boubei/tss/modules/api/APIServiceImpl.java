@@ -69,6 +69,7 @@ public class APIServiceImpl implements APIService {
         
         // 设置Cookie
         HttpClientUtil.setCookie(Context.getResponse(), RequestContext.USER_TOKEN, token);
+        HttpClientUtil.setCookie(Context.getResponse(), RequestContext.JSESSIONID, sessionId);
         
         // 注册在线用户库
         IOnlineUserManager onlineUserManager = OnlineUserManagerFactory.getManager();
