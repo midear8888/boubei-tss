@@ -167,11 +167,14 @@ public class LoginService implements ILoginService {
 	}
     
     public List<Long> saveUserRolesAfterLogin(Long logonUserId) {
+    	List<Long> roleIds = getRoleIdsByUserId( logonUserId );
+        return saveUserRolesAfterLogin(logonUserId, roleIds);
+	}
+    
+    public List<Long> saveUserRolesAfterLogin(Long logonUserId, List<Long> roleIds) {
     	
     	userDao.executeHQL("delete RoleUserMapping o where o.id.userId = ?",  logonUserId);
         
-    	List<Long> roleIds = getRoleIdsByUserId( logonUserId );
-
         // 默认插入一条【匿名角色】给每一个登录用户
         roleIds.add(0, UMConstants.ANONYMOUS_ROLE_ID );
         Set<Long> roleSet = new HashSet<Long>( roleIds ); // 去重

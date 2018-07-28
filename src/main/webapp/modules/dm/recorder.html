@@ -532,9 +532,6 @@ function loadDetailData(rowID) {
 
         if( params.my_wf_list && !isCreateRow ) {
             disableForm();
-            wfFields.each(function(i, code) {
-                $("#"+code).removeClass("field_disabled").attr("disabled", null);
-            });
 
             tssJS("#ws .wf").show();
             tssJS("#ws .cs").hide();
@@ -550,24 +547,34 @@ function loadDetailData(rowID) {
             }
         }
 
-        tssJS("#cancelBt").click( function() { cancel(rowID); } ); 
-        tssJS("#approveBt").click( function() { approve(rowID); } ); 
-        tssJS("#rejectBt").click( function() { reject(rowID); } ); 
-        tssJS("#transBt").click( function() { transApprove(rowID); } ); 
+        if( isCreateRow ) {
+            wfFields.each(function(i, code) {
+                $("#"+code).addClass("field_disabled").attr("disabled", "true");
+            });
+        } else {
+            tssJS("#cancelBt").click( function() { cancel(rowID); } ); 
+            tssJS("#approveBt").click( function() { approve(rowID); } ); 
+            tssJS("#rejectBt").click( function() { reject(rowID); } ); 
+            tssJS("#transBt").click( function() { transApprove(rowID); } ); 
 
-        showExtension(_item);
+            showExtension(_item);
 
-        // 控制流程按钮
-        if(  _item.creator == userCode ) {
-            tssJS("#ws .wf").hide();
-            if( _item.wfstatus && _item.wfstatus != '待审批' ) {
-                tssJS("#cancelBt, #saveBt, #btnViewAttach").hide();
-                tssJS("#opinion").attr("disabled", "true").css("background-color", "#eee");
+            // 控制流程按钮
+            if(  _item.creator == userCode ) {
+                tssJS("#ws .wf").hide();
+                if( _item.wfstatus && _item.wfstatus != '待审批' ) {
+                    tssJS("#cancelBt, #saveBt, #btnViewAttach").hide();
+                    tssJS("#opinion").attr("disabled", "true").css("background-color", "#eee");
+                }
             }
-        }
-        if(  _item.nextProcessor != userCode ) {
-            tssJS("#approveBt, #rejectBt, #transBt").hide();
-            tssJS("#opinion").attr("disabled", "true").css("background-color", "#eee");
+            if(  _item.nextProcessor != userCode ) {
+                tssJS("#approveBt, #rejectBt, #transBt").hide();
+                tssJS("#opinion").attr("disabled", "true").css("background-color", "#eee");
+            } else {
+                wfFields.each(function(i, code) {
+                    $("#"+code).removeClass("field_disabled").attr("disabled", null);
+                });
+            }
         }
     }
 

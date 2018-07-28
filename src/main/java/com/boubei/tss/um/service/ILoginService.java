@@ -85,6 +85,7 @@ public interface ILoginService {
      * @param logonUserId 
      */
     List<Long> saveUserRolesAfterLogin(Long logonUserId);
+    List<Long> saveUserRolesAfterLogin(Long logonUserId, List<Long> roleIds);
 
     /**
      * <p>
