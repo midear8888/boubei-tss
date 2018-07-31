@@ -88,7 +88,7 @@ public class EasyUtils {
 		try {
 			return objectMapper.writeValueAsString(obj);
 		} catch (Exception e) {  
-			return "";
+			return e.getMessage();
   	    }  
     }
     

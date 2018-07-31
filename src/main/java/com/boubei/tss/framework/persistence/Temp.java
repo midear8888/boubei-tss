@@ -19,6 +19,8 @@ import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+
 import com.boubei.tss.framework.sso.Environment;
 
 /**
@@ -28,11 +30,12 @@ import com.boubei.tss.framework.sso.Environment;
 @Entity
 @Table(name = "TBL_TEMP_")
 @SequenceGenerator(name = "temp_sequence", sequenceName = "temp_sequence", initialValue = 1, allocationSize = 10)
+@JsonIgnoreProperties(value={"pk", "PK"})
 public class Temp implements IEntity {
 	
 	@Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "temp_sequence")
-	private Long pk;
+	private Long pK;
     
 	private Long id; 
 	private Long thread; // 当前线程ID，用以多线程场景
@@ -40,6 +43,11 @@ public class Temp implements IEntity {
 	private String udf1;
 	private String udf2;
 	private String udf3;
+	private String udf4;
+	private String udf5;
+	private String udf6;
+	private String udf7;
+	private String udf8;
 	
 	public Temp() {
 		this.setThread(Environment.threadID());
@@ -104,15 +112,51 @@ public class Temp implements IEntity {
 	}
 	
 	public Serializable getPK() {
-		return this.getPk();
+		return this.pK;
 	}
 
-	public Long getPk() {
-		return pk;
+	public void setPK(Long pk) {
+		this.pK = pk;
 	}
 
-	public void setPk(Long pk) {
-		this.pk = pk;
+	public String getUdf4() {
+		return udf4;
+	}
+
+	public void setUdf4(String udf4) {
+		this.udf4 = udf4;
+	}
+
+	public String getUdf5() {
+		return udf5;
+	}
+
+	public void setUdf5(String udf5) {
+		this.udf5 = udf5;
+	}
+
+	public String getUdf6() {
+		return udf6;
+	}
+
+	public void setUdf6(String udf6) {
+		this.udf6 = udf6;
+	}
+
+	public String getUdf7() {
+		return udf7;
+	}
+
+	public void setUdf7(String udf7) {
+		this.udf7 = udf7;
+	}
+
+	public String getUdf8() {
+		return udf8;
+	}
+
+	public void setUdf8(String udf8) {
+		this.udf8 = udf8;
 	}
 }
 

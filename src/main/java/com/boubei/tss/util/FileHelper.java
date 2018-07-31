@@ -112,7 +112,7 @@ public class FileHelper {
             FileWriter fw = new FileWriter(file, append);
             fw.write(content, 0, content.length());
             fw.close();
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException("写入文件内容时IO异常", e);
         }
     }
@@ -142,9 +142,7 @@ public class FileHelper {
 		} catch (Exception e) {
 			throw new RuntimeException("文件读写失败", e);
 		} finally {
-			try {
-				writer.close();
-			} catch (IOException e) { }
+			try { writer.close(); } catch (IOException e) { }
 		}
 	}
 
