@@ -22,7 +22,9 @@ import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import com.boubei.tss.PX;
 import com.boubei.tss.framework.exception.BusinessException;
+import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
@@ -129,7 +131,8 @@ public class ExcelPOI extends Excel {
 	}
 
 	public static void checkExcelSize(InputStream is, boolean isXLS) throws IOException {
-		int max_size = 1024 * 1024 * (isXLS ? 5 : 1);
+		int MAX_XLSX_SIZE = EasyUtils.obj2Int( ParamManager.getValue(PX.MAX_XLSX_SIZE, "1024") );
+		int max_size = 1024 * MAX_XLSX_SIZE * (isXLS ? 5 : 1) ;
 		if( is.available() > max_size ) { // 1M xlsx 约等于 1万行*20列
 			throw new BusinessException("导入文件过大，已超过1M，请分开导入，或将Excel文件另存为CSV格式再进行导入");
 		}

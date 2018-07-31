@@ -36,6 +36,7 @@ import com.boubei.tss.framework.persistence.pagequery.PageInfo;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.modules.api.APIService;
+import com.boubei.tss.modules.cloud.DomainInfo;
 import com.boubei.tss.modules.param.Param;
 import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.modules.param.ParamManager;
@@ -367,7 +368,10 @@ public class UserService implements IUserService{
     	customerGroup.setParentId( domainGroup.getId() );
     	groupService.createNewGroup(customerGroup, "", "");
     	
-    	// TODO 创建一行域扩展信息 DomainInfo
+    	// 创建一行域扩展信息 DomainInfo
+    	DomainInfo info = new DomainInfo();
+    	info.setName( domainGroup.getName() );
+    	userDao.createObject(info);
     	
 		this.regUser(user);
 	}

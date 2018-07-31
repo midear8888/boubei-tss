@@ -284,7 +284,8 @@ public class ImportCSV implements AfterUpload {
 				valuesMap.put(fieldCode, value);
         	}
 			
-			/* 支持覆盖式导入，覆盖规则为参数指定的某个（或几个）字段 TODO 批量导入有性能隐患，循环内检查覆盖与否 */
+			/* 支持覆盖式导入，覆盖规则为参数指定的某个（或几个）字段 。uniqueCodes的字段都需要建索引
+			 * TODO 批量导入有性能隐患，循环内检查覆盖与否 */
 			if( !EasyUtils.isNullOrEmpty(uniqueCodes) ) {
 				// 检测记录是否已经存在
 				Map<String, String> params = new HashMap<String, String>();
