@@ -12,6 +12,7 @@
 	<entity class="com.boubei.tss.modules.cloud.ModuleDef"/>
 	<entity class="com.boubei.tss.modules.cloud.ModuleUser"/>
 	<entity class="com.boubei.tss.modules.sn.SerialNO"/>
+	<entity class="com.boubei.tss.modules.cloud.DomainInfo"/>
  
 	<!-- um -->	
 	<entity class="com.boubei.tss.um.sso.online.DBOnlineUser"/>

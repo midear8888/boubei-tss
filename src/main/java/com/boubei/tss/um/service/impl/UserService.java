@@ -371,6 +371,9 @@ public class UserService implements IUserService{
     	// 创建一行域扩展信息 DomainInfo
     	DomainInfo info = new DomainInfo();
     	info.setName( domainGroup.getName() );
+    	info.setDomain( domainGroup.getDomain() );
+    	info.setCreator( user.getLoginName() );
+    	info.setCreateTime(new Date());
     	userDao.createObject(info);
     	
 		this.regUser(user);
