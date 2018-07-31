@@ -18,7 +18,7 @@ public interface WFService {
 
 	SQLExcutor queryMyTasks(_Database _db, Map<String, String> params, int page, int pagesize);
 
-	List<String> getUsers(List<Map<String, String>> rule);
+	List<String> getUsers(List<Map<String, String>> rule, boolean justOne);
 
 	void calculateWFStatus(Long itemId, _Database _db);
 	

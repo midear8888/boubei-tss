@@ -14,14 +14,13 @@
 <style type="text/css">
 
 	.unread { color: red; cursor: pointer; }
+	#gridContainer td[title="未读"] { color: red; }
+	#alert_box .message { max-height: 500px; }
 
-	#gridContainer td[title="未读"] {
-		color: red;
-	}
-
-	#alert_box .message {
-		max-height: 500px;
-	}
+.white { color: #333; height: 16px; border: 1px solid #999; text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1); }
+.white:hover { background-color: inherit; border-left: 1px solid #000; border-right: 1px solid #000; background-color: #eee;  }
+#gridTitle .small { background: inherit; margin: 0px 1px; border-top: 0px; border-bottom: 0px; }
+#gridTitle .small:hover { background-color: #eee; }
 
 </style>
 
@@ -193,14 +192,14 @@
 			  		<option value="sender">发送人</option>
 			  		<option value="content">内容</option>
 			  	</select>
-			  	<input type="button" class="tssbutton small blue" value="搜 索" onclick="search()"/>
+			  	<input type="button" class="tssbutton small white" value="搜 索" onclick="search()"/>
 			  </span>
 			  <span>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-			  	<input type="button" class="tssbutton small blue" value="批量删除" onclick="batchDelete()"/>
-			  	<input type="button" class="tssbutton small blue" value="批量已阅" onclick="batchView()"/>
-			  	<input type="button" class="tssbutton small blue" value="全部已阅" onclick="batchView('view_all')"/>
-			  	<input type="button" class="tssbutton small blue" value="清空站内信" onclick="batchDelete('del_all')"/>
-			  	<input type="button" class="tssbutton small blue" value="发送消息" onclick="sendNewMsg()"/>
+			  	<input type="button" class="tssbutton small white" value="批量删除" onclick="batchDelete()"/>
+			  	<input type="button" class="tssbutton small white" value="批量已阅" onclick="batchView()"/>
+			  	<input type="button" class="tssbutton small white" value="全部已阅" onclick="batchView('view_all')"/>
+			  	<input type="button" class="tssbutton small white" value="清空站内信" onclick="batchDelete('del_all')"/>
+			  	<input type="button" class="tssbutton small white" value="发送消息" onclick="sendNewMsg()"/>
 			  </span>
 			</td>
 		</tr>

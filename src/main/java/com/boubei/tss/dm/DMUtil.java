@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -173,25 +174,31 @@ public class DMUtil {
     }
     
     /** 导出数据到CSV文件中时，需要对字段值里包含的特殊符号进行处理，以便可以在Excel中正常打开 */
-    public static String preCheatVal(Object value) {
-    	if(value == null) {
-			value = "";
-		}
+    public static String preTreatVal(Object value) {
+    	if(value == null) return "";
+		
 		String valueS = value.toString().replaceAll(",", "，"); // 导出时字段含英文逗号会错列
 		valueS = valueS.replaceAll("\r\n", " ").replaceAll("\n", " "); // 替换掉换行符
 		valueS = valueS.replaceAll("\"", ""); // 替换掉英文双引号
+		valueS = valueS.replaceAll("'", "");  // 替换掉英文单引号
+		valueS = valueS.replaceAll(";", "；"); // 替换掉英文分号，mac os下csv默认用分号分隔
+		
+		valueS = Pattern.compile("\t|\r|\n|\'").matcher(valueS).replaceAll(" "); // 保险起见，再替换一次
+		
 		return valueS; 
     }
 	
   	public static Object preTreatValue(String value, Object type) {
-  		if(type == null || value == null) {
-  			return value;
-  		}
   		
+  		if(value == null) return value;
+  		
+  		type = EasyUtils.checkNull(type, _Field.TYPE_STRING);
   		type = type.toString().toLowerCase();
   		value = value.trim();
   		
   		if(_Field.TYPE_NUMBER.equals(type) || _Field.TYPE_INT.equals(type)) {
+  			if( EasyUtils.isNullOrEmpty(value) ) return null;
+  			
   			try {
   				if(value.indexOf(".") >= 0) {
   					value = value.replace("$", "").replace("￥", "").replaceAll(",|，", ""); // 金额
@@ -212,20 +219,11 @@ public class DMUtil {
   			return new Timestamp(dateObj.getTime());
   		}
   		else {
+  			// 过滤掉emoj表情符号 TODO 有待验证
+  			value = value.replaceAll("[\\ud83c\\udc00-\\ud83c\\udfff]|[\\ud83d\\udc00-\\ud83d\\udfff]|[\\u2600-\\u27ff]", "*");
   			return value;
   		}
   	} 
-  	
-  	// oracle的oracle.sql.TIMESTAMP类型的字段，转换为json时会报错，需要先转换为字符串
-  	public static Object preTreatValue(Object value) {
-  		if(value == null) return null;
-  				
-  		String valueCN = value.getClass().getName();
-		if(valueCN.indexOf("TIMESTAMP") >= 0 ) {
-  			return value.toString();
-  		}
-  		return value;
-  	}
   	
 	public static Map<String, Object> getFreemarkerDataMap() {
     	Map<String, Object> fmDataMap = new HashMap<String, Object>();

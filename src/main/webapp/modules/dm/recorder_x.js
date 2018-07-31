@@ -191,7 +191,7 @@ function addOptBtn(name, fn, roles, groups) {
         return;
     } 
 
-    var batchOpBtn = tssJS.createElement('button', 'tssbutton small blue');
+    var batchOpBtn = tssJS.createElement('button', 'tssbutton small white');
     tssJS(batchOpBtn).html(name).click( fn );  
     tssJS('#customizeBox').appendChild(batchOpBtn);
 }

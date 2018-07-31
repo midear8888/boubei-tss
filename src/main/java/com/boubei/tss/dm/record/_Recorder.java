@@ -842,24 +842,25 @@ public class _Recorder extends BaseActionSupport {
 	 * @param itemId
 	 */
 	private void checkRowEditable(Long recordId, Long itemId) {
-		if (!SecurityUtil.isHardMode() || recordId < 0)
-			return;
+		if (!SecurityUtil.isHardMode() || recordId < 0) return;
+		
+		// 先检查流程是否存在且是否已开始处理
+		WFStatus wfStatus = wfService.getWFStatus(recordId, itemId);
+		if (wfStatus != null && !WFStatus.NEW.equals(wfStatus.getCurrentStatus())) {
+			throw new BusinessException(EX.WF_1);
+		}
 
 		boolean flag = false;
 		if (checkPermission(recordId, Record.OPERATION_EDATA)) {
 			flag = checkRowVisible(recordId, itemId); // 如果有【维护数据】权限，则只要可见就能编辑
 		}
 		if (!flag && checkPermission(recordId, Record.OPERATION_CDATA)) {
-			flag = checkRowAuthor(recordId, itemId); // 如果没有【维护数据】只有【新建】权限，则只能编辑自己创建的记录
+			// 临时ID（即新增尚未保存时上传的附件）无需校验
+			flag = itemId > 1510000000000L || checkRowAuthor(recordId, itemId); // 如果没有【维护数据】只有【新建】权限，则只能编辑自己创建的记录
 		}
 
 		if (!flag) {
 			throw new BusinessException(EX.parse(EX.DM_05, itemId));
-		}
-
-		WFStatus wfStatus = wfService.getWFStatus(recordId, itemId);
-		if (wfStatus != null && !WFStatus.NEW.equals(wfStatus.getCurrentStatus())) {
-			throw new BusinessException(EX.WF_1);
 		}
 	}
 

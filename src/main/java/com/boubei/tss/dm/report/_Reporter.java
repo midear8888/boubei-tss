@@ -255,14 +255,6 @@ public class _Reporter extends BaseActionSupport {
         Object cacheFlag = checkLoginAndCache(request, reportId);
 		SQLExcutor excutor = reportService.queryReport(reportId, requestMap, _page, _pagesize, cacheFlag);
         
-        // 对一些转换为json为报错的类型值进行预处理
-        for(Map<String, Object> row : excutor.result ) {
-        	for(String key : row.keySet()) {
-        		Object value = row.get(key);
-        		row.put(key, DMUtil.preTreatValue(value));
-        	}
-        }
-        
         AccessLogRecorder.outputAccessLog(reportService, reportId, "showAsJson", requestMap, start);
         
         if(page != null) {

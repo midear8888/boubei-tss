@@ -107,7 +107,7 @@ public class TaskLog implements IEntity {
 	}
 
 	public void setDetail(String detail) {
-		this.detail = DMUtil.preCheatVal(detail);
+		this.detail = DMUtil.preTreatVal(detail);
 	}
 
 	public String getDataDay() {

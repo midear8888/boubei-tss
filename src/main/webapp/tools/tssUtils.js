@@ -576,9 +576,10 @@ function addTreeNode(fromTree, toTree, checkFunction) {
 
 // 删除选中树节点
 function delTreeNode(url, treeName) {
-	$.confirm("您确定要删除该节点吗？", "删除确认", function(){
-		var tree = $.T(treeName || "tree");
-		var treeNode = tree.getActiveTreeNode();
+	var tree = $.T(treeName || "tree");
+	var treeNode = tree.getActiveTreeNode();
+
+	$.confirm("您确定要删除节点【" +treeNode.name+ "】吗？", "删除确认", function(){
 		$.ajax({
 			url : (url || URL_DELETE_NODE) + treeNode.id,
 			method : "DELETE",
@@ -596,16 +597,17 @@ function delTreeNode(url, treeName) {
 			state    状态
  */
 function stopOrStartTreeNode(state, url, treeName) {	
+	var tree = $.T(treeName || "tree");
+	var treeNode = tree.getActiveTreeNode();
+	
 	if( state == "1" ) {
-		$.confirm("您确定要停用该节点吗？", "停用确认", callback);
+		$.confirm("您确定要停用该节点【" +treeNode.name+ "】吗？", "停用确认", callback);
 	}
 	else {
 		callback();
 	}
 		
 	function callback() {
-		var tree = $.T(treeName || "tree");
-		var treeNode = tree.getActiveTreeNode();
 		$.ajax({
 			url : (url || URL_STOP_NODE) + treeNode.id + "/" + state,
 			onsuccess : function() { 

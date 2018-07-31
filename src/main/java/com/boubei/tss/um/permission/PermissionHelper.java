@@ -84,6 +84,12 @@ public class PermissionHelper extends TreeSupportDao<IDecodable> {
      * @param permissionTable
      * @param resourceClass
      * @return
+     * 
+     * select distinct p.* from bd.dm_permission_record p, bd.um_roleusermapping ru 
+		where p.resourceId = 108 
+		  and p.roleId = ru.roleId 
+		  and ru.roleId in (-10000, 2)
+		  and ru.userId = 250
      */
     @SuppressWarnings("unchecked")
     public List<String> getOperationsByResource(Long resourceId, String permissionTable, Class<?> resourceClass) {

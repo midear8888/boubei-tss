@@ -100,11 +100,11 @@ public class WFServiceImpl implements WFService {
 		List<Map<String, String>> cc = rules.get("cc");
 		List<Map<String, String>> trans = rules.get("trans");
 		
-		List<String> tos = getUsers(to);
-		List<String> ccs = getUsers(cc);
-		List<String> transs = getUsers(trans);
+		List<String> tos = getUsers(to, true);
+		List<String> ccs = getUsers(cc, true);
+		List<String> transs = getUsers(trans, false);
 		
-		wfStatus.setNextProcessor( tos.get(0) );
+		wfStatus.setNextProcessor( tos.isEmpty() ? null : tos.get(0) );
 		wfStatus.setStepCount( tos.size() );
 		wfStatus.setTo( EasyUtils.list2Str(tos) );
 		wfStatus.setCc( EasyUtils.list2Str(ccs) );
@@ -116,7 +116,7 @@ public class WFServiceImpl implements WFService {
 	/**
 	 * 安装流程规则及当前申请人登录信息，获取审批人（或抄送人）列表
 	 */
-	public List<String> getUsers(List<Map<String, String>> rule) {
+	public List<String> getUsers(List<Map<String, String>> rule, boolean justOne) {
 		List<String> users = new ArrayList<String>();
 		if(rule == null) return users;
 		
@@ -135,20 +135,21 @@ public class WFServiceImpl implements WFService {
 			String role = m.get("roleId"); // 或签名，优先使用和申请人同组的主管
 			if( !EasyUtils.isNullOrEmpty(role) ) {
 				Long roleId = EasyUtils.obj2Long(role);
-				List<Object[]> roleUsers = getSameGroupUserByRole(roleId, creator);
+				List<Object[]> roleUsers = getSameGroupUserByRole(roleId, creator, justOne);
 				if( roleUsers.size() > 0 ) {
 					users.addAll( Arrays.asList( EasyUtils.list2Str(roleUsers, 0).split(",") ) );
 				}
 			}
 		}
  
+		users.remove( creator );
 		return users;
 	}
 	
 	/**
 	 * 按角色获取拥有此角色的所有用户 及 组织
 	 */
-	private List<Object[]> getSameGroupUserByRole(Long roleId, String creator) {
+	private List<Object[]> getSameGroupUserByRole(Long roleId, String creator, boolean justOne) {
 		
 		List<Object[]> result = new ArrayList<Object[]>();
 		if( Environment.getOwnRoles().contains(roleId) ) { // 如果自己就拥有该角色，则无需此角色的人审批
@@ -162,17 +163,19 @@ public class WFServiceImpl implements WFService {
 			String userCode = dto.getLoginName();
 			
 			result.add( new String[]{ userCode, dto.getUserName()} );
+			if( !justOne ) continue;
 			
 			List<Object[]> fatherGroups = loginSerivce.getGroupsByUserId(dto.getId());
 	        for( int i = fatherGroups.size() - 1; i >= 0; i--) {
 	        	Object[] temp = fatherGroups.get(i);
 	        	if( inGroup.equals(temp[0]) ) {
-	        		return result.subList(result.size() - 1, result.size() ); // 取最后一个
+	        		int size = result.size();
+					return result.subList(size - 1, size ); // 取最后一个
 	        	}
 	        }
 		}
 		
-		return result.subList(0, 1); // 只取第一个
+		return justOne ? result.subList(0, 1) : result; // 只取第一个
 	}
 	
 	/**

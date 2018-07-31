@@ -61,7 +61,7 @@ public class WsDayETLJob extends ByDayETLJob {
         	Collection<Object> values = new ArrayList<Object>();
         	for(String field : ex.selectFields) {
         		Object value = row.get(field);
-        		values.add( DMUtil.preCheatVal(value) ); 
+        		values.add( DMUtil.preTreatVal(value) ); 
         	}
         	
         	values.add( InstallListener.licenseOwner() );

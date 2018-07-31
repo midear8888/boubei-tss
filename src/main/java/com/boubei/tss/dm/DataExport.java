@@ -156,7 +156,7 @@ public class DataExport {
             for (Object[] row : data) {
             	List<Object> values = new ArrayList<Object>();
             	for(Object value : row) {
-            		String valueS = DMUtil.preCheatVal(value); // 对每个含特殊字符（, \r\n \"等）的格子值进行预处理
+            		String valueS = DMUtil.preTreatVal(value); // 对每个含特殊字符（, \r\n \"等）的格子值进行预处理
 					values.add(valueS); 
             	}
                 fw.write(EasyUtils.list2Str(values));

@@ -192,7 +192,7 @@ public class SyncService implements ISyncService, Progressable {
              * 如果是已经存在的但不是从该fromApp同步过来的，则忽略该fromApp用户；
              * 如果用户不存在，则新建。
              */
-            List<?> temp = groupDao.getEntities("from User t where t.loginName=?", userDto.getLoginName());
+            List<?> temp = groupDao.getEntities("from User t where ? in (t.loginName, t.email, t.telephone)", userDto.getLoginName());
             if( !EasyUtils.isNullOrEmpty(temp) ) {
             	User existUser = (User) temp.get(0);
             	String fromUserId = existUser.getFromUserId();

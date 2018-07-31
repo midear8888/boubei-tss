@@ -84,7 +84,7 @@ public class Servlet4Upload extends HttpServlet {
 			String errorMsg = "上传（导入）失败：" + e.getMessage();
 			log.error(errorMsg, _e);
 			
-			errorMsg = Pattern.compile("\t|\r|\n|\'").matcher(errorMsg).replaceAll(""); // 剔除换行，以免alert不出来
+			errorMsg = Pattern.compile("\t|\r|\n|\'").matcher(errorMsg).replaceAll(" "); // 剔除换行，以免alert不出来
 			script = "parent.alert('" + errorMsg + "');";
 		}
 		

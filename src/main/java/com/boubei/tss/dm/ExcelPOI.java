@@ -82,9 +82,11 @@ public class ExcelPOI extends Excel {
 		Workbook wb = null;
 		try {
 			is = new FileInputStream(filepath);
-			checkExcelSize(is);
+			boolean isXLS = isXLS(filepath);
 			
-			wb = isXLS(filepath) ? new HSSFWorkbook(is) : new XSSFWorkbook(is);
+			checkExcelSize(is, isXLS);
+			
+			wb = isXLS ? new HSSFWorkbook(is) : new XSSFWorkbook(is);
 			
 			Sheet sheet1 = wb.getSheetAt(0);   // 获取第一张Sheet表
 			Row row0 = sheet1.getRow(0);      // 获取第一行
@@ -126,8 +128,9 @@ public class ExcelPOI extends Excel {
 		return result;
 	}
 
-	public static void checkExcelSize(InputStream is) throws IOException {
-		if( is.available() > 1024 * 1024 * 1 ) { // 1M 约等于 1万行*20列
+	public static void checkExcelSize(InputStream is, boolean isXLS) throws IOException {
+		int max_size = 1024 * 1024 * (isXLS ? 5 : 1);
+		if( is.available() > max_size ) { // 1M xlsx 约等于 1万行*20列
 			throw new BusinessException("导入文件过大，已超过1M，请分开导入，或将Excel文件另存为CSV格式再进行导入");
 		}
 	}

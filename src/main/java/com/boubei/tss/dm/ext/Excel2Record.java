@@ -54,9 +54,10 @@ public class Excel2Record implements AfterUpload {
 		Workbook wb = null;
 		try {
 			is = new FileInputStream(filepath);
-			ExcelPOI.checkExcelSize(is);
+			boolean isXLS = Excel.isXLS(filepath);
+			ExcelPOI.checkExcelSize(is, isXLS);
 			
-			wb = Excel.isXLS(filepath) ? new HSSFWorkbook(is) : new XSSFWorkbook(is);
+			wb = isXLS ? new HSSFWorkbook(is) : new XSSFWorkbook(is);
 			
 			Iterator<Sheet> sheets = wb.iterator();
 			while(sheets.hasNext()) {

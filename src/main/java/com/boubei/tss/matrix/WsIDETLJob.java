@@ -61,7 +61,7 @@ public class WsIDETLJob extends ByIDETLJob {
         			maxID = Math.max(maxID, EasyUtils.obj2Long(value));
         			value = ""; // id不要
         		}
-        		values.add( DMUtil.preCheatVal(value) ); 
+        		values.add( DMUtil.preTreatVal(value) ); 
         	}
         	
         	values.add( InstallListener.licenseOwner() );

@@ -42,33 +42,38 @@ public class EasyUtils {
      * @return
      */
     public static final Double obj2Double(Object value) {
-        Double rlt = 0D;
         try{
-            rlt = Double.valueOf(value == null ? "0" : value.toString().trim()); // value = .5 
-        } catch (Exception e) {
+        	return Double.valueOf( toNumberString(value) ); // value = .5 
+        } 
+        catch (Exception e) {
             throw new RuntimeException("error double value: " + value + ", " + e.getMessage());
         }
-        return rlt;
     }
     
     public static final Long obj2Long(Object value) {
-        Long rlt = 0L;
         try{
-            rlt = Long.valueOf(value == null ? "0" : value.toString().trim());
-        } catch (Exception e) {
+        	return Long.valueOf( toNumberString(value) );
+        } 
+        catch (Exception e) {
         	 throw new RuntimeException("error long value: " + value + ", " + e.getMessage());
         }
-        return rlt;
     }
     
     public static final Integer obj2Int(Object value) {
-        Integer rlt = 0;
         try{
-            rlt = Integer.valueOf(value == null ? "0" : value.toString().trim());
-        } catch (Exception e) {
+            return Integer.valueOf( toNumberString(value) );
+        } 
+        catch (Exception e) {
         	 throw new RuntimeException("error int value:" + value + ", " + e.getMessage());
         }
-        return rlt;
+    }
+    
+    private static final String toNumberString(Object value) {
+    	String _val = obj2String(value).trim();
+    	if( _val.length() == 0) {
+    		_val = "0";
+    	}
+    	return _val;
     }
     
     public static final String obj2String(Object value) {
