@@ -42,7 +42,9 @@ public class LogOutputTask extends Output2DBTask implements Serializable {
             pstmt.setString(index++, dto.getOperationCode());
             pstmt.setString(index++, dto.getOperateTable());
             pstmt.setTimestamp(index++, new java.sql.Timestamp(dto.getOperateTime().getTime()));
-            pstmt.setString(index++, dto.getContent());
+            
+            String content = dto.getContent();
+			pstmt.setString(index++, content.substring(0, Math.min(content.length(), 2000)) );
             pstmt.setInt(index++, dto.getMethodExcuteTime() == null ? 0 : dto.getMethodExcuteTime());
             pstmt.setString(index++, dto.getOperatorBrowser());
             

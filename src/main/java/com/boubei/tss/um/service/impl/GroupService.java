@@ -17,6 +17,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -126,8 +127,16 @@ public class GroupService implements IGroupService {
 		return group;
     }
 
+	/**
+	 * 创建时，OperateInfoInterceptor 会执行 IOperatable.setDomain(Environment.getDomain())；需要单独再保存一遍domain信息
+	 */
 	private void fixDomain(String domain, Group group) {
-		// 创建时，OperateInfoInterceptor 会执行 IOperatable.setDomain(Environment.getDomain())；需要单独再保存一遍domain信息
+		// 控制注册时域名必须为英文字母或数字，方便小程序传递域参数
+		Pattern p = Pattern.compile("[a-z|A-Z|0-9]+");  
+	    if( !p.matcher(domain).matches() ) {
+	    	domain = "G" + group.getId();
+	    }
+	        
 		group.setDomain(domain);
 		groupDao.saveGroup(group);
 	}

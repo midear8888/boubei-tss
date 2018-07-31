@@ -164,6 +164,7 @@ public class ImportCSV implements AfterUpload {
 		// 如果上传的是一个 Excel，先转换为CSV文件
 		if( Excel.isXLS(filepath) || Excel.isXLSX(filepath) ) { 
 			filepath = Excel.excel2CSV( filepath, charSet );
+			log.debug("excel2CSV end");
 		}
 		
 		File targetFile = new File(filepath);
@@ -171,6 +172,7 @@ public class ImportCSV implements AfterUpload {
 		if( rowList.size() < 2) {
 			return "parent.alert('导入文件没有数据');";
 		}
+		log.debug("readData end");
 		 
 		List<String> headers = rowList.get(0);
 		int messyCount = 0;
@@ -181,6 +183,7 @@ public class ImportCSV implements AfterUpload {
 		if( messyCount*1.0 / headers.size() > 0.5 && !DataExport.CSV_UTF8.equals(charSet) ) {
 			rowList = readData(targetFile, DataExport.CSV_UTF8, headerTL);
 			headers = rowList.get(0);
+			log.debug("readData second end");
 		}
 		
 		// 校验数据
@@ -199,6 +202,7 @@ public class ImportCSV implements AfterUpload {
 			}
 		}
 		vailder.vaild(_db, rowList, headers, valSQLFields, errLines, errLineIndexs);
+		log.debug("vaild end");
 		
 		String fileName = null;
 		if(errLineIndexs.size() > 0) {
@@ -221,7 +225,11 @@ public class ImportCSV implements AfterUpload {
 		
 		// 执行导入到数据库
 		headers = rowList.get(0);
-		return import2db(_db, request, rowList, headers, errLineIndexs, fileName);
+		log.debug("import2db start");
+		String result = import2db(_db, request, rowList, headers, errLineIndexs, fileName);
+		log.debug("import2db end");
+		
+		return result;
 	}
 
 	/**
@@ -276,7 +284,7 @@ public class ImportCSV implements AfterUpload {
 				valuesMap.put(fieldCode, value);
         	}
 			
-			// 支持覆盖式导入，覆盖规则为参数指定的某个（或几个）字段
+			/* 支持覆盖式导入，覆盖规则为参数指定的某个（或几个）字段 TODO 批量导入有性能隐患，循环内检查覆盖与否 */
 			if( !EasyUtils.isNullOrEmpty(uniqueCodes) ) {
 				// 检测记录是否已经存在
 				Map<String, String> params = new HashMap<String, String>();

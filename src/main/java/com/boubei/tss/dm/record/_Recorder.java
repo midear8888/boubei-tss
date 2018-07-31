@@ -159,7 +159,7 @@ public class _Recorder extends BaseActionSupport {
 		String strictQuery = (String) EasyUtils.checkNull(requestMap.get(_Field.STRICT_QUERY), "false");
 		requestMap.put(_Field.STRICT_QUERY, strictQuery);
 
-		SQLExcutor ex = queryRecordData(_db, page, PAGE_SIZE, requestMap, pointedFileds);
+		SQLExcutor ex = queryRecordData(_db, page, PAGE_SIZE, requestMap, pointedFileds, true);
 
 		List<IGridNode> temp = new ArrayList<IGridNode>();
 		for (Map<String, Object> item : ex.result) {
@@ -181,7 +181,7 @@ public class _Recorder extends BaseActionSupport {
 		print(new String[] { "RecordData", "PageInfo" }, new Object[] { gEncoder, pageInfo });
 	}
 
-	private SQLExcutor queryRecordData(_Database _db, int page, int pagesize, Map<String, String> requestMap, boolean pointedFileds) {
+	private SQLExcutor queryRecordData(_Database _db, int page, int pagesize, Map<String, String> requestMap, boolean pointedFileds, boolean isTssGrid) {
 
 		long start = System.currentTimeMillis();
 		SQLExcutor ex;
@@ -235,7 +235,8 @@ public class _Recorder extends BaseActionSupport {
 
 			Object itemId = item.get("id").toString();
 			Object attachTag = EasyUtils.checkNull(itemAttach.get(itemId), isWFQuery ? "0" : "上传");
-			item.put("fileNum", "<a href='javascript:void(0)' onclick='manageAttach(" + itemId + ")'>" + attachTag + "</a>");
+			String onclick = isTssGrid ? "manageAttach(" +itemId+ ")" : "manageAttach(" +itemId+ ", " +_db.recordId+ ")";
+			item.put("fileNum", "<a href='javascript:void(0)' onclick='" +onclick+ "'>" + attachTag + "</a>");
 		}
 
 		return ex;
@@ -262,7 +263,7 @@ public class _Recorder extends BaseActionSupport {
 		String strictQuery = (String) EasyUtils.checkNull(requestMap.get(_Field.STRICT_QUERY), "false");
 		requestMap.put(_Field.STRICT_QUERY, strictQuery);
 
-		SQLExcutor ex = queryRecordData(_db, page, _pagesize, requestMap, pointedFileds);
+		SQLExcutor ex = queryRecordData(_db, page, _pagesize, requestMap, pointedFileds, false);
 
 		if (requestMap.containsKey("rows")) { // for EasyUI
 			Map<String, Object> returlVal = new HashMap<String, Object>();
