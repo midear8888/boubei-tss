@@ -132,9 +132,11 @@ public class ExcelPOI extends Excel {
 
 	public static void checkExcelSize(InputStream is, boolean isXLS) throws IOException {
 		int MAX_XLSX_SIZE = EasyUtils.obj2Int( ParamManager.getValue(PX.MAX_XLSX_SIZE, "1024") );
+		MAX_XLSX_SIZE = Math.max(MAX_XLSX_SIZE, 1024);
+		
 		int max_size = 1024 * MAX_XLSX_SIZE * (isXLS ? 5 : 1) ;
 		if( is.available() > max_size ) { // 1M xlsx 约等于 1万行*20列
-			throw new BusinessException("导入文件过大，已超过1M，请分开导入，或将Excel文件另存为CSV格式再进行导入");
+			throw new BusinessException("导入文件过大，已超过" +(max_size*1.0/1024/1024)+ "M，请将数据分开多次导入");
 		}
 	}
 

@@ -131,6 +131,8 @@ public class GroupService implements IGroupService {
 	 * 创建时，OperateInfoInterceptor 会执行 IOperatable.setDomain(Environment.getDomain())；需要单独再保存一遍domain信息
 	 */
 	private void fixDomain(String domain, Group group) {
+		if( domain == null) return;
+		
 		// 控制注册时域名必须为英文字母或数字，方便小程序传递域参数
 		Pattern p = Pattern.compile("[a-z|A-Z|0-9]+");  
 	    if( !p.matcher(domain).matches() ) {
