@@ -123,5 +123,8 @@ public interface IDao<T extends IEntity> {
     void insertEntityIds2TempTable(Collection<? extends IEntity> list);
     void insert2TempTable(Collection<Temp> list);
     void clearTempTable();
+    
+    // 使用SQL的方式插入，用以在其它SQL里关联查询; GetbyCodes等方法可借助临时表取代in查询，突破100的限制
+    void insert2TempNative(Collection<Temp> list);
 
 }

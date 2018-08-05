@@ -40,6 +40,7 @@
     URL_SORT_GROUP    = AUTH_PATH + "group/sort/";
     URL_MOVE_NODE     = AUTH_PATH + "group/move/"; // {id}/{toGroupId}
     URL_STOP_USER     = AUTH_PATH + "user/disable/";
+    URL_MOVE_USER     = AUTH_PATH + "user/move/";
     URL_GET_OPERATION = AUTH_PATH + "group/operations/"; 
     URL_GROUP_USERS   = AUTH_PATH + "group/users/";  // {groupId}
     URL_INIT_PASSWORD = AUTH_PATH + "user/initpwd/"; // user/initpwd/{groupId}/{userId}/{password}
@@ -254,6 +255,12 @@
             icon:ICON + "edit.gif",
             visible:function() { return getUserOperation("2"); }
         }
+        var item5 = {
+            label:"移动到其它组",
+            callback:move2otherGroup,
+            icon:ICON + "move.gif",
+            visible:function() { return getUserOperation("2"); }
+        }
         var item4 = {
             label:"删除",
             callback: function() { delelteUser(); },
@@ -267,6 +274,7 @@
         menu1.addItem(item1);
         menu1.addItem(item2);
         menu1.addItem(item3);
+        menu1.addItem(item5);
         menu1.addItem(item4);
  
         $1("grid").contextmenu = menu1;
@@ -356,6 +364,20 @@
                 return alert("不能移动到根目录或自注册用户组下面");
             }
             moveTreeNode(tree, id, target.id);
+        });
+    }
+
+    function move2otherGroup() {
+        var userId  = $.G("grid").getColumnValue("id");   
+        var groupId = $.G("grid").getColumnValue("groupId");  
+
+        popupTree(URL_INIT, "GroupTree", {}, function(target) {
+            if(target.id == groupId) {
+                return alert("用户已在此目标组织下");
+            }
+            $.post(URL_MOVE_USER + userId + "/" + target.id, {}, function(result) {
+                showUserList(groupId);
+            });
         });
     }
  
@@ -572,8 +594,9 @@
  
     function editUserInfo() {
         var rowID   = $.G("grid").getColumnValue("id");   
-        var rowName = $.G("grid").getColumnValue("userName");   
-        loadUserInfo(OPERATION_EDIT, rowID, rowName);
+        var rowName = $.G("grid").getColumnValue("userName");  
+        var groupId = $.G("grid").getColumnValue("groupId");   
+        loadUserInfo(OPERATION_EDIT, rowID, rowName, groupId);
     }
     
     function loadUserInfo(operationName, rowID, rowName, groupId) {
@@ -608,6 +631,7 @@
     }
  
     function loadUserDetailData(userID, groupId) {
+        var currentGroup;
         var request = new $.HttpRequest();
         request.url = URL_USER_DETAIL + (groupId || 0) + "/" + userID;
         request.onresult = function(){
@@ -651,6 +675,19 @@
 
             // 设置添加按钮操作
             $1("page2BtAdd").onclick = function(){
+                var mainGroupCount = 0;
+                var selectedNodes = page2Tree.getCheckedNodes(false);
+                selectedNodes.each(function(i, curNode) {
+                    var groupType = curNode.getAttribute("groupType");
+                    if( groupType == "1" ) {
+                        mainGroupCount ++;
+                    }
+                });
+                if(mainGroupCount > 1){
+                    $(page2Tree.el).notice("一个用户只能属于一个主用户组，请选择唯一的主用户组。");
+                    return;
+                }
+
                 addTreeNode(page2Tree, page2Tree2, function(treeNode){
                     var result = {
                         "error":false,
@@ -659,15 +696,22 @@
                     };
                     var groupType = treeNode.getAttribute("groupType");
                     if( groupType == "1" ) {
-                        // 先主动移除‘自注册用户组’，如果有的话
-                        var selfRegisterGroup = page2Tree2.getTreeNodeById(-7);
-                        selfRegisterGroup && page2Tree2.removeTreeNode(selfRegisterGroup);
-                        
+                        // 先主动移除当前主用户组，如果有的话
+                        currentGroup = currentGroup || groupId; 
+
+                        var currentGroupNode = page2Tree2.getTreeNodeById(currentGroup);
+                        if( currentGroupNode && currentGroupNode.getAttribute("groupType") == '1') {
+                            page2Tree2.removeTreeNode(currentGroupNode);
+                        }
+
                         if(hasSameAttributeTreeNode(page2Tree2, "groupType", groupType)){
                             result.error = true;
-                            result.message = "一个用户只能属于一个主用户组，请先把当前的主用户组移除。";
+                            result.message = "一个用户只能属于一个主用户组，请先移除当前的主用户组。";
                             result.stop = true;
+                            return result;
                         }
+
+                        currentGroup = treeNode.id;
                     }
 
                     return result;
@@ -712,7 +756,7 @@
         if( !hasSameAttributeTreeNode(page2Tree2, 'groupType', '1') ) {
             ws.switchToPhase("page2");
            
-            $(page2Tree2.el).notice("至少要属于一个主用户组。");
+            $(page2Tree2.el).notice("至少要属于一个主用户组，请选择。");
             return;
         }
 

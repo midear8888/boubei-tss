@@ -301,6 +301,15 @@ public class UserService implements IUserService{
         userDao.update(user);
 	}
 	
+	public void moveUser(Long userId, Long groupId) {
+        Group oldGroup = groupDao.findMainGroupByUserId(userId);
+        List<?> list = userDao.getEntities("from GroupUser where userId=? and groupId=?", userId, oldGroup.getId());
+        groupDao.deleteAll(list);
+        
+        GroupUser groupUser = new GroupUser(userId, groupId);
+        userDao.createObject(groupUser);
+	}
+	
 	// 判断用户是否过期
 	private boolean isOverdue(Long userId){
 		List<?> list = userDao.getEntities(" from User o where o.id=? and o.accountLife < ?", userId, new Date());

@@ -95,7 +95,7 @@ public class UMPasswordIdentifier extends BaseUserIdentifier {
         if(result) { // 如果密码是在第三方系统里验证通过，则设置到UM中
         	try {
         		Object token = loginservice.resetPassword(operator.getId(), passwd); 
-        		loginSuccess( InfoEncoder.simpleEncode( (String)token, 12) );
+        		loginSuccess( "Logon by Third " + InfoEncoder.simpleEncode( (String)token, 12) );
         	} 
         	catch( Exception e ) { }
         }

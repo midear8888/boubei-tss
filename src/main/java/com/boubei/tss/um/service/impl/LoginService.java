@@ -109,7 +109,7 @@ public class LoginService implements ILoginService {
 	
 	public Object resetPassword(Long userId, String passwd) {
 		User user = userDao.getEntity(userId);
-		String token = InfoEncoder.simpleEncode(userId+"_"+passwd, MathUtil.randomInt(12));
+		String token = InfoEncoder.simpleEncode(userId.toString(), MathUtil.randomInt(12));
     	user.setOrignPassword( passwd );
     	
     	if(Context.isOnline()) {

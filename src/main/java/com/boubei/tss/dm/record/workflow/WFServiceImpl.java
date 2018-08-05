@@ -26,6 +26,8 @@ import com.boubei.tss.util.EasyUtils;
 /**
  * TODO 
  * 1、审批人禁止查看自己无审批权限的记录附件（审批角色对流程表有浏览权限）
+ * 2、批量计算wfStatus，适应数据清洗进来的流程数据（逐个取出在update一遍即可）;
+ *    报销 + 费用 审批后自动流到 付款流程 ---- 用ETL;
  */
 @Service("WFService")
 public class WFServiceImpl implements WFService {
@@ -67,6 +69,7 @@ public class WFServiceImpl implements WFService {
 		
 		/* 如果是修改记录，则先查询流程状态是否已经存在；如果已存在，检查是否已有过处理（含审批、驳回、转审），有则禁止修改 */
 		WFStatus wfStatus = getWFStatus(_db.recordId, itemId);
+		boolean isCreate = false;
 		if(wfStatus == null) {
 			wfStatus = new WFStatus();
 			wfStatus.setTableName(_db.recordName);
@@ -76,6 +79,7 @@ public class WFServiceImpl implements WFService {
 			wfStatus.setApplier( Environment.getUserCode() );
 			wfStatus.setApplierName( Environment.getUserName() );
 			commonDao.create(wfStatus);
+			isCreate = true;
 		}
 		
 		// 把提交人的信息也作为规则运算条件
@@ -110,7 +114,7 @@ public class WFServiceImpl implements WFService {
 		wfStatus.setCc( EasyUtils.list2Str(ccs) );
 		wfStatus.setTrans(  EasyUtils.list2Str(transs)  );
 		
-		updateWFStatus(wfStatus);
+		updateWFStatus(wfStatus, isCreate);
 	}
 	
 	/**
@@ -404,6 +408,10 @@ public class WFServiceImpl implements WFService {
 	}
 	
 	private void updateWFStatus(WFStatus wfStatus) {
+		updateWFStatus(wfStatus, false);
+	}
+	
+	private void updateWFStatus(WFStatus wfStatus, boolean isCreate) {
 		commonDao.update(wfStatus);
 		
 		String tableName = wfStatus.getTableName();
@@ -413,8 +421,8 @@ public class WFServiceImpl implements WFService {
 		String url = "javascript:void(0)"; // "'/tss/modules/dm/recorder.html?id=" +tableId+ "&itemId=" +itemId+ "' target='_blank'";
 		String onclick = "parent.openUrl('more/bi_nav.html?_default=" +tableId+ "&_defaultItem=" +itemId+ "')";
 		
-		// 分别给流程发起人及下一步处理人，发送站内信、邮件、短信等通知
-		if( !Environment.getUserCode().equals(wfStatus.getApplier()) ) {
+		// 分别给流程发起人及下一步处理人，发送站内信、邮件、短信等通知；每个申请只在第一次新建流程的时候发送，修改时不发送
+		if( !Environment.getUserCode().equals(wfStatus.getApplier()) && isCreate ) {
 			String title = "您提交的流程【" + tableName + "】" + wfStatus.getCurrentStatus();
 			String content = title + "，<a href=\"" +url+ "\" onclick=\"" +onclick+ "\">查看最新进度</a>";
 			msgService.sendMessage(title, content, wfStatus.getApplier());

@@ -26,6 +26,8 @@ import javax.persistence.Query;
 import org.apache.log4j.Logger;
 
 import com.boubei.tss.EX;
+import com.boubei.tss.dm.DMConstants;
+import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.util.EasyUtils;
@@ -332,6 +334,30 @@ public abstract class BaseDao<T extends IEntity> implements IDao<T>{
                 createObjectWithoutFlush(temp);
             }
         }
+    }
+    
+    public void insert2TempNative(Collection<Temp> list) {
+    	long threadID = Environment.threadID();
+		SQLExcutor.excute("delete from TBL_TEMP_ where thread = " + threadID, DMConstants.LOCAL_CONN_POOL);
+		String insertSQL = "insert into TBL_TEMP_(id, thread, udf1, udf2, udf3, udf4, udf5, udf6, udf7, udf8) values(?,?,?,?,?,?,?,?,?,?)";
+		
+		List<Object[]> itemList = new ArrayList<Object[]>();
+		for (Temp t : list) {
+			Object[] item = new Object[10];
+			item[0] = t.getId();
+			item[1] = threadID;
+			item[2] = t.getUdf1();
+			item[3] = t.getUdf2();
+			item[4] = t.getUdf3();
+			item[5] = t.getUdf4();
+			item[6] = t.getUdf5();
+			item[7] = t.getUdf6();
+			item[8] = t.getUdf7();
+			item[9] = t.getUdf8();
+			itemList.add( item );
+		}
+		
+		SQLExcutor.excuteBatchII(insertSQL, itemList, DMConstants.LOCAL_CONN_POOL);
     }
     
     public void clearTempTable() {

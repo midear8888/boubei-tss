@@ -149,6 +149,14 @@ public class UserAction extends BaseActionSupport {
 		userService.startOrStopUser(id, state, groupId);
         printSuccessMessage();
 	}
+	
+	@RequestMapping(value = "/move/{id}/{groupId}")
+	public void moveUser(HttpServletResponse response, 
+			@PathVariable("groupId") Long groupId, @PathVariable("id") Long id) {
+		
+		userService.moveUser(id, groupId);
+		printJSON("移动成功");
+	}
  
 	/**
 	 * 删除用户

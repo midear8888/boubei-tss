@@ -535,17 +535,13 @@ function loadDetailData(rowID) {
 
             tssJS("#ws .wf").show();
             tssJS("#ws .cs").hide();
-            tssJS("#cancelBt").hide();            
         } 
         else {
             tssJS("#ws .wf").hide();
             tssJS("#ws .cs").show();
-            if( hasWorkflow && isCreateRow ) {
-                tssJS("#cancelBt").hide();
-            } else {
-                tssJS("#cancelBt").show();
-            }
         }
+
+        tssJS("#cancelBt").hide();  
 
         if( isCreateRow ) {
             wfFields.each(function(i, code) {
@@ -562,6 +558,8 @@ function loadDetailData(rowID) {
             // 控制流程按钮
             if(  _item.creator == userCode ) {
                 tssJS("#ws .wf").hide();
+                _item.wfstatus && tssJS("#cancelBt").show();
+
                 if( _item.wfstatus && _item.wfstatus != '待审批' ) {
                     tssJS("#cancelBt, #saveBt, #btnViewAttach").hide();
                     tssJS("#opinion").attr("disabled", "true").css("background-color", "#eee");

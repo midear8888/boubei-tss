@@ -165,4 +165,6 @@ public interface IUserService {
      */
     @Logable(operateObject="用户注册", operateInfo=" 开发者（${args[0]}）完成注册。")
 	void regDeveloper(User user);
+
+	void moveUser(Long id, Long groupId);
 }
