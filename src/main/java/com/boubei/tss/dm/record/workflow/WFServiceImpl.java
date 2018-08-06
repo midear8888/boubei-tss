@@ -26,8 +26,7 @@ import com.boubei.tss.util.EasyUtils;
 /**
  * TODO 
  * 1、审批人禁止查看自己无审批权限的记录附件（审批角色对流程表有浏览权限）
- * 2、批量计算wfStatus，适应数据清洗进来的流程数据（逐个取出在update一遍即可）;
- *    报销 + 费用 审批后自动流到 付款流程 ---- 用ETL;
+ * 
  */
 @Service("WFService")
 public class WFServiceImpl implements WFService {
