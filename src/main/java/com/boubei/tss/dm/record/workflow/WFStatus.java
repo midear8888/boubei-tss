@@ -2,6 +2,7 @@ package com.boubei.tss.dm.record.workflow;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -59,6 +60,7 @@ public class WFStatus implements IEntity {
 	
 	/* 流程最后处理人 */
 	private String lastProcessor;
+	private Date lastProcessTime;
 	
 	/* 流程下一处理人 */
 	private String nextProcessor;
@@ -192,5 +194,13 @@ public class WFStatus implements IEntity {
 
 	public void setTableName(String tableName) {
 		this.tableName = tableName;
+	}
+
+	public Date getLastProcessTime() {
+		return lastProcessTime;
+	}
+
+	public void setLastProcessTime(Date lastProcessTime) {
+		this.lastProcessTime = lastProcessTime;
 	} 
 }

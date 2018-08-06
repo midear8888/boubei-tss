@@ -2,6 +2,7 @@ package com.boubei.tss.dm.record.workflow;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -326,6 +327,7 @@ public class WFServiceImpl implements WFService {
         }
     	
     	wfStatus.setLastProcessor(Environment.getUserName());
+    	wfStatus.setLastProcessTime( new Date() );
     	
     	String processors = EasyUtils.obj2String(wfStatus.getProcessors()) + "," + userCode;
     	if(processors.startsWith(",")) {

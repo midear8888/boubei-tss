@@ -1,10 +1,12 @@
 package com.boubei.tss.dm.record.workflow;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.boubei.tss.dm.ddl._Database;
+import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.record.RecordService;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.modules.timer.AbstractJob;
@@ -38,6 +40,11 @@ public class WFJob extends AbstractJob {
     			Long id = (Long) row.get("id");
     			wfService.calculateWFStatus(id, _db);
     		}
+    		
+    		String updateSQL = "update " + _db.table + " set updatetime = ? where updatetime is null";
+			Map<Integer, Object> paramsMap = new HashMap<Integer, Object>();
+			paramsMap.put(1, new Date());
+			SQLExcutor.excute(updateSQL, paramsMap, _db.datasource);
 		}
     	
     	return "success";
