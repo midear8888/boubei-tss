@@ -125,7 +125,7 @@ public abstract class AbstractTest4 extends AbstractTransactionalJUnit4SpringCon
 					FetchPermissionAfterLogin.class.getName());
 		}
 		
-    	apiService.mockLogin(loginName, "1234567890");
+    	apiService.mockLogin(loginName);
     }
     
     // 切换为匿名用户登陆，
