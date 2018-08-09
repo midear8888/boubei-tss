@@ -65,7 +65,7 @@ public class CheckEmail extends HttpServlet {
             } 
             else {
             	// 产生一个登录随机数，发到用户的邮箱里
-                int randomKey = MathUtil.randomInt(1000000);
+                int randomKey = MathUtil.randomInt6();
     			request.getSession(true).setAttribute(SSOConstants.RANDOM_KEY, randomKey);
             	String info = "凭此随机数修改您的密码，打死不要告诉其它人。随机数 = " + randomKey;
             	MailUtil.sendHTML("reset password", info, new String[] { email }, MailUtil.DEFAULT_MS);

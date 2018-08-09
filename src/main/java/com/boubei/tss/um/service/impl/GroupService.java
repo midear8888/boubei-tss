@@ -138,6 +138,11 @@ public class GroupService implements IGroupService {
 	    if( !p.matcher(domain).matches() ) {
 	    	domain = "G" + group.getId();
 	    }
+	    
+	    // 如果是辅助组，则取创建人的域作为辅助组所属域
+	    if ( Group.ASSISTANT_GROUP_TYPE.equals(group.getGroupType()) ) {
+	    	domain = Environment.getDomainOrign();
+	    }
 	        
 		group.setDomain(domain);
 		groupDao.saveGroup(group);
@@ -152,7 +157,7 @@ public class GroupService implements IGroupService {
 		group.setDisabled(parent.getDisabled());
 		groupDao.saveGroup(group);
 		
-		fixDomain( parent.getDomain() , group);
+		fixDomain( parent.getDomain(), group);
         
 		saveGroupToUser(group.getId(), userIdsStr);
 		saveGroupToRole(group.getId(), roleIdsStr);

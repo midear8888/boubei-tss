@@ -54,7 +54,7 @@ public class APIServiceImpl implements APIService {
 		return tokens;
 	}
 	
-    public String mockLogin(String userCode, String uToken) {
+    public String mockLogin(String userCode) {
     	User user = getUserByCode(userCode);
 		Long userId = user.getId();
 		String sessionId = Context.getRequestContext().getSession().getId();

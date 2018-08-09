@@ -427,7 +427,7 @@ public class UserService implements IUserService{
 		this.regUser(user);
 		
 		// 借用Admin的权限完成下面资源的注册
-		String token = apiService.mockLogin("Admin", "ImA");
+		String token = apiService.mockLogin("Admin");
     	PermissionHelper ph = PermissionHelper.getInstance();
     	
     	Role rGroup = new Role();

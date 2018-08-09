@@ -90,7 +90,7 @@ public class MathUtil {
 	
     public static int randomInt(int factor) {
         Random random = new Random();
-        return random.nextInt(factor);
+        return random.nextInt(factor) + 1;
     }
     
     /**

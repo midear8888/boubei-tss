@@ -147,6 +147,11 @@ public class GroupDao extends TreeSupportDao<Group> implements IGroupDao {
 					&& !UMConstants.SELF_REGISTER_GROUP_ID.equals(group.getId())) {
         		continue;
         	}
+			
+			String userDomain = Environment.getDomainOrign();
+			if( userDomain != null && !userDomain.equals(group.getDomain()) && !UMConstants.ASSISTANT_GROUP_ID.equals(group.getId())) {
+				continue;
+			}
 			result.add(group);
         }
         

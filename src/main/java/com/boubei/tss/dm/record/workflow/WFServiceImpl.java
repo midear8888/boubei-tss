@@ -105,7 +105,7 @@ public class WFServiceImpl implements WFService {
 		List<Map<String, String>> trans = rules.get("trans");
 		
 		List<String> tos = getUsers(to, true);
-		List<String> ccs = getUsers(cc, true);
+		List<String> ccs = getUsers(cc, false);
 		List<String> transs = getUsers(trans, false);
 		
 		wfStatus.setNextProcessor( tos.isEmpty() ? null : tos.get(0) );
@@ -423,7 +423,7 @@ public class WFServiceImpl implements WFService {
 		String onclick = "parent.openUrl('more/bi_nav.html?_default=" +tableId+ "&_defaultItem=" +itemId+ "')";
 		
 		// 分别给流程发起人及下一步处理人，发送站内信、邮件、短信等通知；每个申请只在第一次新建流程的时候发送，修改时不发送
-		if( !Environment.getUserCode().equals(wfStatus.getApplier()) && isCreate ) {
+		if( !Environment.getUserCode().equals(wfStatus.getApplier()) && !isCreate ) {
 			String title = "您提交的流程【" + tableName + "】" + wfStatus.getCurrentStatus();
 			String content = title + "，<a href=\"" +url+ "\" onclick=\"" +onclick+ "\">查看最新进度</a>";
 			msgService.sendMessage(title, content, wfStatus.getApplier());

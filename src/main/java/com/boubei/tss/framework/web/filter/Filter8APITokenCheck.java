@@ -99,7 +99,7 @@ public class Filter8APITokenCheck implements Filter {
 		List<String> tokenList = apiService.searchTokes(uName, resource, resourceType); 
 		
     	if( tokenList.contains(uToken) ) {
-    		apiService.mockLogin(uName, uToken);
+    		apiService.mockLogin(uName);
     		return;
     	}
     	

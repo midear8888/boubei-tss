@@ -20,6 +20,6 @@ public interface APIService {
     /**
      * 模拟用户登录，初始化 Environment
      */
-    String mockLogin(String userCode, String uToken);
+    String mockLogin(String userCode);
 
 }

@@ -9,6 +9,8 @@ import com.boubei.tss.dm.ddl._Database;
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.record.RecordService;
 import com.boubei.tss.framework.Global;
+import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.modules.api.APIService;
 import com.boubei.tss.modules.timer.AbstractJob;
 import com.boubei.tss.util.EasyUtils;
 
@@ -20,12 +22,14 @@ import com.boubei.tss.util.EasyUtils;
  */
 public class WFJob extends AbstractJob {
 	
+	APIService apiService = (APIService) Global.getBean("APIService");
 	WFService wfService = (WFService) Global.getBean("WFService");
 	RecordService recordService = (RecordService) Global.getBean("RecordService");
 
 	// jobConfig 为 tableIds
 	protected String excuteJob(String jobConfig, Long jobID) {
 		
+		String currUserCode = Environment.getUserCode();
     	String[] jobConfigs = EasyUtils.split(jobConfig, ","); 
     	for(String _tableId : jobConfigs) {
     		Long tableID = EasyUtils.obj2Long(_tableId);
@@ -38,6 +42,8 @@ public class WFJob extends AbstractJob {
     		List<Map<String, Object>> result = _db.select(0, 0, params ).result;
     		for( Map<String, Object> row : result ) {
     			Long id = (Long) row.get("id");
+    			
+    			apiService.mockLogin( (String) row.get("creator") );
     			wfService.calculateWFStatus(id, _db);
     		}
     		
@@ -47,6 +53,7 @@ public class WFJob extends AbstractJob {
 			SQLExcutor.excute(updateSQL, paramsMap, _db.datasource);
 		}
     	
+    	apiService.mockLogin( currUserCode );
     	return "success";
 	}
 
