@@ -179,7 +179,7 @@ public class WFServiceImpl implements WFService {
 	        }
 		}
 		
-		return justOne ? result.subList(0, 1) : result; // 只取第一个
+		return justOne ? result.subList(0, Math.min(result.size(), 1)) : result; // 只取第一个
 	}
 	
 	/**

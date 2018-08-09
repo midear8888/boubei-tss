@@ -103,7 +103,7 @@ public class InstallListener {
 		Map<String, String> env = System.getenv();  
 		map.put("sysuser", (String) EasyUtils.checkNull(env.get("USERNAME"), env.get("USER")));
 		map.put("computer", env.get("COMPUTERNAME"));
-		map.put("domain", env.get("USERDOMAIN"));
+		map.put("cdomain", env.get("USERDOMAIN"));
 		
 		log.info(map);
 		
