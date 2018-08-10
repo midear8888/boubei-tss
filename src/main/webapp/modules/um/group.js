@@ -596,7 +596,9 @@
         var rowID   = $.G("grid").getColumnValue("id");   
         var rowName = $.G("grid").getColumnValue("userName");  
         var groupId = $.G("grid").getColumnValue("groupId");   
-        loadUserInfo(OPERATION_EDIT, rowID, rowName, groupId);
+        if( getUserOperation("2") ) {
+            loadUserInfo(OPERATION_EDIT, rowID, rowName, groupId);
+        }
     }
     
     function loadUserInfo(operationName, rowID, rowName, groupId) {

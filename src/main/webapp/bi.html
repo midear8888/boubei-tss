@@ -40,7 +40,7 @@ html, body { height: 100%; overflow: hidden; }
 .menu ul li:hover ul { display: block; position: absolute; top: 30px; left:0; width: 85px; } 
 .menu ul li:hover a { border-bottom: 1px solid rgba(204,204,204,0.2); }
 
-li.r9,li.r8,li.ra { display: none; }
+li.r9,li.r8,li.ra,li.ru { display: none; }
 
 #notice {
     position: fixed; top: 5px; left: 200px; color: red;   
@@ -80,6 +80,10 @@ $(function(){
                     roles.contains(-9) && $("li.r9").show(true) && $("li.r8").hide();  // 开发者
                     roles.contains(-8) && !isSelfDomain && $("li.r8").show(true);  // 域管理员(非自注册域)
                     roles.contains(-1) && $("li.r9,li.r8,li.ra").show(true);  // Admin
+
+                    if(  userHas[11].join('').indexOf('人事') >= 0) {
+                        $("li.ru").show(true);
+                    }
                 }
             }, 
         "GET");
@@ -229,7 +233,7 @@ function openLevelOne(group, firstTime) {
                 <a onclick="location.reload()">数据管理</a>
                 <ul></ul>
             </li>           
-            <li><a onclick="openUrl('modules/um/group.html')">用户管理</a></li>
+            <li class="ru"><a onclick="openUrl('modules/um/group.html')">用户管理</a></li>
             <li class="r8"><a onclick="openUrl('modules/cms/channel.html')">栏目公告</a></li>
             <li><a onclick="openMsgPage()">待办提醒</a></li> 
             <li class="r9">

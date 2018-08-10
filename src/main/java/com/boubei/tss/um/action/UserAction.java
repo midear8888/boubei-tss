@@ -26,9 +26,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.boubei.tss.EX;
 import com.boubei.tss.cache.extension.CacheHelper;
 import com.boubei.tss.cache.extension.CacheLife;
 import com.boubei.tss.framework.Config;
+import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.persistence.pagequery.PageInfo;
 import com.boubei.tss.framework.sso.Environment;
@@ -46,6 +48,9 @@ import com.boubei.tss.framework.web.mvc.BaseActionSupport;
 import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.entity.Group;
 import com.boubei.tss.um.entity.User;
+import com.boubei.tss.um.entity.permission.GroupPermission;
+import com.boubei.tss.um.entity.permission.GroupResource;
+import com.boubei.tss.um.permission.PermissionHelper;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.um.service.IUserService;
 import com.boubei.tss.um.sso.online.DBOnlineUser;
@@ -67,6 +72,8 @@ public class UserAction extends BaseActionSupport {
     public void getUserInfoAndRelation(HttpServletResponse response, 
     		@PathVariable("userId")  Long userId, 
     		@PathVariable("groupId") Long groupId) {
+		
+		checkPermission(groupId);
 		
         TreeEncoder existRoleTree = new TreeEncoder(null);
         Map<String, Object> data;
@@ -112,6 +119,8 @@ public class UserAction extends BaseActionSupport {
 	 */
 	@RequestMapping("/auth/{groupId}")
 	public void initAuthenticateMethod(HttpServletResponse response, @PathVariable("groupId") Long groupId) {
+		checkPermission(groupId);
+		
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("groupId", groupId);
 		XFormEncoder authXFormEncoder = new XFormEncoder(UMConstants.AUTH_METHOD_XFORM, map);
@@ -122,6 +131,7 @@ public class UserAction extends BaseActionSupport {
 	public void uniteAuthenticateMethod(HttpServletResponse response, 
 			@PathVariable("groupId") Long groupId, @PathVariable("authMethod") String authMethod) {
 		
+		checkPermission(groupId);
 		userService.uniteAuthenticateMethod(groupId, authMethod);
         printSuccessMessage();
 	}
@@ -146,6 +156,7 @@ public class UserAction extends BaseActionSupport {
 			@PathVariable("id") Long id, 
 			@PathVariable("state")  int state) {
 		
+		checkPermission(groupId);
 		userService.startOrStopUser(id, state, groupId);
         printSuccessMessage();
 	}
@@ -154,6 +165,7 @@ public class UserAction extends BaseActionSupport {
 	public void moveUser(HttpServletResponse response, 
 			@PathVariable("groupId") Long groupId, @PathVariable("id") Long id) {
 		
+		checkPermission(groupId);
 		userService.moveUser(id, groupId);
 		printJSON("移动成功");
 	}
@@ -166,8 +178,21 @@ public class UserAction extends BaseActionSupport {
 			@PathVariable("groupId") Long groupId, 
 			@PathVariable("userId")  Long userId) {
 		
+		checkPermission(groupId);
 		userService.deleteUser(groupId, userId);
         printSuccessMessage();
+	}
+	
+	private void checkPermission(Long groupId ) {
+		checkPermission(groupId, UMConstants.GROUP_EDIT_OPERRATION);
+	}
+	
+	public void checkPermission(Long groupId, String operation ) {
+		String permissionTable = GroupPermission.class.getName();
+		boolean hasPermission = PermissionHelper.getInstance().checkPermission(groupId, permissionTable, GroupResource.class, operation);
+		if(  !hasPermission ) {
+			throw new BusinessException("permit denied");
+		}
 	}
 	
 	/**
@@ -176,6 +201,8 @@ public class UserAction extends BaseActionSupport {
 	@RequestMapping("/search/{page}")
 	public void searchUser(HttpServletResponse response, 
 			@PathVariable("page") int page, Long groupId, String searchStr) {
+		
+		checkPermission(groupId, UMConstants.GROUP_EDIT_OPERRATION);
 		
         PageInfo users = userService.searchUser(groupId, searchStr, page);
         GridDataEncoder gridEncoder = new GridDataEncoder(users.getItems(), UMConstants.MAIN_USER_GRID);
@@ -189,6 +216,8 @@ public class UserAction extends BaseActionSupport {
     public void getUsersByGroupId(HttpServletResponse response, 
     		@PathVariable("groupId") Long groupId, @PathVariable("page") int page) {
     	
+		checkPermission(groupId, UMConstants.GROUP_EDIT_OPERRATION);
+		
         PageInfo users = userService.getUsersByGroupId(groupId, page, " u.loginName asc ");
         GridDataEncoder gridEncoder = new GridDataEncoder(users.getItems(), UMConstants.MAIN_USER_GRID);
         print(new String[]{"SourceList", "PageInfo"}, new Object[]{gridEncoder, users});
@@ -202,6 +231,8 @@ public class UserAction extends BaseActionSupport {
 			@PathVariable("groupId") Long groupId, 
 			@PathVariable("userId") Long userId) {	
 		
+		checkPermission(groupId, UMConstants.GROUP_EDIT_OPERRATION);
+		
 		String password = request.getParameter("password");
 		userService.initPasswordByGroupId(groupId, userId, password);
         printSuccessMessage("初始化密码成功！");
@@ -212,6 +243,9 @@ public class UserAction extends BaseActionSupport {
      */
 	@RequestMapping(value = "/self", method = RequestMethod.POST)
     public void modifyUserSelf(HttpServletResponse response, User user) {
+		if( !Environment.getUserCode().equals(user.getLoginName() ) ) {
+			throw new BusinessException(EX._ERROR_TAG);
+		}
         userService.updateUser(user);
         printSuccessMessage();
     }

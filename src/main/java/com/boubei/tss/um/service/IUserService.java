@@ -17,20 +17,31 @@ import com.boubei.tss.modules.log.Logable;
 import com.boubei.tss.um.entity.User;
  
 public interface IUserService {
+	
+	/**
+     * 根据ID查询用户
+     * @param id
+     * @return Object
+     */
+    User getUserById(Long id);
     
     /**
-     * <p>
+     * 根据用户登录名获取用户实体
+     * @param loginName
+     *            登录名
+     * @return User 用户实体对象
+     */
+    User getUserByLoginName(String loginName);
+    
+    /**
      * 新建用户的页面需要的初始化数据
-     * </p>
      * @param groupId
      * @return
      */
     Map<String, Object> getInfo4CreateNewUser(Long groupId);
 
     /**
-     * <p>
      * 编辑用户的页面需要的初始化数据
-     * </p>
      * @param userId
      * @return
      */
@@ -44,16 +55,7 @@ public interface IUserService {
     void updateUser(User user);
 
     /**
-     * 根据ID查询用户
-     * @param id
-     * @return Object
-     */
-    User getUserById(Long id);
-
-    /**
-     * <p>
      * 新建/修改一个User对象的明细信息、用户对用户组信息、用户对角色的信息
-     * </p>
      * @param user
      * @param groupIdsStr
      * @param roleIdsStr
@@ -64,10 +66,8 @@ public interface IUserService {
     void createOrUpdateUser(User user, String groupIdsStr, String roleIdsStr);
 
     /**
-     * <p>
      * 删除用户 辅助组用户删除用户只删除对应关系； 
      * 主用户组和其他用户组的则完全删除用户及和和组的对应关系。
-     * </p>
      * @param groupId
      * @param userId
      */
@@ -75,11 +75,26 @@ public interface IUserService {
             operateInfo="删除了 (ID:${args[1]}) 用户"
         )
     void deleteUser(Long groupId, Long userId);
+    
+    /**
+     * 启用停用用户
+     * @param loginUserId
+     * @param userId
+     * @param disabled
+     * @param groupId
+     */
+    @Logable(operateObject="用户", operateInfo=" 启用/停用用户 (ID: ${args[0]}, disabled: ${args[1]}) ")
+    void startOrStopUser(Long userId, Integer disabled, Long groupId);
+    
+    /**
+     * 在组织之间移动客户
+     * @param id
+     * @param groupId
+     */
+    void moveUser(Long id, Long groupId);
 
     /**
-     * <p>
      * 用户密码统一初始化。如果指定了单独用户，则只初始化该用户的密码；否则初始化整个用户组的密码。
-     * </p>
      * 
      * @param groupId
      * @param userId
@@ -91,35 +106,11 @@ public interface IUserService {
     void initPasswordByGroupId(Long groupId, Long userId, String initPassword);
 
     /**
-     * <p>
      * 统一认证方式
-     * </p>
      * @param groupId
      * @param authMethod
      */
     void uniteAuthenticateMethod(Long groupId, String authMethod);
-
-    /**
-     * <p>
-     * 根据用户登录名获取用户实体
-     * </p>
-     * @param loginName
-     *            登录名
-     * @return User 用户实体对象
-     */
-    User getUserByLoginName(String loginName);
-
-    /**
-     * <p>
-     * 启用停用用户
-     * </p>
-     * @param loginUserId
-     * @param userId
-     * @param disabled
-     * @param groupId
-     */
-    @Logable(operateObject="用户", operateInfo=" 启用/停用用户 (ID: ${args[0]}, disabled: ${args[1]}) ")
-    void startOrStopUser(Long userId, Integer disabled, Long groupId);
 
     /**
      * <p>
@@ -165,6 +156,4 @@ public interface IUserService {
      */
     @Logable(operateObject="用户注册", operateInfo=" 开发者（${args[0]}）完成注册。")
 	void regDeveloper(User user);
-
-	void moveUser(Long id, Long groupId);
 }
