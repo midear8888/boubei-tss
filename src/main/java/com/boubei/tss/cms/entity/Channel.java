@@ -27,6 +27,7 @@ import javax.persistence.UniqueConstraint;
 
 import com.boubei.tss.cms.CMSConstants;
 import com.boubei.tss.cms.entity.permission.ChannelResource;
+import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.framework.persistence.entityaop.IDecodable;
 import com.boubei.tss.framework.persistence.entityaop.OperateInfo;
 import com.boubei.tss.framework.web.display.tree.TreeAttributesMap;
@@ -135,6 +136,9 @@ public class Channel extends OperateInfo implements IXForm, IDecodable, IResourc
 	}
  
 	public String getPath() {
+		if( "temp".equals(path) ) {
+			return DMUtil.getExportPath() + "/cms";
+		}
 		return path;
 	}
  

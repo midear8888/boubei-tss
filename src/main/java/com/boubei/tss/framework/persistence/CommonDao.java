@@ -25,6 +25,10 @@ public class CommonDao extends BaseDao<IEntity> implements ICommonDao{
     public CommonDao() {
         super(IEntity.class);
     }
+
+	public Object updateWithLog(Object entity) {
+		return super.update(entity);
+	}
     
 }
 

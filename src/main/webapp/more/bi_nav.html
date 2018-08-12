@@ -123,7 +123,7 @@ function initMenu() {
 	    	var wfCount = menu2[6] ? '(' +menu2[6]+ ')' : '';
 
 	    	menuHTML.push('<li>');
-	    	menuHTML.push('<div>' +icon+ '<a ref="' + menu2[0] + '" href="#">');
+	    	menuHTML.push('<div>' +icon+ '<a ref="' + menu2[0] + '" wfCount="' +menu2[6]+ '" href="#">');
 	    	menuHTML.push('  <span class="nav">' + menu2[1] + '</span>');
 	    	menuHTML.push('  <span class="wfCount">' + wfCount + '</span>');
 	    	menuHTML.push('</a></div>');
@@ -146,8 +146,12 @@ function initMenu() {
 		$('#main').layout('collapse', 'west');	
 
 		var tabTitle = $(this).children('.nav').text();
-		var reportId = $(this).attr("ref");
+		var reportId = $(this).attr("ref"),
+			wfCount  = $(this).attr("wfCount");
 		var url = resourceUrl(reportId);
+		if(wfCount) {
+			url += '&wfCount=' + wfCount;
+		}
 		
 		setTimeout( function() {
 			addTab(tabTitle, url);

@@ -17,6 +17,7 @@ import javax.servlet.http.HttpSession;
 
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.sso.context.RequestContext;
+import com.boubei.tss.matrix.MatrixUtil;
 import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.util.EasyUtils;
 
@@ -27,8 +28,13 @@ import com.boubei.tss.util.EasyUtils;
  */
 public class Environment {
 	
+	/**
+	 * 如果是集群环境，多台应用服务器，threadID可能会冲突; 加上IP
+	 */
 	public static long threadID() {
-		return Thread.currentThread().getId();
+		String ip = MatrixUtil.getIpAddress();
+		long threadID = Thread.currentThread().getId();
+		return (ip + threadID).hashCode();
 	}
 	
 	public static boolean isAnonymous() {

@@ -29,7 +29,7 @@ public class CommonService implements ICommonService {
 	}
 
 	public void update(IEntity entity) {
-		commonDao.update(entity);
+		commonDao.updateWithLog(entity);
 	}
 
 	public void delete(Class<?> entityClass, Long id) {

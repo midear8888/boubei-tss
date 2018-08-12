@@ -39,7 +39,11 @@
     #attachFile { color: #fff; background-color: #323232; padding: 2px 0px 1px 0px; }
 
     #listBT1 { }
-    #listBT2 { margin: 0 5px; }
+    #listBT2, #listBT3 { margin: 0 5px; }
+    .bt_selected { color: blue; box-shadow: 0px 1px blue; }
+    .bt_unselected { color: #666; box-shadow: none; }
+    .bt_selected:hover { text-decoration: none; }
+    .bt_unselected:hover { text-decoration: underline; }
 
     #page1Form .ext { margin: 10px 4px 0 2px; }
     #pcontainer { min-height: 36px; margin-top: 5px; }
@@ -115,7 +119,7 @@ var _operation = ['1','2','3','4','5'],
     userRoles = [], 
     userRoleNames = [], 
     userAssistGroups = [],
-    hasWorkflow;
+    hasWorkflow, wfCount;
 
 // 监听器
 var preListener, // 在表单保存前触发，如不通过，则终止保存
@@ -145,6 +149,7 @@ tssJS(function() {
     recordId   = tssJS.Query.get("id");
     recordName = tssJS.Query.get("rctable") || decodeURI(tssJS.Query.get("rcname")||"");
     openItemId = tssJS.Query.get("itemId");
+    wfCount    = tssJS.Query.get("wfCount");
 
     if(!recordId && recordName) {
         tssJS.post(URL_GET_RECORD_ID, {"name": decodeURI(recordName)}, function(result) {
@@ -222,7 +227,12 @@ function init() {
                     initMenus();
                     initWorkSpace();
 
-                    hasWorkflow ? listWorkflow() : refreshTable(); 
+                    if( hasWorkflow ) {
+                        wfCount ? listWorkflow() : listApply();
+                    } else {
+                        refreshTable();
+                    }
+
                     openItemId && showDetail(openItemId);
 
                     /* 添加tssGrid定制的script，需要放initMenus后，以便对menu进行定制。
@@ -244,8 +254,8 @@ function refreshTable() {
 } 
 
 function listWorkflow(type) {
-    tssJS("#listBT2").css("color", "blue");
-    tssJS("#listBT3").css("color", "#666");
+    tssJS("#listBT2").removeClass("bt_unselected").addClass("bt_selected");
+    tssJS("#listBT3").removeClass("bt_selected").addClass("bt_unselected");
     params = {"my_wf_list": true};
     if( type) {
         params[type] = true;
@@ -258,8 +268,8 @@ function listWorkflow(type) {
     tssJS("#btn_ex, #btn_search").show();
 }
 function listApply() {
-    tssJS("#listBT3").css("color", "blue");
-    tssJS("#listBT2").css("color", "#666");
+    tssJS("#listBT3").removeClass("bt_unselected").addClass("bt_selected");
+    tssJS("#listBT2").removeClass("bt_selected").addClass("bt_unselected");
     params = {"creator": userCode};
     loadGridData(1);
     ws.closeAllTabs();

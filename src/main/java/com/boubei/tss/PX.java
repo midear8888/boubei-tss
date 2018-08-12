@@ -51,9 +51,6 @@ public interface PX {
 	/** 日志缓冲池最多可存日志条数的参数  */
     static String LOG_FLUSH_MAX_SIZE = "log_flush_max_size";
     
-    /** 文件上传目录，默认为tomcat7/webapps/tss */
-    static String UPLOAD_PATH = "upload_path";
-    
     /** 报表自定义展示页上传目录 */
     static String REPORT_TL_DIR = "report.template.dir";
     

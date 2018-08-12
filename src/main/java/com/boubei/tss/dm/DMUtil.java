@@ -122,7 +122,7 @@ public class DMUtil {
     }
 	
 	public static String getExportPath() {
-		return getConfigedPath(PX.ATTACH_PATH);
+		return getConfigedPath(PX.ATTACH_PATH).replaceAll("\n", "");
 	}
 	
 	public static String getConfigedPath(String pathParam) {

@@ -53,8 +53,12 @@ public class Temp implements IEntity {
 		this.setThread(Environment.threadID());
 	}
 	
-	public Temp(Long id) {
-		this();
+	public Temp(Long thread) {
+		this.setThread(thread);
+	}
+	
+	public Temp(Long thread, Long id) {
+		this(thread);
 		this.setId(id);
 	}
     

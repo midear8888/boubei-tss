@@ -42,7 +42,7 @@ public class DataExport {
 	static Logger log = Logger.getLogger(DataExport.class);
 	
 	public static String getExportPath() {
-		return DMUtil.getExportPath().replace("\n", "") + "/export";
+		return DMUtil.getExportPath() + "/export";
 	}
 	
 	/**

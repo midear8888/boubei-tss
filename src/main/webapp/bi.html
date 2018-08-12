@@ -79,9 +79,9 @@ $(function(){
                     roles = info[1], isSelfDomain = (info[0].length && info[0][0][0] == -7);                   
                     roles.contains(-9) && $("li.r9").show(true) && $("li.r8").hide();  // 开发者
                     roles.contains(-8) && !isSelfDomain && $("li.r8").show(true);  // 域管理员(非自注册域)
-                    roles.contains(-1) && $("li.r9,li.r8,li.ra").show(true);  // Admin
+                    roles.contains(-1) && $("li.r9,li.r8,li.ra,li.ru").show(true);  // Admin
 
-                    if(  userHas[11].join('').indexOf('人事') >= 0) {
+                    if(  userHas[11].join('').indexOf('人事') >= 0 || roles.contains(-8)) {
                         $("li.ru").show(true);
                     }
                 }

@@ -26,10 +26,9 @@ import javax.servlet.http.Part;
 
 import org.apache.log4j.Logger;
 
-import com.boubei.tss.PX;
+import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.framework.exception.convert.ExceptionConvertorFactory;
 import com.boubei.tss.framework.web.filter.Filter8APITokenCheck;
-import com.boubei.tss.modules.param.ParamConfig;
 import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
@@ -98,7 +97,7 @@ public class Servlet4Upload extends HttpServlet {
 		/* gets absolute path of the web application, tomcat7/webapps/tss */
 		String defaultUploadPath = request.getServletContext().getRealPath("");
 		
-		String uploadPath = ParamConfig.getAttribute(PX.UPLOAD_PATH, defaultUploadPath);
+		String uploadPath = DMUtil.getExportPath() + "/upload";
 		if(! ( new File(uploadPath).exists() )) {
 			uploadPath = defaultUploadPath;
 		}

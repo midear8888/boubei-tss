@@ -144,7 +144,7 @@ public class SQLExcutor {
         }
     }
     
-    private static Pool getDSPool(String datasource) {
+    public static Pool getDSPool(String datasource) {
     	Pool connpool = JCache.getInstance().getPool(datasource);
         if(connpool == null) {
         	throw new BusinessException( EX.parse(EX.DM_02, datasource) );

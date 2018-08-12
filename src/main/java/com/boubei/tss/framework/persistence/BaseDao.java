@@ -295,8 +295,9 @@ public abstract class BaseDao<T extends IEntity> implements IDao<T>{
     public void insertIds2TempTable(Collection<?> list) {
         if( !EasyUtils.isNullOrEmpty(list) ) {
         	Collection<Temp> c = new HashSet<Temp>();
+        	Long thread = Environment.threadID();
             for(Object id : list){
-                Temp temp = new Temp( EasyUtils.obj2Long(id) );
+                Temp temp = new Temp(thread, EasyUtils.obj2Long(id) );
                 c.add(temp);
             }
             this.insert2TempTable(c);
@@ -306,8 +307,9 @@ public abstract class BaseDao<T extends IEntity> implements IDao<T>{
     public void insertIds2TempTable(Collection<? extends Object[]> list, int idIndex) {
         if( !EasyUtils.isNullOrEmpty(list) ) {
         	Collection<Temp> c = new HashSet<Temp>();
+        	Long thread = Environment.threadID();
             for(Object[] objs : list){
-                Temp temp = new Temp( (Long) objs[idIndex] );
+                Temp temp = new Temp(thread, (Long) objs[idIndex] );
                 c.add(temp);
             }
             this.insert2TempTable(c);
@@ -317,8 +319,9 @@ public abstract class BaseDao<T extends IEntity> implements IDao<T>{
     public void insertEntityIds2TempTable(Collection<? extends IEntity> list) {
         if( !EasyUtils.isNullOrEmpty(list) ) {
         	Collection<Temp> c = new HashSet<Temp>();
+        	Long thread = Environment.threadID();
             for(IEntity entity : list){
-                Temp temp = new Temp( (Long) entity.getPK() );
+                Temp temp = new Temp(thread, (Long) entity.getPK() );
                 c.add(temp);
             }
             this.insert2TempTable(c);
