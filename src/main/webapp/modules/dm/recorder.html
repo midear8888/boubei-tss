@@ -39,7 +39,9 @@
     #attachFile { color: #fff; background-color: #323232; padding: 2px 0px 1px 0px; }
 
     #listBT1 { }
-    #listBT2, #listBT3 { margin: 0 5px; }
+    #listBT2, #listBT3 { color: blue; }
+    #listBT4 { color: #666; }
+    #listBT2, #listBT3, #listBT4 { margin: 0 5px; }
     .bt_selected { color: blue; box-shadow: 0px 1px blue; }
     .bt_unselected { color: #666; box-shadow: none; }
     .bt_selected:hover { text-decoration: none; }
@@ -54,7 +56,7 @@
     #lcontainer li { line-height: 22px; }
     #lcontainer li>header { text-indent: 2em; display: inline-block; }
     #lcontainer li>p { text-indent: 92px; }
-    #lcontainer li>time {  margin-left: 30px; color: #999; }
+    #lcontainer li>time {  margin-left: 30px; color: #666; }
     #lcontainer li.done { color: green; }
     #lcontainer li.todo { color: blue; }
 
@@ -95,7 +97,7 @@ if( IS_TEST ) {
     URL_DATA_XML      = "data/data_grid.xml?";
     URL_DATA_JSON     = "data/data_list.json?";
     URL_DATA_CSV      = "data/_success.xml?";
-    URL_GET_SOURCE   = "data/_success.xml?";
+    URL_GET_SOURCE    = "data/_success.xml?";
     URL_SAVE_SOURCE   = "data/_success.xml?";
     URL_DELETE_SOURCE = "data/_success.xml?";
     URL_BATCH_OPERATE = "data/_success.xml?";   
@@ -119,7 +121,8 @@ var _operation = ['1','2','3','4','5'],
     userRoles = [], 
     userRoleNames = [], 
     userAssistGroups = [],
-    hasWorkflow, wfCount;
+    hasWorkflow, wfCount,
+    isLogicDelete;
 
 // 监听器
 var preListener, // 在表单保存前触发，如不通过，则终止保存
@@ -148,7 +151,7 @@ tssJS(function() {
 
     recordId   = tssJS.Query.get("id");
     recordName = tssJS.Query.get("rctable") || decodeURI(tssJS.Query.get("rcname")||"");
-    openItemId = tssJS.Query.get("itemId");
+    openItemId = tssJS.Query.get("itemId");  // 通常为审批
     wfCount    = tssJS.Query.get("wfCount");
 
     if(!recordId && recordName) {
@@ -202,6 +205,7 @@ function init() {
                     customizePage = result[6];
                     visiableFields= result[7];
                     hasWorkflow   = result[8];
+                    isLogicDelete = result[9];
 
                     // if has customize page
                     if( (customizePage||"").indexOf("html") > 0 ) {
@@ -228,7 +232,7 @@ function init() {
                     initWorkSpace();
 
                     if( hasWorkflow ) {
-                        wfCount ? listWorkflow() : listApply();
+                        wfCount || openItemId ? listWorkflow() : listApply();
                     } else {
                         refreshTable();
                     }
@@ -251,11 +255,12 @@ function refreshTable() {
     params = {};
     loadGridData(1);
     tssJS("#gridTitle>button").hide();
+    tssJS(".listBT").removeClass("bt_selected").removeClass("bt_unselected");
 } 
 
 function listWorkflow(type) {
+    tssJS(".listBT").removeClass("bt_selected").addClass("bt_unselected");
     tssJS("#listBT2").removeClass("bt_unselected").addClass("bt_selected");
-    tssJS("#listBT3").removeClass("bt_selected").addClass("bt_unselected");
     params = {"my_wf_list": true};
     if( type) {
         params[type] = true;
@@ -268,8 +273,8 @@ function listWorkflow(type) {
     tssJS("#btn_ex, #btn_search").show();
 }
 function listApply() {
+    tssJS(".listBT").removeClass("bt_selected").addClass("bt_unselected");
     tssJS("#listBT3").removeClass("bt_unselected").addClass("bt_selected");
-    tssJS("#listBT2").removeClass("bt_selected").addClass("bt_unselected");
     params = {"creator": userCode};
     loadGridData(1);
     ws.closeAllTabs();
@@ -281,11 +286,13 @@ function listApply() {
 function initMenus() {
     var rcTitle;
     if( hasWorkflow ) {
-        rcTitle = "【<a onclick='listWorkflow()' id='listBT1' style='color: #666'> " +recordName+ "（刷新）</a>";
-        rcTitle += "<a onclick='listWorkflow()' id='listBT2'> 我审批的列表</a>"
-        rcTitle += "<a onclick='listApply()' id='listBT3'> 我提交的列表</a> 】"
+        rcTitle = recordName + ":【<a onclick='listWorkflow()' id='listBT2' class='listBT'> 我审批的列表</a>";
+        rcTitle += "  <a onclick='listApply()' id='listBT3' class='listBT'> 我提交的列表</a>";
+        rcTitle += "  <a onclick='recycleBin()' id='listBT4' class='listBT'>回收站</a>";
+        rcTitle += "】";
     } else {
-        rcTitle = "【<a onclick='refreshTable()' id='listBT1'> " +recordName+ "（刷新）</a>】";
+        rcTitle = "【<a onclick='refreshTable()' id='listBT1' class='listBT'> " +recordName+ "（刷新）</a>";
+        rcTitle += "<a onclick='recycleBin()' id='listBT4' class='listBT'>回收站</a> 】";
     }
     tssJS("#rcTitle").html(rcTitle);
     tssJS("#rcTitle>a").attr("href", "javascript:void(0)");
@@ -309,30 +316,30 @@ function initMenus() {
         label:"编辑",
         callback:  function() { showDetail() },
         icon: "images/icon_edit.gif",
-        visible:function() {return canEditRow();}
+        visible:function() {return canEditRow() && !isRecycled();}
     }
     var item2 = {
         label:"复制",
         callback: function() { showDetail("_copy") },
         icon: "images/icon_copy.gif",
-        visible:function() {return  _operation.contains("1") && tssJS.G("grid").getColumnValue("id");}
+        visible:function() {return  _operation.contains("1") && tssJS.G("grid").getColumnValue("id") && !isRecycled();}
     }
     var item3 = {
         label:"删除",
         callback: remove,
         icon: "images/icon_del.gif",
-        visible:function() {return canEditRow() && (tssJS.G("grid").getColumnValue("domain")||"").indexOf("@--") < 0 ;}
+        visible:function() {return canEditRow();}
     }
     var item32 = {
         label:"还原",
         callback: restore,
         icon: "images/export.gif",
-        visible:function() { return userRoles.contains(-1) && (tssJS.G("grid").getColumnValue("domain")||"").indexOf("@--") >= 0; }
+        visible:function() { return isRecycled(); }
     }
     var item4 = {
         label:"管理附件",
         callback: function() { manageAttach(null, "row"); },
-        visible:function() {return canEditRow() && needFile;}
+        visible:function() {return canEditRow() && needFile && !isRecycled();}
     }
     var item5 = {
         label:"查看修改记录",
@@ -349,6 +356,10 @@ function initMenus() {
     menu.addItem(item4);
     menu.addItem(item5);
     $1("grid").contextmenu = menu;
+}
+
+function isRecycled() {
+    return (tssJS.G("grid").getColumnValue("domain")||"").indexOf("@--") >= 0;
 }
 
 function canEditRow(rowID) {
@@ -1268,6 +1279,18 @@ function showExtension(_item) {
         var opinionEL = $.createElement("textarea", "", "opinion");
         tssJS("#page1Form").appendChild(opinionEL);
     }
+}
+
+// 回收站
+function recycleBin() {
+    tssJS(".listBT").removeClass("bt_selected").addClass("bt_unselected");
+    tssJS("#listBT4").removeClass("bt_unselected").addClass("bt_selected");
+
+    tssJS("#gridTitle .tssbutton").hide();
+    tssJS("#btn_batch_del, #btn_ex").show();
+
+    params = {"domain": (userDomain||"") + "@--", "updator": userCode};
+    loadGridData(1);
 }
 
 </script>

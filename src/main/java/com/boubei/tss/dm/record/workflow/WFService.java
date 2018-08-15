@@ -10,6 +10,8 @@ public interface WFService {
 	
 	WFStatus getWFStatus(Long tableId, Long itemId);
 	
+	void removeWFStatus(Long tableId, Long itemId);
+	
 	Map<Object, Object> getMyWFCount();
 
 	void appendWFInfo(_Database _db, Map<String, Object> item, Long itemId);

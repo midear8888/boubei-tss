@@ -185,7 +185,7 @@ public class EX {
 	public static String P_17 = "解压文件【${x1}】到【${x2}】目录失败!!!";
 	public static String P_18 = "文件导入错误,可能不是规范的${x1}导入文件!!!";
 
-	public static String WF_1 = "流程已开始处理，无法再修改";
+	public static String WF_1 = "流程已开始处理，无法再修改（或删除）";
 	public static String WF_2 = "流程已开始处理，无法再撤销";
 	public static String WF_3 = "此流程已结束，无法再操作";
 	public static String WF_4 = "您无权处理本流程，当前流程审批人员不是您";

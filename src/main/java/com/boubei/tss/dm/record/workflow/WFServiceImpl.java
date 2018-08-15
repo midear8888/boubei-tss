@@ -43,6 +43,15 @@ public class WFServiceImpl implements WFService {
 		return  list.isEmpty() ? null : (WFStatus)list.get(0);
 	}
 	
+	
+	/** 物理删除记录时，也要删除流程状态数据 */
+	public void removeWFStatus(Long tableId, Long itemId) {
+		WFStatus wfStatus = getWFStatus(tableId, itemId);
+		if( wfStatus != null ) {
+			commonDao.delete( wfStatus );
+		}
+	}
+	
 	/** 当前流到登录用户的流程汇总 */
 	public Map<Object, Object> getMyWFCount() {
 		String sql = "SELECT tableId record, count(*) num FROM dm_workflow_status where nextProcessor = ? group by tableId";

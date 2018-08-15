@@ -41,6 +41,7 @@ import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.framework.sso.SSOConstants;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.web.display.xform.XFormEncoder;
 import com.boubei.tss.modules.param.Param;
@@ -254,6 +255,8 @@ public class DMUtil {
     		}
     	} catch(Exception e) { }
 		
+    	fmDataMap.put(SSOConstants.USER_DOMAIN, Environment.getDomain()); // 非空
+    	
 		return fmDataMap;
     }
 

@@ -27,6 +27,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.dom4j.Document;
 
 import com.boubei.tss.EX;
+import com.boubei.tss.PX;
 import com.boubei.tss.cache.Cacheable;
 import com.boubei.tss.cache.JCache;
 import com.boubei.tss.cache.Pool;
@@ -45,6 +46,7 @@ import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.modules.log.IBusinessLogger;
 import com.boubei.tss.modules.log.Log;
 import com.boubei.tss.modules.param.ParamConstants;
+import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.modules.sn.SerialNOer;
 import com.boubei.tss.um.permission.PermissionHelper;
 import com.boubei.tss.util.EasyUtils;
@@ -582,6 +584,13 @@ public abstract class _Database {
 		}
 		return list.get(0);
 	}
+	
+	// 判断是逻辑删除还是物理删除（系统级、单个表级）, 所有审批表都默认打开？
+	public boolean isLogicDelete() {
+		return "true".equals(ParamManager.getValue(PX.LOGIC_DEL, "false")) 
+			|| "true".equals(DMUtil.getExtendAttr(this.remark, PX.LOGIC_DEL))
+			|| WFUtil.checkWorkFlow(wfDefine);
+	}
 
 	// 物理删除
 	public void delete(Long id) {
@@ -602,13 +611,14 @@ public abstract class _Database {
 		if(id == null) return;
 		
 		Map<String, Object> old = get(id);
-		String domain = (String) old.get("domain") + deletedTag;
+		String domain = EasyUtils.obj2String(old.get("domain")) + deletedTag;
 		
-		String updateSQL = "update " + this.table + " set domain = '" +domain+ "' where id=" + id;
+		String userCode = Environment.getUserCode();
+		String updateSQL = "update " + this.table + " set domain = '" +domain+ "', updator = '" +userCode+ "' where id=" + id;
 		SQLExcutor.excute(updateSQL, this.datasource);
 		
 		// 记录删除日志
-        logCUD(id, "logicDelete", Environment.getUserCode() + " deleted one row：" + old);
+        logCUD(id, "logicDelete", userCode + " deleted one row：" + old);
 	}
 	
 	// 还原数据
@@ -718,6 +728,7 @@ public abstract class _Database {
 			condition = " creator = ? ";
 		}
 		
+		boolean pointedDomain = false;
 		for(String _key : params.keySet()) {
 			String _valueStr = params.get(_key);
 			String key = _key.toLowerCase();  // code默认都是小写
@@ -746,9 +757,11 @@ public abstract class _Database {
 				continue;
 			}
 			
-			if( "domain".equals(key) && Environment.isAdmin() ) { // Admin 可以查询其它域下的数据
+			// Admin 可以查询其它域下的数据, 用户也可以查看本域下已逻辑删除的数据（BB@--）
+			if( "domain".equals(key) && (Environment.isAdmin() || valueStr.startsWith(Environment.getDomainOrign() + deletedTag)) ) { 
 				condition += " and domain = ? ";
 				paramsMap.put(paramsMap.size() + 1, valueStr);
+				pointedDomain = true;
 				continue;
 			}
 			
@@ -808,7 +821,7 @@ public abstract class _Database {
 		 * 注：部分全局基础表需要忽略域限制：比如行政区划等，customizeTJ: <#if 1=0>ignoreDomain</#if>
 		 */
 		String _customizeTJ = (String) EasyUtils.checkNull(this.customizeTJ, " 1=1 ");
-		if( _customizeTJ.indexOf("ignoreDomain") < 0 ) { 
+		if( _customizeTJ.indexOf("ignoreDomain") < 0 && !pointedDomain ) { 
 			_customizeTJ += DMConstants.DOMAIN_CONDITION;
 		}
 		

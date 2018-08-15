@@ -68,7 +68,6 @@ import com.boubei.tss.framework.web.mvc.BaseActionSupport;
 import com.boubei.tss.modules.HitRateManager;
 import com.boubei.tss.modules.log.IBusinessLogger;
 import com.boubei.tss.modules.log.Log;
-import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.um.permission.PermissionHelper;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
@@ -129,8 +128,18 @@ public class _Recorder extends BaseActionSupport {
 		}
 
 		_Database _db = getDB(recordId, Record.OPERATION_CDATA, Record.OPERATION_EDATA, Record.OPERATION_VDATA);
-		return new Object[] { _db.getFields(), _record.getCustomizeJS(), _record.getCustomizeGrid(), _record.getNeedFile(), _record.getBatchImp(),
-				_record.getName(), _record.getCustomizePage(), _db.getVisiableFields(false), WFUtil.checkWorkFlow(_record.getWorkflow()) };
+		return new Object[] { 
+				_db.getFields(), 
+				_record.getCustomizeJS(), 
+				_record.getCustomizeGrid(), 
+				_record.getNeedFile(), 
+				_record.getBatchImp(),
+				_record.getName(), 
+				_record.getCustomizePage(),
+				_db.getVisiableFields(false), 
+				WFUtil.checkWorkFlow(_record.getWorkflow()),
+				_db.isLogicDelete()
+			};
 	}
 
 	public Map<String, String> prepareParams(HttpServletRequest request, Long recordId) {
@@ -290,13 +299,11 @@ public class _Recorder extends BaseActionSupport {
 	}
 
 	@RequestMapping("/export/{record}")
-	public void exportAsCSV(HttpServletRequest request, HttpServletResponse response, @PathVariable("record") Object record) {
+	public void export(HttpServletRequest request, HttpServletResponse response, @PathVariable("record") Object record) {
 
 		long start = System.currentTimeMillis();
 
-		Map<String, String> requestMap = DMUtil.getRequestMap(request, true); // GET
-																				// Method
-																				// Request
+		Map<String, String> requestMap = DMUtil.getRequestMap(request, true); // GET Method Request
 		boolean pointed = requestMap.containsKey("fields");
 		Long recordId = recordService.getRecordID(record, true);
 		_Database _db = getDB(recordId);
@@ -309,6 +316,9 @@ public class _Recorder extends BaseActionSupport {
 		requestMap.put(_Field.STRICT_QUERY, strictQuery);
 
 		SQLExcutor ex = _db.select(_page, _pagesize, requestMap);
+		
+		/* 添加工作流信息 */
+		wfService.fixWFStatus(_db, ex.result);
 
 		String fileName = DateUtil.format(new Date()) + "_" + recordId + Environment.getUserId() + ".csv";
 		for (Map<String, Object> row : ex.result) { // 剔除
@@ -323,6 +333,12 @@ public class _Recorder extends BaseActionSupport {
 
 		// 过滤出用户可见的表头列
 		List<String> visiableFields = _db.getVisiableFields(true, pointed ? ex.selectFields : _db.fieldCodes);
+		if( WFUtil.checkWorkFlow(_db.wfDefine) ) {
+			visiableFields.add("流程状态");
+			visiableFields.add("发起人");
+			visiableFields.add("发起时间");
+		}
+		
 		String exportPath = DataExport.exportCSV(fileName, ex.result, visiableFields);
 
 		DataExport.downloadFileByHttp(response, exportPath);
@@ -515,15 +531,21 @@ public class _Recorder extends BaseActionSupport {
 		checkRowEditable(recordId, id);
 
 		_Database db = getDB(recordId);
+		
+		Map<String, Object> old = db.get(id);
+		String domain = EasyUtils.obj2String(old.get("domain")); // 已逻辑删除的再次删除，则直接删除
+		boolean isRecycled = domain.endsWith(_Database.deletedTag);
 
-		// 判断是逻辑删除还是物理删除
-		boolean loginDel = "true".equals(ParamManager.getValue(PX.LOGIC_DEL, "false")) || "true".equals(requestMap.get(PX.LOGIC_DEL))
-				|| "true".equals(DMUtil.getExtendAttr(db.remark, PX.LOGIC_DEL));
-		if (loginDel) {
+		// 判断是逻辑删除还是物理删除（系统级、单个表、单次请求）
+		boolean loginDel = db.isLogicDelete() || "true".equals(requestMap.get(PX.LOGIC_DEL));
+		if ( loginDel && !isRecycled ) {
 			db.logicDelete(id);
-		} else {
+		} 
+		else { // 物理删除
 			db.delete(id);
 
+			wfService.removeWFStatus(recordId, id);
+			
 			// 删除附件
 			List<?> attachs = recordService.getAttachList(recordId, id);
 			for (Object obj : attachs) {
@@ -873,19 +895,28 @@ public class _Recorder extends BaseActionSupport {
 			return true;
 		}
 
-		Map<String, String> requestMap = new HashMap<String, String>();
-		requestMap.put("id", EasyUtils.obj2String(itemId));
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("id", EasyUtils.obj2String(itemId));
 
-		SQLExcutor ex = getDB(recordId).select(1, 1, requestMap);
-		return !ex.result.isEmpty();
+		_Database _db = getDB(recordId);
+		SQLExcutor ex = _db.select(1, 1, params);
+		return !ex.result.isEmpty() || checkInRecycleBin(_db, params);
 	}
 
 	private boolean checkRowAuthor(Long recordId, Long itemId) {
-		Map<String, String> requestMap = new HashMap<String, String>();
-		requestMap.put("id", EasyUtils.obj2String(itemId));
-		requestMap.put("creator", Environment.getUserCode());
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("id", EasyUtils.obj2String(itemId));
+		params.put("creator", Environment.getUserCode());
 
-		SQLExcutor ex = getDB(recordId).select(1, 1, requestMap);
+		_Database _db = getDB(recordId);
+		SQLExcutor ex = _db.select(1, 1, params);
+		return !ex.result.isEmpty() || checkInRecycleBin(_db, params);
+	}
+	
+	private boolean checkInRecycleBin(_Database _db, Map<String, String> params) {
+		params.put("domain", EasyUtils.obj2String(Environment.getDomainOrign()) + _Database.deletedTag);
+		 
+		SQLExcutor ex = _db.select(1, 1, params);
 		return !ex.result.isEmpty();
 	}
 }
