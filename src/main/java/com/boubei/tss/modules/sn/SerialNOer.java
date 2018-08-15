@@ -76,4 +76,8 @@ public class SerialNOer {
 	public synchronized String createOne(String precode) {
 		return this.create(precode, 1).get(0);
 	}
+	
+	public static String get() {
+		return new SerialNOer().createOne("");
+	}
 }
