@@ -255,7 +255,7 @@ public class LoginService implements ILoginService {
     }
     
     public List<?> getUsersByDomain(String domain, String field, Long logonUserId) {
-    	domain = (String) EasyUtils.checkNull(domain, "noDomain");
+    	domain = (String) EasyUtils.checkNull(domain, UMConstants.DEFAULT_DOMAIN);
     	String selfRegDomain = groupDao.getEntity(UMConstants.SELF_REGISTER_GROUP_ID).getDomain();
     	String devDomain = groupDao.getEntity(UMConstants.DEV_GROUP_ID).getDomain();
     	

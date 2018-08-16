@@ -104,7 +104,7 @@ public class WFServiceImpl implements WFService {
 		}
 		for( String code : item.keySet() ) {
 			String label = _db.cnm.get(code);
-			context.put(label, item.get(code)); // 支持按Label解析
+			context.put(label, item.get(code)); // 流程条件支持按Label解析
 		}
 		
 		Map<String, List<Map<String, String>>> rules = WFUtil.parseWorkflow(wfDefine, context, _db.recordName);

@@ -256,6 +256,9 @@ function refreshTable() {
     loadGridData(1);
     tssJS("#gridTitle>button").hide();
     tssJS(".listBT").removeClass("bt_selected").removeClass("bt_unselected");
+    !isLogicDelete && tssJS("#listBT4").hide();
+
+    tssJS("#gridTitle>input").show();
 } 
 
 function listWorkflow(type) {

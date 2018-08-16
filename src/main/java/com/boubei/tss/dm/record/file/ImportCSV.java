@@ -190,6 +190,7 @@ public class ImportCSV implements AfterUpload {
 		List<String> errLines = new ArrayList<String>(); // errorLine = lineIndex + errorMsg + row
 		List<Integer> errLineIndexs = new ArrayList<Integer>();
 		
+		// vailderClass = com.boubei.tss.dm.record.file.EmptyDataVaild 可忽略校验
 		String vailderClass = request.getParameter("vailderClass");
 		vailderClass = (String) EasyUtils.checkNull(vailderClass, DefaultDataVaild.class.getName());
 		IDataVaild vailder = (IDataVaild) BeanUtil.newInstanceByName(vailderClass);
