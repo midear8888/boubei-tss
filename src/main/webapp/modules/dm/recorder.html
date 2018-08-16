@@ -251,17 +251,25 @@ function init() {
     });
 }
 
+var recycleBinMode = false; // 回收站模式
+var commitMode     = false; // 提交模式
+var approveMode    = false; // 审批模式
+
 function refreshTable() {
+    recycleBinMode = false;
     params = {};
     loadGridData(1);
+    ws.closeAllTabs();
     tssJS("#gridTitle>button").hide();
     tssJS(".listBT").removeClass("bt_selected").removeClass("bt_unselected");
     !isLogicDelete && tssJS("#listBT4").hide();
 
     tssJS("#gridTitle>input").show();
 } 
-
+// 审批模式
 function listWorkflow(type) {
+    recycleBinMode = commitMode = false; 
+    approveMode    = true;
     tssJS(".listBT").removeClass("bt_selected").addClass("bt_unselected");
     tssJS("#listBT2").removeClass("bt_unselected").addClass("bt_selected");
     params = {"my_wf_list": true};
@@ -275,7 +283,10 @@ function listWorkflow(type) {
     tssJS("#gridTitle>button").show();
     tssJS("#btn_ex, #btn_search").show();
 }
+// 申请提交模式
 function listApply() {
+    recycleBinMode = approveMode = false;
+    commitMode = true;
     tssJS(".listBT").removeClass("bt_selected").addClass("bt_unselected");
     tssJS("#listBT3").removeClass("bt_unselected").addClass("bt_selected");
     params = {"creator": userCode};
@@ -284,6 +295,21 @@ function listApply() {
 
     tssJS("#gridTitle>input").show();
     tssJS("#gridTitle>button").hide();
+}
+// 回收站模式
+function recycleBin() {
+    approveMode = commitMode = false;
+    recycleBinMode = true;
+
+    tssJS(".listBT").removeClass("bt_selected").addClass("bt_unselected");
+    tssJS("#listBT4").removeClass("bt_unselected").addClass("bt_selected");
+
+    tssJS("#gridTitle .tssbutton").hide();
+    tssJS("#btn_batch_del, #btn_ex").show();
+
+    params = {"domain": (userDomain||"") + "@--", "updator": userCode};
+    loadGridData(1);
+    ws.closeAllTabs();
 }
 
 function initMenus() {
@@ -597,6 +623,11 @@ function loadDetailData(rowID) {
                     $("#"+code).removeClass("field_disabled").attr("disabled", null);
                 });
             }
+        }
+
+        // 回收站中的记录禁止修改
+        if( (_item.domain||'').indexOf('@--') >= 0 ) {
+            tssJS("#cancelBt, #saveBt, #btnViewAttach").hide();
         }
     }
 
@@ -1018,7 +1049,7 @@ function manageAttach(lineId, tag, isCreateRow) {
             tssJS.showWaitingLayer();
             tssJS("#attachDialog").show(true).center();
 
-            if( isCreateRow || (canEditRow(lineId) && (!checkFileOpt||checkFileOpt(tag)) ) ) {
+            if( !recycleBinMode && (isCreateRow || (canEditRow(lineId) && (!checkFileOpt||checkFileOpt(tag)) )) ) {
                 tssJS("#uploadForm span").show();               
             }
             else {
@@ -1242,7 +1273,7 @@ function showExtension(_item) {
     var attachList = _item.attachList, 
         wf_logs = _item.wf_logs;
 
-    if(attachList) {
+    if(attachList.length || needFile) {
         var pcontainer = $.createElement("ul", "ext", "pcontainer");
         var li = $.createElement("li", "header");
         $(li).html( "附件列表：" );
@@ -1282,18 +1313,6 @@ function showExtension(_item) {
         var opinionEL = $.createElement("textarea", "", "opinion");
         tssJS("#page1Form").appendChild(opinionEL);
     }
-}
-
-// 回收站
-function recycleBin() {
-    tssJS(".listBT").removeClass("bt_selected").addClass("bt_unselected");
-    tssJS("#listBT4").removeClass("bt_unselected").addClass("bt_selected");
-
-    tssJS("#gridTitle .tssbutton").hide();
-    tssJS("#btn_batch_del, #btn_ex").show();
-
-    params = {"domain": (userDomain||"") + "@--", "updator": userCode};
-    loadGridData(1);
 }
 
 </script>

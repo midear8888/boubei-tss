@@ -34,6 +34,9 @@ public class DefaultExceptionConvertor implements IExceptionConvertor {
 			log.debug(msg);
 			
     		if(msg.indexOf("ConstraintViolationException") >= 0) {
+    			if(msg.indexOf("cannot be null") >= 0) {
+    				return new BusinessException( EX.ERR_NOT_NULL + firstCause.getMessage() );
+    			}
     			if(msg.indexOf("insert") >= 0) {
     				return new BusinessException( EX.ERR_UNIQUE );
     			}

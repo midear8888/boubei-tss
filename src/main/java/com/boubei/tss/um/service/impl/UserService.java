@@ -381,9 +381,11 @@ public class UserService implements IUserService{
     	DomainInfo info = new DomainInfo();
     	info.setName( domainGroup.getName() );
     	info.setDomain( domainGroup.getDomain() );
-    	info.setCreator( user.getLoginName() );
     	info.setCreateTime(new Date());
     	userDao.createObject(info);
+    	
+    	info.setCreator( user.getLoginName() );
+    	userDao.update(info);
     	
 		this.regUser(user);
 	}
