@@ -15,6 +15,7 @@ var timer, regable = true;
 function init() {
     getParam("sysTitle", function(result) {
         result && $(".sysTitle").html(result);
+        document.title = result;
     });
     getParam("subTitle", function(result) {
         result && $(".subTitle").html(result);

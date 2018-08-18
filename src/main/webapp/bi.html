@@ -94,6 +94,9 @@ $(function(){
         getParam("index_logo", function(result) {
             result && $(".top .logo").css("background", "url(" +result+ ") no-repeat center");
         });
+        getParam("sysTitle", function(result) {
+            document.title = result;
+        });
     });
 });
 

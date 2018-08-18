@@ -31,7 +31,7 @@ public class DefaultExceptionConvertor implements IExceptionConvertor {
     	if( e != null && e.getMessage() != null) {
     		Throwable firstCause = ExceptionEncoder.getFirstCause(e);
 			String msg = e.getMessage() + firstCause.getClass() + firstCause.getMessage();
-			log.debug(msg);
+			log.error(msg);
 			
     		if(msg.indexOf("ConstraintViolationException") >= 0) {
     			if(msg.indexOf("cannot be null") >= 0) {

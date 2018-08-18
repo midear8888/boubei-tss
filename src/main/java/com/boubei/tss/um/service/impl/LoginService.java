@@ -176,7 +176,9 @@ public class LoginService implements ILoginService {
     	userDao.executeHQL("delete RoleUserMapping o where o.id.userId = ?",  logonUserId);
         
         // 默认插入一条【匿名角色】给每一个登录用户
-        roleIds.add(0, UMConstants.ANONYMOUS_ROLE_ID );
+    	if( !roleIds.contains(UMConstants.ANONYMOUS_ROLE_ID) ) {
+    		roleIds.add(0, UMConstants.ANONYMOUS_ROLE_ID );
+    	}
         Set<Long> roleSet = new HashSet<Long>( roleIds ); // 去重
         
         for(Long roleId : roleSet) {
