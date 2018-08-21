@@ -18,6 +18,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,6 +27,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.boubei.tss.EX;
+import com.boubei.tss.dm.DMUtil;
+import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.web.display.tree.LevelTreeParser;
 import com.boubei.tss.framework.web.display.tree.TreeEncoder;
@@ -220,6 +224,27 @@ public class ParamAction extends BaseActionSupport {
 	public Object getSimpleParam2Json(@PathVariable("code") String code) {
 		return new Object[] { ParamConfig.getAttribute(code) };
 	}
+	
+	@RequestMapping(value = "/params", method = RequestMethod.POST)
+	@ResponseBody
+	public static List<Map<String, Object>> getAllValue(String codes){		
+    	String sql = "select p.* from component_param p " +
+        		" where p.type = 1 and p.code in ('" + codes.replaceAll(",","','") + "') and p.disabled <> 1";
+        List<Map<String, Object>> result = SQLExcutor.queryL(sql);
+        if( result.isEmpty() ){
+            throw new BusinessException( EX.parse(EX.F_10, codes) );
+        }
+        return (List<Map<String, Object>>) result;
+    }
+	
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/params/save", method = RequestMethod.POST)
+	@ResponseBody
+	public void saveParams(HttpServletRequest request) throws Exception{
+		Map<String, String> params = DMUtil.getRequestMap(request, false);
+		List<Map<String, Object>> list = new ObjectMapper().readValue(params.get("json"), List.class);
+		paramService.saveParams(list); 	
+    }
 	
 	/** 获取下拉类型/树型参数列表  */
 	@RequestMapping(value = "/json/combo/{code}", method = RequestMethod.GET)

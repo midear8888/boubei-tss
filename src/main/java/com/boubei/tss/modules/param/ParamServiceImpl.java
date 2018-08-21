@@ -25,6 +25,7 @@ import com.boubei.tss.cache.Pool;
 import com.boubei.tss.cache.extension.CacheLife;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.util.BeanUtil;
 
 @Service("ParamService")
 public class ParamServiceImpl implements ParamService, ParamListener {
@@ -122,6 +123,14 @@ public class ParamServiceImpl implements ParamService, ParamListener {
 
         return param;
     }
+    
+    public void saveParams(List<Map<String, Object>> list){
+		for(Map<String, Object> map : list){
+			Param param = new Param();
+			BeanUtil.setDataToBean(param, map);	
+			saveParam(param);
+		}
+	}
     
     /**
      * <p>

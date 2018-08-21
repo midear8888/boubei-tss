@@ -11,6 +11,7 @@
 package com.boubei.tss.modules.param;
 
 import java.util.List;
+import java.util.Map;
 
 import com.boubei.tss.cache.aop.Cached;
 import com.boubei.tss.cache.extension.CacheLife;
@@ -23,6 +24,9 @@ public interface ParamService {
 	/** 保存参数 */
 	@Logable(operateObject="系统参数", operateInfo="新增/修改了：${returnVal?default(\"\")}")
 	Param saveParam(Param param);
+	
+	void saveParams(List<Map<String, Object>> list);
+	
 	
 	/** 停用、启用参数 */
 	@Logable(operateObject="系统参数", operateInfo="<#if args[1]=1>停用<#else>启用</#if>了节点(ID = ${args[0]?default(\"\")})")
