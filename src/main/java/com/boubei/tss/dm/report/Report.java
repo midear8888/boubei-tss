@@ -72,6 +72,7 @@ public class Report extends OperateInfo implements IXForm, IDecodable, IResource
     
     @Column(length = 100, nullable = false)
     private String  name;       // 展示名称
+    private String  code;       // 服务编码
 
     @Lob
     private String  script;     // SQL
@@ -268,5 +269,13 @@ public class Report extends OperateInfo implements IXForm, IDecodable, IResource
 
 	public void setParamUri(String paramUri) {
 		this.paramUri = paramUri;
+	}
+
+	public String getCode() {
+		return code;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
 	}
 }

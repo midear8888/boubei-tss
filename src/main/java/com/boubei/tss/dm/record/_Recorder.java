@@ -597,7 +597,6 @@ public class _Recorder extends BaseActionSupport {
 		String[] rows = EasyUtils.split(csv, "\n");
 		List<Map<String, String>> insertList = new ArrayList<Map<String, String>>();
 		int updateCount = 0, deleteCount = 0;
-		;
 
 		String[] headers = rows[0].split(",");
 		for (int index = 1; index < rows.length; index++) { // 第一行为表头，不要

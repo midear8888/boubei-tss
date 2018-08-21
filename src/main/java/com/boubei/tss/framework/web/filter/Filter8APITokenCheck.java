@@ -35,6 +35,7 @@ import com.boubei.tss.um.permission.IResource;
  * 	高性能：大业务量时,需要交互的接口性能较高,需要双方的接口都能快速处理调用方发送的请求。
  * 
  * http://api?uName=JK&sign=md5(params+secret+timestamp)&timestamp=&参数1=value1&参数2=value2.......
+ * JS 和 Java分别对params进行排序，拼接成json字符串，然后进行签名
  * 
  * 登录分：
  * 1、有会话Session: 账号、买吗登录 --> Token，浏览器

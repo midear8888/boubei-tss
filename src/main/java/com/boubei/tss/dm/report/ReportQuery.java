@@ -199,7 +199,7 @@ public class ReportQuery {
     	List<Report> result = new ArrayList<Report>();
     	for(String cn : topX) {
     		for(Report rp : list) {
-	    		if(cn.endsWith("-" + rp.getId()) && rp.isActive() && !rp.isGroup()) {
+	    		if(cn.equals(rp.getCode()) && rp.isActive() && !rp.isGroup()) {
 	        		result.add( cloneReport(topGroupId, rp) );
 	        		break;
 	    		}

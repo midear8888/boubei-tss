@@ -85,7 +85,7 @@ public class AccessLogRecorder extends OutputRecordsManager {
         }
     }
     
-	public static void outputAccessLog(String cnName, String name, 
+	public static void outputAccessLog(String className, String name, 
 			String methodName, Map<String, String> requestMap, long start) {
 		
 		String params = "";
@@ -97,7 +97,7 @@ public class AccessLogRecorder extends OutputRecordsManager {
 		// 方法的访问日志记录成败不影响方法的正常访问，所以对记录日志过程中各种可能异常进行try catch
         try {
             AccessLog log = new AccessLog(start, params);
-            log.setClassName(cnName);
+            log.setClassName(className);
             log.setMethodCnName( name );
     		log.setMethodName( methodName );
             
@@ -114,7 +114,8 @@ public class AccessLogRecorder extends OutputRecordsManager {
 		boolean ignoreLog = ParamConstants.FALSE.equals(report.getNeedLog());
 		if( !ignoreLog ) {
 			String reportName = report.getName();
-			AccessLogRecorder.outputAccessLog("Report-"+reportId, reportName, methodName, requestMap, start);
+			String tempName = (String) EasyUtils.checkNull(report.getCode(), "Report-"+reportId);
+			AccessLogRecorder.outputAccessLog(tempName, reportName, methodName, requestMap, start);
 		}
 	}
 }

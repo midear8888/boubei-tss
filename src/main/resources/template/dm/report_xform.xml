@@ -3,12 +3,13 @@
 	<declare>	
 		<column name="id"     caption="报表ID"  mode="number" editable="false"/>
 		<column name="name"   caption="报表名称" mode="string" maxLength="30" empty="false"/>
+		<column name="code"   caption="服务编码" mode="string" maxLength="30"/>
 		<column name="script" caption="报表脚本" mode="string" maxLength="40000"/>
 		<column name="param"  caption="报表参数" mode="string" maxLength="2000"/>
 		<column name="datasource"  caption="数据源"  mode="combo"/>
 		<column name="displayUri"  caption="展示页面" mode="string" maxLength="200"/>
-		<column name="paramUri"  caption="查询页面" mode="string" maxLength="200"/>
-		<column name="remark" caption="报表简介" mode="string" maxLength="2000"/>
+		<column name="paramUri"    caption="查询页面" mode="string" maxLength="200"/>
+		<column name="remark"  caption="报表简介" mode="string" maxLength="2000"/>
 		<column name="needLog" caption="记录访问日志" mode="combo" values="1|0" texts="是|否"/>
 	</declare>
 	<layout>
@@ -22,12 +23,14 @@
 			</TD>
 			<TD width="50"><label binding="id"/></TD>
 			<TD width="70"><input binding="id" style="width:60px;"/></TD>
+			<TD width="70"><label binding="code"/></TD>
+			<TD width="200"><input binding="code" style="width:170px;"/></TD>
 			<TD width="80"><label binding="needLog"/></TD>
 			<TD><input binding="needLog"/></TD>
 		</TR>
 		<TR>
 			<TD valign="top"><label binding="script"/></TD>
-			<TD colspan="7">
+			<TD colspan="9">
 				<textarea binding="script" style="width:97%;height:240px" class="fullscreenable"/>
 				<p>
 					注：可以在各类数据库的客户端里（PLSQL等）编写并调试好SQL，直接复制到此处，再针对查询条件进行相应配置，即可成为一个正式的数据服务。
@@ -40,7 +43,7 @@
 				<label binding="param"/><br/><br/>
 				<a href="#" onclick="configParams()" class="tssbutton small blue">配置</a>
 			</TD>
-			<TD colspan="7"><textarea binding="param" style="width:97%;height:100px" class="fullscreenable"/></TD>
+			<TD colspan="9"><textarea binding="param" style="width:97%;height:100px" class="fullscreenable"/></TD>
 		</TR>
 		<TR>
 			<TD><label binding="displayUri"/></TD>
@@ -54,7 +57,7 @@
 		</TR>
 		<TR>
 			<TD valign="top"><label binding="remark"/></TD>
-			<TD colspan="7"><textarea binding="remark" style="width:97%;height:40px" class="fullscreenable"/></TD>
+			<TD colspan="9"><textarea binding="remark" style="width:97%;height:40px" class="fullscreenable"/></TD>
 		</TR>
 	</layout>
 	<data/>

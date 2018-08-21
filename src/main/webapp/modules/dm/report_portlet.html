@@ -326,24 +326,25 @@ function init() {
             }
 
             // 自定义的通用查询条件界面
+            var hideQueryForm = !!defines[6];  // 设置了通用查询条件或设置为no-need，则把report默认的参数框隐藏
             if( defines[6] && defines[6].indexOf(".htm") > 0) { 
-                $("#tip1>iframe").attr("src", defines[6]);           
+                $("#tip1>iframe").attr("src", defines[6]);   
             } else {
                 $("#li1").hide();
-                return initPortlet();
+                return initPortlet( hideQueryForm );
             }
 
             if( !parent.conditionReady ) {
                 tssJS("#tip1").show(true);
             } 
             else {
-                initPortlet();
+                initPortlet( hideQueryForm );
             }
         }
     });   
 }
 
-function initPortlet() {
+function initPortlet( hideQueryForm ) {
     var params = {}, allReady = true;
     if( globalValiable.define ) {            
         var _params = $.parseJSON(globalValiable.define);
@@ -378,7 +379,11 @@ function initPortlet() {
         $("#li3").hide();
     }
     
-    showQueryForm( params );
+    if(hideQueryForm) {
+        $("#li3,#searchFormDiv").remove();  // 用了通用查询条件或设置为no-need，则把默认的参数框隐藏 
+    } else {
+        showQueryForm( params );
+    }
 
     if(allReady) {
         searchReport( params );

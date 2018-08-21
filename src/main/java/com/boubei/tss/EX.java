@@ -85,7 +85,7 @@ public class EX {
 	public static String DM_12 = "您对此数据表没有维护权限";
 	public static String DM_13 = "ID=${x1} 的数据表不存在。";
 	public static String DM_13_2 = "ID=${x1} 的数据记录不存在。";
-	public static String DM_14 = "没有找到名为【${x1}】的数据表(服务)，其不存在或您的账号权限不够";
+	public static String DM_14 = "标记为【${x1}】的数据表(服务)，其不存在或账号权限不够";
 	public static String DM_15 = "【${x1}】的参数配置有误，JSON格式存在错误，请检查修正后再保存。具体原因：${x2}";
 	public static String DM_16 = "修改出错，该记录不存在，可能已经被删除。";
 	public static String DM_17 = "修改异常，该记录在你修改期间已经被其它人修改过了，请关闭后重新打开编辑再保存。";
@@ -102,6 +102,7 @@ public class EX {
 	public static String DM_28 = "任务所属的定时器【${x1}, ${x2}】不是一个ETL类型定时器";
 	public static String DM_29 = "其中有${x1}行数据校验出异常，请点<a href=\"/tss/data/download?filename=${x2}\" target=\"_blank\">【异常记录】</a>下载查看。";
 	public static String DM_30 = "没有数据，所有满足条件的日期（或明细）都已经执行过了";
+	public static String DM_31 = "找到${x1}个${x2}=${x3}的Report节点，需要保证唯一";
 	
 	public static String F_01 = "【${x1}】参数有误，第 ${x2} 个参数值为Null！";
 	public static String F_02 = "排序节点和目标节点不属于同一层的节点（父节点不一致），不能排序。";

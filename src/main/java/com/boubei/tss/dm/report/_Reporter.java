@@ -34,7 +34,6 @@ import com.boubei.tss.dm.Excel;
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.report.log.AccessLogRecorder;
 import com.boubei.tss.framework.Global;
-import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.pagequery.PageInfo;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.web.display.grid.DefaultGridNode;
@@ -54,28 +53,17 @@ public class _Reporter extends BaseActionSupport {
     
     @Autowired ReportService reportService;
     
-	@RequestMapping("/{nameOrID}/define")
+	@RequestMapping("/{idCodeName}/define")
     @ResponseBody
-    public Object getReportDefine(HttpServletRequest request, @PathVariable("nameOrID") String nameOrID) {
+    public Object getReportDefine(HttpServletRequest request, @PathVariable("nameOrID") String idCodeName) {
 		// 如果是【报表名：rpName】参数传过来，优先通过报表名查询
 		String queryString = request.getQueryString();
 		String rpName =  URLUtil.parseQueryString(queryString).get("rpName");
-		// if(rpName != null ) log.info( rpName  + " vs " + request.getParameter("rpName") );  // GET Request里，getParameter取出的是ISO-ISO-8859-1编码
 		
 		rpName = (String) EasyUtils.checkNull(rpName, request.getParameter("rpName"));
-		nameOrID = (String) EasyUtils.checkNull(rpName, nameOrID);
+		idCodeName = (String) EasyUtils.checkNull(rpName, idCodeName);
 		
-		Long reportId = null;
-    	try { // 先假定是报表ID（Long型）
-    		reportId = reportService.getReportId("id", Long.valueOf(nameOrID), Report.TYPE1);
-    	} 
-    	catch(Exception e) { 
-    		reportId = reportService.getReportId("name", nameOrID, Report.TYPE1);
-    	}
-    	if(reportId == null) {
-    		throw new BusinessException(EX.parse(EX.DM_14, nameOrID));
-    	}
-    	
+		Long reportId = reportService.getReportId(idCodeName);    	
 		Report report = reportService.getReport(reportId);
 		
 		String name = report.getName();
@@ -165,7 +153,7 @@ public class _Reporter extends BaseActionSupport {
 		long start = System.currentTimeMillis();
 		SQLExcutor excutor = reportService.queryReport(reportId, requestMap, page, pagesize, cacheFlag);
 		
-		String fileName = reportId + "-" + start + ".csv";
+		String fileName = report + "-" + Environment.getUserId() + ".csv";
         String exportPath;
         
         // 如果导出数据超过了pageSize（前台为导出设置的pageSize为10万），则不予导出并给与提示

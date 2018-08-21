@@ -57,27 +57,33 @@ public class ReportServiceImpl implements ReportService {
 		return this.getReport(id, auth);
     }
     
-    public Long getReportId(String idOrName) {
+    public Long getReportId(String idCodeName) {
     	Long reportId = null;
     	try { // 先假定是报表ID（Long型）
-    		reportId = getReportId("id", Long.valueOf(idOrName), Report.TYPE1);
+    		reportId = getReportId("id", Long.valueOf(idCodeName), Report.TYPE1);
     	} 
     	catch(Exception e) { }
     	
-    	// 按名字再查一遍
+    	// 按Code 或 名字再查一遍
     	if(reportId == null) {
-    		reportId = getReportId("name", idOrName, Report.TYPE1);
+    		reportId = getReportId("code", idCodeName, Report.TYPE1);
     	}
     	if(reportId == null) {
-    		throw new BusinessException( EX.parse(EX.DM_18, idOrName) );
+    		reportId = getReportId("name", idCodeName, Report.TYPE1);
+    	}
+    	if(reportId == null) {
+    		throw new BusinessException( EX.parse(EX.DM_18, idCodeName) );
     	}
     	
     	return reportId;
 	}
     
-	public Long getReportId(String fname, Object idOrName, int type) {
-		String hql = "select o.id from Report o where o." +fname+ " = ? and type = ? order by o.decode";
-		List<?> list = reportDao.getEntities(hql, idOrName, type); 
+	public Long getReportId(String fname, Object idCodeName, int type) {
+		String hql = "select o.id from Report o where o." +fname+ " = ? and type = ? order by o.id desc";
+		List<?> list = reportDao.getEntities(hql, idCodeName, type); 
+		if( list.size() > 1 ) {
+			throw new BusinessException( EX.parse(EX.DM_31, list.size(), fname, idCodeName) );
+		}
 		return list.isEmpty() ? null : (Long) list.get(0);
 	}
 	
