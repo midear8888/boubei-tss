@@ -55,7 +55,7 @@ public class _Reporter extends BaseActionSupport {
     
 	@RequestMapping("/{idCodeName}/define")
     @ResponseBody
-    public Object getReportDefine(HttpServletRequest request, @PathVariable("nameOrID") String idCodeName) {
+    public Object getReportDefine(HttpServletRequest request, @PathVariable("idCodeName") String idCodeName) {
 		// 如果是【报表名：rpName】参数传过来，优先通过报表名查询
 		String queryString = request.getQueryString();
 		String rpName =  URLUtil.parseQueryString(queryString).get("rpName");
