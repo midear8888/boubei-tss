@@ -30,7 +30,7 @@ import com.boubei.tss.util.EasyUtils;
  */
 public class _Connection extends ConfigurableContants {
 
-	protected final Logger log = Logger.getLogger(this.getClass());
+	protected final static Logger log = Logger.getLogger(_Connection.class);
 
 	private IConnectionProvider provider;
 	
@@ -106,17 +106,21 @@ public class _Connection extends ConfigurableContants {
 		}
 		
 		public Connection getConnection() {
-			Connection conn = null;
-	        try {
-	            Class.forName(driver);
-	            DriverManager.setLoginTimeout(30);
-				conn = DriverManager.getConnection(url, user, pwd);
-	        } 
-	        catch (Exception e) {
-	        	log.error(EX.parse(EX.F_03, url, user, e.getMessage()));
-	            throw new BusinessException( EX.parse(EX.F_03, driver, user, e.getMessage()) );
-	        } 
-	        return conn;
+	        return _Connection.openConnection(driver, url, user, pwd);
 		}
+	}
+	
+	public static Connection openConnection(String driver, String url, String user, String pwd) {
+		Connection conn = null;
+        try {
+            Class.forName(driver);
+            DriverManager.setLoginTimeout(30);
+			conn = DriverManager.getConnection(url, user, pwd);
+        } 
+        catch (Exception e) {
+        	log.error(EX.parse(EX.F_03, url, user, e.getMessage()));
+            throw new BusinessException( EX.parse(EX.F_03, driver, user, e.getMessage()) );
+        } 
+        return conn;
 	}
 }

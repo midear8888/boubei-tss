@@ -56,6 +56,10 @@ public class OperatorDTO implements IPWDOperator, Serializable {
             }
         }
     }
+    
+    public String toString() {
+    	return id + ", " + loginName + ", " + userName;
+    }
 
     /**
      * 保存USER对象的所有属性

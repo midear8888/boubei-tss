@@ -219,7 +219,7 @@ public class LoginService implements ILoginService {
 		List<Object[]> result = new ArrayList<Object[]>();
 		for (int i = 1; i < list.size() + 1; i++) {
 			Group group = (Group) list.get(i - 1);
-			result.add(new Object[] {group.getId(), group.getName(), group.getDomain()});
+			result.add(new Object[] {group.getId(), group.getName(), group.getDomain(), group.getDecode()});
 		}
 		return result;
 	}

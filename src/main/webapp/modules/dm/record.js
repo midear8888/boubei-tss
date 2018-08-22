@@ -574,10 +574,6 @@ function editFieldConfig() {
 	    if(field === 'width' || field === 'height') { 
 	    	fieldValue = fieldValue ? fieldValue.replace('px', '') : (field === 'width' ? 250 : 18);
 	    	$('#_' + field + '_').html(fieldValue);
-			
-			fieldEl.onchange = function() {
-				$('#_' + field + '_').html(this.value);
-			}
 		}
 		if( $(fieldEl).attr("type") == 'checkbox' ) { // checkbox
 			fieldEl.checked = fieldValue == 'true';
@@ -667,6 +663,9 @@ function editFieldConfig() {
 				activeNode.li.a.title = newValue;
 				$(activeNode.li.a).html(newValue);
     		}
+    		if(field === 'width' || field === 'height') { 
+		    	$('#_' + field + '_').html(newValue);
+			}
 
     		if(field === 'options') {
     			if( newValue ) {

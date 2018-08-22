@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.boubei.tss.EX;
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.exception.BusinessException;
@@ -213,6 +212,25 @@ public class ParamAction extends BaseActionSupport {
         printSuccessMessage(msg);
     }
 	
+	@RequestMapping(value = "/init/query")
+	@ResponseBody
+	public List<Map<String, Object>> getAllValue(String codes){		
+		
+    	String sql = "select p.* from component_param p " +
+        		" where p.type = 1 and p.disabled <> 1 and p.code in (" + DMUtil.insertSingleQuotes(codes) + ")";
+        
+        return SQLExcutor.queryL(sql);
+    }
+	
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/init/save", method = RequestMethod.POST)
+	@ResponseBody
+	public void saveParams(HttpServletRequest request) throws Exception {
+		Map<String, String> params = DMUtil.getRequestMap(request, false);
+		List<Map<String, Object>> list = new ObjectMapper().readValue(params.get("json"), List.class);
+		paramService.saveParams(list); 	
+    }
+	
 	/*
 	 * ************************************** 以下为Param的json格式服务，供前台调用 ************************************
 	 * 注：如需提供为匿名调用，把参数code添加到系统地址白名单，eg: /simple/subTitle,/combo/EX_TYPE
@@ -224,27 +242,6 @@ public class ParamAction extends BaseActionSupport {
 	public Object getSimpleParam2Json(@PathVariable("code") String code) {
 		return new Object[] { ParamConfig.getAttribute(code) };
 	}
-	
-	@RequestMapping(value = "/params", method = RequestMethod.POST)
-	@ResponseBody
-	public static List<Map<String, Object>> getAllValue(String codes){		
-    	String sql = "select p.* from component_param p " +
-        		" where p.type = 1 and p.code in ('" + codes.replaceAll(",","','") + "') and p.disabled <> 1";
-        List<Map<String, Object>> result = SQLExcutor.queryL(sql);
-        if( result.isEmpty() ){
-            throw new BusinessException( EX.parse(EX.F_10, codes) );
-        }
-        return (List<Map<String, Object>>) result;
-    }
-	
-	@SuppressWarnings("unchecked")
-	@RequestMapping(value = "/params/save", method = RequestMethod.POST)
-	@ResponseBody
-	public void saveParams(HttpServletRequest request) throws Exception{
-		Map<String, String> params = DMUtil.getRequestMap(request, false);
-		List<Map<String, Object>> list = new ObjectMapper().readValue(params.get("json"), List.class);
-		paramService.saveParams(list); 	
-    }
 	
 	/** 获取下拉类型/树型参数列表  */
 	@RequestMapping(value = "/json/combo/{code}", method = RequestMethod.GET)

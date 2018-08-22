@@ -16,9 +16,10 @@ import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.ddl._Database;
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.exception.BusinessException;
-import com.boubei.tss.framework.persistence.ICommonDao;
 import com.boubei.tss.framework.persistence.pagequery.MacrocodeQueryCondition;
 import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.um.dao.IGroupDao;
+import com.boubei.tss.um.entity.Group;
 import com.boubei.tss.um.helper.dto.OperatorDTO;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.um.service.IMessageService;
@@ -36,7 +37,7 @@ public class WFServiceImpl implements WFService {
 	
 	@Autowired ILoginService loginSerivce;
 	@Autowired IMessageService msgService;
-	@Autowired ICommonDao commonDao;
+	@Autowired IGroupDao commonDao;
  
 	public WFStatus getWFStatus(Long tableId, Long itemId) {
 		List<?> list = commonDao.getEntities("from WFStatus where tableId = ? and itemId = ? ", tableId, itemId);
@@ -87,7 +88,7 @@ public class WFServiceImpl implements WFService {
 			wfStatus.setCurrentStatus(WFStatus.NEW);
 			wfStatus.setApplier( Environment.getUserCode() );
 			wfStatus.setApplierName( Environment.getUserName() );
-			commonDao.create(wfStatus);
+			commonDao.createObject(wfStatus);
 			isCreate = true;
 		}
 		
@@ -140,7 +141,7 @@ public class WFServiceImpl implements WFService {
 				continue;
 			}
 			
-			String user = m.get("user"); // 用户需要配置在域扩展表里，使用loginName
+			String user = m.get("user"); // 直接指定具体个人为审批人，使用loginName
 			if( !EasyUtils.isNullOrEmpty(user) ) {
 				users.add( user );
 			}
@@ -169,23 +170,34 @@ public class WFServiceImpl implements WFService {
 			return result;
 		}
 		
-		Long inGroup = (Long) Environment.getInSession("GROUP_LAST_ID");
+		Group inGroup = commonDao.getEntity( (Long) Environment.getInSession("GROUP_LAST_ID") );
 		List<OperatorDTO> list = loginSerivce.getUsersByRoleId(roleId);
+		
+		// 取出当前域管理员账号
+		List<?> domainUsers = commonDao.getEntities("select creator from DomainInfo where domain=?", Environment.getDomain());
 		
 		for(OperatorDTO dto : list) {
 			String userCode = dto.getLoginName();
 			
-			result.add( new String[]{ userCode, dto.getUserName()} );
-			if( !justOne ) continue;
+			if( domainUsers.contains(userCode) ) continue;
 			
-			List<Object[]> fatherGroups = loginSerivce.getGroupsByUserId(dto.getId());
-	        for( int i = fatherGroups.size() - 1; i >= 0; i--) {
-	        	Object[] temp = fatherGroups.get(i);
-	        	if( inGroup.equals(temp[0]) ) {
-	        		int size = result.size();
-					return result.subList(size - 1, size ); // 取最后一个
-	        	}
-	        }
+			// 剔除域管理员账号
+			result.add( new String[]{ userCode, dto.getUserName()} );
+			
+			// 只取一个同类角色的用户作为审批人，比如部门经理
+			if( justOne ) {
+				// 如果用户拥有此角色且其所在组为提交人所在组（或父组），则优先使用
+				List<Object[]> fatherGroups = loginSerivce.getGroupsByUserId(dto.getId());
+				if( fatherGroups.size() > 0 ) {
+					Object[] lastGroup = fatherGroups.get( fatherGroups.size() - 1 );
+					String decode = (String) lastGroup[3];
+		        	
+		        	if( inGroup != null && inGroup.getDecode().startsWith( decode ) ) {
+		        		int size = result.size();
+						return result.subList(size - 1, size ); // 取最后一个
+		        	}
+				}
+			}
 		}
 		
 		return justOne ? result.subList(0, Math.min(result.size(), 1)) : result; // 只取第一个

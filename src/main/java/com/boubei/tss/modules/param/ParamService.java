@@ -25,8 +25,8 @@ public interface ParamService {
 	@Logable(operateObject="系统参数", operateInfo="新增/修改了：${returnVal?default(\"\")}")
 	Param saveParam(Param param);
 	
+	/** 系统参数初始化时，批量保存参数 */
 	void saveParams(List<Map<String, Object>> list);
-	
 	
 	/** 停用、启用参数 */
 	@Logable(operateObject="系统参数", operateInfo="<#if args[1]=1>停用<#else>启用</#if>了节点(ID = ${args[0]?default(\"\")})")

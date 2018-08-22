@@ -133,7 +133,7 @@ public interface ILoginService {
     List<OperatorDTO> getUsersByGroupId(Long groupId);
  
     /**
-     * 根据角色的ID 获取拥有此角色的用户
+     * 根据角色的ID 获取拥有此角色的用户（只取相同域的账号）
      * 注：需要同时取出“转授”关联起来的RoleUser。
      * @param roleId
      * @return List

@@ -175,11 +175,15 @@ public class EasyUtils {
     }
     
     public static String attr2Str(Collection<Map<String, Object>> list, String key){
+        return list2Str( attr2List(list, key), ",");
+    }
+    
+    public static List<Object> attr2List(Collection<Map<String, Object>> list, String key){
     	List<Object> temp = new ArrayList<Object>();
     	for(Map<String, Object> m : list) {
     		temp.add( m.get(key) );
     	}
-        return list2Str(temp, ",");
+        return temp;
     }
     
     /**
