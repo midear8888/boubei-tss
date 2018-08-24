@@ -719,6 +719,11 @@ public abstract class _Database {
 		} 
 		catch(Exception e) { }
 		
+		// 审批表: 提交模式下，只能查询本人提交的流程; 如果其指定了其它“创建人”作为查询条件，将什么都查不到
+		if( WFUtil.checkWorkFlow(this.wfDefine) && !isApprover && !Environment.isAdmin()) {
+			params.put("creator", Environment.getUserCode());
+		}
+		
 		// 设置查询条件
 		String condition;
 		if( visible && !params.containsKey("creator") ) {

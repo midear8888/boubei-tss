@@ -157,3 +157,10 @@
 .icon-tss-view{
 	background:url('icons/tss_view.gif') no-repeat center center;
 }
+.icon-tss-earth{
+	background:url('icons/tss_earth.png') no-repeat center center;
+	background-size:16px 16px;
+}
+.noicon{
+	background: none;
+}

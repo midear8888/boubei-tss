@@ -16,7 +16,8 @@ import com.boubei.tss.util.EasyUtils;
 
 /**
  * 1、批量计算wfStatus，适合数据清洗进来的流程数据（逐个取出计算一遍即可）;
- *    报销 + 费用 审批后自动流到 付款流程 ---- 用ETL;
+ * 
+ * 示例：报销 + 费用 审批后自动流到 付款流程 ---- 用ETL  或 Excel批量导入
  *    
  *  com.boubei.tss.dm.record.workflow.WFJob | 0 07 * * * ? | 12,13
  */
