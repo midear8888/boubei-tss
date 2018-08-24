@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.boubei.tss.EX;
+import com.boubei.tss.PX;
 import com.boubei.tss.cache.extension.CacheHelper;
 import com.boubei.tss.cache.extension.CacheLife;
 import com.boubei.tss.dm.record.Record;
@@ -31,6 +32,7 @@ import com.boubei.tss.dm.record.permission.RecordPermission;
 import com.boubei.tss.dm.report.Report;
 import com.boubei.tss.dm.report.ReportService;
 import com.boubei.tss.dm.report.permission.ReportPermission;
+import com.boubei.tss.framework.Config;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.pagequery.PageInfo;
 import com.boubei.tss.framework.sso.Environment;
@@ -38,6 +40,7 @@ import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.modules.api.APIService;
 import com.boubei.tss.modules.cloud.DomainInfo;
 import com.boubei.tss.modules.param.Param;
+import com.boubei.tss.modules.param.ParamConfig;
 import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.um.UMConstants;
@@ -391,6 +394,10 @@ public class UserService implements IUserService{
 	}
  
 	public void regUser(User user) {
+		if( ParamConfig.getAttribute(PX.REGABLE, "true").equals( Config.FALSE ) ) {
+			throw new BusinessException(EX.U_46);
+		}
+		
 		userDao.checkUserAccout(user);
         
         user.setOrignPassword( user.getPassword() );
@@ -425,6 +432,10 @@ public class UserService implements IUserService{
 	
 	// 保证事务完整性
 	public void regDeveloper(User user) {
+		if( ParamConfig.getAttribute(PX.REGABLE_DEV, "true").equals( Config.FALSE ) ) {
+			throw new BusinessException(EX.U_47);
+		}
+		
 		user.setGroupId(UMConstants.DEV_GROUP_ID); // add to devGroup
 		this.regUser(user);
 		

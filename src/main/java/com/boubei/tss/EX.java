@@ -167,6 +167,8 @@ public class EX {
 	public static String U_43 = "邮箱信息有误或者您没有设置邮箱信息，无法通过邮箱重置密码";
 	public static String U_44 = "密码保护问题或答案不正确";
 	public static String U_45 = "修改密码失败";
+	public static String U_46 = "系统不支持自注册，可联系管理员添加账号";
+	public static String U_47 = "系统不支持开发者自注册，可联系管理员添加账号";
 	
 	public static String P_01 = "组件不存在，可能已被删除，读取失败！ID = ";
 	public static String P_02 = "同名文件(夹)已经存在，重命名失败！";

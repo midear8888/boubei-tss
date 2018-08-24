@@ -38,8 +38,15 @@ public class SerialNOer {
 			sntemplate += _Field.SNO_yyMMddxxxx;
 		}
 		
-		Date today = DateUtil.today();
-		String snMode = sntemplate.endsWith(_Field.SNO_yyMMddxxxx) ? DateUtil.format(today, "yyyyMMdd").substring(2) : "";
+		Date _day;
+		String snMode;
+		if(sntemplate.endsWith(_Field.SNO_yyMMddxxxx)) {
+			_day = DateUtil.today();
+			snMode = DateUtil.format(_day, "yyyyMMdd").substring(2);
+		} else {
+			_day = DateUtil.parse("2018-08-23");
+			snMode = "";
+		}
 		String precode = sntemplate.replace(_Field.SNO_yyMMddxxxx, "").replace(_Field.SNO_xxxx, "").toUpperCase();
 		
 		// 如果域扩展表(x_domain)里明确维护了订单前缀
@@ -51,10 +58,10 @@ public class SerialNOer {
 		String hql = " from SerialNO where day = ? and precode = ? and domain = ? ";
 		
 		SerialNO snItem;
-		List<?> list = commonService.getList(hql, today, precode, domain);
+		List<?> list = commonService.getList(hql, _day, precode, domain);
 		if(list.isEmpty()) {
 			snItem = new SerialNO();
-			snItem.setDay( today );
+			snItem.setDay( _day );
 			snItem.setPrecode(precode);
 			snItem.setLastNum(0);
 			
@@ -93,7 +100,12 @@ public class SerialNOer {
 		return this.create(sntemplate, 1).get(0);
 	}
 	
+	// 无限定前缀
 	public static String get() {
-		return new SerialNOer().createOne( _Field.SNO_yyMMddxxxx );
+		return get( _Field.SNO_yyMMddxxxx );
+	}
+	
+	public static String get(String preCode) {
+		return new SerialNOer().createOne( preCode );
 	}
 }

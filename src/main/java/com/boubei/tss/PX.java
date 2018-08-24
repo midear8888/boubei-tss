@@ -10,12 +10,10 @@
 package com.boubei.tss;
 
 /**
- *  系统可注册的参数配置（application.properties文件和component_param表）
+ * 系统可注册的参数配置（application.properties文件 和 component_param表）
  * report_export_url = http://www.boubei.com:8082  导出数据分流机器, 前台页面报表导出时用到
  * sysTitle = TSS BI   登陆页大标题
  * subTitle = Be your own data hero  登录页小标题
- * regable = false     关闭注册
- * regableDev = false  关闭开发者注册
  * index_logo = logo-scm.png   LOGO路径
  * mobile_menu = 72    移动端菜单组ID
  */
@@ -32,10 +30,17 @@ public interface PX {
 	/** 是否启用定时Job */
 	static String ENABLE_JOB = "job.enable";
 	
+	// ParamConfig：component_param 或 application.properties
+	
 	/** 数据表是否只做逻辑删除 */
 	static String LOGIC_DEL = "LOGIC_DEL";
 	
-	// ParamConfig：component_param 或 application.properties
+	/** 关闭注册 */
+	static String REGABLE = "regable";
+	
+	/** 关闭开发者注册 */
+	static String REGABLE_DEV = "regableDev";
+	
     /** 
      * 资源地址白名单，白名单内的资源允许【匿名访问】
      * url.white.list = /version,.in,.do,.portal,login.html,_forget.html,_register.html.....
