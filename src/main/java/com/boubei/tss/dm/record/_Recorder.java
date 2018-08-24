@@ -894,9 +894,9 @@ public class _Recorder extends BaseActionSupport {
 			return true;
 		}
 		
-		WFStatus wfStatus = wfService.getWFStatus(recordId, itemId);
+		WFStatus wf = wfService.getWFStatus(recordId, itemId);
 		String userCode = Environment.getUserCode();
-		if (wfStatus != null && (wfStatus.processorList().contains(userCode) || userCode.equals(wfStatus.getNextProcessor()) )) {
+		if (wf != null && (wf.processorList().contains(userCode) || userCode.equals(wf.getNextProcessor()) || wf.toCCs().contains(userCode) )) {
 			return true; // 所有审批记录对审批人(已审批、待审批、抄送人员)可见
 		}
 

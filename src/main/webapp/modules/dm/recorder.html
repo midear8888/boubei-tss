@@ -578,7 +578,7 @@ function loadDetailData(rowID) {
         tssJS('#btnViewAttach').remove();         
         if(needFile) {
             var newBtn = tssJS.createElement('button', 'tssbutton small white', 'btnViewAttach');
-            tssJS(newBtn).html("附 件").click( function() {      
+            tssJS(newBtn).html("附件(上传)").click( function() {      
                 manageAttach( _tempID, "form", isCreateRow);
             } );  
             tssJS("WorkSpace\\:PageStep").appendChild(newBtn);
