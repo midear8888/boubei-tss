@@ -10,7 +10,7 @@
 
 package com.boubei.tss.modules.param;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +25,9 @@ import com.boubei.tss.cache.Pool;
 import com.boubei.tss.cache.extension.CacheLife;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.util.BeanUtil;
+import com.boubei.tss.util.EasyUtils;
 
 @Service("ParamService")
 public class ParamServiceImpl implements ParamService, ParamListener {
@@ -77,11 +79,16 @@ public class ParamServiceImpl implements ParamService, ParamListener {
      * 只有管理员 或 创建者本人，才能执行删除、停用、修改等操作
      */
     private void checkPermission(Long paramId) {
-    	Param param = getParam(paramId);
-    	List<Long> permitedUsers = Arrays.asList(-1L, param.getCreatorId());
-    	Long currentUser = Environment.getUserId();
-    	if( !permitedUsers.contains( currentUser ) ) {
-    		throw new BusinessException(EX.F_12);
+    	List<Long> permitedUsers = new ArrayList<Long>();
+    	permitedUsers.add(UMConstants.ADMIN_USER_ID); 
+    	
+    	paramId = EasyUtils.obj2Long(paramId);
+    	Param param = paramDao.getEntity(paramId);
+    	if(param != null) {
+    		permitedUsers.add(param.getCreatorId()); 
+    		if( !permitedUsers.contains( Environment.getUserId() ) ) {
+        		throw new BusinessException(EX.F_12);
+        	}
     	}
     }
  
@@ -102,15 +109,18 @@ public class ParamServiceImpl implements ParamService, ParamListener {
     }
     
     public Param saveParam(Param param) {
-        if (null == param.getId()) {
+    	Long id = param.getId();
+        if (null == id) {
             param.setSeqNo(paramDao.getNextSeqNo(param.getParentId()));
             judgeLegit(param, ParamConstants.SAVE_FLAG);
             paramDao.create(param);
         }
         else {
+        	checkPermission(id);
+        	
             judgeLegit(param, ParamConstants.EDIT_FLAG);
             if(param.getLockVersion() == 0) { // 非param.htm维护系统参数的情况
-            	Param old = paramDao.getEntity(param.getId());
+            	Param old = paramDao.getEntity(id);
             	param.setLockVersion(old.getLockVersion());
             	param.setCreateTime(old.getCreateTime());
             	param.setCreatorId(old.getCreatorId());
@@ -226,6 +236,8 @@ public class ParamServiceImpl implements ParamService, ParamListener {
     }
 
     public void move(Long paramId, Long toParamId) {
+    	checkPermission(paramId);
+    	
         List<?> params = paramDao.getChildrenById(paramId);
         for (int i = 0; i < params.size(); i++) {
             Param param = (Param) params.get(i);
@@ -258,6 +270,7 @@ public class ParamServiceImpl implements ParamService, ParamListener {
 
     /* ************************  以下供ParamManager调用(不适合Param CRUD相关模块调用，因为配置了Cache) ************************** */
     
+    // TODO 防止连接池配置等泄露出去
     public Param getParam(String code) {
     	return paramDao.getParamByCode(code);
     }
