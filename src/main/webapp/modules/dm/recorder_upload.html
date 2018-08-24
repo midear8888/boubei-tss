@@ -107,6 +107,7 @@ function uploadAttach() {
     var url = URL_UPLOAD_FILE + "?afterUploadClass=com.boubei.tss.dm.record.file.CreateAttach";
     url += "&recordId=" + tableId;  
     url += "&itemId=" + itemId;
+    url += "&refreshGrid=true";
     url += "&type=" + ($.radioValue("fileType") || 2);
     
     var form = $1("uploadForm");

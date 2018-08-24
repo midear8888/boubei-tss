@@ -72,6 +72,10 @@ public class CreateAttach implements AfterUpload {
 		 * 向前台返回成功信息。
 		 * 因为上传附件都是通过一个隐藏的iframe来实现上传的（可防止刷新主页面），所以上传成功回调JS需要加上 parent. 
 	    */
+		String refreshGrid = request.getParameter("refreshGrid"); // 上传完成后，刷新 TSS Grid
+		if( refreshGrid == null) {
+			return attach.getId().toString();  // 其它地方上传只需返回附件记录ID即可
+		}
 		return "parent.addAttach(" + attach.getId() + ", " + attach.getType() + ", '" 
 				+ attach.getName() + "', '" + attach.getDownloadUrl() + "', '" + attach.getUploadUser() + "')";
 	}

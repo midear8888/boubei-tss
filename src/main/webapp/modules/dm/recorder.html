@@ -153,6 +153,7 @@ tssJS(function() {
     recordName = tssJS.Query.get("rctable") || decodeURI(tssJS.Query.get("rcname")||"");
     openItemId = tssJS.Query.get("itemId");  // 通常为审批
     wfCount    = tssJS.Query.get("wfCount");
+    if(wfCount == 'null' || wfCount == '0') { wfCount = 0; }
 
     if(!recordId && recordName) {
         tssJS.post(URL_GET_RECORD_ID, {"name": decodeURI(recordName)}, function(result) {
@@ -244,6 +245,8 @@ function init() {
                      */
                     if(customizeGrid) {
                         tssJS.createScript( customizeGrid );
+
+                        readonly && tssJS("#btn_batch_del").hide();
                     }
                 }
             });
@@ -251,6 +254,7 @@ function init() {
     });
 }
 
+var readonly       = false; // 只读模式：只能新增，不能修改、删除；适合流水类数据记录
 var recycleBinMode = false; // 回收站模式
 var commitMode     = false; // 提交模式
 var approveMode    = false; // 审批模式
@@ -336,7 +340,7 @@ function initMenus() {
     if( !_operation.contains("1") && !_operation.contains("4") && !_operation.contains("5")) {
         tssJS("#btn_search").hide();
     }
-    if( !_operation.contains("5") ) { // 只有维护数据权限的角色才能使用批量删除
+    if( !_operation.contains("5") && !readonly ) { // 只有维护数据权限的角色才能使用批量删除
         tssJS("#btn_batch_del").hide();
     }
 
@@ -399,6 +403,8 @@ function canEditRow(rowID) {
         return true;
     }
     else { // 编辑（本人及有维护数据权限的人能编辑）
+        if(readonly) return false;
+
         var creator = tssJS.G("grid").getColumnValue("creator");   
         var id = tssJS.G("grid").getColumnValue("id");
         if( !id )  {
@@ -487,10 +493,8 @@ function loadDetailData(rowID) {
             f.role2 && !checkRole(f.role2) && hideFiled(f.code);
 
             // 自动取号
-            if( isCreateRow && (f.defaultValue+'').indexOf("yyMMddxxxx") >= 0 ) {
-                var precode = f.defaultValue.replace("yyMMddxxxx", "");
-                precode = precode || 'yyMMddxxxx';
-                tssJS.getJSON("/tss/sn/" +precode+ "/1", function(result) {
+            if( isCreateRow && (f.defaultValue+'').indexOf("xxxx") >= 0 ) {
+                tssJS.getJSON("/tss/sn/" +f.defaultValue+ "/1", function(result) {
                     var sn = result[0];
                     updateField(f.code, sn);
                     forbid(f.code);
@@ -623,10 +627,12 @@ function loadDetailData(rowID) {
                     $("#"+code).removeClass("field_disabled").attr("disabled", null);
                 });
             }
+
+            readonly && tssJS("#saveBt").hide();
         }
 
         // 回收站中的记录禁止修改
-        if( (_item.domain||'').indexOf('@--') >= 0 ) {
+        if( _item && (_item.domain||'').indexOf('@--') >= 0 ) {
             tssJS("#cancelBt, #saveBt, #btnViewAttach").hide();
         }
     }
@@ -1080,6 +1086,7 @@ function uploadAttach() {
     var url = URL_UPLOAD_FILE + "?afterUploadClass=com.boubei.tss.dm.record.file.CreateAttach";
     url += "&recordId=" + recordId;  
     url += "&itemId=" + selectedLineId;
+    url += "&refreshGrid=true";
     url += "&type=" + (tssJS.radioValue("fileType") || 2);
     
     var form = $1("uploadForm");

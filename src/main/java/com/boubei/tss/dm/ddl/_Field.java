@@ -29,7 +29,8 @@ public class _Field {
 	
 	public static String COLUMN = "f";
 	
-	public final static String SNO_yyMMddxxxx = "yyMMddxxxx"; // 取号器格式
+	public final static String SNO_xxxx = "xxxx"; // 取号器格式1
+	public final static String SNO_yyMMddxxxx = "yyMMddxxxx".toLowerCase(); // 取号器格式2
 
 	/**
 	 * 字符串的类型字段的长度 = height/18 *255
@@ -46,6 +47,7 @@ public class _Field {
 	}
 	
 	public static boolean isAutoSN(String defaultVal) {
-		return (defaultVal+"").toLowerCase().trim().endsWith(SNO_yyMMddxxxx.toLowerCase());
+		String val = (defaultVal+"").toLowerCase().trim();
+		return val.endsWith(SNO_yyMMddxxxx.toLowerCase()) || val.endsWith(SNO_xxxx);
 	}
 }

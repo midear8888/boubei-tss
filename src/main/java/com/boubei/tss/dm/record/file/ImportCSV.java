@@ -61,7 +61,7 @@ public class ImportCSV implements AfterUpload {
 	
 	RecordService recordService = (RecordService) Global.getBean("RecordService");
 	
-	protected List<List<String>> readData(File targetFile, String charSet, String headerTL) {
+	protected List<List<String>> readData(File targetFile, String charSet, String headerTL, List<String> originData) {
 		
 		String dataStr = FileHelper.readFile(targetFile, charSet); 
 		dataStr = dataStr.replaceAll(";", ","); // mac os 下excel另存为csv是用分号;分隔的
@@ -71,6 +71,7 @@ public class ImportCSV implements AfterUpload {
 		List<List<String>> rowList = new ArrayList<List<String>>();
 		for(String row : rows) {
 			if( row.replaceAll(",", "").trim().length() > 0 ) {
+				originData.add( row );
 				rowList.add( EasyUtils.toList(row) );
 			}
 		}
@@ -168,7 +169,8 @@ public class ImportCSV implements AfterUpload {
 		}
 		
 		File targetFile = new File(filepath);
-		List<List<String>> rowList = readData(targetFile, charSet, headerTL);
+		List<String> originData = new ArrayList<String>(); // 导入的原始数据
+		List<List<String>> rowList = readData(targetFile, charSet, headerTL, originData);
 		if( rowList.size() < 2) {
 			return "parent.alert('导入文件没有数据');";
 		}
@@ -181,7 +183,8 @@ public class ImportCSV implements AfterUpload {
 		}
 		// header一半以上都找不着，可能是CSV文件为UTF-8编码，以UTF-8再次尝试读取（注：也可能是选错了Excel文件，致使表头都对不上）
 		if( messyCount*1.0 / headers.size() > 0.5 && !DataExport.CSV_UTF8.equals(charSet) ) {
-			rowList = readData(targetFile, DataExport.CSV_UTF8, headerTL);
+			originData.clear();
+			rowList = readData(targetFile, DataExport.CSV_UTF8, headerTL, originData);
 			headers = rowList.get(0);
 			log.debug("readData second end");
 		}
@@ -227,7 +230,7 @@ public class ImportCSV implements AfterUpload {
 		// 执行导入到数据库
 		headers = rowList.get(0);
 		log.debug("import2db start");
-		String result = import2db(_db, request, rowList, headers, errLineIndexs, fileName);
+		String result = import2db(_db, request, rowList, headers, originData, errLineIndexs, fileName);
 		log.debug("import2db end");
 		
 		return result;
@@ -243,7 +246,7 @@ public class ImportCSV implements AfterUpload {
 	 * @param errLineIndexs 校验错误的记录行
 	 * @return
 	 */
-	protected String import2db(_Database _db, HttpServletRequest request, List<List<String>> rows, List<String> headers, 
+	protected String import2db(_Database _db, HttpServletRequest request, List<List<String>> rows, List<String> headers, List<String> originData,
 			List<Integer> errLineIndexs, String fileName) {
 		
 		boolean ignoreExist = "true".equals( request.getParameter("ignoreExist") );
@@ -273,10 +276,9 @@ public class ImportCSV implements AfterUpload {
     			if( EasyUtils.isNullOrEmpty(value) && !EasyUtils.isNullOrEmpty(defaultVal) ) {    				
     				// 检查值为空的字段，是否配置自动取号规则，是的话先批量取出一串连号
         			if( _Field.isAutoSN(defaultVal) ) {
-        				String preCode = defaultVal.replaceAll(_Field.SNO_yyMMddxxxx, "");
         				if(snList == null) {
         					int snNum = rows.size() - 1 - errLineSize;
-							snList = new SerialNOer().create(preCode, snNum);
+							snList = new SerialNOer().create(defaultVal, snNum);
         				}
         				value = snList.get(insertCount);
         			}

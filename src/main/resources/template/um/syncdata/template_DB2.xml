@@ -32,7 +32,7 @@ select distinct u.id,
   case when outdate is not null then 1 else 0 end  disabled 
 from staff_info u 
 where domain is not null and u.phone is not null and 999 > :groupId 
-  and u.updatetime > date_sub(now(), interval 3 day) or u.createtime > date_sub(now(), interval 3 day)
+  and (u.updatetime > date_sub(now(), interval 3 day) or u.createtime > date_sub(now(), interval 3 day) )
 	</userSql>
 	</userSql>
 </params>

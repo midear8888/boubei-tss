@@ -217,7 +217,8 @@ public class ParamAction extends BaseActionSupport {
 	public List<Map<String, Object>> getAllValue(String codes){		
 		
     	String sql = "select p.* from component_param p " +
-        		" where p.type = 1 and p.disabled <> 1 and p.code in (" + DMUtil.insertSingleQuotes(codes) + ")";
+        		" where p.type = 1 and p.disabled <> 1 and p.code in (" + DMUtil.insertSingleQuotes(codes) + ") " +
+        		" order by p.decode ";
         
         return SQLExcutor.queryL(sql);
     }

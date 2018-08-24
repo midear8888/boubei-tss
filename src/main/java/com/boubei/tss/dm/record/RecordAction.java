@@ -84,7 +84,7 @@ public class RecordAction extends BaseActionSupport {
     		String name = record.getName();
 			Long pId = record.getParentId();
 			String icon = DMUtil.getExtendAttr(record.getRemark(), "icon");
-			result.add(new Object[] { id, name, pId, record.getType(), "record", icon, countMap.get(id) });
+			result.add(new Object[] { id, name, pId, record.getType(), "record", icon, EasyUtils.obj2Int(countMap.get(id)) });
     	}
     	
     	return result;

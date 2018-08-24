@@ -25,59 +25,75 @@ import com.boubei.tss.util.EasyUtils;
 @RequestMapping("/sn")
 public class SerialNOer {
 
-	@RequestMapping(value = "/{precode}/{count}")
+	@RequestMapping(value = "/{sntemplate}/{count}")
 	@ResponseBody
-	public List<String> create(@PathVariable("precode") String precode, @PathVariable("count") int count) {
-		return create(Environment.getDomainOrign(), precode, count);
+	public List<String> create(@PathVariable("sntemplate") String sntemplate, @PathVariable("count") int count) {
+		return create(Environment.getDomainOrign(), sntemplate, count);
 	}
 		
-	public synchronized List<String> create(String domain, String precode, int count) {
+	public synchronized List<String> create(String domain, String sntemplate, int count) {
 		
-		// 如果域扩展表(x_domain)里明确维护了订单前缀，则优先使用
-		precode = precode.replace(_Field.SNO_yyMMddxxxx, "");  // 没有前缀
-		precode = (String) EasyUtils.checkNull( precode, Environment.getDomainInfo("domain_prefix"), _Field.SNO_yyMMddxxxx );
-		precode = precode.replace(_Field.SNO_yyMMddxxxx, "");
+		sntemplate = EasyUtils.obj2String(sntemplate).toLowerCase();
+		if( !sntemplate.endsWith(_Field.SNO_xxxx) ) {  // eg: SO、ASN等
+			sntemplate += _Field.SNO_yyMMddxxxx;
+		}
+		
+		Date today = DateUtil.today();
+		String snMode = sntemplate.endsWith(_Field.SNO_yyMMddxxxx) ? DateUtil.format(today, "yyyyMMdd").substring(2) : "";
+		String precode = sntemplate.replace(_Field.SNO_yyMMddxxxx, "").replace(_Field.SNO_xxxx, "").toUpperCase();
+		
+		// 如果域扩展表(x_domain)里明确维护了订单前缀
+		precode = EasyUtils.obj2String( Environment.getDomainInfo("domain_prefix") ) + precode;
 		
 		ICommonService commonService = Global.getCommonService();
 		domain = (String) EasyUtils.checkNull(domain, UMConstants.DEFAULT_DOMAIN);
 		
 		String hql = " from SerialNO where day = ? and precode = ? and domain = ? ";
 		
-		SerialNO first;
-		Date today = DateUtil.today();
+		SerialNO snItem;
 		List<?> list = commonService.getList(hql, today, precode, domain);
 		if(list.isEmpty()) {
-			first = new SerialNO();
-			first.setDay( today );
-			first.setPrecode(precode);
-			first.setLastNum(0);
-			commonService.create(first);
-			first.setDomain(domain);
+			snItem = new SerialNO();
+			snItem.setDay( today );
+			snItem.setPrecode(precode);
+			snItem.setLastNum(0);
+			
+			commonService.create(snItem);
+			snItem.setDomain(domain);
 		} 
 		else {
-			first = (SerialNO) list.get(0);
+			snItem = (SerialNO) list.get(0);
 		}
 		
 		List<String> result = new ArrayList<String>();
 		count = Math.min(Math.max(1, count), 100000); // 单次最多1到100000个
 		for(int i = 1; i <= count; i++) {
-			int no = first.getLastNum() + i;
-			String sn = "000" + no;
-			sn = sn.substring(sn.length() - (no >= 10000 ? String.valueOf(no).length() : 4));
-			sn = precode + DateUtil.format(today, "yyyyMMdd").substring(2) + sn;
+			int no = snItem.getLastNum() + i;
+			
+			String sn;
+			if(snMode.length() == 0) {
+				sn = "00" + no;
+				sn = sn.substring(sn.length() - (no >= 1000 ? String.valueOf(no).length() : 3));
+				
+			} else {
+				sn = "000" + no;
+				sn = sn.substring(sn.length() - (no >= 10000 ? String.valueOf(no).length() : 4));
+			}
+			
+			sn = precode + snMode + sn;
 			result.add(sn);
 		}
-		first.setLastNum(first.getLastNum() + count);
-		commonService.update(first);
+		snItem.setLastNum(snItem.getLastNum() + count);
+		commonService.update(snItem);
 		
 		return result;
 	}
 
-	public synchronized String createOne(String precode) {
-		return this.create(precode, 1).get(0);
+	public synchronized String createOne(String sntemplate) {
+		return this.create(sntemplate, 1).get(0);
 	}
 	
 	public static String get() {
-		return new SerialNOer().createOne("");
+		return new SerialNOer().createOne( _Field.SNO_yyMMddxxxx );
 	}
 }

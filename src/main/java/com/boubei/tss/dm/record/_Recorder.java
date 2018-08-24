@@ -162,7 +162,7 @@ public class _Recorder extends BaseActionSupport {
 		Long recordId = recordService.getRecordID(record, false);
 		Map<String, String> requestMap = prepareParams(request, recordId);
 		boolean pointedFileds = requestMap.containsKey("fields");
-		_Database _db = getDB(recordId);
+		_Database _db = getDB(recordId, Record.OPERATION_CDATA, Record.OPERATION_VDATA, Record.OPERATION_EDATA);
 
 		// 默认模糊查询
 		String strictQuery = (String) EasyUtils.checkNull(requestMap.get(_Field.STRICT_QUERY), "false");
@@ -266,7 +266,7 @@ public class _Recorder extends BaseActionSupport {
 		boolean pointedFileds = requestMap.containsKey("fields");
 		int _pagesize = getPageSize(requestMap, PAGE_SIZE * 20);
 
-		_Database _db = getDB(recordId);
+		_Database _db = getDB(recordId, Record.OPERATION_CDATA, Record.OPERATION_VDATA, Record.OPERATION_EDATA);
 
 		// 默认模糊查询
 		String strictQuery = (String) EasyUtils.checkNull(requestMap.get(_Field.STRICT_QUERY), "false");
@@ -306,7 +306,7 @@ public class _Recorder extends BaseActionSupport {
 		Map<String, String> requestMap = DMUtil.getRequestMap(request, true); // GET Method Request
 		boolean pointed = requestMap.containsKey("fields");
 		Long recordId = recordService.getRecordID(record, true);
-		_Database _db = getDB(recordId);
+		_Database _db = getDB(recordId, Record.OPERATION_CDATA, Record.OPERATION_VDATA);
 
 		int _page = EasyUtils.obj2Int(EasyUtils.checkNull(requestMap.get("page"), "1"));
 		int _pagesize = getPageSize(requestMap, 10 * 10000);
@@ -378,7 +378,7 @@ public class _Recorder extends BaseActionSupport {
 
 	@RequestMapping(value = "/rid/{record}", method = RequestMethod.POST)
 	@ResponseBody
-	public Object createAndReturnID(HttpServletRequest request, @PathVariable("record") Object record) {
+	public Long createAndReturnID(HttpServletRequest request, @PathVariable("record") Object record) {
 
 		Long recordId = recordService.getRecordID(record, false);
 		Map<String, String> requestMap = prepareParams(request, recordId);

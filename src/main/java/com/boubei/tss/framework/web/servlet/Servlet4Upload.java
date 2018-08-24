@@ -89,7 +89,7 @@ public class Servlet4Upload extends HttpServlet {
 		
 		// 上传文件在一个独立的iframe里执行，完成后，输出一个html到该iframe，以触发提示脚本
 		response.setContentType("text/html;charset=utf-8");
-		response.getWriter().print("<html><script> " +script+ " </script></html>");
+		response.getWriter().print("<html><script>" +script+ "</script></html>");
 	}
 	
 	String doUpload(HttpServletRequest request, Part part) throws Exception {

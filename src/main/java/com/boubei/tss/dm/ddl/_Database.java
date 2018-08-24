@@ -458,8 +458,7 @@ public abstract class _Database {
 			String defaultVal = this.fieldValues.get(index);
 			if( EasyUtils.isNullOrEmpty(value) &&  _Field.isAutoSN(defaultVal) ) {
 				String domain = (String) EasyUtils.checkNull(pointedDomain, Environment.getDomainOrign()); // ETL时，输入数据指定好了域
-				String preCode = defaultVal.replaceAll(_Field.SNO_yyMMddxxxx, "");
-				value = new SerialNOer().create(domain, preCode, 1).get(0);
+				value = new SerialNOer().create(domain, defaultVal, 1).get(0);
 			}
 			
 			paramsMap.put(++index, value);
