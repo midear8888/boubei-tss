@@ -246,7 +246,7 @@ function init() {
                     if(customizeGrid) {
                         tssJS.createScript( customizeGrid );
 
-                        readonly && tssJS("#btn_batch_del").hide();
+                        billMode && tssJS("#btn_batch_del").hide();
                     }
                 }
             });
@@ -254,7 +254,7 @@ function init() {
     });
 }
 
-var readonly       = false; // 只读模式：只能新增，不能修改、删除；适合流水类数据记录
+var billMode       = false; // 流水账模式：只能新增，不能修改、删除；适合流水类数据记录
 var recycleBinMode = false; // 回收站模式
 var commitMode     = false; // 提交模式
 var approveMode    = false; // 审批模式
@@ -340,7 +340,7 @@ function initMenus() {
     if( !_operation.contains("1") && !_operation.contains("4") && !_operation.contains("5")) {
         tssJS("#btn_search").hide();
     }
-    if( !_operation.contains("5") && !readonly ) { // 只有维护数据权限的角色才能使用批量删除
+    if( !_operation.contains("5") && !billMode ) { // 只有维护数据权限的角色才能使用批量删除
         tssJS("#btn_batch_del").hide();
     }
 
@@ -403,7 +403,7 @@ function canEditRow(rowID) {
         return true;
     }
     else { // 编辑（本人及有维护数据权限的人能编辑）
-        if(readonly) return false;
+        if(billMode) return false;
 
         var creator = tssJS.G("grid").getColumnValue("creator");   
         var id = tssJS.G("grid").getColumnValue("id");
@@ -628,7 +628,7 @@ function loadDetailData(rowID) {
                 });
             }
 
-            readonly && tssJS("#saveBt").hide();
+            billMode && tssJS("#saveBt").hide();
         }
 
         // 回收站中的记录禁止修改
@@ -1055,7 +1055,8 @@ function manageAttach(lineId, tag, isCreateRow) {
             tssJS.showWaitingLayer();
             tssJS("#attachDialog").show(true).center();
 
-            if( !recycleBinMode && (isCreateRow || (canEditRow(lineId) && (!checkFileOpt||checkFileOpt(tag)) )) ) {
+            // 回收站模式、审批模式下 附件都不可编辑
+            if( !recycleBinMode && !approveMode && (isCreateRow || (canEditRow(lineId) && (!checkFileOpt||checkFileOpt(tag)) )) ) {
                 tssJS("#uploadForm span").show();               
             }
             else {

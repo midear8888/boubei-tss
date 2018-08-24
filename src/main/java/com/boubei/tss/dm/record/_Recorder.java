@@ -893,7 +893,14 @@ public class _Recorder extends BaseActionSupport {
 		if (!SecurityUtil.isHardMode() || recordId < 0 || itemId > 1510000000000L) { // 临时记录ID，新建时
 			return true;
 		}
+		
+		WFStatus wfStatus = wfService.getWFStatus(recordId, itemId);
+		String userCode = Environment.getUserCode();
+		if (wfStatus != null && (wfStatus.processorList().contains(userCode) || userCode.equals(wfStatus.getNextProcessor()) )) {
+			return true; // 所有审批记录对审批人(已审批、待审批、抄送人员)可见
+		}
 
+		// 非审批流记录
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("id", EasyUtils.obj2String(itemId));
 

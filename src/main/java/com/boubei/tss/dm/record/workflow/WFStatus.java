@@ -72,6 +72,10 @@ public class WFStatus implements IEntity {
 		return Arrays.asList( EasyUtils.obj2String(to).split(",") );
 	}
 	
+	public List<String> toCCs() {
+		return Arrays.asList( EasyUtils.obj2String(cc).split(",") );
+	}
+	
 	public List<String> processorList() {
 		return Arrays.asList( EasyUtils.obj2String(processors).split(",") );
 	}
