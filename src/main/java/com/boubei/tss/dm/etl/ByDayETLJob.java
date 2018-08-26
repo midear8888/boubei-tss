@@ -53,7 +53,7 @@ public class ByDayETLJob extends AbstractETLJob {
 	/*
 	 * 注：今天的数据也会汇总一份，所以 repeatDays 里至少应大于等于 1 
 	 */
-	protected TaskLog excuteTask(Task task) {
+	public TaskLog excuteTask(Task task) {
 		// 获取已经存在的日结日期 exsitDays
 		List<String> exsitDays = getExsitDays(task.getId());
 		Date currDay = DateUtil.noHMS(task.getStartDay());  // 默认是今天24点

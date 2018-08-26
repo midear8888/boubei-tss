@@ -10,6 +10,7 @@
 
 package com.boubei.tss.um.action;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,7 @@ import com.boubei.tss.modules.progress.ProgressManager;
 import com.boubei.tss.modules.progress.Progressable;
 import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.entity.Group;
+import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.helper.GroupTreeParser;
 import com.boubei.tss.um.permission.PermissionHelper;
 import com.boubei.tss.um.service.IGroupService;
@@ -127,18 +129,21 @@ public class GroupAction extends ProgressActionSupport {
 			@PathVariable("type") int type) {
 		
         Map<String, Object> groupAttributes;
+        List<?> users;
+        
 		boolean isNew = UMConstants.DEFAULT_NEW_ID.equals(id);
         if(isNew) {
         	groupAttributes = new HashMap<String, Object>();
             groupAttributes.put("parentId", parentId);
             groupAttributes.put("groupType", type);
+            users = new ArrayList<User>();
         } 
         else {
             Group group = service.getGroupById(id);
             groupAttributes = group.getAttributes4XForm();
+            users = service.getUsersByGroupId(id);
         }
         
-        List<?> users = service.getUsersByGroupId(id);
         TreeEncoder usersTreeEncoder = new TreeEncoder(users);
         
         String groupXForm = null;

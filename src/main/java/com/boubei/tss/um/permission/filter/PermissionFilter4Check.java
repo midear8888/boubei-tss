@@ -17,7 +17,7 @@ import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.um.permission.PermissionHelper;
 
 /**
- * 删除时候检查用户是否对删除资源有删除权限。
+ * 删除时候检查用户是否对删除(查看)资源有删除（查看）权限。
  */
 public class PermissionFilter4Check implements IPermissionFilter {
 	

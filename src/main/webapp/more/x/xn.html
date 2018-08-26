@@ -23,7 +23,7 @@
 
 <STYLE type="text/css">
 
-.querycondition { margin: 10px 3px; }
+.querycondition { padding: 10px 3px; }
 .querycondition label { margin: 0 10px 0 5px; }
 .querycondition input { width: 105px; }
 
@@ -70,8 +70,21 @@ var FIELDS_1 = [
 function query() {
     var params = {"param1": _params.time1, "param2": _params.time2};
     params.param4 = _params.theme || '1';
+
     if(_params.vistor){
         params.param3 = _params.vistor;
+
+        /* 判断是否按域查询，格式：@XXX */
+        if( params.param3.indexOf('@') == 0 ) {
+            var domain = params.param3.substring(1);
+            $.getJSON("/tss/auth/service/domainuser", {'domain': domain, 'field': 'loginName'}, function(data) {
+                // $('#vistor').textbox("setValue", data.join(","));
+                _params.vistor = data.join(",");
+                query();
+            });
+
+            return;
+        }
     }
 
     FIELDS_1[3].hidden = FIELDS_1[4].hidden = false;
@@ -102,15 +115,13 @@ function query() {
     }
 
     tssJS.getJSON(json_url('visit-summary'), params, function(data){
-        data.push([]);
-        data.push([]);
-        data.push([]);
         $('#t1').datagrid({
             fit : true,
             fitColumns : true,
             singleSelect : true,
             remoteSort : false,
             columns : [FIELDS_1],
+            toolbar:'#tb',
             data: data,
             onClickRow: function(index, row) {
                 showDetail( row["f1"] );
@@ -313,14 +324,6 @@ var nextDay = subDateS(toDate(today), -1);
    
    <div id="main" class="easyui-layout" data-options="fit:'true'">
         <div data-options="region:'west',split:true" title="系统运行监控" style="width:30%;" border="false">
-            <div class="querycondition">
-                <label>主题:</label><input id="theme" class="easyui-textbox"/>
-                <label>人员:</label><input id="vistor" class="easyui-textbox" style="width: 140px;" />
-                <br><br>
-                <label>时间:</label><input id="time1" class="easyui-datebox"/> --
-                    <input id="time2" class="easyui-datebox"/> &nbsp;
-                <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-search" onclick="beginQuery()">查 询</a>
-            </div>
             <table id="t1" border="false"></table>
         </div>
         <div data-options="region:'center'"  style="width:70%;" border="false">
@@ -345,6 +348,15 @@ var nextDay = subDateS(toDate(today), -1);
                 </div>
             </div>
         </div>       
+    </div>
+
+    <div class="querycondition" id="tb">
+        <label>主题:</label><input id="theme" class="easyui-textbox"/>
+        <label>人员:</label><input id="vistor" class="easyui-textbox" style="width: 140px;" />
+        <br><br>
+        <label>时间:</label><input id="time1" class="easyui-datebox"/> --
+            <input id="time2" class="easyui-datebox"/> &nbsp;
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-search" onclick="beginQuery()">查 询</a>
     </div>
 
 <script type="text/javascript">

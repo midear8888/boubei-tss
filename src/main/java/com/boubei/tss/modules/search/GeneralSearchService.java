@@ -12,7 +12,10 @@ package com.boubei.tss.modules.search;
 
 import java.util.List;
 
+import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.entity.User;
+import com.boubei.tss.um.permission.filter.PermissionFilter4Check;
+import com.boubei.tss.um.permission.filter.PermissionTag;
 
 public interface GeneralSearchService {
  
@@ -23,6 +26,11 @@ public interface GeneralSearchService {
 	 * @param groupId
 	 * @return
 	 */
+	@PermissionTag(
+            operation = UMConstants.GROUP_VIEW_OPERRATION, 
+            resourceType = UMConstants.GROUP_RESOURCE_TYPE_ID,
+            filter = PermissionFilter4Check.class
+            )
 	List<?> searchUserSubauthByGroupId(Long groupId);
 	
 	/**
@@ -37,5 +45,10 @@ public interface GeneralSearchService {
 	 * @param roleId
 	 * @return
 	 */
+	@PermissionTag(
+            operation = UMConstants.ROLE_VIEW_OPERRATION, 
+            resourceType = UMConstants.ROLE_RESOURCE_TYPE_ID,
+            filter = PermissionFilter4Check.class
+            )
 	List<User> searchUsersByRole(Long roleId); 
 }

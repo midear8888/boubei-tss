@@ -13,18 +13,16 @@ package com.boubei.tss.modules.timer;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.boubei.tss.EX;
 import com.boubei.tss.dm.dml.SQLExcutor;
-import com.boubei.tss.framework.Global;
 import com.boubei.tss.modules.param.ParamListener;
 import com.boubei.tss.modules.param.ParamManager;
-import com.boubei.tss.util.BeanUtil;
 
 /**
  
@@ -35,11 +33,9 @@ $1("grid").contextmenu.addItem(m2);
 $1("grid").contextmenu.addItem(m3);
 $1("grid").contextmenu.addItem(m4);
 
-var queue = {};
 function runJob() {
      var id = $.G("grid").getColumnValue("id");
-     !queue[id] && $.post('/tss/auth/job/' + id, {}, function(data) {  delete queue[id]; $.alert(data); } );
-     queue[id] = "running";
+     $.post('/tss/auth/job/' + id, {}, function(data) {  $.alert(data); } );
 }
 function setJobStatus(status) {
      $.ajax({
@@ -53,21 +49,12 @@ function setJobStatus(status) {
 @RequestMapping("/auth/job")
 public class JobAction {
 	
+	@Autowired JobService jobService;
+	
 	@RequestMapping(value = "/{key}", method = RequestMethod.POST)
 	@ResponseBody
 	public Object exucteJob(@PathVariable String key) {
-		List<?> list = Global.getCommonService().getList("from JobDef where ? in (id, code) and disabled <> 1 ", key);
-		if( list.isEmpty() ) {
-			return EX.EXCEPTION;
-		}
-		
-		JobDef jobDef = (JobDef) list.get(0);
-		String jobClass = jobDef.getJobClassName();
-		
-		Object job = BeanUtil.newInstanceByName(jobClass);
-		((AbstractJob)job).excuteJob( jobDef.getCustomizeInfo(), jobDef.getId() );
-		
-		return EX.DEFAULT_SUCCESS_MSG;
+		return jobService.excuteJob(key);
 	}
 	
 	@RequestMapping(value = "/refresh", method = RequestMethod.POST)

@@ -13,8 +13,11 @@ package com.boubei.tss.um.service;
 import java.util.List;
 
 import com.boubei.tss.modules.log.Logable;
+import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.entity.Group;
 import com.boubei.tss.um.entity.User;
+import com.boubei.tss.um.permission.filter.PermissionFilter4Check;
+import com.boubei.tss.um.permission.filter.PermissionTag;
 
 public interface IGroupService {
 	
@@ -28,6 +31,10 @@ public interface IGroupService {
 	 * @param groupId
 	 * @return
 	 */
+	@PermissionTag(
+            operation = UMConstants.GROUP_VIEW_OPERRATION, 
+            resourceType = UMConstants.GROUP_RESOURCE_TYPE_ID,
+            filter = PermissionFilter4Check.class)
 	List<User> getUsersByGroupId(Long groupId);
 
 	/**

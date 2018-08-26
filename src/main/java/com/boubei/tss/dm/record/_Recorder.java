@@ -24,6 +24,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.codehaus.jackson.map.ObjectMapper;
 import org.dom4j.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -601,19 +602,70 @@ public class _Recorder extends BaseActionSupport {
 		String[] headers = rows[0].split(",");
 		for (int index = 1; index < rows.length; index++) { // 第一行为表头，不要
 			String row = rows[index];
-			String[] fields = row.split(",");
+			String[] values = row.split(",");
 
 			Map<String, String> item = new HashMap<String, String>();
-			for (int j = 0; j < fields.length; j++) {
-				item.put(headers[j], fields[j]);
+			for (int j = 0; j < values.length; j++) {
+				item.put(headers[j], values[j]);
 			}
 
 			String _itemID = item.get("id");
-			if (EasyUtils.isNullOrEmpty(_itemID)) {
+			if ( EasyUtils.isNullOrEmpty(_itemID) ) {
 				insertList.add(item);
 			} else {
 				Long itemID = EasyUtils.obj2Long(_itemID);
 				if (row.replaceAll(",", "").trim().equals(_itemID.trim())) { // 除了ID其它都为空
+					exeDelete(recordId, itemID, requestMap);
+					deleteCount++;
+				} else {
+					checkRowEditable(recordId, itemID);
+					_db.update(itemID, item);
+					updateCount++;
+				}
+			}
+		}
+		_db.insertBatch(insertList); // 所有新增是一个事务的，但删除和修改不在一个事务内
+
+		exeAfterOperation(requestMap, _db, null);
+
+		Map<String, Object> rtMap = new HashMap<String, Object>();
+		rtMap.put("created", insertList.size());
+		rtMap.put("updated", updateCount);
+		rtMap.put("deleted", deleteCount);
+		return rtMap;
+	}
+	
+	@RequestMapping(value = "/cud/json/{record}", method = RequestMethod.POST)
+	@ResponseBody
+	public Object cudBatchJSON(HttpServletRequest request, @PathVariable("record") Object record) throws Exception {
+
+		Long recordId = recordService.getRecordID(record, false);
+		Map<String, String> requestMap = prepareParams(request, recordId);
+		String json = requestMap.get("json");
+
+		_Database _db = getDB(recordId, Record.OPERATION_CDATA, Record.OPERATION_EDATA);
+
+		@SuppressWarnings("unchecked")
+		List<Map<String, Object>> list = new ObjectMapper().readValue(json, List.class);
+		
+		List<Map<String, String>> insertList = new ArrayList<Map<String, String>>();
+		int updateCount = 0, deleteCount = 0;
+
+		for (Map<String, Object> row : list) {
+
+			Map<String, String> item = new HashMap<String, String>();
+			for (String field : _db.fieldCodes) {
+				if( row.containsKey(field) ) {
+					Object value = row.get(field);
+					item.put(field, EasyUtils.obj2String(value));
+				}
+			}
+
+			if ( !row.containsKey("id") ) {
+				insertList.add(item);
+			} else {
+				Long itemID = EasyUtils.obj2Long( row.get("id") );
+				if ( item.isEmpty() ) { // 只有ID
 					exeDelete(recordId, itemID, requestMap);
 					deleteCount++;
 				} else {

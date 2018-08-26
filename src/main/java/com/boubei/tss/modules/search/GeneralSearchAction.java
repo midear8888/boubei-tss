@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.boubei.tss.framework.persistence.ICommonService;
+import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.web.display.grid.GridDataEncoder;
 import com.boubei.tss.framework.web.display.tree.DefaultTreeNode;
 import com.boubei.tss.framework.web.display.tree.ITreeNode;
@@ -34,9 +35,13 @@ import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.entity.Role;
 import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.service.IGroupService;
+import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.um.service.IRoleService;
 import com.boubei.tss.util.EasyUtils;
 
+/**
+ *  安全性控制: 按组、角色、域获取用户信息时，必须对组、角色、域有查看权限
+ */
 @Controller
 @RequestMapping( {"/auth/search", "/auth/service"} )
 public class GeneralSearchAction extends BaseActionSupport {
@@ -45,6 +50,7 @@ public class GeneralSearchAction extends BaseActionSupport {
 	@Autowired private IRoleService roleService;
 	@Autowired private IGroupService groupService;
 	@Autowired private ICommonService commonService;
+	@Autowired private ILoginService loginService;
 	
 	/**
 	 * 检索数据表、报表、菜单、用户组等，无权限过滤。打开资源时需单独过滤权限。
@@ -155,6 +161,15 @@ public class GeneralSearchAction extends BaseActionSupport {
 		return buildUserList(list);
 	}
 	
+	@RequestMapping(value = "/domainuser", method = RequestMethod.GET)
+	@ResponseBody
+	public List<?> getUsersByDomain(String domain, String field) {
+		if( !Environment.isAdmin() && !Environment.getDomain().equals(domain) ) {
+			return new ArrayList<String>();
+		}
+		return loginService.getUsersByDomain(domain, field, -0L);
+	}
+	
 	@RequestMapping("/rid")
 	@ResponseBody
 	public Long getRoleId(String role) {
@@ -171,6 +186,7 @@ public class GeneralSearchAction extends BaseActionSupport {
 			map.remove("passwordQuestion");
 			map.remove("passwordAnswer");
 			map.remove("authMethod");
+			map.remove("authToken");
 			
 			// 用于制作用户下拉列表（Easyui、tssJS的combobox）
 			map.put("text", user.getUserName() + "(" +user.getGroupName()+ ")");

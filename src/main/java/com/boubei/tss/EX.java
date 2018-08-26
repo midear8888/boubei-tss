@@ -46,7 +46,7 @@ public class EX {
 	public static String ERR_NOT_NULL = "有必填字段为空，请检查。";
 	
 	public static String CACHE_1 = "当前应用服务器资源紧张，请稍后再查询。";
-	public static String CACHE_2 = "您当前点击的查询正在处理中，请您耐心等待，不要反复查询。";
+	public static String CACHE_2 = "您当前点击的操作正在执行中，请您耐心等待，不要反复点击。";
 	public static String CACHE_3 = "本次请求执行缓慢，请稍后再查询。";
 	public static String CACHE_4 = "当前您查询的数据服务${x1}响应缓慢，前面还有${x2}个人在等待，请稍后再查询。";
 	public static String CACHE_5 = "该缓存项已经不存在，已经被清空或是已经被刷新！";
@@ -169,6 +169,7 @@ public class EX {
 	public static String U_45 = "修改密码失败";
 	public static String U_46 = "系统不支持自注册，可联系管理员添加账号";
 	public static String U_47 = "系统不支持开发者自注册，可联系管理员添加账号";
+	public static String U_48 = "权限不足";
 	
 	public static String P_01 = "组件不存在，可能已被删除，读取失败！ID = ";
 	public static String P_02 = "同名文件(夹)已经存在，重命名失败！";
