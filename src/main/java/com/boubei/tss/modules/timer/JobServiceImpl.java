@@ -18,7 +18,7 @@ public class JobServiceImpl implements JobService {
 	
 	@Autowired ICommonDao commonDao;
 	
-	public String excuteJob(String jobKey) {
+	public String excuteJob(String jobKey, Object tag) {
 		List<?> list = commonDao.getEntities("from JobDef where ? in (id, code) and disabled <> 1 ", jobKey);
 		if( list.isEmpty() ) {
 			return EX.EXCEPTION;

@@ -54,7 +54,7 @@ public class JobAction {
 	@RequestMapping(value = "/{key}", method = RequestMethod.POST)
 	@ResponseBody
 	public Object exucteJob(@PathVariable String key) {
-		return jobService.excuteJob(key);
+		return jobService.excuteJob(key, 0);
 	}
 	
 	@RequestMapping(value = "/refresh", method = RequestMethod.POST)

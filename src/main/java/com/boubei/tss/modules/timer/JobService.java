@@ -12,7 +12,7 @@ public interface JobService {
 	 */
 	@QueryCached
 	@Cached(cyclelife = CacheLife.SHORTER)
-	String excuteJob(String jobKey);
+	String excuteJob(String jobKey, Object tag);
 	
 	/**
 	 * 如果相同Task已在执行，则不再重复执行。
