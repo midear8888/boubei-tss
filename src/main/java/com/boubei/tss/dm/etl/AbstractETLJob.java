@@ -63,7 +63,7 @@ public abstract class AbstractETLJob extends AbstractJob {
 			initContext();
 			
 			TaskLog log = excuteTask( task );
-			msgList.add( task.getName() + ": " + log.getDetail() );
+			msgList.add( task.getName() + ": " + (log == null ? "" : log.getDetail()) );
 		}
 		
 		return EasyUtils.list2Str(msgList) + " done";

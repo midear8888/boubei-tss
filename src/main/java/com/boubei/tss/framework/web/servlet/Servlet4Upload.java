@@ -66,10 +66,9 @@ public class Servlet4Upload extends HttpServlet {
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		
-		HttpServletRequest req = (HttpServletRequest) request;
-        String servletPath = req.getServletPath() + "";
+        String servletPath = request.getServletPath() + "";
         if( servletPath.endsWith("/remote/upload") ) { // 远程上传进行自动登录
-        	Filter8APITokenCheck.checkAPIToken( req );
+        	Filter8APITokenCheck.checkAPIToken( request );
         }
 		
         String script;

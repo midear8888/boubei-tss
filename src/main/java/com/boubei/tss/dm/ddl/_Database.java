@@ -830,7 +830,7 @@ public abstract class _Database {
 		}
 		
 		_customizeTJ = (String) EasyUtils.checkNull( DMUtil.fmParse(_customizeTJ), "1=1");
-		condition += " and ( ( " + DMUtil.fmParse(_customizeTJ + " )  or -1 = ${_userId!-10000} ") + " ) ";
+		condition += " and ( ( " + DMUtil.fmParse(_customizeTJ + " )  or -1 = ${_userId!-10000} ") + " ) "; // Admin对所有数据可见
 		
 		// 设置排序方式
 		String _sortField = params.get("sortField");

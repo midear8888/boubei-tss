@@ -54,7 +54,14 @@ public class JobAction {
 	@RequestMapping(value = "/{key}", method = RequestMethod.POST)
 	@ResponseBody
 	public Object exucteJob(@PathVariable String key) {
-		return jobService.excuteJob(key, 0);
+		Object tag = 0;
+		try {
+			Long.parseLong(key);  // 按Job id查询，通常是在Job列表页面里，没有业务关联性；防止反复点击
+		} catch(Exception e) {
+			tag = System.currentTimeMillis();  // 按Job Code刷新通常是跟着业务逻辑（比如人员组织角色变动了需要同步，需要实时）
+		}
+		
+		return jobService.excuteJob(key, tag); 
 	}
 	
 	@RequestMapping(value = "/refresh", method = RequestMethod.POST)

@@ -42,6 +42,7 @@
     #listBT2, #listBT3 { color: blue; }
     #listBT4 { color: #666; }
     #listBT2, #listBT3, #listBT4 { margin: 0 5px; }
+    #listBT2>span { color: red; font-size: 13px; }
     .bt_selected { color: blue; box-shadow: 0px 1px blue; }
     .bt_unselected { color: #666; box-shadow: none; }
     .bt_selected:hover { text-decoration: none; }
@@ -153,7 +154,7 @@ tssJS(function() {
     recordName = tssJS.Query.get("rctable") || decodeURI(tssJS.Query.get("rcname")||"");
     openItemId = tssJS.Query.get("itemId");  // 通常为审批
     wfCount    = tssJS.Query.get("wfCount");
-    if(wfCount == 'null' || wfCount == '0') { wfCount = 0; }
+    if(wfCount == 'null' || wfCount == '0') { wfCount = 0; } else { wfCount = parseInt(wfCount); }
 
     if(!recordId && recordName) {
         tssJS.post(URL_GET_RECORD_ID, {"name": decodeURI(recordName)}, function(result) {
@@ -234,6 +235,7 @@ function init() {
 
                     if( hasWorkflow ) {
                         wfCount || openItemId ? listWorkflow() : listApply();
+                        wfCount && $("#listBT2>span").text("(" +wfCount+ ")");
                     } else {
                         refreshTable();
                     }
@@ -280,6 +282,7 @@ function listWorkflow(type) {
     if( type) {
         params[type] = true;
     }
+    delete params["creator"];
     loadGridData(1);
     ws.closeAllTabs();
 
@@ -319,7 +322,7 @@ function recycleBin() {
 function initMenus() {
     var rcTitle;
     if( hasWorkflow ) {
-        rcTitle = recordName + ":【<a onclick='listWorkflow()' id='listBT2' class='listBT'> 我审批的列表</a>";
+        rcTitle = recordName + ":【<a onclick='listWorkflow()' id='listBT2' class='listBT'> 我审批的列表<span></span></a>";
         rcTitle += "  <a onclick='listApply()' id='listBT3' class='listBT'> 我提交的列表</a>";
         rcTitle += "  <a onclick='recycleBin()' id='listBT4' class='listBT'>回收站</a>";
         rcTitle += "】";
@@ -1238,6 +1241,8 @@ function executeWF(url, rowID, _params, op) {
             delete tssJS.cache.XmlDatas[rowID];
             ws.closeTab("viewRow_" + rowID);  
             loadGridData( $1("GridPageList").value || 1 ); // 更新Grid  
+
+            $("#listBT2>span").text("(" + (--wfCount) + ")");
         });
     });
 }
@@ -1270,6 +1275,7 @@ function batchApprove() {
             tssJS.post(URL_WF_APPROVE + recordId +"/"+ id, params, function(rtObj){
                 if( ++count == ids.length) {
                     tssJS.alert( rtObj.result );
+                    $("#listBT2>span").text("(" + (--wfCount) + ")");
                 }
             });
         });

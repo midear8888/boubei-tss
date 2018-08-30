@@ -127,22 +127,21 @@ function exportReport(reportId, params) {
 // ------------------------------------------------- 多级下拉选择联动 ------------------------------------------------
 /*
  *  多级下拉选择联动  getNextLevelOption(2, 1090, 1)
- *  参数： nextIndex    下一级联动参数的序号（1->n）
+ *  参数： nextParam    下一级联动参数的序号（1->n）或 code
         serviceID       下一级联动的service地址             
         serviceParam    service接收的参数code
         curParamVal     当前联动参数字段的值, 自动获取到填入(xform控件)
  */
-function getNextLevelOption(nextIndex, serviceID, serviceParam, curParamVal) {
-    if(nextIndex == null || serviceID == null || serviceParam == null || $.isNullOrEmpty(curParamVal)) return;
+function getNextLevelOption(nextParam, serviceID, serviceParam, curParamVal) {
+    if(nextParam == null || serviceID == null || serviceParam == null || $.isNullOrEmpty(curParamVal)) return;
 
-    var paramElementId = "param" + nextIndex;
- 
+    var paramELId = isInt(nextParam)    ? "param" + nextParam : nextParam;
     var paramName = isInt(serviceParam) ? "param" + serviceParam : serviceParam;
     
     // serviceID maybe is ID of report, maybe a serviceUrl
     var url = isInt(serviceID) ? '/tss/data/json/' + serviceID : serviceID;
 
-    $.getNextLevelOption($.F("searchForm"), paramName, curParamVal, url, paramElementId);
+    $.getNextLevelOption($.F("searchForm"), paramName, curParamVal, url, paramELId);
 }
 
 function isInt(x) {

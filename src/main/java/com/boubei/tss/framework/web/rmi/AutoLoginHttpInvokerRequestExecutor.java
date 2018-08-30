@@ -36,7 +36,7 @@ import com.boubei.tss.util.EasyUtils;
  
 /**
  * <p>
- * 远程调用执行对象，将Requst中的Cookie信息添加到远程调用当中，实现单点登录；
+ * 远程调用执行对象，将Request中的Cookie信息添加到远程调用当中，实现单点登录；
  * 并将远程调用结束后返回的数据和Cookie等信息返回给客户端。
  * </p>
  */

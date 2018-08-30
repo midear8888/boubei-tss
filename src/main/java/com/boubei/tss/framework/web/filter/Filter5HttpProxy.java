@@ -246,12 +246,11 @@ public class Filter5HttpProxy implements Filter {
         
         // 转发返回的Header信息
         Header contentType = httpMethod.getRequestHeader(HttpClientUtil.CONTENT_TYPE);
-        if(contentType != null) {
+        if(contentType != null && contentType.getValue().indexOf("multipart/form-data") < 0) {
             response.setContentType(contentType.getValue());
         }
         
-        // 转发返回数据流信息
-//        log.debug(httpMethod.getResponseBodyAsString());
+        // 转发返回数据流信息: log.debug(httpMethod.getResponseBodyAsString());
         ServletOutputStream out = response.getOutputStream();
         InputStream in = httpMethod.getResponseBodyAsStream();
         byte[] data = new byte[1024];

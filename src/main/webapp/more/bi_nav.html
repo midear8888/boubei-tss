@@ -151,6 +151,7 @@ function initMenu() {
 		var url = resourceUrl(reportId);
 		if(wfCount) {
 			url += '&wfCount=' + wfCount;
+			$(this).find("span.wfCount").text("");
 		}
 		
 		setTimeout( function() {

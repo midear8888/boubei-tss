@@ -316,10 +316,17 @@ public class _Recorder extends BaseActionSupport {
 		String strictQuery = (String) EasyUtils.checkNull(requestMap.get(_Field.STRICT_QUERY), "false");
 		requestMap.put(_Field.STRICT_QUERY, strictQuery);
 
-		SQLExcutor ex = _db.select(_page, _pagesize, requestMap);
+		SQLExcutor ex;
 		
-		/* 添加工作流信息 */
-		wfService.fixWFStatus(_db, ex.result);
+		boolean isWFQuery = requestMap.remove("my_wf_list") != null;
+		if (isWFQuery) {
+			ex = wfService.queryMyTasks(_db, requestMap, _page, _pagesize);
+		} else {
+			ex = _db.select(_page, _pagesize, requestMap);
+
+			/* 添加工作流信息 */
+			wfService.fixWFStatus(_db, ex.result);
+		}
 
 		String fileName = DateUtil.format(new Date()) + "_" + recordId + Environment.getUserId() + ".csv";
 		for (Map<String, Object> row : ex.result) { // 剔除
