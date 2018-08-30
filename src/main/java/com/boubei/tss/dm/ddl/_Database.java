@@ -38,6 +38,7 @@ import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.record.Record;
 import com.boubei.tss.dm.record.permission.RecordPermission;
 import com.boubei.tss.dm.record.permission.RecordResource;
+import com.boubei.tss.dm.record.workflow.WFStatus;
 import com.boubei.tss.dm.record.workflow.WFUtil;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.exception.BusinessException;
@@ -616,6 +617,11 @@ public abstract class _Database {
 		String updateSQL = "update " + this.table + " set domain = '" +domain+ "', updator = '" +userCode+ "' where id=" + id;
 		SQLExcutor.excute(updateSQL, this.datasource);
 		
+		if( WFUtil.checkWorkFlow(this.wfDefine) ) {
+			updateSQL = "update dm_workflow_status set currentStatus = '" +WFStatus.REMOVED+ "' where tableId = " +this.recordId+ " and itemId=" + id;
+			SQLExcutor.excute(updateSQL, this.datasource);
+		}
+		
 		// 记录删除日志
         logCUD(id, "logicDelete", userCode + " deleted one row：" + old);
 	}
@@ -629,6 +635,11 @@ public abstract class _Database {
 		
 		String updateSQL = "update " + this.table + " set domain = '" +domain+ "' where id=" + id;
 		SQLExcutor.excute(updateSQL, this.datasource);
+		
+		if( WFUtil.checkWorkFlow(this.wfDefine) ) {
+			updateSQL = "update dm_workflow_status set currentStatus = '" +WFStatus.NEW+ "' where tableId = " +this.recordId+ " and itemId=" + id;
+			SQLExcutor.excute(updateSQL, this.datasource);
+		}
 		
 		// 记录还原日志
         logCUD(id, "restore", Environment.getUserCode() + " restored one row：" + old);

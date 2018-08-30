@@ -55,7 +55,8 @@ public class WFServiceImpl implements WFService {
 	
 	/** 当前流到登录用户的流程汇总 */
 	public Map<Object, Object> getMyWFCount() {
-		String sql = "SELECT tableId record, count(*) num FROM dm_workflow_status where nextProcessor = ? group by tableId";
+		String sql = "SELECT tableId record, count(*) num FROM dm_workflow_status " +
+				" where nextProcessor = ? and currentStatus in ('" +WFStatus.NEW+ "', '" +WFStatus.APPROVING+ "') group by tableId";
 		List<Map<String, Object>> list = SQLExcutor.queryL(sql, Environment.getUserCode());
 
 		Map<Object, Object> result = new HashMap<Object, Object>();

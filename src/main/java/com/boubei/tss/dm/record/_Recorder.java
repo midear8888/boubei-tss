@@ -927,7 +927,11 @@ public class _Recorder extends BaseActionSupport {
 		
 		// 先检查流程是否存在且是否已开始处理
 		WFStatus wfStatus = wfService.getWFStatus(recordId, itemId);
-		if (wfStatus != null && !WFStatus.NEW.equals(wfStatus.getCurrentStatus())) {
+		List<String> statusList = new ArrayList<String>();
+		statusList.add(WFStatus.NEW);
+		statusList.add(WFStatus.REMOVED);
+		
+		if (wfStatus != null && !statusList.contains(wfStatus.getCurrentStatus())) {
 			throw new BusinessException(EX.WF_1);
 		}
 

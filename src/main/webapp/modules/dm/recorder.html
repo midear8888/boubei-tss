@@ -235,7 +235,7 @@ function init() {
 
                     if( hasWorkflow ) {
                         wfCount || openItemId ? listWorkflow() : listApply();
-                        wfCount && $("#listBT2>span").text("(" +wfCount+ ")");
+                        wfCount && showWfCount();
                     } else {
                         refreshTable();
                     }
@@ -1242,7 +1242,8 @@ function executeWF(url, rowID, _params, op) {
             ws.closeTab("viewRow_" + rowID);  
             loadGridData( $1("GridPageList").value || 1 ); // 更新Grid  
 
-            $("#listBT2>span").text("(" + (--wfCount) + ")");
+            --wfCount;
+            showWfCount();
         });
     });
 }
@@ -1270,17 +1271,23 @@ function batchApprove() {
             return tssJS.alert("批量审批失败，请填写审批意见");
         }
 
-        var params = {"opinion": opinion}, count;
+        var params = {"opinion": opinion}, count = 0;
         ids.each(function(i, id) {
             tssJS.post(URL_WF_APPROVE + recordId +"/"+ id, params, function(rtObj){
                 if( ++count == ids.length) {
                     tssJS.alert( rtObj.result );
-                    $("#listBT2>span").text("(" + (--wfCount) + ")");
+                    loadGridData( $1("GridPageList").value || 1 ); // 更新Grid  
                 }
+                --wfCount;
+                showWfCount();
             });
         });
 
     }, "");
+}
+
+function showWfCount() {
+    $("#listBT2>span").text("(" + Math.max(wfCount, 0) + ")");
 }
 
 function showExtension(_item) {
