@@ -947,11 +947,14 @@ public abstract class _Database {
         }
         
         if( WFUtil.checkWorkFlow(this.wfDefine) ) {
-        	sb.append("<column name=\"wfstatus\" mode=\"string\" caption=\"流程状态\" width=\"40px\"/>").append("\n");
+        	sb.append("<column name=\"wfstatus\" mode=\"string\" caption=\"流程状态\" width=\"35px\"/>").append("\n");
         	sb.append("<column name=\"wfapplier\" mode=\"string\" caption=\"发起人\" width=\"30px\"/>").append("\n");
-        	sb.append("<column name=\"wfapplyTime\" mode=\"date\" format=\"yyyy-mm-dd\" caption=\"发起时间\" width=\"45px\"/>").append("\n");
+        	sb.append("<column name=\"wfapplyTime\" mode=\"date\" format=\"yyyy-mm-dd\" caption=\"发起时间\" width=\"40px\"/>").append("\n");
+        	sb.append("<column name=\"wfto\" mode=\"string\" caption=\"审批人列表\" width=\"40px\"/>").append("\n");
+        	sb.append("<column name=\"nextProcessor\" mode=\"string\" caption=\"当前审批人\" width=\"40px\"/>").append("\n");
+        	sb.append("<column name=\"wfcc\" mode=\"string\" caption=\"抄送\" width=\"30px\"/>").append("\n");
         }
-        if(this.needFile && !hasFileField) {
+        if(this.needFile && !hasFileField) { // 如果已有专门的附件展示字段，则无需再展示默认的“附件”列
         	sb.append("<column name=\"fileNum\" mode=\"string\" caption=\"附件\" width=\"30px\"/>").append("\n");
         }
         

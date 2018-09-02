@@ -922,7 +922,7 @@ function showQueryForm() {
             // 清空查询条件，除了my_wf_list
             var my_wf_list = params.my_wf_list;
             params = {};
-            params.my_wf_list = my_wf_list;
+            if(my_wf_list) params.my_wf_list = my_wf_list;
 
             var nodes = dataNode.querySelectorAll("row *");
             for(var i = 0; i < nodes.length; i++) {
@@ -1191,7 +1191,7 @@ function delAttach() {
                 <input type="button" class="tssbutton small white" onclick="uploadAttach()" value="上传附件" />
                 <b>&nbsp;单个附件大小不宜超过2M</b>
             </span>
-            <input type="button" class="tssbutton small white" onclick="clostUpload()" value="关闭" style="margin-left:30px"/>
+            <input type="button" class="tssbutton small white" onclick="clostUpload()" value="关 闭" style="margin-left:30px"/>
         </form>
         <iframe name='fileUpload' style='display:none;'></iframe>
     </div>

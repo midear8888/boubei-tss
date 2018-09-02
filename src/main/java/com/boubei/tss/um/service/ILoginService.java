@@ -12,6 +12,7 @@ package com.boubei.tss.um.service;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import com.boubei.tss.cache.aop.Cached;
 import com.boubei.tss.cache.extension.CacheLife;
@@ -149,6 +150,11 @@ public interface ILoginService {
      */
     @Cached(cyclelife = CacheLife.SHORT)
     List<?> getUsersByDomain(String domain, String field, Long logonUserId);
+    
+    /**
+     * 获取登录用户所在域的所有登陆账号和中文名字映射
+     */
+    Map<String, String> getUsersMap();
     
 	/**
 	 * 读取用户联系方式：

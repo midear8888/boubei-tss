@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>系统参数初始化</title>
+
+<link rel="stylesheet" href="../../tools/tssJS/css/boubei.css">
+
+<link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
+<link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../../tools/easyui/jquery.min.js"></script>
+<script src="../../tools/easyui/jquery.easyui.min.js"></script>
+<script src="../../tools/easyui/datagrid-cellediting.js"></script>
+<script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
+
+<script src="../../tools/easyui.js"></script>
+<script src="../../tools/util_date.js"></script>
+
+<script type="text/javascript">
+var FIELDS = [
+            {title:'id',field:'id',hidden:true},
+            {title:'参数名称',field:'name',width:'10%', editor: "text"},
+            {title:'参数code',field:'code',width:'15%',styler:codeStyle},
+            {title:'参数值',field:'value',width:'30%', editor: "text"},
+            {title:'说明',field:'content',width:'45%'}
+        ];
+$.each(FIELDS, function(i, field) {
+    field.align = field.align || "center";
+}); 
+function codeStyle(value,row,index){
+	if(all_codes[index].require){
+		return 'background-color:#eee'
+	}
+}
+
+var dg;
+var all_codes = [
+        {code:'sysTitle',content:'登陆页大标题',name:'标题',require:true},
+        {code:'subTitle',content:'登陆页小标题',name:'小标题',require:false},
+        {code:'regable',content:'是否允许注册,填true或false，false为关闭注册',name:'是否允许注册'},
+        // {code:'regableDev',content:'是否允许开发者注册，填true或false，false为关闭开发者注册',name:'是否允许开发者注册',require:true},
+        {code:'TEMP_EXPORT_PATH',content:'用于报表导出及数据表的附件上传，示例：/home/tssbi/temp',require:true},
+        {code:'index_logo',content:'LOGO路径，默认: images/logo.png',name:'LOGO路径'},
+        // {code:'mobile_menu',content:'移动端菜单组ID'},  
+        // {code:'default_conn_pool',content:'connectionpool: 默认数据源'},              
+        {code:'LOGIC_DEL',content:'数据表是否只做逻辑删除'},
+        {code:'report_export_url',content:'导出数据分流机器, 前台页面报表导出时用到'},
+        // {code:'url.white.list',content:'资源地址白名单，白名单内的资源允许【匿名访问】url.white.list = /version,.in,.do,.portal,login.html,_forget.html,_register.html.....'},
+        {code:'ip.white.list',content:'ip白名单，名单内的ip允许跨域访问系统的服务和资源'},
+        {code:'session.cyclelife',content:'离开超时时间，单位（秒）'},
+        // {code:'log_flush_max_size',content:'日志缓冲池最多可存日志条数的参数'},
+        // {code:'report.template.dir',content:'报表自定义展示页上传目录'},
+        // {code:'userdefinedParams',content:'用户自定义的参与Freemarker解析参数'},
+        // {code:'error.keyword',content:'对含有此处配置的关键字的错误异常进行邮件提醒'},
+        // {code:'oa.ldap.url',content:'LDAP认证地址'},
+        // {code:'sso.index.page',content:'如果是从其它系统单点登录到平台（TSS），则自动转到配置的门户首页地址'},
+        // {code:'TOP_REPORT_LOG_DAYS',content:'读取最新、最热门、最近访问报表时，选取的日志天数，日志量大的，不宜取太多天。默认3天'},
+        // {code:'ADMIN_ROLE',content:'可以指定一个系统管理员之外的角色为超级管理员'},
+        // {code:'MAX_QUERY_REQUEST',content:'QueryCache支持的最大等待线程数量，没有配置默认100'},
+        {code:'MAX_XLSX_SIZE',content:'导入XLSX文件大小上限, 单位K, 默认为1024K'},
+    ];
+var codes_string = '';
+var result = [], result_obj = {},require_code = [];
+$(document).ready(function () {
+	$.each(all_codes,function(i,item){
+		codes_string += item.code + ',';
+		if(item.require) require_code.push(item.code)
+	})
+		
+	init('start');
+         
+});
+
+function init(param){
+	result = [],result_obj = {};
+	tssJS.getJSON('/tss/param/init/query',{codes:codes_string},function(data){	
+		$.each(data,function(i,item){
+			result_obj[item.code] = item;
+		})	
+		var parentid;
+		$.each(all_codes,function(i,item){
+			item['name'] = item['code'];
+			if(item.code in result_obj){
+				parentid = parentid || result_obj[item.code].parentid;
+				result.push(result_obj[item.code]);
+				result[i]['content'] = item.content;
+				result[i]['parentId'] = result_obj[item.code].parentid;
+				delete result[i]['parentid']
+			}
+			else{
+				result.push(item);
+			}
+		})
+		$.each(result,function(i,item){
+			item.parentId = item.parentId || parentid;
+		})
+		dg = $('#table').datagrid({
+	        fit: true,
+	        fitColumns: true,
+	        rownumbers: true,
+	        singleSelect: true,
+	        checkOnSelect: true,
+	        selectOnCheck: true,
+	        nowrap:false, 
+	        toolbar: [ 
+	            { text: '保存', iconCls: 'icon-save', handler: saveData}
+	        ],
+	        columns: [FIELDS],
+	        data: result
+	    });  
+	    param && dg.datagrid('enableCellEditing');
+	})
+}
+
+function saveData(){
+	var all_codes_obj = {};
+	$.each(all_codes,function(i,item){
+		if(result_obj[item.code]){
+			all_codes_obj[item.code] = result_obj[item.code];
+		}
+		else{
+		    all_codes_obj[item.code] = item;
+		}
+	})	
+	for(var i=0; i < all_codes.length; i++) {
+        $('#table').datagrid("endEdit", i);
+    }
+    var rows_obj = {};
+    var rows = $('#table').datagrid('getChanges');
+    
+    for(var i=rows.length-1;i>=0;i--){
+    	if(!rows[i].value && !result_obj[rows[i].code]){
+    		rows.splice(i,1);
+    		continue;
+    	}
+    	if(!rows[i].id){
+    		rows[i].lockversion = 0;
+    		rows[i].disabled = 0;
+    		rows[i].hidden = 0;
+    		rows[i].modality = 0;
+    		rows[i].type = 1;
+    	}
+    }
+    $.each(rows,function(i,item){
+    	rows_obj[item.code] = item;
+    })
+    var is_save = true;
+    $.each(require_code,function(i,item){
+    	if( rows_obj[item] ){
+    		if(!rows_obj[item].value){
+	    		$.messager.alert('提示','请将必填项（参数code列背景颜色为灰色）填写完整后保存！');
+	    		is_save = false;
+	    		return false;
+	    	}
+    	}
+    	else if(all_codes_obj[item] && !all_codes_obj[item].value){
+    		$.messager.alert('提示','请将必填项（背景颜色为灰色）填写完整后保存！');
+    		is_save = false;
+	    	return false;
+    	}
+    })
+    if(is_save){
+	    $.post('/tss/param/init/save',{json:JSON.stringify(rows)},function(data){
+	    	init()
+	    	if(data){
+	    		$.messager.alert('提示','保存失败。' + data.errorMsg)
+	    	}
+	    	else{
+	    		$.messager.alert('提示','保存成功')
+	    	}
+	    })
+	}
+}
+
+
+</script>
+
+</head>
+<body>
+<div class="easyui-layout" fit="true" >
+    <table id="table" border="false" style="height:100%"></table>
+</div>
+</body>
+</html>

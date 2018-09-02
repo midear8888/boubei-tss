@@ -33,17 +33,17 @@ public class PasswordRule {
 	public static PasswordRule getDefaultPasswordRule(){
 		PasswordRule rule = new PasswordRule();
 		rule.canEq2LoginName = false;
-		rule.leastLength    = 6;
-		rule.leastStrength  = 8;
-		rule.lowStrength    = 16;
-		rule.higherStrength = 60;
+		rule.leastLength    = 7;
+		rule.leastStrength  = 16;
+		rule.lowStrength    = 24;
+		rule.higherStrength = 32;
 		rule.impermissible  = "123, 1234, 123456, 11111";
 		return rule;
 	}
  
 	// 密码强度定义.
     static int factor[] = {1, 2, 3, 4};
-    static int kindFactor[] = {0, 0, 30, 50, 70};
+    static int kindFactor[] = {0, 0, 10, 20, 30};
     static String[] regex = {"0123456789", 
                              "abcdefghijklmnopqrstuvwxyz", 
                              "ABCDEFGHIJKLMNOPQRSTUVWXYZ", 

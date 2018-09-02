@@ -318,8 +318,8 @@ public class _Recorder extends BaseActionSupport {
 
 		SQLExcutor ex;
 		
-		boolean isWFQuery = requestMap.remove("my_wf_list") != null;
-		if (isWFQuery) {
+		boolean isWFQuery = requestMap.remove("my_wf_list") == "true";
+		if (isWFQuery && !pointed) {
 			ex = wfService.queryMyTasks(_db, requestMap, _page, _pagesize);
 		} else {
 			ex = _db.select(_page, _pagesize, requestMap);
@@ -341,10 +341,13 @@ public class _Recorder extends BaseActionSupport {
 
 		// 过滤出用户可见的表头列
 		List<String> visiableFields = _db.getVisiableFields(true, pointed ? ex.selectFields : _db.fieldCodes);
-		if( WFUtil.checkWorkFlow(_db.wfDefine) ) {
+		if( WFUtil.checkWorkFlow(_db.wfDefine) && !pointed ) {
 			visiableFields.add("流程状态");
 			visiableFields.add("发起人");
 			visiableFields.add("发起时间");
+			visiableFields.add("审批人列表");
+			visiableFields.add("当前审批人");
+			visiableFields.add("抄送");
 		}
 		
 		String exportPath = DataExport.exportCSV(fileName, ex.result, visiableFields);

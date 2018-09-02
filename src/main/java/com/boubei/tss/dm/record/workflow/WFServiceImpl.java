@@ -247,6 +247,8 @@ public class WFServiceImpl implements WFService {
     	SQLExcutor ex = _db.select(page, pagesize, params, isApprover);
     	params.remove("id");
 		List<Map<String, Object>> items = ex.result;
+		
+		Map<String, String> usersMap = loginSerivce.getUsersMap();
     	
     	// 加上每一行的流程状态： 审批中、已通过、已撤销、已驳回、已转审
     	for(Map<String, Object> item : items) {
@@ -255,11 +257,27 @@ public class WFServiceImpl implements WFService {
 			item.put("wfstatus", wfStatus.getCurrentStatus());
 			item.put("wfapplier", wfStatus.getApplierName());
 			item.put("wfapplyTime", item.get("createtime"));
-			item.put("nextProcessor", wfStatus.getNextProcessor());
+			item.put("wfto", transAccout2CName(usersMap,  wfStatus.getTo()));
+			item.put("nextProcessor", transAccout2CName(usersMap, wfStatus.getNextProcessor()));
+			item.put("wfcc", transAccout2CName(usersMap, wfStatus.getCc()));
+			
+			item.put("lastProcessor",transAccout2CName(usersMap,  wfStatus.getLastProcessor()));
 			item.put("processors", wfStatus.getProcessors());
     	}
     	
     	return ex;
+	}
+	
+	private String transAccout2CName(Map<String, String>  usersMap, String userCode) {
+		userCode = EasyUtils.obj2String(userCode);
+		String[] userCodes = userCode.split(",");
+		List<String> cNames = new ArrayList<>();
+		for( String code : userCodes ) {
+			String cName = usersMap.get(code);
+			cNames.add( (String) EasyUtils.checkNull(cName, code)  );
+		}
+		
+		return EasyUtils.list2Str(cNames);
 	}
 	
 	public void fixWFStatus(_Database _db, List<Map<String, Object>> items) {
@@ -274,6 +292,7 @@ public class WFServiceImpl implements WFService {
 		}
 		itemIds.add(-999L);
 		
+		Map<String, String> usersMap = loginSerivce.getUsersMap();
 		List<?> statusList = commonDao.getEntities("from WFStatus where tableId = ? and itemId in (" +EasyUtils.list2Str(itemIds)+ ") ", _db.recordId);
     	
     	for(Object obj : statusList) {
@@ -282,6 +301,10 @@ public class WFServiceImpl implements WFService {
 			item.put("wfstatus", wfStatus.getCurrentStatus());
 			item.put("wfapplier", wfStatus.getApplierName());
 			item.put("wfapplyTime", item.get("createtime"));
+			item.put("wfto", transAccout2CName(usersMap,  wfStatus.getTo()));
+			item.put("nextProcessor", transAccout2CName(usersMap, wfStatus.getNextProcessor()));
+			item.put("wfcc", transAccout2CName(usersMap, wfStatus.getCc()));
+			item.put("lastProcessor",transAccout2CName(usersMap,  wfStatus.getLastProcessor()));
     	}
 	}
 	

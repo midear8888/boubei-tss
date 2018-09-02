@@ -273,6 +273,19 @@ public class LoginService implements ILoginService {
         return userDao.getEntities( hql, domain );
     }
     
+    // 登陆账号和中文名字映射
+    public Map<String, String> getUsersMap() {
+		String domain = Environment.getDomain();
+		List<?> list = getUsersByDomain(domain, "loginName, u.userName", Environment.getUserId());
+		
+		Map<String, String> map = new HashMap<String, String>();
+		for( Object obj : list ) {
+			Object[] objs = (Object[]) obj;
+			map.put((String)objs[0], (String)objs[1]);
+		}
+		return map;
+	}
+    
     private List<OperatorDTO> translateUserList2DTO(List<User> users){
         List<OperatorDTO> returnList = new ArrayList<OperatorDTO>();
         for( User user : users ){

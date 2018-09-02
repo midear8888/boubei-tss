@@ -181,8 +181,8 @@ public class ImportCSV implements AfterUpload {
 		for(String fieldName : headers) {
 			if( !_db.ncm.containsKey(fieldName) ) messyCount++; // 表头名 在数据表字段定义里不存在
 		}
-		// header一半以上都找不着，可能是CSV文件为UTF-8编码，以UTF-8再次尝试读取（注：也可能是选错了Excel文件，致使表头都对不上）
-		if( messyCount*1.0 / headers.size() > 0.5 && !DataExport.CSV_UTF8.equals(charSet) ) {
+		// header都找不着，可能是CSV文件为UTF-8编码，以UTF-8再次尝试读取（注：也可能是选错了Excel文件，致使表头都对不上）
+		if( messyCount == headers.size() && !DataExport.CSV_UTF8.equals(charSet) ) {
 			originData.clear();
 			rowList = readData(targetFile, DataExport.CSV_UTF8, headerTL, originData);
 			headers = rowList.get(0);
