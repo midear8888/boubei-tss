@@ -6,7 +6,7 @@
  */
 ;(function($) {
 
-    $.COLORS = ["#FF6347", "#FFD700", "#90EE90", "#9370DB", "#9ACD32", "#AFEEEE", "#FF6347", "#00BFFF", "#228B22", 
+    $.COLORS = ["#124BA0", "#AFEEEE", "#9370DB", "#90EE90", "#FFD700", "#FF6347", "#9ACD32", "#FF6347", "#228B22", 
                 "gray", "green", "red", "blue", "yellow", "silver", "orange", "olive"];
 
     /* 

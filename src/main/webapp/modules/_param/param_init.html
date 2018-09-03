@@ -47,6 +47,11 @@ var all_codes = [
         // {code:'default_conn_pool',content:'connectionpool: 默认数据源'},              
         {code:'LOGIC_DEL',content:'数据表是否只做逻辑删除'},
         {code:'report_export_url',content:'导出数据分流机器, 前台页面报表导出时用到'},
+        {code:'email.sys',name:'邮件服务器（系统）',content:'示例: 邮件服务器地址|发件人|收件人|邮件服务器认证账号|邮件服务器认证密码'},
+        {code:'email.default',name:'邮件服务器（业务）',content:'示例: smtpdm.aliyun.com|tss@boubei.com|jinhetss@163.com|tss@boubei.com|xxxxxx'},
+        {code:'email.port.sys',name:'邮件服务器（系统）端口', content:'默认25，具体查看邮件服务器，例：阿里云邮件服务器为80或443'},
+        {code:'email.port.default',name:'邮件服务器（系统）端口',content:'默认25，具体查看邮件服务器，例：阿里云邮件服务器为80或443'},
+
         // {code:'url.white.list',content:'资源地址白名单，白名单内的资源允许【匿名访问】url.white.list = /version,.in,.do,.portal,login.html,_forget.html,_register.html.....'},
         {code:'ip.white.list',content:'ip白名单，名单内的ip允许跨域访问系统的服务和资源'},
         {code:'session.cyclelife',content:'离开超时时间，单位（秒）'},

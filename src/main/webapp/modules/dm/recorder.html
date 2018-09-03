@@ -902,12 +902,12 @@ function showQueryForm() {
     // _sortObj.defaultValue = "createtime";
     paramsConfig.push(_sortObj);
 
+    var _tjField = {"label":"统计数据", "name":"tjField", "width": "180px", "options": {"codes":dcodes.join("|"), "names":dnames.join("|")}, "multiple": "true"};
+    paramsConfig.push(_tjField);
+
     var _sortType = {"label":"排序查询结果", "name":"sortType", "width": "180px", "options": {"codes":"asc|desc|onlynull|notnull", "names": "从小到大|从大到小|只取列值为空记录|只取列值不为空记录"}};
     _sortType.defaultValue = "desc";
     paramsConfig.push(_sortType);
-
-    var _tjField = {"label":"统计数据", "name":"tjField", "width": "180px", "options": {"codes":dcodes.join("|"), "names":dnames.join("|")}, "multiple": "true"};
-    paramsConfig.push(_tjField);
 
     var searchForm = tssJS.json2Form("searchForm", paramsConfig, buttonBox.join("")); 
     tssJS.cache.XmlDatas["searchFormXML"] = searchForm.template.sourceXML;
