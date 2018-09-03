@@ -664,7 +664,9 @@ public class _Recorder extends BaseActionSupport {
 		for (Map<String, Object> row : list) {
 
 			Map<String, String> item = new HashMap<String, String>();
-			for (String field : _db.fieldCodes) {
+			List<String> codes = new ArrayList<String>(_db.fieldCodes);
+			codes.add("_version");
+			for (String field : codes) {
 				if( row.containsKey(field) ) {
 					Object value = row.get(field);
 					item.put(field, EasyUtils.obj2String(value));
