@@ -8,7 +8,7 @@
  * ================================================================== 
  */
 
-package com.boubei.tss.um.sso.othersystem;
+package com.boubei.tssx.sso;
 
 import java.security.Principal;
 import java.util.List;
@@ -25,7 +25,6 @@ import com.boubei.tss.framework.web.XHttpServletRequest;
 import com.boubei.tss.modules.api.APIService;
 import com.boubei.tss.um.helper.dto.OperatorDTO;
 import com.boubei.tss.util.EasyUtils;
-import com.boubei.tss.util.Escape;
 
 /**
  * <pre>
@@ -77,7 +76,6 @@ public class LtpaTokenIdentifier extends BaseUserIdentifier {
         }
         
         // 检查用户是否存在
-        uName = Escape.unescape(uName); // maybe is GBK
         IPWDOperator operator;
         try {
         	operator = new OperatorDTO( apiService.getUserByCode(uName) );

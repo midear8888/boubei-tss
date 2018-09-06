@@ -55,7 +55,7 @@ public class JCache {
 	private JCache() {
 	}
 
-	private static JCache cache = null;
+	public static JCache cache = null;
 
 	/**
 	 * 获取一个缓存池管理类实例。 singleton
@@ -77,29 +77,25 @@ public class JCache {
 	 * 如果某一个cache初始化失败，在它之后的cache将不会被初始化。
 	 */
 	private void initPools(String cacheConfigFile) {
-		try {
-			Document doc = XMLDocUtil.createDoc(cacheConfigFile);
-			List<Element> nodes = XMLDocUtil.selectNodes(doc, STRATEGY_NODE_NAME);
-			for (Element strategyNode : nodes) {
-				Map<String, String> attrsMap = new HashMap<String, String>();
-				CacheStrategy strategy = new CacheStrategy();
-				for (Iterator<?> it = strategyNode.attributeIterator(); it.hasNext();) {
-					Attribute attr = (Attribute) it.next();
-					attrsMap.put(attr.getName(), attr.getValue());
-				}
-				for (Iterator<?> it = strategyNode.elementIterator(); it.hasNext();) {
-					Element attrNode = (Element) it.next();
-					attrsMap.put(attrNode.getName(), attrNode.getText());
-				}
-
-				BeanUtil.setDataToBean(strategy, attrsMap);
-				
-				String poolCode = strategy.code;
-				configedPoolCodes.add(poolCode);
-				pools.put(poolCode, strategy.getPoolInstance());
+		Document doc = XMLDocUtil.createDoc(cacheConfigFile);
+		List<Element> nodes = XMLDocUtil.selectNodes(doc, STRATEGY_NODE_NAME);
+		for (Element strategyNode : nodes) {
+			Map<String, String> attrsMap = new HashMap<String, String>();
+			CacheStrategy strategy = new CacheStrategy();
+			for (Iterator<?> it = strategyNode.attributeIterator(); it.hasNext();) {
+				Attribute attr = (Attribute) it.next();
+				attrsMap.put(attr.getName(), attr.getValue());
 			}
-		} catch (Exception e) {
-			log.error("initPools by " + cacheConfigFile + " failed: ", e);
+			for (Iterator<?> it = strategyNode.elementIterator(); it.hasNext();) {
+				Element attrNode = (Element) it.next();
+				attrsMap.put(attrNode.getName(), attrNode.getText());
+			}
+
+			BeanUtil.setDataToBean(strategy, attrsMap);
+			
+			String poolCode = strategy.code;
+			configedPoolCodes.add(poolCode);
+			pools.put(poolCode, strategy.getPoolInstance());
 		}
 	}
 

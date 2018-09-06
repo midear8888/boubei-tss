@@ -318,7 +318,7 @@ public class _Recorder extends BaseActionSupport {
 
 		SQLExcutor ex;
 		
-		boolean isWFQuery = requestMap.remove("my_wf_list") == "true";
+		boolean isWFQuery = "true".equals(requestMap.remove("my_wf_list"));
 		if (isWFQuery && !pointed) {
 			ex = wfService.queryMyTasks(_db, requestMap, _page, _pagesize);
 		} else {

@@ -18,7 +18,7 @@ import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.sso.context.RequestContext;
 import com.boubei.tss.framework.sso.online.IOnlineUserManager;
 import com.boubei.tss.framework.sso.online.OnlineUserManagerFactory;
-import com.boubei.tss.framework.web.rmi.HttpClientUtil;
+import com.boubei.tss.framework.web.HttpClientUtil;
 import com.boubei.tss.um.dao.IUserDao;
 import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.helper.dto.OperatorDTO;

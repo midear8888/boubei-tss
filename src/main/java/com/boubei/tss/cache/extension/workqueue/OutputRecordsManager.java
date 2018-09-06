@@ -34,8 +34,6 @@ public abstract class OutputRecordsManager {
 	
     protected Logger log = Logger.getLogger(this.getClass());
     
-    private boolean isReady = true; // 池是否已经初始化正确
-    
     private final static int maxSize = 12;         //满12条就输出记录
     private final static int maxTime = 3*60*1000;  //定时输出记录的间隔时间：3分钟
     
@@ -44,12 +42,7 @@ public abstract class OutputRecordsManager {
     protected IThreadPool tpool;
     
     public OutputRecordsManager() {
-        try{
-            tpool = JCache.getInstance().getThreadPool();
-        } catch(Exception e) {
-            isReady = false;
-            log.error("[" + this.getClass() + "] getThreadPool failed", e);
-        }
+        tpool = JCache.getInstance().getThreadPool();
         
         // 启动定时输出日志的守护线程
         new FlushThread().start(); 
@@ -60,9 +53,8 @@ public abstract class OutputRecordsManager {
      * @param dto
      */
     public synchronized void output(Object record){
-        if(isReady) {
-            bufferedRecords.add(record);
-        }
+       
+    	bufferedRecords.add(record);
         
         if(size() >= getMaxSize() ){  
             flush();   
@@ -70,7 +62,7 @@ public abstract class OutputRecordsManager {
     }   
     
     private int size() { 
-    	return bufferedRecords == null ? 0 : bufferedRecords.size(); 
+    	return bufferedRecords.size(); 
     }
 
     /**

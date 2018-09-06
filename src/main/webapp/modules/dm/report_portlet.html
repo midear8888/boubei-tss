@@ -308,11 +308,11 @@ function init() {
             reportId = defines[7];
             globalValiable.reportId = reportId;
 
-            /* if recorder.html， 如果需要录入表也展示右侧栏的简介、收藏等功能，则注释掉下面代码
+            /* if recorder.html， 如果需要录入表也展示右侧栏的简介、收藏等功能，则注释掉下面代码 */
             if( (globalValiable._url||"").indexOf("dm/recorder.html?id=") >= 0 ) {
                 location.href = globalValiable._url;
                 return;
-            } */
+            } 
 
             // 是否允许订阅
             if( defines[4] == 1) {
@@ -475,6 +475,7 @@ function searchReport(params) {
         return;
     }
 
+    // 默认会把reportId对应的数据服务（如果有script脚本的话）数据取出来，通过globalValiable.data 传给展示页面
     $.ajax({
         url: "/tss/data/json/" + reportId,
         type : "json",

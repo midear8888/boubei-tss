@@ -21,6 +21,7 @@ import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.sso.context.RequestContext;
 import com.boubei.tss.modules.api.APIService;
 import com.boubei.tss.um.permission.IResource;
+import com.boubei.tss.util.EasyUtils;
 
 /** 
  * 对外发布接口，调用时令牌检测。
@@ -83,7 +84,7 @@ public class Filter8APITokenCheck implements Filter {
 		/* 注：tssJS.ajax需要把uName和uToken放在QueryString里，本过滤器可能在Filter6Decoder前执行（此时XML格式参数还没解析出来）*/
 		String uName  = req.getParameter("uName");
 	    String uToken = req.getParameter("uToken");
-	    if( uToken == null || uName == null ) {
+	    if( EasyUtils.isNullOrEmpty(uToken) || EasyUtils.isNullOrEmpty(uName) ) {
 	    	return;
 	    }
 		

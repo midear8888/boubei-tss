@@ -93,7 +93,7 @@ public class EasyUtils {
     }
     
     public static boolean isNullOrEmpty(String str) {
-        return str == null || "".equals(str.trim());
+        return str == null || "".equals(str.trim()) || "null".equalsIgnoreCase(str.trim()) || "undefined".equalsIgnoreCase(str.trim());
     }
     
     public static boolean isNullOrEmpty(Object obj) {

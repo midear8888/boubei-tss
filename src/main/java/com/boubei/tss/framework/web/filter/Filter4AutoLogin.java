@@ -39,7 +39,7 @@ import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.sso.context.RequestContext;
 import com.boubei.tss.framework.sso.identifier.AnonymousUserIdentifier;
 import com.boubei.tss.framework.sso.identifier.OnlineUserIdentifier;
-import com.boubei.tss.framework.web.rmi.HttpClientUtil;
+import com.boubei.tss.framework.web.HttpClientUtil;
 import com.boubei.tss.util.EasyUtils;
 
 /**

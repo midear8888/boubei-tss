@@ -8,7 +8,7 @@
  * ================================================================== 
  */
 
-package com.boubei.tss.um.sso.othersystem;
+package com.boubei.tssx.sso;
 
 import java.util.Hashtable;
 

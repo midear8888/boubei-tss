@@ -8,7 +8,7 @@
  * ================================================================== 
  */
 
-package com.boubei.tss.framework.web.rmi;
+package com.boubei.tss.framework.web;
 
 import java.io.IOException;
 import java.net.URLDecoder;
@@ -34,7 +34,6 @@ import com.boubei.tss.framework.exception.BusinessServletException;
 import com.boubei.tss.framework.sso.appserver.AppServer;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.sso.context.RequestContext;
-import com.boubei.tss.framework.web.XHttpServletRequest;
 import com.boubei.tss.util.EasyUtils;
 
 public class HttpClientUtil {

@@ -8,7 +8,7 @@
  * ================================================================== 
  */
 
-package com.boubei.tss.um.syncdata.dao;
+package com.boubei.tssx.sync;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,6 +34,7 @@ import org.dom4j.Element;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.um.helper.dto.GroupDTO;
 import com.boubei.tss.um.helper.dto.UserDTO;
+import com.boubei.tss.um.syncdata.IOutDataDao;
 import com.boubei.tss.um.syncdata.SyncDataHelper;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.XMLDocUtil;
@@ -248,7 +249,7 @@ public class LDAPDataDao implements IOutDataDao {
      * @return 
      *         ou=行政政法处,ou=省厅,o=gzcz
      */
-    String getGroupId(String dn) {
+    public String getGroupId(String dn) {
         int position = -1;
         if ((position = dn.indexOf(OU_TAG)) >= 0) {
             return dn.substring(position);
@@ -262,7 +263,7 @@ public class LDAPDataDao implements IOutDataDao {
      * @return 
      *         行政政法处
      */
-    String getGroupName(String dn) {
+    public String getGroupName(String dn) {
         int position = dn.indexOf(OU_TAG);
         if (position >= 0) {
             String temp = dn.substring(position);
@@ -279,7 +280,7 @@ public class LDAPDataDao implements IOutDataDao {
      * @return 
      *         ou=省厅,o=gzcz
      */
-    String getParentGroupId(String dn) {
+    public String getParentGroupId(String dn) {
         int position = dn.indexOf(OU_TAG);
         if (position >= 0) {
             String selfId = dn.substring(position);

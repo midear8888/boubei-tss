@@ -8,7 +8,7 @@
  * ================================================================== 
  */
 
-package com.boubei.tss.um.syncdata.dao;
+package com.boubei.tss.um.syncdata;
 
 import java.util.List;
 import java.util.Map;

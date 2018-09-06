@@ -722,11 +722,13 @@ public abstract class _Database {
 		}
 		
 		// 增加权限控制，针对有編輯权限的允許查看他人录入数据, '000' <> ? <==> 忽略创建人这个查询条件
-		boolean visible = Environment.isAdmin() || Environment.isRobot() || isApprover;
+		boolean visible = Environment.isAdmin() || Environment.isRobot() || isApprover, anonymousVisiable = false;
 		try {
 			List<String> permissions = PermissionHelper.getInstance().getOperationsByResource(recordId,
 	                RecordPermission.class.getName(), RecordResource.class);
-			visible = visible || permissions.contains(Record.OPERATION_VDATA) || permissions.contains(Record.OPERATION_EDATA);
+			boolean _visible = permissions.contains(Record.OPERATION_VDATA) || permissions.contains(Record.OPERATION_EDATA);
+			visible = visible || _visible;
+			anonymousVisiable = Environment.isAnonymous() && _visible; // 匿名用户可浏览
 		} 
 		catch(Exception e) { }
 		
@@ -836,7 +838,7 @@ public abstract class _Database {
 		 * 注：部分全局基础表需要忽略域限制：比如行政区划等，customizeTJ: <#if 1=0>ignoreDomain</#if>
 		 */
 		String _customizeTJ = (String) EasyUtils.checkNull(this.customizeTJ, " 1=1 ");
-		if( _customizeTJ.indexOf("ignoreDomain") < 0 && !pointedDomain ) { 
+		if( _customizeTJ.indexOf("ignoreDomain") < 0 && !pointedDomain && !anonymousVisiable) {  // 匿名用户可浏览，则无需过滤域
 			_customizeTJ += DMConstants.DOMAIN_CONDITION;
 		}
 		

@@ -126,7 +126,7 @@ public class InfoEncoder {
     			|| (info.indexOf("X") < 0 && !info.matches("[0-9]+")) )  // 单个字符加密后的情形
     		return info;
     	
-		String[] charCodes = info.split("X");
+		String[] charCodes = info.trim().split("X");
 		char a[] = new char[charCodes.length];
 		for (int i = 0; i < charCodes.length; i++) {
 			a[i] = (char) ( Integer.parseInt(charCodes[i]) ^ key % 127);

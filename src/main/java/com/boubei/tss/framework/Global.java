@@ -15,7 +15,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.boubei.tss.PX;
 import com.boubei.tss.framework.persistence.ICommonService;
-import com.boubei.tss.framework.sso.online.IOnlineUserManager;
 import com.boubei.tss.modules.param.ParamListener;
 import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.modules.param.ParamService;
@@ -25,8 +24,6 @@ import com.boubei.tss.util.EasyUtils;
  * <p>
  * 加载spring配置文件，以调用配置文件中配置的对象。
  * </p>
- * 
- * @author Jon.King 2006-6-19
  */
 public class Global {
 	
@@ -47,12 +44,7 @@ public class Global {
 	public static Object getBean(String beanId) {
 		return getContext().getBean(beanId);
 	}
- 
-	// 配置在um-remote.xml里
-	public static IOnlineUserManager getRemoteOnlineUserManager() {
-		return (IOnlineUserManager) getBean("RemoteOnlineUserManager");
-	}
-	
+
     public static ParamService getParamService() {
         return (ParamService) getBean("ParamService");
     }

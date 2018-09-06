@@ -9,8 +9,7 @@
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
 		<param-value>
-			classpath*:META-INF/*spring*.xml,
-			/WEB-INF/remote-service.xml
+			classpath*:META-INF/*spring*.xml
 		</param-value>
 	</context-param>
  
@@ -127,45 +126,7 @@
 	    <filter-name>Filter7AccessingCheck</filter-name>
 	    <url-pattern>*.html</url-pattern>
 	</filter-mapping>
-	
-	
-	<!-- config remote service start -->
-	<servlet>
-	    <servlet-name>PermissionServiceExporter</servlet-name>
-	    <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
-	</servlet>
-	<servlet-mapping>
-	    <servlet-name>PermissionServiceExporter</servlet-name>
-	    <url-pattern>/remote/PermissionService</url-pattern>
-	</servlet-mapping>
-		
-	<servlet>
-	    <servlet-name>LoginServiceExporter</servlet-name>
-	    <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
-	</servlet>
-	<servlet-mapping>
-	    <servlet-name>LoginServiceExporter</servlet-name>
-	    <url-pattern>/remote/LoginService</url-pattern>
-	</servlet-mapping>
-		
-	<servlet>
-	    <servlet-name>ResourceTypeDaoExporter</servlet-name>
-	    <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
-	</servlet>
-	<servlet-mapping>
-	    <servlet-name>ResourceTypeDaoExporter</servlet-name>
-	    <url-pattern>/remote/ResourceTypeDao</url-pattern>
-	</servlet-mapping>
-		
-	<servlet>
-	    <servlet-name>OnlineUserServiceExporter</servlet-name>
-	    <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
-	</servlet>
-	<servlet-mapping>
-	    <servlet-name>OnlineUserServiceExporter</servlet-name>
-	    <url-pattern>/remote/OnlineUserService</url-pattern>
-	</servlet-mapping>
-	<!-- config remote service end -->
+
 	
 	<servlet>
 		<servlet-name>spring-mvc</servlet-name>

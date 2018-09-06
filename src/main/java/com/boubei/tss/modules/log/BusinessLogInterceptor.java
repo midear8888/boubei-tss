@@ -57,7 +57,7 @@ public class BusinessLogInterceptor implements MethodInterceptor {
             
             String operateMethod = targetMethod.getName();
             
-            returnVal = EasyUtils.checkNull(returnVal, "null");
+            returnVal = EasyUtils.checkNull(returnVal, "_null_");
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("returnVal", returnVal);
             

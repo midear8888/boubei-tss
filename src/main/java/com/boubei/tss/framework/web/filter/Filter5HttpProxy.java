@@ -45,7 +45,7 @@ import com.boubei.tss.framework.sso.appserver.AppServer;
 import com.boubei.tss.framework.sso.context.ApplicationContext;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.sso.context.RequestContext;
-import com.boubei.tss.framework.web.rmi.HttpClientUtil;
+import com.boubei.tss.framework.web.HttpClientUtil;
 import com.boubei.tss.modules.param.ParamConfig;
 import com.boubei.tss.util.EasyUtils;
 

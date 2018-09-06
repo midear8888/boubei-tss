@@ -48,7 +48,7 @@ import com.boubei.tss.util.MailUtil;
  */
 public class ReportJob extends AbstractJob {
 	
-	public static int MAX_ROWS = 200;
+	public static int MAX_ROWS = 1000;
 	
 	ReportService reportService = (ReportService) Global.getBean("ReportService");
 	ILoginService loginService  = (ILoginService) Global.getBean("LoginService");

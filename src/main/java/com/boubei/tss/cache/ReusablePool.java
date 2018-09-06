@@ -49,7 +49,6 @@ public class ReusablePool extends ObjectPool {
 			else {
 				super.destroyObject(item);
 				log.info("destroy invalid item[" + item + "]");
-				item = null;
 			}
 		}
 		
@@ -61,15 +60,9 @@ public class ReusablePool extends ObjectPool {
 			int maxSize = strategy.poolSize;
 			if (size() < maxSize || maxSize == 0) {
 				item = customizer.create();
-		        	
-				if ( !customizer.isValid(item) ) {
-					throw new RuntimeException( "[" +getName()+ "] could not create a new valid cache-item." );
+				synchronized (size) {
+					size ++;
 				} 
-				else {
-					synchronized (size) {
-						size ++;
-					} 
-				}
 			}
 		}
 		

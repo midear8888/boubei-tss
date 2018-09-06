@@ -19,7 +19,7 @@ import com.boubei.tss.util.EasyUtils;
 
 /**
  * 设置一个安全级别的配置参数，依据相应级别来判断是否要进行XSS清理等安全操作
- * 注：当编辑门户组件时, 需要降低安全级别
+ * 注：当编辑门户组件时, 需要降低安全级别（Admin账号可绕过XSS清理）。
  */
 public class SecurityUtil {
     

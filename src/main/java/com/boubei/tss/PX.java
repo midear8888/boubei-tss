@@ -41,6 +41,9 @@ public interface PX {
 	/** 关闭开发者注册 */
 	static String REGABLE_DEV = "regableDev";
 	
+	/** 报表服务是否启用三分钟缓存，正式环境必需启用，测试环境可禁用 */
+	static String REPORT_CACHE = "REPORT_CACHE";
+	
     /** 
      * 资源地址白名单，白名单内的资源允许【匿名访问】
      * url.white.list = /version,.in,.do,.portal,login.html,_forget.html,_register.html.....

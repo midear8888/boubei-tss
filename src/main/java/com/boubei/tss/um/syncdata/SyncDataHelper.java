@@ -15,10 +15,8 @@ import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.helper.dto.UserDTO;
 import com.boubei.tss.um.sso.UMPasswordIdentifier;
-import com.boubei.tss.um.syncdata.dao.DBDataDao;
-import com.boubei.tss.um.syncdata.dao.IOutDataDao;
-import com.boubei.tss.um.syncdata.dao.LDAPDataDao;
 import com.boubei.tss.util.EasyUtils;
+import com.boubei.tssx.sync.LDAPDataDao;
 
 public class SyncDataHelper {
     

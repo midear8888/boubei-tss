@@ -27,7 +27,6 @@ import com.boubei.tss.um.entity.Application;
 import com.boubei.tss.um.entity.Operation;
 import com.boubei.tss.um.entity.ResourceType;
 import com.boubei.tss.um.entity.ResourceTypeRoot;
-import com.boubei.tss.um.permission.PermissionHelper;
 import com.boubei.tss.um.permission.PermissionService;
 import com.boubei.tss.um.service.IResourceService;
 import com.boubei.tss.util.BeanUtil;
@@ -142,8 +141,6 @@ public class ResourceService implements IResourceService{
         String permissionTable = resourceTypeDao.getPermissionTable(applicationId, resourceTypeId);
         String resourceTable = resourceTypeDao.getResourceTable(applicationId, resourceTypeId);
         
-        permissionService = PermissionHelper.getPermissionService(applicationId, permissionService);
-        
         // 新建的权限选项要将该权限选项赋予管理员角色(id==-1)
         permissionService.saveRoleResourceOperation(UMConstants.ADMIN_ROLE_ID, resourceTypeRoot.getRootId(), 
                 operation.getOperationId(), UMConstants.PERMIT_SUB_TREE, permissionTable, resourceTable);
@@ -158,15 +155,7 @@ public class ResourceService implements IResourceService{
     public List<?> getApplications() {
     	return applicationDao.getEntities("from Application o order by o.id");
     }
-    
-    /**
-	 * 如果是UM在进行初始化操作，则permissionService取applicationContext.xml里配置的UM本地PermissionService
-     * 否则，permissionService取各应用里配置的PermissionService。
-     * 比如导入DMS资源配置文件时，则取DMS的PermissionService
-	 */
-	private boolean initial = false; 
-	public void setInitial(boolean initial) { this.initial = initial; }
-	
+ 
     public void applicationResourceRegister(Document doc, String applicationType) {
        
         List<ResourceType> resourceTypeList = new ArrayList<ResourceType>();
@@ -230,13 +219,6 @@ public class ResourceService implements IResourceService{
         }       
         
         /*****************************  对外部已经注册的资源进行补全操作 ************************************/
-        
-        PermissionService permissionService;
-        if( initial ) {
-        	permissionService = this.permissionService;
-        } else {
-        	permissionService = PermissionHelper.getPermissionService(applicationId, this.permissionService);      
-        }
         
         // 初始化资源类型          
         for (ResourceType resourceType : resourceTypeList) {

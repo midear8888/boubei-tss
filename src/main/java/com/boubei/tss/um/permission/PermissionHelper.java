@@ -29,7 +29,6 @@ import com.boubei.tss.framework.persistence.entityaop.IDecodable;
 import com.boubei.tss.framework.sso.Anonymous;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.web.display.tree.ILevelTreeNode;
-import com.boubei.tss.framework.web.rmi.HttpInvokerProxyFactory;
 import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.permission.dispaly.ResourceTreeNode;
@@ -54,23 +53,6 @@ public class PermissionHelper extends TreeSupportDao<IDecodable> {
     
     public static PermissionHelper getInstance(){
         return (PermissionHelper) Global.getBean("permissionHelper");
-    }
-    
-    /**
-     * 根据AppCode值获取到底是哪个应用的PermissionService
-     */
-    public static PermissionService getPermissionService(String applicationId, PermissionService autowired) {
-        if( Config.getAttribute(PX.APPLICATION_CODE).equalsIgnoreCase(applicationId) ) {
-            return autowired; // 如果是取应用本地的权限服务，则直接返回spring注入的
-        }
-            
-        // 如果查询的是非本地应用的权限服务，则取的是资源所在的应用服务    
-    	HttpInvokerProxyFactory factory = new HttpInvokerProxyFactory();
-        factory.setServiceUrl(UMConstants.PERMISSION_SERVICE_URL);
-        factory.setServiceInterface(PermissionService.class);
-        factory.setAppCode(applicationId.toUpperCase());
-        
-        return (PermissionService)factory.getObject();
     }
     
     /** 获取当前应用ID */

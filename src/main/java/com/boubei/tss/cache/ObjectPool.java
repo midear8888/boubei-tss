@@ -105,7 +105,6 @@ public class ObjectPool extends AbstractPool implements Cleaner {
 			try {
 				cleaner.join(); // 等待线程死亡
 			} catch (InterruptedException e) {
-				log.error("shutdown pool cleaner failed", e);
 			}
 			cleaner = null;
 		}
@@ -117,7 +116,6 @@ public class ObjectPool extends AbstractPool implements Cleaner {
 			try {
 				initer.join(); // 等待线程死亡
 			} catch (InterruptedException e) {
-				log.error("shutdown pool initer failed", e);
 			}
 			initer = null;
 		}
@@ -133,27 +131,19 @@ public class ObjectPool extends AbstractPool implements Cleaner {
 		shutDownIniter();
 
 		synchronized (this) {
-			int rel = 0, failed = 0;
+			int rel = 0,  total = this.size();
 			// 销毁所有的缓存项（包括尚在使用中的）
 			if (forced) {
 				List<Object> usingKeys = new ArrayList<Object>(using.keySet());
 				for (Object key : usingKeys) {
-					try {
-						Cacheable usingItem = using.remove(key);
-						destroyObject(usingItem);
-						rel ++;
-					} catch (Exception e) {
-						failed ++;
-						log.error("release " +this.getName()+ "'using container failed , when destroy item:" + key, e);
-					}
+					Cacheable usingItem = using.remove(key);
+					destroyObject(usingItem);
+					rel ++;
 				}
 				
 			} else {
-				if (using.size() > 0) {
-					log.info(" waiting using item to checkIn back...");
-				}
-				
 				while (using.size() > 0) {
+					log.info(" waiting using item to checkIn back...");
 					try {
 						wait(); // 等待，当缓存项被check in时，监听器会调用pool的notifyAll()通知这里
 					} catch (InterruptedException e) {
@@ -164,19 +154,11 @@ public class ObjectPool extends AbstractPool implements Cleaner {
 			// 销毁当前所有空闲状态的缓存项
 			List<Object> freeKeys = new ArrayList<Object>(free.keySet());
 			for (Object key : freeKeys) {
-				try {
-					destroyByKey(key);
-					rel ++;
-				} catch (Exception e) {
-					failed ++;
-					log.error("release " +this.getName()+ "'free container failed , when destroy item:" + key, e);
-				}
+				destroyByKey(key);
+				rel ++;
 			}
 
-			String s = "release succeed [" + rel + "] items";
-			if (failed > 0) {
-				s += " ，release failed [" + failed + "] items.";
-			}
+			String s = "release succeed [" + rel + "] items，total size = " + total + ".";
 			log.info(s);
 
 			firePoolEvent(PoolEvent.POOL_RELEASED);

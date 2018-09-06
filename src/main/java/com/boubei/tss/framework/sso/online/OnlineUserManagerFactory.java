@@ -32,15 +32,7 @@ public class OnlineUserManagerFactory {
     public static IOnlineUserManager getManager() {
         if (manager == null) {
             String onlineManager = Config.getAttribute(SSOConstants.ONLINE_MANAGER);
-            if (onlineManager == null) {
-				manager = new OnlineUserManagerProxy(); // 基于平台的应用无需配置，默认为在线用户库代理
-			} 
-            else {
-            	try {
-            		manager = (IOnlineUserManager) Global.getBean(onlineManager);
-            	} catch(Exception e) {
-            	}
-			}
+        	manager = (IOnlineUserManager) Global.getBean(onlineManager);
             
             String currentAppCode = Context.getApplicationContext().getCurrentAppCode();
 			log.info("应用【" + currentAppCode + "】里在线用户库【" + manager.getClass().getName() + "】初始化成功！");

@@ -48,6 +48,7 @@ import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.modules.param.ParamService;
 import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.DateUtil;
+import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.MathUtil;
 import com.boubei.tss.util.XMLDocUtil;
 
@@ -233,15 +234,7 @@ public class CacheAction extends BaseActionSupport {
     	
         Cacheable item = cache.getPool(code).getObject(key);
         if(item != null) {
-            String returnStr = "";
-            try{
-                String valueStr = BeanUtil.toXml(item.getValue());
-                returnStr = XMLDocUtil.dataXml2Doc(valueStr).asXML();
-                log.debug(returnStr);
-            } 
-            catch(Exception e) {
-                returnStr = "(" + item.getValue() + ") can't be xml, view faild: \n" + e.getMessage();
-            }
+            String returnStr = EasyUtils.obj2Json(item.getValue());
             print(returnStr);
         }
         else {

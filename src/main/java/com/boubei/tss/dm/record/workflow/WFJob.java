@@ -12,6 +12,7 @@ import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.modules.api.APIService;
 import com.boubei.tss.modules.timer.AbstractJob;
+import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.util.EasyUtils;
 
 /**
@@ -54,7 +55,11 @@ public class WFJob extends AbstractJob {
 			SQLExcutor.excute(updateSQL, paramsMap, _db.datasource);
 		}
     	
-    	apiService.mockLogin( currUserCode );
+    	// 手动触发WFJob时，需重新登录回触发用户的账号
+    	if( !UMConstants.ROBOT_USER_NAME.equals(currUserCode) ) {
+        	apiService.mockLogin( currUserCode );  
+    	}
+    	
     	return "success";
 	}
 
