@@ -161,7 +161,7 @@ public class ReportQuery {
 	    Long selfGroupId = -2L, topGroupId = -3L, newGroupId = -4L;
 	    		
 	    List<Report> result = new ArrayList<Report>();
-    	result.add(new Report(selfGroupId, "您最近访问报表", null));
+    	result.add(new Report(selfGroupId, "最近访问报表", null));
     	result.addAll( cloneTops(selfGroupId, topSelf, list) );
 
     	result.add(new Report(topGroupId, "近期热门报表", null));

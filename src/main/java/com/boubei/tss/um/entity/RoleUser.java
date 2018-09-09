@@ -21,6 +21,7 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 import com.boubei.tss.framework.persistence.IEntity;
+import com.boubei.tss.util.EasyUtils;
 
 /**
  * 角色与用户关联对象。
@@ -40,9 +41,10 @@ public class RoleUser implements IEntity {
 	private Long roleId;     // 角色Id
 	private Long userId;     // 用户Id
 	private Long strategyId; // 策略Id
+	private Long moduleId;   // 模块Id
 	
 	public String toString() {
-		return roleId + ", " + userId + ", " + strategyId;
+		return roleId + ", " + userId + ", " + EasyUtils.checkNull(strategyId, moduleId);
 	}
  
 	public Long getId() {
@@ -79,5 +81,13 @@ public class RoleUser implements IEntity {
 	
 	public Serializable getPK() {
 		return this.id;
+	}
+
+	public Long getModuleId() {
+		return moduleId;
+	}
+
+	public void setModuleId(Long moduleId) {
+		this.moduleId = moduleId;
 	}
 }

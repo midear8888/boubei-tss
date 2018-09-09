@@ -753,6 +753,10 @@ function editParamConfig() {
     		}
     		activeNode.setAttribute("value", JSON.stringify(valuesMap));
     	}
+
+    	if(field == 'options') {
+    		fieldEl.onblur = fieldEl.onchange;
+    	}
     });
 }
 

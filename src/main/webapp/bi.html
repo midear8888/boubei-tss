@@ -107,18 +107,25 @@ var resizeIFrame = function resizeIFrame() {
 
 // ----------------------------------- 获取BI报表、数据表一级菜单 -----------------------------------
 function getBIMenu() {
-    var reports, records;
+    var reports, records, permissions;
     tssJS.getJSON( "/tss/auth/rp/my/" + rootId, {},
         function(data) {
             reports = data;
-            reports && records && buildMenu(reports, records);
+            reports && records && permissions && buildMenu(reports, records, permissions);
         }
     );
 
     tssJS.getJSON( "/tss/auth/rc/all/json", {},
         function(data) {
             records = data;
-            reports && records && buildMenu(reports, records);
+            reports && records && permissions && buildMenu(reports, records, permissions);
+        }
+    );
+
+    tssJS.getJSON( "/tss/auth/module/limitresources", {},
+        function(data) {
+            permissions = data;
+            reports && records && permissions && buildMenu(reports, records, permissions);
         }
     );
 }
@@ -130,7 +137,7 @@ var rootId = 0,   // 取”全部“节点
     fisrtGroup;
 
 // 合并录入表和报表，同时要防止彼此ID重复
-function buildMenu(reports, records) {
+function buildMenu(reports, records, permissions) {
     if( !reports.length && !records.length ) {
         return openMsgPage();
     }
@@ -138,6 +145,8 @@ function buildMenu(reports, records) {
     var data = [], level1Num = 0;
     records.each( function(i, item) {
         if( item[2] == rootId && item[1].indexOf("系统功能") >=0 ) return true;
+        if( permissions.length == 2 && !permissions[1].contains(item[0]) && item[0] > 8 ) return true;
+
         if( item[1].indexOf("$") == 0 ) return true;  // $打头的节点约定为不显示，不直接开放用户访问
         if( item[2] == rootId ) level1Num ++;
 
@@ -146,6 +155,8 @@ function buildMenu(reports, records) {
     });
     reports.each( function(i, item) {
         if( item[2] == rootId && item[1].indexOf("系统报表") >=0 ) return true;
+        if( permissions.length == 2 && !permissions[0].contains(item[0]) ) return true;
+
         if( item[2] == rootId ) level1Num ++;
 
         item[0] = -1 * item[0];

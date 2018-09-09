@@ -84,11 +84,11 @@ public class ParamServiceImpl implements ParamService, ParamListener {
     	
     	paramId = EasyUtils.obj2Long(paramId);
     	Param param = paramDao.getEntity(paramId);
-    	if(param != null) {
-    		permitedUsers.add(param.getCreatorId()); 
-    		if( !permitedUsers.contains( Environment.getUserId() ) ) {
-        		throw new BusinessException(EX.F_12);
-        	}
+    	param = (Param) EasyUtils.checkNull(param, new Param());
+    	
+		permitedUsers.add(param.getCreatorId()); 
+		if( !permitedUsers.contains( Environment.getUserId() ) ) {
+    		throw new BusinessException(EX.F_12);
     	}
     }
  

@@ -87,7 +87,7 @@ function initList() {
 
       $li.find("div.module>.bts>button").css("visibility", "visible")
           .click( function() {
-            selectModule(item.id);
+            selectModule(item.id, "POST", item.init_url);
           });
     });
 
@@ -97,7 +97,7 @@ function initList() {
 }
 
 function initSelected() {
-    $.getJSON("/tss/auth/module/0", {}, function(data) {
+    $.getJSON("/tss/auth/module/my", {}, function(data) {
         data.each(function(i, item) {
             var $li = $("#li" + item.id).addClass("selected");
             $li.find("div.module>.bts>button:nth-child(1)")
@@ -115,9 +115,12 @@ function initSelected() {
     }, "GET");
 }
 
-function selectModule(moduleId, method) {
+function selectModule(moduleId, method, initURL) {
     $.post("/tss/auth/module/" + moduleId, {}, function(result) {
         if(result === 'Success') {
+            if( initURL ) {
+              $.post(initURL, {}, function(res) {  console.log(res); });
+            }
             refresh();
         }
     }, method);

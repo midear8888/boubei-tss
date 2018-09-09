@@ -11,6 +11,8 @@
 package com.boubei.tss.modules.cloud;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -23,6 +25,7 @@ import javax.persistence.Table;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 import com.boubei.tss.dm.record.ARecordTable;
+import com.boubei.tss.util.EasyUtils;
 
 @Entity
 @Table(name = "cloud_module_def")
@@ -41,6 +44,12 @@ public class ModuleDef extends ARecordTable {
 	@Column(nullable = false)
 	private String roles;
 	
+	private String reports;
+	
+	private String records;   // 模块包含的数据表，为空则忽略
+	
+	private String init_url;  // 模块自定义初始化接口地址，在企业域用户选择此模块时自动调用，以完成模块初始化
+	
 	@Column(length = 500)
 	private String resource; // 资源目录，多个用逗号分隔
 	
@@ -51,6 +60,39 @@ public class ModuleDef extends ARecordTable {
 	
 	@Column(length = 2000)
 	private String remark;
+	
+	public List<Long> roles() {
+		List<Long> roleIds = new ArrayList<Long>();
+		String[] array = EasyUtils.obj2String(roles).split(",");
+		for(String t : array) {
+			roleIds.add( EasyUtils.obj2Long(t) );
+		}
+		
+		roleIds.remove(0L);
+		return roleIds;
+	}
+	
+	public List<Long> reports() {
+		List<Long> reportIds = new ArrayList<Long>();
+		String[] array = EasyUtils.obj2String(reports).split(",");
+		for(String t : array) {
+			reportIds.add( EasyUtils.obj2Long(t) );
+		}
+		
+		reportIds.remove(0L);
+		return reportIds;
+	}
+	
+	public List<Long> records() {
+		List<Long> recordIds = new ArrayList<Long>();
+		String[] array = EasyUtils.obj2String(records).split(",");
+		for(String t : array) {
+			recordIds.add( EasyUtils.obj2Long(t) );
+		}
+		
+		recordIds.remove(0L);
+		return recordIds;
+	}
 	
 	public Serializable getPK() {
 		return this.getId();
@@ -118,5 +160,29 @@ public class ModuleDef extends ARecordTable {
 
 	public void setResource(String resource) {
 		this.resource = resource;
+	}
+
+	public String getReports() {
+		return reports;
+	}
+
+	public void setReports(String reports) {
+		this.reports = reports;
+	}
+
+	public String getRecords() {
+		return records;
+	}
+
+	public void setRecords(String records) {
+		this.records = records;
+	}
+
+	public String getInit_url() {
+		return init_url;
+	}
+
+	public void setInit_url(String init_url) {
+		this.init_url = init_url;
 	}
 }

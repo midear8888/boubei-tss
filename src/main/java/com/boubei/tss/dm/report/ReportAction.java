@@ -108,7 +108,7 @@ public class ReportAction extends BaseActionSupport {
     }
     
     /**
-     * 如果指定了分组，则只取该分组下的报表。XML
+     * 如果指定了分组，则只取该分组下的报表。XML格式 for reporter.html页面
      */
     @RequestMapping("/my")
     public void getMyReports(HttpServletResponse response, Long groupId) {

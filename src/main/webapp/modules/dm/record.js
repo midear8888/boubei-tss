@@ -704,6 +704,10 @@ function editFieldConfig() {
     		}
     		activeNode.setAttribute("value", JSON.stringify(valuesMap));
     	}
+
+    	if(field == 'options') {
+    		fieldEl.onblur = fieldEl.onchange; // 通过【数据服务】按钮选择过来的不会触发onchange
+    	}
     });
 }
 

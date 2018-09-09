@@ -86,7 +86,7 @@ function init(param){
 		})	
 		var parentid;
 		$.each(all_codes,function(i,item){
-			item['name'] = item['code'];
+			item['name'] = item['name'] || item['code'];
 			if(item.code in result_obj){
 				parentid = parentid || result_obj[item.code].parentid;
 				result.push(result_obj[item.code]);
