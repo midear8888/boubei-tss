@@ -170,7 +170,7 @@ public class DataExport {
             fw.flush();
             fw.close();
             
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new BusinessException("export csv error:" + path + ", " + e.getMessage());
         }
     }
@@ -187,7 +187,7 @@ public class DataExport {
             fw.flush();
             fw.close();
             
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new BusinessException("export data error:" + path, e);
         }
     }
@@ -227,11 +227,12 @@ public class DataExport {
             outStream = response.getOutputStream();
             inStream = new FileInputStream(sourceFilePath);
             
-            int len = 0;
             byte[] b = new byte[1024];
-            while ((len = inStream.read(b)) != -1) {
+            int len = inStream.read(b);
+            while ( len != -1 ) {
                 outStream.write(b, 0, len);
                 outStream.flush();
+                len = inStream.read(b);
             }           
         } catch (IOException e) {
 //            throw new BusinessException("导出时发生IO异常!", e);

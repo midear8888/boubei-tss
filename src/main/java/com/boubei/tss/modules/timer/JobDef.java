@@ -22,7 +22,6 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 import com.boubei.tss.dm.record.ARecordTable;
-import com.boubei.tss.modules.param.Param;
 import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.util.EasyUtils;
 
@@ -67,23 +66,6 @@ public class JobDef extends ARecordTable {
 	private String remark;
 	
 	private String description;
-	
-	public JobDef() { 
-	}
-	
-	public JobDef(Param p) {
-		String text  = p.getText();
-		String value = p.getValue();
-		
-		this.setName(text);
-		this.setCode("Job-p-" + p.getId());
-		
-		String configs[] = EasyUtils.split(value, "|");
-		this.setJobClassName (configs[0].trim());
-		this.setTimeStrategy (configs[1].trim());
-		this.setCustomizeInfo(configs[2].trim());
-		this.setDisabled(p.getDisabled());
-	}
 	
 	public boolean equals(Object obj) {
         if(obj instanceof JobDef){

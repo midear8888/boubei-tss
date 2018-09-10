@@ -18,15 +18,15 @@ import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.modules.param.ParamListener;
 import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.modules.param.ParamService;
+import com.boubei.tss.modules.timer.SchedulerBean;
 import com.boubei.tss.util.EasyUtils;
 
 /**
- * <p>
  * 加载spring配置文件，以调用配置文件中配置的对象。
- * </p>
  */
 public class Global {
 	
+	public  static SchedulerBean schedulerBean;
 	private static ApplicationContext _ctx;
 
 	private static String defaultContextPath = "META-INF/spring.xml";
@@ -58,7 +58,9 @@ public class Global {
 		
 		// param缓存刷新监听器需要第一个执行，其它监听器里需要读取刷新后的Param信息
     	ParamManager.listeners.add(0, (ParamListener) ParamManager.getService());
-    	getParamService().fireListener(null); // 系统启动时，自动触发一次所有的监听器，以完成缓存池、定时器等初始化。
+    	getParamService().fireListener(null); // 系统启动时，自动触发一次所有的监听器，以完成缓存池等初始化。
+    	
+    	schedulerBean = SchedulerBean.getInstanse(); // 定时器初始化
 	}
 
 	public static synchronized void destroyContext() {

@@ -19,7 +19,6 @@ import com.boubei.tss.cache.extension.PCache;
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.exception.BusinessException;
-import com.boubei.tss.modules.timer.SchedulerBean;
 
 /**
  *  调用参数管理功能入口
@@ -31,7 +30,6 @@ public class ParamManager {
     
     static {
     	ParamManager.listeners.add(new PCache());
-    	ParamManager.listeners.add(new SchedulerBean());
     }
     
     public static ParamService getService() {

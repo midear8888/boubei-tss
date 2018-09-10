@@ -65,7 +65,9 @@ public class ModuleDef extends ARecordTable {
 		List<Long> roleIds = new ArrayList<Long>();
 		String[] array = EasyUtils.obj2String(roles).split(",");
 		for(String t : array) {
-			roleIds.add( EasyUtils.obj2Long(t) );
+			try {
+				roleIds.add( EasyUtils.obj2Long(t) );
+			} catch( Exception e) { }
 		}
 		
 		roleIds.remove(0L);
@@ -76,7 +78,9 @@ public class ModuleDef extends ARecordTable {
 		List<Long> reportIds = new ArrayList<Long>();
 		String[] array = EasyUtils.obj2String(reports).split(",");
 		for(String t : array) {
-			reportIds.add( EasyUtils.obj2Long(t) );
+			try {
+				reportIds.add( EasyUtils.obj2Long(t) ); // 非数字的忽略
+			} catch( Exception e) { }
 		}
 		
 		reportIds.remove(0L);
@@ -87,7 +91,9 @@ public class ModuleDef extends ARecordTable {
 		List<Long> recordIds = new ArrayList<Long>();
 		String[] array = EasyUtils.obj2String(records).split(",");
 		for(String t : array) {
-			recordIds.add( EasyUtils.obj2Long(t) );
+			try {
+				recordIds.add( EasyUtils.obj2Long(t) );
+			} catch( Exception e) { }
 		}
 		
 		recordIds.remove(0L);

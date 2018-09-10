@@ -154,7 +154,7 @@ tssJS(function() {
     recordName = tssJS.Query.get("rctable") || decodeURI(tssJS.Query.get("rcname")||"");
     openItemId = tssJS.Query.get("itemId");  // 通常为审批
     wfCount    = tssJS.Query.get("wfCount");
-    if(wfCount == 'null' || wfCount == '0') { wfCount = 0; } else { wfCount = parseInt(wfCount); }
+    if(wfCount == 'null' || wfCount == '0') { wfCount = 0; } else { wfCount = parseInt(wfCount) || 0; }
 
     if(!recordId && recordName) {
         tssJS.post(URL_GET_RECORD_ID, {"name": decodeURI(recordName)}, function(result) {

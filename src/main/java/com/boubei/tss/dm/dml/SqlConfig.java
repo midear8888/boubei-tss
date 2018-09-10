@@ -36,8 +36,7 @@ public class SqlConfig {
 	static Map<String, Object> sqlNestFmParams = new HashMap<String, Object>(); // SQL嵌套解析用
 	
 	public static String getScript(String sqlCode) {
-		Cacheable cacheItem = cache.getObject(sqlCode);
-		if(cacheItem == null) {
+		if( sqlNestFmParams.isEmpty() ) {
 			File sqlDir = new File(URLUtil.getResourceFileUrl("script").getPath());
 			List<File> sqlFiles = FileHelper.listFilesByTypeDeeply("xml", sqlDir);
 			
@@ -45,20 +44,16 @@ public class SqlConfig {
 				Document doc = XMLDocUtil.createDocByAbsolutePath(sqlFile.getPath());
 				List<Element> sqlNodes = XMLDocUtil.selectNodes(doc, "//sql");
 				for(Element sqlNode : sqlNodes) {
-					
 					String code = sqlNode.attributeValue("code").trim();
 					String sql  = sqlNode.getText().trim();
 					
 					sqlNestFmParams.put("${" + code + "}", sql);
-					
-					Cacheable cacheTemp = cache.putObject(code, sql);
-					if( sqlCode.equals(code) ) {
-						cacheItem = cacheTemp;
-					}
+					cache.putObject(code, sql);
 				}
 			}
 		}
 		
+		Cacheable cacheItem = cache.getObject(sqlCode);
 		if(cacheItem == null) {
 			log.error("没有找到编码为【" + sqlCode + "】的SQL。");
 			return null;

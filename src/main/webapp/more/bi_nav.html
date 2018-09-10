@@ -88,7 +88,7 @@ if( _default ) {
 	_default = resourceUrl(_default) + (_defaultItem ? "&itemId=" + _defaultItem : "");
 } 
 else {
-	_default = (group == "-1" ? "" : "x/domain.html");
+	_default = (group == "-1" || !parent.userHas[1].contains(-8)) ? "" : "x/domain.html";
 }
 
 function resourceUrl(resource) {

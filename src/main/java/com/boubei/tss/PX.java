@@ -89,9 +89,6 @@ public interface PX {
     /** QueryCache支持的最大等待线程数量，没有配置默认100 */
     static String MAX_QUERY_REQUEST = "MAX_QUERY_REQUEST";
     
-    /** comboParams 定时器配置列表 */
-    static String TIMER_PARAM_CODE = "TIMER_PARAM_CODE";
-    
 	/** 后台Action单独发布的数据服务，用于report/record为下拉框选择数据服务 */
 	static String DATA_SERVICE_CONFIG = "DATA_SERVICE_CONFIG";
 	

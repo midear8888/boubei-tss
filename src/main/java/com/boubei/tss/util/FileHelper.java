@@ -81,9 +81,10 @@ public class FileHelper {
         BufferedReader br = null;
         try {
             br = new BufferedReader(new InputStreamReader(new FileInputStream(file), charSet));
-            String data = null;
-            while((data = br.readLine()) != null){
+            String data = br.readLine();
+            while(data != null) {
                 sb.append(data).append("\n");
+                data = br.readLine();
             }
             br.close();
         } catch (Exception e) {
@@ -192,13 +193,15 @@ public class FileHelper {
 		}
 		
 		OutputStream out = null;
-		int len = 0;
 		byte[] b = new byte[1024];
 		try {
+			int len = in.read(b);
 			out = new FileOutputStream(newFile);
-			while ((len = in.read(b)) != -1) {
+			while (len != -1) {
 				out.write(b, 0, len);
 				out.flush();
+				
+				len = in.read(b);
 			}
 		} catch (Exception e) {
 			throw new RuntimeException("文件复制失败", e);
@@ -372,12 +375,7 @@ public class FileHelper {
 		for (Iterator<String> it = list.iterator(); it.hasNext();) {
 			String fileName = (String) it.next();
 			File file = new File(fromDir.getPath() + "/" + fileName);
-			if (file.isDirectory()) {
-				copyFilesInDir(suffix, file, new File(toDir.getPath() + "/" + fileName), isCut);
-			} 
-			else {
-				copyFile(toDir, file, true, false);
-			}
+			copyFile(toDir, file, true, false);
 		}
 		
 		if (isCut) {
@@ -465,16 +463,16 @@ public class FileHelper {
         if(f.isDirectory()) { // 如果是目录
             File[] subFiles = f.listFiles();
             out.putNextEntry( new ZipEntry(base + "/") );
-            base = base.length() == 0 ? "" : base + "/";
             for ( File subFile : subFiles ) {
-                exportZip(out, subFile, base + subFile.getName());
+                exportZip(out, subFile, base + "/" + subFile.getName());
             }
         } else {
             out.putNextEntry(new ZipEntry(base));
             FileInputStream in = new FileInputStream(f);
-            int b;
-            while ((b = in.read()) != -1) {
+            int b = in.read();
+            while (b != -1) {
                 out.write(b);
+                b = in.read();
             }
             in.close();
         }
@@ -526,12 +524,13 @@ public class FileHelper {
 		InputStream inStream = (InputStream) (new ByteArrayInputStream(src.getBytes()));
 		FileOutputStream outStream = null;
  
-		int byteread = 0;
 		byte[] buffer = new byte[256];
 		try {
 			outStream = new FileOutputStream(fileDir.toString() + "/" + fileName);
-			while ((byteread = inStream.read(buffer)) != -1) {
+			int byteread = inStream.read(buffer);
+			while ( byteread != -1) {
 				outStream.write(buffer, 0, byteread);
+				byteread = inStream.read(buffer);
 			}
 		} catch (IOException e) {
 			throw new RuntimeException("数据流读写失败", e);
@@ -615,7 +614,6 @@ public class FileHelper {
 
 		String baseDirName = baseDir.getName();
 		byte[] buf = new byte[1024];
-		int readLen = 0;
 		List<File> fileList = listFilesDeeply(baseDir);
 		for (File file : fileList) {
 			int index = file.getPath().indexOf(baseDirName);
@@ -627,8 +625,10 @@ public class FileHelper {
 			zos.putNextEntry(ze);
 
 			InputStream is = new BufferedInputStream(new FileInputStream(file));
-			while ((readLen = is.read(buf, 0, 1024)) != -1) {
+			int readLen = is.read(buf, 0, 1024);
+			while (readLen != -1) {
 				zos.write(buf, 0, readLen);
+				readLen = is.read(buf, 0, 1024);
 			}
 			is.close();
 		}
@@ -667,12 +667,12 @@ public class FileHelper {
 				subFile.getParentFile().mkdirs();
 			}
 
-			OutputStream os = new BufferedOutputStream(new FileOutputStream(
-					path));
+			OutputStream os = new BufferedOutputStream(new FileOutputStream(path));
 			InputStream is = new BufferedInputStream(zfile.getInputStream(ze));
-			int readLen = 0;
-			while ((readLen = is.read(buf, 0, 1024)) != -1) {
+			int readLen = is.read(buf, 0, 1024);
+			while (readLen != -1) {
 				os.write(buf, 0, readLen);
+				readLen = is.read(buf, 0, 1024);
 			}
 			is.close();
 			os.close();
@@ -717,12 +717,13 @@ public class FileHelper {
             out = response.getOutputStream();
             stream = new FileInputStream(file);
 
-            int bytesRead = 0;
             final int length = 8192;
             byte[] buffer = new byte[length];
-            while ((bytesRead = stream.read(buffer, 0, length)) != -1) {
+            int bytesRead = stream.read(buffer, 0, length);
+            while ( bytesRead != -1 ) {
                 out.write(buffer, 0, bytesRead);
                 out.flush();
+                bytesRead = stream.read(buffer, 0, length);
             }
         } catch (IOException e) {
             log.error("下载附件时IO异常，" + e.getMessage() + "," + e.getCause());

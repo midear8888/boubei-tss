@@ -215,11 +215,12 @@ public class ComponentHelper {
             outStream = response.getOutputStream();
             inStream = new FileInputStream(sourceFilePath);
             
-            int len = 0;
             byte[] b = new byte[1024];
-            while ((len = inStream.read(b)) != -1) {
+            int len = inStream.read(b);
+            while (len != -1) {
                 outStream.write(b, 0, len);
                 outStream.flush();
+                len = inStream.read(b);
             }           
         } catch (IOException e) {
 //            throw new BusinessException("download file error:", e);

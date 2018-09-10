@@ -130,9 +130,10 @@ public class Servlet4Upload extends HttpServlet {
         // 自定义输出到指定目录
 		InputStream is = part.getInputStream();
 		FileOutputStream fos = new FileOutputStream(newFilePath);
-		int data = 0;
-		while((data = is.read()) != -1) {
+		int data = is.read();
+		while(data != -1) {
 		  fos.write(data);
+		  data = is.read();
 		}
 		fos.close();
 		is.close();

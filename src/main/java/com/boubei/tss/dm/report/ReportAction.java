@@ -49,8 +49,9 @@ import com.boubei.tss.framework.web.display.xform.XFormEncoder;
 import com.boubei.tss.framework.web.mvc.BaseActionSupport;
 import com.boubei.tss.modules.param.Param;
 import com.boubei.tss.modules.param.ParamConstants;
-import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.modules.param.ParamService;
+import com.boubei.tss.modules.timer.JobAction;
+import com.boubei.tss.modules.timer.JobDef;
 import com.boubei.tss.um.permission.PermissionHelper;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
@@ -66,6 +67,7 @@ public class ReportAction extends BaseActionSupport {
     @Autowired private ReportService reportService;
     @Autowired private RecordService recordService;
     @Autowired private ICommonService commonService;
+    @Autowired private ParamService  paramService;
     
     @RequestMapping("/")
     public void getAllReport(HttpServletResponse response) {
@@ -134,22 +136,17 @@ public class ReportAction extends BaseActionSupport {
     	String rtd = DMConstants.getReportTLDir();
  		File reportTLDir = new File(URLUtil.getWebFileUrl(rtd).getPath());
 		List<File> files = FileHelper.listFilesByTypeDeeply("html", reportTLDir);
+		
+		// more/bi_template 下
+ 		File delfaultDir = new File(URLUtil.getWebFileUrl(DMConstants.REPORT_TL_DIR_DEFAULT).getPath());
+		files.addAll(FileHelper.listFilesByTypeDeeply("html", delfaultDir));
+		
 		int index = 1;
  		for (File file : files) {
 			String filePath = file.getPath();
 			String treeName = filePath.substring( Math.max(0, filePath.indexOf("/tss/" + rtd)) );
 			sb.append("<treeNode id=\"").append(index++).append("\" name=\"").append(treeName).append("\"/>");
 		}
- 		
- 		// more/bi_template 下
- 		File delfaultDir = new File(URLUtil.getWebFileUrl(DMConstants.REPORT_TL_DIR_DEFAULT).getPath());
- 		if( !delfaultDir.equals(reportTLDir) ) {
- 			files = FileHelper.listFilesByTypeDeeply("html", delfaultDir);
- 	 		for (File file : files) {
- 				sb.append("<treeNode id=\"").append(index++)
- 				  .append("\" name=\"").append("/tss/more/bi_template/" + file.getName()).append("\"/>");
- 			}
- 		}
  		
  		sb.append("</actionSet>");
         print("SourceTree", sb);
@@ -216,17 +213,14 @@ public class ReportAction extends BaseActionSupport {
     
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public void delete(HttpServletResponse response, @PathVariable("id") Long id) {
-        reportService.delete(id);
+        
+    	reportService.delete(id);
         
         // 删除定时JOB，如果有的话
         String jobCode = "ReportJob-" + id;
-		List<Param> jobParamItems = paramService.getParamsByParentCode(PX.TIMER_PARAM_CODE);
-		if(jobParamItems != null) {
-			for(Param temp : jobParamItems) {
-				if(jobCode.equals(temp.getUdf1())) {
-					paramService.delete(temp.getId());
-				}
-			}
+		List<?> list = commonService.getList("from JobDef where code like ?", jobCode + "%");
+		for( Object obj : list ) {
+			commonService.delete(JobDef.class, ((JobDef)obj).getId() );
 		}
 		
         printSuccessMessage();
@@ -288,68 +282,65 @@ public class ReportAction extends BaseActionSupport {
         print("Operation", EasyUtils.list2Str(list));
     }
 	
-	
-	@Autowired ParamService paramService;
-	
 	@RequestMapping(value = "/schedule", method = RequestMethod.POST)
-    public void saveJobParam(HttpServletResponse response, Long reportId, boolean self, String configVal) {
-		Param jobParam = paramService.getParam(PX.TIMER_PARAM_CODE);
-		if(jobParam == null) {
-			jobParam = ParamManager.addComboParam(ParamConstants.DEFAULT_PARENT_ID, PX.TIMER_PARAM_CODE, "定时配置");
-    	}
+    public void saveReportJob(HttpServletResponse response, Long reportId, boolean self, String configVal) {
 		
-		String value = ReportJob.class.getName() + " | " + configVal;
+		Report report = reportService.getReport(reportId);
+		String jobName = report.getName() + (self ? "-" + Environment.getUserCode() : "");
 		
-		Param jobParamItem = getJobParam(reportId, self);
-		if(jobParamItem == null) {
-			Report report = reportService.getReport(reportId);
+		// 0 0 12 * * ? | 17:操作货量汇总:boubei@163.com:param1=2018-08-01,param2=today-3
+		String configs[] = EasyUtils.split(configVal, "|");
+					
+		JobDef job = queryReportJob(reportId, self);
+		if(job == null) {
 			String jobCode = "ReportJob-" + reportId + (self ? "-" + Environment.getUserId() : "");
-			String text = report.getName() + (self ? "-" + Environment.getUserCode() : "");
-			jobParamItem = ParamManager.addParamItem(jobParam.getId(), value, text, jobParam.getModality());
-			jobParamItem.setUdf1(jobCode);
+			
+			job = new JobDef();
+			job.setName(jobName);
+			job.setCode(jobCode);
+			job.setJobClassName (ReportJob.class.getName());
+			job.setTimeStrategy (configs[0].trim());
+			job.setCustomizeInfo(configs[1].trim());
+			commonService.create(job);
 			
 			// 可推送的报表自动设置为允许订阅
 			report.setMailable(ParamConstants.TRUE);
 	        reportService.updateReport(report);
 		}
 		else {
-			jobParamItem.setValue(value);
+			job.setName(jobName);
+			job.setTimeStrategy (configs[0].trim());
+			job.setCustomizeInfo(configs[1].trim());
+			commonService.update(job);
 		}
-		paramService.saveParam(jobParamItem);
-        
-        printSuccessMessage("订阅成功");
+		new JobAction().refresh();
+		
+        printSuccessMessage("订阅邮件推送成功");
     }
 
 	@RequestMapping(value = "/schedule", method = RequestMethod.GET)
 	@ResponseBody
-    public Object[] getJobParam(HttpServletResponse response, Long reportId, boolean self) {
-		Param jobParam = getJobParam(reportId, self);
-		if(jobParam != null) {
-			String value = jobParam.getValue();
-			return EasyUtils.split(value, "|");
+    public Object[] getReportJob(HttpServletResponse response, Long reportId, boolean self) {
+		JobDef job = queryReportJob(reportId, self);
+		if(job == null) {
+			return null;
 		}
-		return null;
+		return new Object[] { job.getJobClassName(), job.getTimeStrategy(), job.getCustomizeInfo() };
     }
 	
-	private Param getJobParam( Long reportId, boolean self) {
+	private JobDef queryReportJob( Long reportId, boolean self) {
 		String jobCode = "ReportJob-" + reportId + (self ? "-" + Environment.getUserId() : "");
-		List<Param> jobParamItems = paramService.getParamsByParentCode(PX.TIMER_PARAM_CODE);
-		if(jobParamItems != null) {
-			for(Param param : jobParamItems) {
-				if(jobCode.equals(param.getUdf1())) {
-					return param;
-				}
-			}
-		}
-		return null;
+		List<?> list = commonService.getList("from JobDef where code = ?", jobCode);
+		return (JobDef) (list.isEmpty() ? null : list.get(0));
 	}
 	
 	@RequestMapping(value = "/schedule", method = RequestMethod.DELETE)
 	@ResponseBody
-    public void delJobParam(HttpServletResponse response, Long reportId, boolean self) {
-		Param jobParam = getJobParam(reportId, self);
-		if(jobParam != null) {
-			paramService.delete(jobParam.getId());
+    public void delReportJob(HttpServletResponse response, Long reportId, boolean self) {
+		JobDef job = queryReportJob(reportId, self);
+		if(job != null) {
+			commonService.delete(JobDef.class, job.getId());
+			new JobAction().refresh();
 		}
 		printSuccessMessage("成功取消邮件推送");
     }

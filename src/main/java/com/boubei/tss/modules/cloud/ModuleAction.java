@@ -26,6 +26,7 @@ import com.boubei.tss.dm.record.Record;
 import com.boubei.tss.dm.report.Report;
 import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.framework.sso.SSOConstants;
 import com.boubei.tss.util.EasyUtils;
 
 @Controller
@@ -56,7 +57,10 @@ public class ModuleAction {
 		Set<Long> reports = new LinkedHashSet<Long>();
 		Set<Long> records = new LinkedHashSet<Long>();
 		
-		String hql = "from ModuleDef where id in (select moduleId from ModuleUser where domain = ?)";
+//		String hql = "from ModuleDef where id in (select moduleId from ModuleUser where domain = ?)";
+		String hql = "from ModuleDef where id in (select moduleId from ModuleUser where domain = ? " +
+				" or userId in (" +Environment.getInSession(SSOConstants.USERIDS_OF_DOMAIN)+ ") )";
+		
 		List<ModuleDef> list = (List<ModuleDef>) commonService.getList(hql, domain);
 		for(ModuleDef md : list) {
 			String roles = md.getRoles();

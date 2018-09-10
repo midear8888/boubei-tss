@@ -21,8 +21,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.boubei.tss.dm.dml.SQLExcutor;
-import com.boubei.tss.modules.param.ParamListener;
-import com.boubei.tss.modules.param.ParamManager;
+import com.boubei.tss.framework.Global;
 
 /**
  
@@ -41,7 +40,11 @@ function setJobStatus(status) {
      $.ajax({
          url: '/tss/xdata/component_job_def/' + $.G("grid").getColumnValue("id"), 
          params: {"disabled": status}, 
-         onsuccess: function() {  $.alert("操作成功"); loadGridData(1); } 
+         onsuccess: function() {  
+             $.alert("操作成功"); 
+             loadGridData(1); 
+             $.post("/tss/auth/job/refresh", {}, function(msg) { msg == 'Success' && $.tssTip( "定时器刷新成功" );  });
+         } 
       });
 }
  */
@@ -67,11 +70,8 @@ public class JobAction {
 	@RequestMapping(value = "/refresh", method = RequestMethod.POST)
 	@ResponseBody
 	public Object refresh() {
-		for( ParamListener bean : ParamManager.listeners) {
-			if(bean instanceof SchedulerBean) {
-				((SchedulerBean)bean).refresh(false);
-			}
-		}
+		Global.schedulerBean.refresh(false);
+		
 		return "Success";
 	}
 	

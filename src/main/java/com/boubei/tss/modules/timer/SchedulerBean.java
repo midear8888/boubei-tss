@@ -33,12 +33,7 @@ import com.boubei.tss.PX;
 import com.boubei.tss.framework.Config;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.exception.BusinessException;
-import com.boubei.tss.framework.persistence.ICommonService;
-import com.boubei.tss.modules.param.Param;
-import com.boubei.tss.modules.param.ParamListener;
-import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.util.BeanUtil;
-import com.boubei.tss.util.EasyUtils;
 
 /** 
  * 定时器调度。
@@ -46,33 +41,23 @@ import com.boubei.tss.util.EasyUtils;
  * 新增或删除一个job失败,不影响其它job的生成和删除。
  * 
  */
-public class SchedulerBean implements ParamListener {
+@SuppressWarnings("unchecked")
+public class SchedulerBean {
     
 	protected Logger log = Logger.getLogger(this.getClass());
 	
     private Scheduler scheduler;
     private Map<String, JobDef> defsMap;
- 
-    @SuppressWarnings("unchecked")
-	public void afterChange(Param param) {
-    	// 为第一次初始化，由ParamServiceImpl初始化完成后触发
-    	if(param == null) {
-    		List<Param> params = ParamManager.getComboParam(PX.TIMER_PARAM_CODE);
-    		params = (List<Param>) EasyUtils.checkNull(params, new ArrayList<Param>());
-    		refresh(true, params.toArray(new Param[]{}) );
-    		return;
+    
+    private static SchedulerBean sb;
+    public  static SchedulerBean getInstanse() {
+    	if( sb == null) {
+    		sb = new SchedulerBean();
     	}
-    	
-    	Long parentId = param.getParentId();
-    	if(parentId == null) return;
-    	
-    	Param parent  = ParamManager.getService().getParam(parentId);
-		if( parent != null && PX.TIMER_PARAM_CODE.equals(parent.getCode()) ) {
-			refresh(false, param);
-		}
+    	return sb;
     }
- 
-    public SchedulerBean() {
+    
+    SchedulerBean() {
     	// 根据配置决定是否启用定时Job
     	if( Config.TRUE.equals(Config.getAttribute(PX.ENABLE_JOB)) ) {
 
@@ -83,51 +68,19 @@ public class SchedulerBean implements ParamListener {
 				scheduler = StdSchedulerFactory.getDefaultScheduler();
 				scheduler.start();
 			} catch (SchedulerException e) {
-	            throw new BusinessException("init SchedulerBean error", e);
+	            throw new BusinessException("start SchedulerBean error", e);
 	        } 
+	    	
+	    	refresh(true);
     	}
     }
     
-    // 停用的也要一块，不然在Param被重启用后，jobs找不到相应old，则会重复新建JobDef而失败
-    private List<JobDef> getJobDefs(boolean init, Param...params) {
-    	List<JobDef> jobDefs = new ArrayList<JobDef>();
-    	Map<String, JobDef> jobs = new HashMap<String, JobDef>();
-    	
-		ICommonService commonService = Global.getCommonService();
-		List<?> list = commonService.getList(" from JobDef "); 
-		for(Object obj : list) {
-			JobDef job = (JobDef) obj;
-			jobDefs.add( job );
-			jobs.put(job.getCode(), job);
-		}
-    	
-    	// merge params.job into JobDef
-    	for(Param param : params) {
-    		JobDef job = new JobDef(param);
-    		JobDef old = jobs.get(job.getCode());
-    		if(old == null) {
-    			commonService.create(job);
-    			jobDefs.add(job);
-    		} 
-    		else if(!init) {
-    			old.setName(job.getName());
-    			old.setJobClassName(job.getJobClassName());
-    			old.setTimeStrategy(job.getTimeStrategy());
-    			old.setCustomizeInfo(job.getCustomizeInfo());
-    			old.setDisabled(job.getDisabled());
-    			commonService.update(old);
-    		} 
-		}
-    	
-		return jobDefs;
-    }
-    
-    public void refresh(boolean init, Param...params) {
-    	if(scheduler == null) return;
+    public void refresh(boolean init) {
+    	if(scheduler == null) return; // job_enable = false
     	
     	log.debug("SchedulerBean refresh begin...");
     	
-    	List<JobDef> list = getJobDefs(init, params);
+		List<JobDef> list = (List<JobDef>) Global.getCommonService().getList(" from JobDef ");
     	
         List<String> jobCodes = new ArrayList<String>();
 		for(JobDef def : list) {
@@ -151,7 +104,6 @@ public class SchedulerBean implements ParamListener {
 			
 			// 新增或修过过的定时配置，需要重新生成定时Job
 			try {
-				@SuppressWarnings("unchecked")
 				Class<Job> jobClazz = (Class<Job>) BeanUtil.createClassByName(def.getJobClassName());
 				JobDetail aJob = JobBuilder.newJob(jobClazz)
 						.withIdentity(jobName)
@@ -186,7 +138,7 @@ public class SchedulerBean implements ParamListener {
     private void deleteJob(String jobName) {
     	try {
 			JobKey key = new JobKey(jobName);
-			scheduler.deleteJob(key );
+			scheduler.deleteJob(key);
 			
 			defsMap.remove(jobName);
 			log.info(" scheduler.deleteJob: " + jobName + " successed." );

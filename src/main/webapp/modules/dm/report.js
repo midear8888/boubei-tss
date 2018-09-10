@@ -440,9 +440,9 @@ function scheduleReport() {
 				var jobInfo = scheduleInfo[2].split(":");
 				scheduleTemplate[1].defaultValue = jobInfo[2];
 
-				var defaultParamValues = jobInfo[3].split(",");
-				for (var i = 0; i < defaultParamValues.length; i++) {
-                    var keyValue = defaultParamValues[i].split("=");
+				var pairs = jobInfo[3].split(",");
+				for (var i = 0; i < pairs.length; i++) {
+                    var keyValue = pairs[i].split("=");
                     scheduleTemplate.each(function(n, item) {
                     	if(item.name === keyValue[0]) {
                     		item.defaultValue = keyValue[1];
