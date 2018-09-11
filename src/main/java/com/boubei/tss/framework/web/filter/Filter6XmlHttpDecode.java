@@ -103,10 +103,11 @@ public class Filter6XmlHttpDecode implements Filter {
     
     private static String getRequestBody(ServletInputStream sis) throws IOException, UnsupportedEncodingException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        int bLen = 0;
         byte[] buffer = new byte[8 * 1024];
-        while ((bLen = sis.read(buffer)) > 0) {
+        int bLen = sis.read(buffer);
+        while ( bLen > 0 ) {
             baos.write(buffer, 0, bLen);
+            bLen = sis.read(buffer);
         }
         return new String(baos.toByteArray(), "UTF-8");
     } 

@@ -108,11 +108,10 @@ public class ArticleService implements IArticleService {
         
 		// 处理附件
         List<String> attachSeqNos = new LinkedList<String>();
-		if ( !EasyUtils.isNullOrEmpty(attachList) ) {			
-            StringTokenizer st = new StringTokenizer(attachList, ",");
-            while (st.hasMoreTokens()) {
-                attachSeqNos.add(st.nextToken());
-            }
+        attachList = EasyUtils.obj2String(attachList);
+        StringTokenizer st = new StringTokenizer(attachList, ",");
+        while (st.hasMoreTokens()) {
+            attachSeqNos.add(st.nextToken());
         }
 		
 		List<Attachment> attachs = articleDao.getArticleAttachments(tempArticleId); // 后台查找的新建文章时上传的附件列表

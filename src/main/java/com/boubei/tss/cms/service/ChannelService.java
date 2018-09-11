@@ -193,10 +193,7 @@ public class ChannelService implements IChannelService {
 	public void publishArticle(List<Article> articleList) {
 		for ( Article article : articleList) {
             // 更新发布日期
-			Date issueDate = article.getIssueDate();
-            if (issueDate == null || !issueDate.after(new Date())) {
-				article.setIssueDate(new Date());
-			}
+			article.setIssueDate(new Date());
 			
 			// 取文章附件列表
             List<Attachment> attachments = articleDao.getArticleAttachments(article.getId());

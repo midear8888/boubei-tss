@@ -254,9 +254,10 @@ public class Filter5HttpProxy implements Filter {
         ServletOutputStream out = response.getOutputStream();
         InputStream in = httpMethod.getResponseBodyAsStream();
         byte[] data = new byte[1024];
-        int len = 0;
-        while ((len = in.read(data)) > 0) {
+        int len = in.read(data);
+        while (len > 0) {
             out.write(data, 0, len);
+            len = in.read(data);
         }
         out.flush();
         out.close();
