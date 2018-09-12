@@ -39,7 +39,8 @@ public class ModuleAction {
 	@RequestMapping(value = "/resources/{resource}")
 	@ResponseBody
 	public Object listResource(@PathVariable String resource) {
-		return SQLExcutor.queryL("select id as value, name as text from " + resource + " order by decode");
+		return SQLExcutor.queryL("select id as value, name as text from " + resource + " " +
+				" where disabled = 0 and name not like '$%' order by decode");
 	}
 	
 	/**
