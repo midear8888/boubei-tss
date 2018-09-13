@@ -130,8 +130,6 @@ public class FileAction extends BaseActionSupport {
     	String fileNames = request.getParameter("fileNames");
     	String folderNames = request.getParameter("folderNames");
     	
-        if( EasyUtils.isNullOrEmpty(fileNames) && EasyUtils.isNullOrEmpty(folderNames)) return;
-        
         // 建立临时文件夹存放要下载的所有文件
         contextPath = getContextPath(contextPath);
         File tempDir = new File(contextPath + "temp"); 
@@ -142,9 +140,7 @@ public class FileAction extends BaseActionSupport {
         	String[] fNames = fileNames.split(",");
             for ( String fileName : fNames ) {
                 File file = new File(contextPath + fileName);
-                if (file.exists()) {
-                	files.add(file);
-                }
+                files.add(file);
             }
         }
         

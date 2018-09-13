@@ -241,31 +241,29 @@ public class ComponentAction extends FMSupportAction {
             while(stk.hasMoreTokens()) {
                 String itemName = stk.nextToken(); 
                 int index = itemName.indexOf("=");
-                if(index > 0) {
-                    itemName = itemName.substring(0, index);
-                    
-                    //<column name="tableWidth" caption="XX" mode="string"/>
-                    Element itemcolumn = declareNode.addElement("column");
-                    itemcolumn.addAttribute("name", itemName);
-                    itemcolumn.addAttribute("caption", itemName);
-                    itemcolumn.addAttribute("mode", "string");
-                    
-                    /*<TR>
-                     *   <TD width="50"><label binding="tableWidth"/></TD>
-                     *   <TD><input binding="tableWidth" type="text"/></TD>
-                     *</TR>
-                     */
-                    Element trNode = layoutNode.addElement("TR");
-                    Element tdNode1 = trNode.addElement("TD");
-                    tdNode1.addAttribute("width", "50");
-                    Element labelNode = tdNode1.addElement("label");
-                    labelNode.addAttribute("binding", itemName);
-                    
-                    Element tdNode2 = trNode.addElement("TD");
-                    Element inputNode = tdNode2.addElement("input");
-                    inputNode.addAttribute("binding", itemName);
-                    inputNode.addAttribute("type", "text");
-				}
+                itemName = itemName.substring(0, index);
+                
+                //<column name="tableWidth" caption="XX" mode="string"/>
+                Element itemcolumn = declareNode.addElement("column");
+                itemcolumn.addAttribute("name", itemName);
+                itemcolumn.addAttribute("caption", itemName);
+                itemcolumn.addAttribute("mode", "string");
+                
+                /*<TR>
+                 *   <TD width="50"><label binding="tableWidth"/></TD>
+                 *   <TD><input binding="tableWidth" type="text"/></TD>
+                 *</TR>
+                 */
+                Element trNode = layoutNode.addElement("TR");
+                Element tdNode1 = trNode.addElement("TD");
+                tdNode1.addAttribute("width", "50");
+                Element labelNode = tdNode1.addElement("label");
+                labelNode.addAttribute("binding", itemName);
+                
+                Element tdNode2 = trNode.addElement("TD");
+                Element inputNode = tdNode2.addElement("input");
+                inputNode.addAttribute("binding", itemName);
+                inputNode.addAttribute("type", "text");
 			}
 			File dir = new File(configFilePath).getParentFile();
 			FileHelper.createDir(dir.getPath());

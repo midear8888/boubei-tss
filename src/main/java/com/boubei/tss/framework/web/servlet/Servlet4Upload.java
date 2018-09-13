@@ -48,7 +48,7 @@ import com.boubei.tss.util.FileHelper;
  * 注：最大可以上传文件大小为20M = 20971520Byte
  * 
  * 微信小程序等上传附件：
- * var url =  "https://scm.boudata.com/tss/remote/upload?afterUploadClass=com.boubei.tss.dm.record.file.CreateAttach&type=2";
+ * var url =  "https://www.boudata.com/tss/remote/upload?afterUploadClass=com.boubei.tss.dm.record.file.CreateAttach&type=2";
 	url += "&recordId=" + recordId;  
 	url += "&itemId=" + selectedLineId;
 	url += "&uName=" + uName;  
@@ -67,7 +67,7 @@ public class Servlet4Upload extends HttpServlet {
 			HttpServletResponse response) throws ServletException, IOException {
 		
         String servletPath = request.getServletPath() + "";
-        if( servletPath.endsWith("/remote/upload") ) { // 远程上传进行自动登录
+        if( servletPath.endsWith("/remote/upload") ) { // 远程上传，先校验令牌，通过则进行自动登录
         	Filter8APITokenCheck.checkAPIToken( request );
         }
 		
@@ -75,7 +75,6 @@ public class Servlet4Upload extends HttpServlet {
 		try {
 	        Part part = request.getPart("file");
 			script = doUpload(request, part); // 自定义输出到指定目录
-			script = (String) EasyUtils.checkNull(script, "console.log('上传完成')");
 			
 		} catch (Exception _e) {
 			Exception e = ExceptionConvertorFactory.getConvertor().convert(_e);
@@ -84,7 +83,9 @@ public class Servlet4Upload extends HttpServlet {
 			
 			errorMsg = Pattern.compile("\t|\r|\n|\'").matcher(errorMsg).replaceAll(" "); // 剔除换行，以免alert不出来
 			script = "parent.alert('" + errorMsg + "');";
-		}
+		} 
+		
+		script = (String) EasyUtils.checkNull(script, "console.log('上传完成')");
 		
 		// 上传文件在一个独立的iframe里执行，完成后，输出一个html到该iframe，以触发提示脚本
 		response.setContentType("text/html;charset=utf-8");
@@ -93,16 +94,13 @@ public class Servlet4Upload extends HttpServlet {
 	
 	String doUpload(HttpServletRequest request, Part part) throws Exception {
 		
-		/* gets absolute path of the web application, tomcat7/webapps/tss */
+		/* 
+		 * gets absolute path of the web application, tomcat7/webapps/tss
 		String defaultUploadPath = request.getServletContext().getRealPath("");
+		 */
 		
-		String uploadPath = DMUtil.getExportPath() + "/upload";
-		if(! ( new File(uploadPath).exists() )) {
-			uploadPath = defaultUploadPath;
-		}
-		
-        String savePath = uploadPath + File.separator + "uploadFile";
-        FileHelper.createDir(savePath);
+		String uploadPath = DMUtil.getExportPath() + File.separator + "upload";
+        FileHelper.createDir(uploadPath);
  
 		// 获取上传的文件真实名字(含后缀)
 		String contentDisp = part.getHeader("content-disposition");
@@ -125,7 +123,7 @@ public class Servlet4Upload extends HttpServlet {
 			newFileName = System.currentTimeMillis() + "." + subfix; // 重命名
 		}
 		
-        String newFilePath = savePath + File.separator + newFileName;
+        String newFilePath = uploadPath + File.separator + newFileName;
         
         // 自定义输出到指定目录
 		InputStream is = part.getInputStream();

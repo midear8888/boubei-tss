@@ -82,6 +82,9 @@ public class EX {
 	public static String DM_09 = "对数据表【${x1}】的权限不足，${x2}。";
 	public static String DM_10 = "该数据表已被停用，无法再录入数据！";
 	public static String DM_11 = "令牌验证未获通过，调用接口失败。";
+	public static String DM_11A= "时间戳【${x1}】无效";
+	public static String DM_11B= "验签失败";
+	public static String DM_11C= "签名为空";
 	public static String DM_12 = "您对此数据表没有维护权限";
 	public static String DM_13 = "ID=${x1} 的数据表不存在。";
 	public static String DM_13_2 = "ID=${x1} 的数据记录不存在。";
@@ -170,6 +173,7 @@ public class EX {
 	public static String U_46 = "系统不支持自注册，可联系管理员添加账号";
 	public static String U_47 = "系统不支持开发者自注册，可联系管理员添加账号";
 	public static String U_48 = "权限不足";
+	public static String U_49 = "用户认证失败，没有对应合法身份";
 	
 	public static String P_01 = "组件不存在，可能已被删除，读取失败！ID = ";
 	public static String P_02 = "同名文件(夹)已经存在，重命名失败！";

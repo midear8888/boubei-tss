@@ -158,16 +158,15 @@ public final class Context {
      */
     public static void initIdentityInfo(IdentityCard card) {
         RequestContext rc = getRequestContext();
-        if (rc != null) {
+        
+        // 判断是否是注册用户（包括匿名用户）登录系统。是的话将令牌等信息放入session
+        if (rc != null && rc.getSession() != null && card != null) {
             HttpSession session = rc.getSession();
-            // 判断是否是注册用户（包括匿名用户）登录系统。是的话将令牌等信息放入session
-            if (session != null && card != null) {
-                session.setAttribute(RequestContext.IDENTITY_CARD, card);
-                session.setAttribute(RequestContext.USER_TOKEN, card.getToken());
-            }
+            session.setAttribute(RequestContext.IDENTITY_CARD, card);
+            session.setAttribute(RequestContext.USER_TOKEN, card.getToken());
         }
         if(card != null){
-            cardsMap.put(card.getToken(), card); //在用户注销的时候将其去除，在Session监听器里去
+            cardsMap.put(card.getToken(), card); // 在用户注销的时候将其去除，在Session监听器里去
             setToken(card.getToken());
         }
         log.debug("完成在应用【" + Config.getAttribute(PX.APPLICATION_CODE) + "】里设置用户（" + card + "）的身份证、令牌等信息。");

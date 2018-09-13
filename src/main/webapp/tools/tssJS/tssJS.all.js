@@ -1241,9 +1241,9 @@
         url : url,
         method : "GET",
         headers : {},
-        params  : {}, 
+        headers : { "noAlert": true },
         formNode : formNode,
-        exEmpty: false,
+        exEmpty: true,
         ondata : function() { },
         onresult : function() { },
         onexception : function() { },
@@ -1260,7 +1260,7 @@
         request.type = arg.type;
         request.method = arg.method || "POST";
         request.waiting = arg.waiting || false;
-        request.async = arg.async || true;
+        request.async = arg.async != false;
 
         request.params  = arg.params  || {};
         request.headers = arg.headers || {};
@@ -3891,7 +3891,7 @@
             return field.getAttribute(attrName);
         },
 
-        /* 示例：动态更新下拉树：
+        /* 示例：动态更新下拉树（注：录入表已经全部使用combotree，不在用combo）：
             form.updateField("center2", [
                         {"name": "mode", "value": "combotree"},
                         {"name": "texts", "value": texts.join('|')},
@@ -4660,7 +4660,7 @@
                             }
                         });
                     }
-                    value = value.replace(/\^/gi, "\"");
+                    value = value.replace(/\^/gi, "\""); // @see GridNode 104行
                     $(cell).html(value);
                     
                     var showTitle = column.getAttribute("showTitle");
@@ -6298,18 +6298,18 @@
             }
         },
 
+        closeAllTabs: function() {
+            for(var item in this.tabs) {
+                var curTab = this.tabs[item];
+                curTab.close();
+            }
+        },
+
         /* 低亮所有标签 */
         inactiveAllTabs: function() {
             for(var item in this.tabs) {
                 var curTab = this.tabs[item];
                 curTab.inactive();
-            }
-        },
-
-        closeAllTabs: function() {
-            for(var item in this.tabs) {
-                var curTab = this.tabs[item];
-                curTab.close();
             }
         },
          

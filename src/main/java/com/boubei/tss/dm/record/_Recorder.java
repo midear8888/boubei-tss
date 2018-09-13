@@ -205,7 +205,7 @@ public class _Recorder extends BaseActionSupport {
 			wfService.fixWFStatus(_db, ex.result);
 		}
 
-		AccessLogRecorder.outputAccessLog(_db.recordName, _db.recordName, "select_" + pointedFileds, requestMap, start);
+		AccessLogRecorder.outputAccessLog("record-" + _db.recordId, _db.recordName, "select_" + pointedFileds, requestMap, start);
 
 		if (pointedFileds || requestMap.containsKey("id") ) {
 			return ex;
@@ -906,7 +906,8 @@ public class _Recorder extends BaseActionSupport {
 		HitRateManager.getInstanse("dm_record_attach").output(id); // 更新浏览次数
 
 		Record record = recordService.getRecord(recordId);
-		AccessLogRecorder.outputAccessLog(record.getName(), recordId.toString(), "下载附件_" + id, new HashMap<String, String>(),
+		String rcName = record.getName();
+		AccessLogRecorder.outputAccessLog("record-" + record.getId(), "下载附件", rcName + "_" + id, new HashMap<String, String>(),
 				System.currentTimeMillis());
 	}
 

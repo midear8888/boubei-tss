@@ -14,6 +14,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 
+import com.boubei.tss.EX;
 import com.boubei.tss.framework.exception.UserIdentificationException;
 import com.boubei.tss.framework.sso.IOperator;
 import com.boubei.tss.framework.sso.IUserIdentifier;
@@ -38,7 +39,7 @@ public abstract class BaseUserIdentifier implements IUserIdentifier {
 		
 		// 如果合法，注册在线用户，并获取相关用户信息对象，放入身份对象
 		if (operator == null) {
-			throw new UserIdentificationException("用户认证失败，没有对应合法身份");
+			throw new UserIdentificationException(EX.U_49);
 		}
 		
 		String appCode   = Context.getApplicationContext().getCurrentAppCode();

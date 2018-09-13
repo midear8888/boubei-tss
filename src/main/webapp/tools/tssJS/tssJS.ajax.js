@@ -5,7 +5,7 @@ CONTEXTPATH = "tss";
         url : url,
         method : "GET",
         headers : {},
-        params  : {}, 
+        headers : { "noAlert": true },
         formNode : formNode,
         exEmpty: true,
         ondata : function() { },
@@ -24,7 +24,7 @@ CONTEXTPATH = "tss";
         request.type = arg.type;
         request.method = arg.method || "POST";
         request.waiting = arg.waiting || false;
-        request.async = arg.async || true;
+        request.async = arg.async != false;
 
         request.params  = arg.params  || {};
         request.headers = arg.headers || {};

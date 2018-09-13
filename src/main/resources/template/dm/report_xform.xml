@@ -15,16 +15,16 @@
 	<layout>
 		<TR>
 			<TD width="70"><label binding="name"/></TD>
-			<TD width="230"><input binding="name" style="width:200px;"/></TD>
-			<TD width="50"><label binding="datasource"/></TD>
-			<TD width="280">
-				<input binding="datasource" style="width:150px;margin-right:10px;"/>
+			<TD width="180"><input binding="name" style="width:150px;"/></TD>
+			<TD width="45"><label binding="datasource"/></TD>
+			<TD width="250">
+				<input binding="datasource" style="width:130px;margin-right:10px;"/>
 				<a href="#" onclick="manageDS()" class="tssbutton small blue">管理数据源</a>
 			</TD>
 			<TD width="50"><label binding="id"/></TD>
-			<TD width="70"><input binding="id" style="width:60px;"/></TD>
-			<TD width="70"><label binding="code"/></TD>
-			<TD width="200"><input binding="code" style="width:170px;"/></TD>
+			<TD width="70"><input binding="id" style="width:50px;"/></TD>
+			<TD width="55"><label binding="code"/></TD>
+			<TD width="180"><input binding="code" style="width:160px;"/></TD>
 			<TD width="80"><label binding="needLog"/></TD>
 			<TD><input binding="needLog"/></TD>
 		</TR>

@@ -24,13 +24,14 @@ import com.boubei.tss.util.EasyUtils;
 public class SecurityUtil {
     
 	public static String SECURITY_LEVEL = "security.level";
-	public static int SECURITY_LEVELS[] = {0, 1, 2, 3, 4, 5, 6};
+	public static int SECURITY_LEVELS[] = {0, 1, 2, 3, 4, 5, 6, 7};
 	public static int LEVEL_1 = SECURITY_LEVELS[1];
 	public static int LEVEL_2 = SECURITY_LEVELS[2];
 	public static int LEVEL_3 = SECURITY_LEVELS[3];
 	public static int LEVEL_4 = SECURITY_LEVELS[4]; // safe
 	public static int LEVEL_5 = SECURITY_LEVELS[5]; 
 	public static int LEVEL_6 = SECURITY_LEVELS[6]; // hard
+	public static int LEVEL_7 = SECURITY_LEVELS[7]; // hardest
 	
 	public static int getLevel() {
 		try {
@@ -46,6 +47,10 @@ public class SecurityUtil {
 	
 	public static boolean isHardMode() {
 		return getLevel() >= LEVEL_6;
+	}
+	
+	public static boolean isHardestMode() {
+		return getLevel() >= LEVEL_7;
 	}
 	
 	public static String fuckXSS(String value, HttpServletRequest request) {
