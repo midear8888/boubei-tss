@@ -31,7 +31,7 @@ public class TokenUtil {
 	 */
 	public static String createToken(String sessionId, Long userId) {
 		if (sessionId != null && userId != null) {
-			String originalToken = sessionId + "," + System.currentTimeMillis() + "," + userId;
+			String originalToken = sessionId + "," + userId;
 			return infoEncoder.createEncryptor(originalToken);
 		}
 		return null;

@@ -244,9 +244,11 @@ public class _Recorder extends BaseActionSupport {
 			}
 
 			Object itemId = item.get("id").toString();
-			Object attachTag = EasyUtils.checkNull(itemAttach.get(itemId), isWFQuery ? "0" : "上传");
+			Object fileCount = itemAttach.get(itemId);
+			Object attachTag = EasyUtils.checkNull(fileCount, isWFQuery ? "0" : "上传");
 			String onclick = isTssGrid ? "manageAttach(" +itemId+ ")" : "manageAttach(" +itemId+ ", " +_db.recordId+ ")";
 			item.put("fileNum", "<a href='javascript:void(0)' onclick='" +onclick+ "'>" + attachTag + "</a>");
+			item.put("_fileNum", EasyUtils.obj2Int(fileCount));
 		}
 
 		return ex;
@@ -823,6 +825,7 @@ public class _Recorder extends BaseActionSupport {
 
 	/************************************* record attach operation **************************************/
 
+	// TODO 支持批量读取多行记录附件 ？
 	@RequestMapping("/attach/json/{record}/{itemId}")
 	@ResponseBody
 	public List<?> getAttachList(HttpServletRequest request, @PathVariable("record") Object record, @PathVariable("itemId") Long itemId) {

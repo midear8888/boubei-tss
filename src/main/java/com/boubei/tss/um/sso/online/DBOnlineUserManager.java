@@ -38,8 +38,12 @@ public class DBOnlineUserManager implements IOnlineUserManager {
      * 如果在线用户库中没有相同的用户存在， 则在在线用户库中添加此记录
      */
     public void register(String token, String appCode, String sessionId, Long userId, String userName) {
-    	DBOnlineUser entity = new DBOnlineUser(userId, sessionId, appCode, token, userName);
-    	dao.create(entity);       
+    	String hql = " from DBOnlineUser o where o.userId = ? and o.sessionId = ? and o.appCode = ? ";
+        List<?> list = dao.getEntities(hql, userId, sessionId, appCode);
+        if( list.isEmpty() ) {
+        	DBOnlineUser entity = new DBOnlineUser(userId, sessionId, appCode, token, userName);
+        	dao.create(entity);
+        }
     }
 
 	public void logout(Long userId) {

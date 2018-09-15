@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -94,17 +95,19 @@ public class ReportQuery {
 				 * 如一些只用于多级下拉联动的参数，可能并不用于FM(script+参数）
 				 */
 				String _script = reportScript.toLowerCase();
-				Object ignore = EasyUtils.checkNull(map.get("isMacrocode"), map.get("ignore")); 
-				if ( _script.indexOf("${" + code + "}") > 0 || _script.indexOf("${" + paramKey + "}") > 0 ) {
+				Object ignore = null; 
+				if ( Pattern.compile("\\$\\{[\\s]*(" +code+ "|" +paramKey+ ")[\\s]*\\}").matcher(_script).find() ) {
 					ignore = "true";		
 				}
-				else if( (_script.indexOf("if " + code) > 0 && _script.indexOf("if " + code + "??") < 0)
-						|| (_script.indexOf("if " + paramKey) > 0 && _script.indexOf("if " + paramKey + "??") < 0) ) {
+				else if( Pattern.compile("if[\\s]+(" +code+ "|" +paramKey+ ")").matcher(_script).find() && 
+						!Pattern.compile("if[\\s]+(" +code+ "|" +paramKey+ ")\\?\\?").matcher(_script).find() ) {
+					
 					// <#if param1==1> or <#elseif param1==1>
 					// eg1: <#if param1==1> group by week </#if>  --> is macrocode: true 
 					// eg2: <#if param1??> createTime > ? </#if>  --> is macrocode: false
 					ignore = "true";
 				}
+				ignore = EasyUtils.checkNull(ignore, map.get("isMacrocode"));
 				
 				// 隐藏类型的参数
 				Object paramType = map.get("type");
@@ -114,20 +117,20 @@ public class ReportQuery {
 				
 				// 将日期的快捷写法，转换成相应日期
 				paramValue = DateUtil.fastCast(paramValue);
+				Object _paramValue = DMUtil.preTreatValue(paramValue, paramType);
 
-				// 处理in查询的条件值，为每个项加上单引号
-				if (_script.indexOf("in (${" + code + "})") > 0 || _script.indexOf("in (${" + paramKey + "})") > 0) {
+				// 处理in查询的条件值，为每个项加上单引号 
+				if ( Pattern.compile("in[\\s]*\\(\\$\\{[\\s]*(" +code+ "|" +paramKey+ ")[\\s]*\\}\\)").matcher(_script).find() ) {
 					
-					paramValue = DMUtil.insertSingleQuotes(paramValue); 
+					_paramValue = DMUtil.insertSingleQuotes(paramValue); 
 				}
 				// 判断参数是否只用于freemarker解析
 				else if ( !"true".equals(ignore) ) {
-					Object value = DMUtil.preTreatValue(paramValue, paramType);
-					paramsMap.put(paramsMap.size() + 1, value);
+					paramsMap.put(paramsMap.size() + 1, _paramValue);
 				}
 				
-				fmDataMap.put(paramKey, paramValue);
-				fmDataMap.put(code, paramValue);
+				fmDataMap.put(paramKey, _paramValue);
+				fmDataMap.put(code, _paramValue);
   	        }
       	}
       	
