@@ -425,7 +425,8 @@ public class _Recorder extends BaseActionSupport {
 
 			// 计算并初始化流程
 			wfService.calculateWFStatus(newID, _db);
-		} catch (Exception e) {
+		} 
+		catch (Exception e) {
 			_db.delete(newID); // 回滚
 			throwEx(e, _db + " create ");
 		}

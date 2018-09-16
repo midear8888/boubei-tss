@@ -271,6 +271,7 @@ function refreshTable() {
     !isLogicDelete && tssJS("#listBT4").hide();
 
     tssJS("#gridTitle>input").show();
+    filterTopMenu();
 } 
 // 审批模式
 function listWorkflow(type) {
@@ -319,6 +320,22 @@ function recycleBin() {
     ws.closeAllTabs();
 }
 
+function filterTopMenu() {
+    if( !_operation.contains("1") ) {
+        tssJS("#btn_create").hide();
+    } 
+    if( !_operation.contains("1") || !batchImp ) {
+        tssJS("#btn_imp").hide();
+        tssJS("#btn_tl").hide();
+    }
+    if( !_operation.contains("1") && !_operation.contains("4") && !_operation.contains("5")) {
+        tssJS("#btn_search").hide();
+    }
+    if( !_operation.contains("5") && !billMode ) { // 只有维护数据权限的角色才能使用批量删除
+        tssJS("#btn_batch_del").hide();
+    }
+}
+
 function initMenus() {
     var rcTitle;
     if( hasWorkflow ) {
@@ -333,19 +350,7 @@ function initMenus() {
     tssJS("#rcTitle").html(rcTitle);
     tssJS("#rcTitle>a").attr("href", "javascript:void(0)");
 
-    if( !_operation.contains("1") ) {
-        tssJS("#btn_create").hide();
-    } 
-    if( !_operation.contains("1") || !batchImp ) {
-        tssJS("#btn_imp").hide();
-        tssJS("#btn_tl").hide();
-    }
-    if( !_operation.contains("1") && !_operation.contains("4") && !_operation.contains("5")) {
-        tssJS("#btn_search").hide();
-    }
-    if( !_operation.contains("5") && !billMode ) { // 只有维护数据权限的角色才能使用批量删除
-        tssJS("#btn_batch_del").hide();
-    }
+    filterTopMenu();
 
     /* Grid菜单初始化  */
     var item1 = {
@@ -571,13 +576,6 @@ function loadDetailData(rowID) {
             });
         });
 
-        // 设置保存/关闭按钮操作
-        if( canEditRow(rowID) && (!disableSave || !disableSave())) {
-            tssJS("#saveBt").show().click( function() { saveSource(rowID, isCreateRow, version);  } );
-        } else {
-            tssJS("#saveBt").hide();
-        }
-
         tssJS('#btnViewAttach').remove();         
         if(needFile) {
             var newBtn = tssJS.createElement('button', 'tssbutton small white', 'btnViewAttach');
@@ -637,6 +635,14 @@ function loadDetailData(rowID) {
         // 回收站中的记录禁止修改
         if( _item && (_item.domain||'').indexOf('@--') >= 0 ) {
             tssJS("#cancelBt, #saveBt, #btnViewAttach").hide();
+        }
+
+        // 设置保存/关闭按钮操作
+        if( canEditRow(rowID) && (!disableSave || !disableSave())) {
+            tssJS("#saveBt").show().click( function() { saveSource(rowID, isCreateRow, version);  } );
+        } else {
+            disableForm();
+            tssJS("#saveBt, #btnViewAttach").hide();
         }
     }
 

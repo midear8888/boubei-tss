@@ -57,13 +57,13 @@ public interface IUserService {
     /**
      * 新建/修改一个User对象的明细信息、用户对用户组信息、用户对角色的信息
      * @param user
-     * @param groupIdsStr
-     * @param roleIdsStr
+     * @param groupIds
+     * @param roleIds
      */
     @Logable(operateObject="用户", 
             operateInfo="新建/修改了 ${args[0]} , groups: ${args[1]}, roles: ${args[2]?default(\"\")}）"
         )
-    void createOrUpdateUser(User user, String groupIdsStr, String roleIdsStr);
+    void createOrUpdateUser(User user, String groupIds, String roleIds);
 
     /**
      * 删除用户 辅助组用户删除用户只删除对应关系； 

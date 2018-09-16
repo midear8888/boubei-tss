@@ -55,6 +55,7 @@ import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.um.service.IUserService;
 import com.boubei.tss.um.sso.online.DBOnlineUser;
 import com.boubei.tss.util.DateUtil;
+import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.XMLDocUtil;
 
 @Controller
@@ -141,10 +142,19 @@ public class UserAction extends BaseActionSupport {
 	 */
 	@RequestMapping(method = RequestMethod.POST)
 	public void saveUser(HttpServletResponse response, HttpServletRequest request, User user) {
-		String user2GroupExistTree = request.getParameter("User2GroupExistTree");
-    	String user2RoleExistTree  = request.getParameter("User2RoleExistTree");
-		userService.createOrUpdateUser(user, user2GroupExistTree, user2RoleExistTree);
-        printSuccessMessage();
+		String groupIds = request.getParameter("User2GroupExistTree");
+    	String roleIds  = request.getParameter("User2RoleExistTree");
+    	
+    	// 检查对组是否有维护权限，防止篡改（建）用户信息
+    	if( !EasyUtils.isNullOrEmpty(groupIds) ) {
+    		String[] _groupIds = groupIds.split(",");
+    		for (String temp : _groupIds) {
+                Long groupId = Long.valueOf(temp);
+                checkPermission(groupId);
+    		}
+    		userService.createOrUpdateUser(user, groupIds, roleIds);
+            printSuccessMessage();
+    	}
 	}
 	
 	/**

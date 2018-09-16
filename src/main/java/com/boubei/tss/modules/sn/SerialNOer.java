@@ -27,7 +27,7 @@ public class SerialNOer {
 
 	@RequestMapping(value = "/{sntemplate}/{count}")
 	@ResponseBody
-	public List<String> create(@PathVariable("sntemplate") String sntemplate, @PathVariable("count") int count) {
+	public synchronized List<String> create(@PathVariable("sntemplate") String sntemplate, @PathVariable("count") int count) {
 		return create(Environment.getDomainOrign(), sntemplate, count);
 	}
 		
@@ -90,7 +90,9 @@ public class SerialNOer {
 			sn = precode + snMode + sn;
 			result.add(sn);
 		}
-		snItem.setLastNum(snItem.getLastNum() + count);
+		
+		int lastNum = snItem.getLastNum() + count;
+		snItem.setLastNum(lastNum);
 		commonService.update(snItem);
 		
 		return result;
