@@ -100,6 +100,8 @@ function initSelected() {
     $.getJSON("/tss/auth/module/my", {}, function(data) {
         data.each(function(i, item) {
             var $li = $("#li" + item.id).addClass("selected");
+            if(!$li.length) return true;
+            
             $li.find("div.module>.bts>button:nth-child(1)")
                 .text("结束试用")
                 .addClass("orange")

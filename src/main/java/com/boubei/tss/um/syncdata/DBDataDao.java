@@ -19,11 +19,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.boubei.tss.framework.Config;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.connpool._Connection;
 import com.boubei.tss.um.helper.dto.GroupDTO;
 import com.boubei.tss.um.helper.dto.UserDTO;
 import com.boubei.tss.util.BeanUtil;
+import com.boubei.tss.util.EasyUtils;
 
 /** 
  * 从MySQL等数据库里同步用户组织信息
@@ -83,6 +85,11 @@ public class DBDataDao implements IOutDataDao {
         String url   = map.get(SyncDataHelper.URL);
         String user  = map.get(SyncDataHelper.USERNAME);
         String pwd   = map.get(SyncDataHelper.PASSWORD);
+        
+        driver = (String) EasyUtils.checkNull(driver, Config.getAttribute("db.connection.driver_class").trim());
+		url    = (String) EasyUtils.checkNull(url, Config.getAttribute("db.connection.url").trim());
+		user   = (String) EasyUtils.checkNull(user, Config.getAttribute("db.connection.username").trim());
+		pwd    = (String) EasyUtils.checkNull(pwd, Config.getAttribute("db.connection.password").trim());
 
         return _Connection.openConnection(driver, url, user, pwd);
     }

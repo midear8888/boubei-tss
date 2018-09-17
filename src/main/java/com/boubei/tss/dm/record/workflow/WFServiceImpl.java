@@ -98,7 +98,7 @@ public class WFServiceImpl implements WFService {
 		Map<String, Object> context = new HashMap<String, Object>( item );
 		context.put("userCode", Environment.getUserCode());
 		context.put("userName", Environment.getUserName());
-		context.put("group", Environment.getInSession(SSOConstants.USER_GROUP));
+		context.put("group", Environment.getUserGroup());
 		for( Long role : Environment.getOwnRoles() ) {
 			context.put("role_" + role, role);
 		}
