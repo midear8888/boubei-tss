@@ -88,7 +88,8 @@ if( _default ) {
 	_default = resourceUrl(_default) + (_defaultItem ? "&itemId=" + _defaultItem : "");
 } 
 else {
-	_default = (group == "-1" || !parent.userHas[1].contains(-8)) ? "" : "x/domain.html";
+	var roles = parent.userHas[1];
+	_default = ( group == "-1" || !(roles.contains(-8) || roles.contains(-9) || roles.contains(-1)) ) ? "" : "x/domain.html";
 }
 
 function resourceUrl(resource) {

@@ -92,6 +92,8 @@ public class FetchPermissionAfterLogin implements ILoginCustomizer {
         
         session.setAttribute("GROUP_LAST_ID", lastGroup[0]);
     	session.setAttribute("GROUP_LAST_NAME", lastGroup[1]);
+    	session.setAttribute(SSOConstants.USER_GROUP_ID, lastGroup[0]);
+    	session.setAttribute(SSOConstants.USER_GROUP, lastGroup[1]);
     }
 
     public void execute() {

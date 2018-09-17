@@ -752,6 +752,7 @@ public abstract class _Database {
 			if( EasyUtils.isNullOrEmpty(_valueStr) ) continue;
 			
 			// 对paramValue进行检测，防止SQL注入
+			_valueStr = DMUtil.fmParse(_valueStr);
 			String valueStr = DMUtil.checkSQLInject(_valueStr);
 			
 			if( "creator".equals(key) && visible) {

@@ -18,6 +18,7 @@ import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.pagequery.MacrocodeQueryCondition;
 import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.framework.sso.SSOConstants;
 import com.boubei.tss.um.dao.IGroupDao;
 import com.boubei.tss.um.entity.Group;
 import com.boubei.tss.um.helper.dto.OperatorDTO;
@@ -97,7 +98,7 @@ public class WFServiceImpl implements WFService {
 		Map<String, Object> context = new HashMap<String, Object>( item );
 		context.put("userCode", Environment.getUserCode());
 		context.put("userName", Environment.getUserName());
-		context.put("group", Environment.getInSession("GROUP_LAST_NAME"));
+		context.put("group", Environment.getInSession(SSOConstants.USER_GROUP));
 		for( Long role : Environment.getOwnRoles() ) {
 			context.put("role_" + role, role);
 		}
@@ -171,7 +172,7 @@ public class WFServiceImpl implements WFService {
 			return result;
 		}
 		
-		Group inGroup = commonDao.getEntity( (Long) Environment.getInSession("GROUP_LAST_ID") );
+		Group inGroup = commonDao.getEntity( (Long) Environment.getInSession(SSOConstants.USER_GROUP_ID) );
 		List<OperatorDTO> list = loginSerivce.getUsersByRoleId(roleId);
 		
 		// 取出当前域管理员账号
