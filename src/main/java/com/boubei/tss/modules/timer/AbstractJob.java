@@ -30,6 +30,8 @@ import com.boubei.tss.um.helper.dto.OperatorDTO;
 
 public abstract class AbstractJob implements Job {
 	
+	public static final String TIMER = "Timer";
+
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	IBusinessLogger businessLogger;
@@ -95,7 +97,7 @@ public abstract class AbstractJob implements Job {
         finally {
         	try {
         		if(excuteLog != null) {
-        			excuteLog.setOperateTable("Timer");
+        			excuteLog.setOperateTable(TIMER);
         			businessLogger.output(excuteLog);
         		}
         	} 

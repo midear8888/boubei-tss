@@ -848,24 +848,22 @@ public abstract class _Database {
 		
 		// 设置排序方式
 		String _sortField = params.get("sortField");
-		String sortType  = params.get("sortType");
-		if( EasyUtils.isNullOrEmpty(sortType) ) {
-			sortType = "asc";
-		}
+		String sortType  = EasyUtils.obj2String( params.get("sortType"));
 		
 		List<String> sortFieldList = new ArrayList<String>();
 		if( !EasyUtils.isNullOrEmpty(_sortField) ) {
 			String[] sortFields = _sortField.split(","); // 支持按多个字段排序
 			for(String sortField : sortFields) {
 				// 判断字段是否存在，无需再检查SQL注入
-				if( this.fieldCodes.contains(sortField) || "id,createtime,creator,updatetime,updator".indexOf(sortField) >= 0 ) { 
+				String sortField_ = sortField.toLowerCase().replaceAll(" desc", "").replaceAll(" asc", "").trim();
+				if( this.fieldCodes.contains(sortField_) || "id,createtime,creator,updatetime,updator".indexOf(sortField_) >= 0 ) { 
 					if("onlynull".equals(sortType)) {
 						condition += " and " + sortField + " is null ";
 					}
 					else if("notnull".equals(sortType)) {
 						condition += " and " + sortField + " is not null ";
 					}
-					else if( noPointed || _fields.indexOf(sortField) >= 0 ) {
+					else if( noPointed || _fields.indexOf(sortField_) >= 0 ) {
 						sortFieldList.add( sortField + " " + sortType );
 					}
 				}

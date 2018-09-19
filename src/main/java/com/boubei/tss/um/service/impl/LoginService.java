@@ -121,6 +121,7 @@ public class LoginService implements ILoginService {
     	return token;
 	}
 
+	// For登录用, 此处调用会校验User的状态，停用、过期等状态会抛出异常
 	public String[] getLoginInfoByLoginName(String loginName) {
 		User user = getUserByLoginName(loginName);
 		return new String[] { user.getUserName(), user.getAuthMethod(), user.getAuthToken() };
