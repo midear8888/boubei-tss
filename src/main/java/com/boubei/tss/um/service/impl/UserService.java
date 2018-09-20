@@ -390,7 +390,19 @@ public class UserService implements IUserService{
     	info.setCreator( user.getLoginName() );
     	userDao.update(info);
     	
-		this.regUser(user);
+    	// 域账号兼有开发者功能
+    	if( "REG_BDEV".equals( ParamConfig.getAttribute(PX.REGABLE) ) ) {
+			this.regDeveloper(user);
+			
+			// 给与开发者角色，默认开发者角色需要$开发域下才有
+			RoleUser ru = new RoleUser();
+			ru.setRoleId(UMConstants.DEV_ROLE_ID);
+			ru.setUserId(user.getId());
+			roleDao.createObject(ru);
+		} 
+    	else {
+			this.regUser(user);
+		}
 	}
  
 	public void regUser(User user) {
@@ -436,7 +448,9 @@ public class UserService implements IUserService{
 			throw new BusinessException(EX.U_47);
 		}
 		
-		user.setGroupId(UMConstants.DEV_GROUP_ID); // add to devGroup
+		// add to devGroup, 如果是企业兼开发者注册，则注册到企业域下
+		Long devGroup = (Long) EasyUtils.checkNull(user.getGroupId(), UMConstants.DEV_GROUP_ID);
+		user.setGroupId(devGroup); 
 		this.regUser(user);
 		
 		// 借用Admin的权限完成下面资源的注册

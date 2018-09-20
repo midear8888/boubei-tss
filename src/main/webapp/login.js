@@ -11,7 +11,7 @@ $(function() {
      init();
 });
 
-var timer, regable = true;
+var timer;
 function init() {
     getParam("sysTitle", function(result) {
         result && $(".sysTitle").html(result);
@@ -20,18 +20,22 @@ function init() {
     getParam("subTitle", function(result) {
         result && $(".subTitle").html(result);
     });
+    
     getParam("regable", function(result) {
-        regable = result != "false";
-        if(!regable) {
+        if( result == "false" ) {
             $("#b1_reg, #b2_reg, #b3_reg, #a2").hide();
-            // $("#b1_reg").width("352px");
+        } 
+        else if( result == "REG_BDEV" ) {
+            $("#b1_reg, #b3_reg").hide();
+            $(" #b2_reg").width("352px").text("注 册");
         }
-    });
-    getParam("regableDev", function(result) {
-        regable = result != "false";
-        if(!regable) {
-            $("#b3_reg").hide();
-            $("#b1_reg, #b2_reg").width("45%");
+        else {
+            getParam("regableDev", function(result) {
+                if(result == "false") {
+                    $("#b3_reg").hide();
+                    $("#b1_reg, #b2_reg").width("45%");
+                }
+            });
         }
     });
 

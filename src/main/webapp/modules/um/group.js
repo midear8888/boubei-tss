@@ -181,7 +181,7 @@
         var item12 = {
             label:"辅助功能",
             callback:null,
-            visible:function() { return isMainGroup() && editable(true) || getTreeNodeId() == -8; }
+            visible:function() { return isMainGroup() && editable(true) || getTreeNodeId() == -8 || getTreeNodeId() == -9; }
         }
         var subitem12_1 = {
             label:"初始化密码...",

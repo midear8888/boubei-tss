@@ -164,6 +164,10 @@
 	background:url('icons/tss_earth.png') no-repeat center center;
 	background-size:16px 16px;
 }
+.icon-pay{
+	background:url('icons/pay.png') no-repeat center center;
+	background-size:16px 16px;
+}
 .noicon{
 	background: none;
 }

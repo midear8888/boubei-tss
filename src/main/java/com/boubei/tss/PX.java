@@ -35,10 +35,10 @@ public interface PX {
 	/** 数据表是否只做逻辑删除 */
 	static String LOGIC_DEL = "LOGIC_DEL";
 	
-	/** 关闭注册 */
+	/** 关闭注册 regable = "false"， 域账号兼有开发者功能：EBI环境，regable = "REG_BDEV"  */
 	static String REGABLE = "regable";
 	
-	/** 关闭开发者注册 */
+	/** 关闭开发者注册 regableDev = "false" */
 	static String REGABLE_DEV = "regableDev";
 	
 	/** 报表服务是否启用三分钟缓存，正式环境必需启用，测试环境可禁用 */

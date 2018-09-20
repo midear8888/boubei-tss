@@ -113,7 +113,7 @@ var recordId=1, recordName="录入表", openItemId,
     recordDefine, customizeJS, customizeGrid, needFile, batchImp, visiableFields, 
     wfFields = []; // 流程审批可编辑字段
 
-// 用户权限信息
+// 用户权限信息、流程信息等
 var _operation = ['1','2','3','4','5'], 
     userCode, 
     userName, 
@@ -123,7 +123,8 @@ var _operation = ['1','2','3','4','5'],
     userRoleNames = [], 
     userAssistGroups = [],
     hasWorkflow, wfCount,
-    isLogicDelete;
+    isLogicDelete,
+    default_sort = "";
 
 // 监听器
 var preListener, // 在表单保存前触发，如不通过，则终止保存
@@ -228,6 +229,13 @@ function init() {
                         if( fcode.indexOf('wf_') == 0 || field.wfeditable ) {
                             wfFields.push(fcode);
                         }
+
+                        if( field.sort ) {
+                            if( default_sort.length) {
+                                default_sort += ","
+                            }
+                            default_sort += fcode + " " + field.sort;
+                        }
                     });
 
                     initMenus();
@@ -247,9 +255,9 @@ function init() {
                      */
                     if(customizeGrid) {
                         tssJS.createScript( customizeGrid );
-
-                        billMode && tssJS("#btn_batch_del").hide();
                     }
+
+                    billMode && tssJS("#btn_batch_del").hide();
                 }
             });
         }
@@ -265,6 +273,7 @@ function refreshTable() {
     recycleBinMode = false;
     params = {};
     loadGridData(1);
+
     ws.closeAllTabs();
     tssJS("#gridTitle>button").hide();
     tssJS(".listBT").removeClass("bt_selected").removeClass("bt_unselected");
@@ -430,6 +439,9 @@ function canEditRow(rowID) {
 
 /* grid加载数据  */
 function loadGridData(page) {
+    if( !params.sortField && default_sort) {
+        params.sortField = default_sort;
+    }
     tssJS.showGrid(URL_DATA_XML + recordId, XML_SOURCE_LIST, showDetail, "grid", page, params);
 }
 
