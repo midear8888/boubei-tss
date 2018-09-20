@@ -191,7 +191,7 @@ public class DMUtil {
 	
   	public static Object preTreatValue(String value, Object type) {
   		
-  		if(value == null) return value;
+  		if(value == null) return null;
   		
   		type = EasyUtils.checkNull(type, _Field.TYPE_STRING);
   		type = type.toString().toLowerCase();
@@ -222,7 +222,7 @@ public class DMUtil {
   		else {
   			// 过滤掉emoj表情符号 TODO 有待验证
   			value = value.replaceAll("[\\ud83c\\udc00-\\ud83c\\udfff]|[\\ud83d\\udc00-\\ud83d\\udfff]|[\\u2600-\\u27ff]", "*");
-  			return value;
+  			return EasyUtils.obj2String(value); // "null"、"undefined"均为空字符串处理
   		}
   	} 
   	

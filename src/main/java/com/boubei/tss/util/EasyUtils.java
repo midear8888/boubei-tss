@@ -77,7 +77,7 @@ public class EasyUtils {
     }
     
     public static final String obj2String(Object value) {
-        if(value == null) {
+        if( isNullOrEmpty( value ) ) { // "null"、"undefined"均为空字符串处理
         	return "";
         }
         return value.toString();
