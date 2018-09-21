@@ -11,12 +11,14 @@ import com.boubei.tss.dm.etl.Task;
 import com.boubei.tss.dm.etl.TaskLog;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.ICommonDao;
+import com.boubei.tss.modules.log.IBusinessLogger;
 import com.boubei.tss.util.BeanUtil;
 
 @Service("JobService")
 public class JobServiceImpl implements JobService {
 	
 	@Autowired ICommonDao commonDao;
+	@Autowired IBusinessLogger businessLogger;
 	
 	public String excuteJob(String jobKey, Object tag) {
 		List<?> list = commonDao.getEntities("from JobDef where ? in (id, code) and disabled <> 1 ", jobKey);
@@ -27,10 +29,10 @@ public class JobServiceImpl implements JobService {
 		JobDef jobDef = (JobDef) list.get(0);
 		String jobClass = jobDef.getJobClassName();
 		
-		Object job = BeanUtil.newInstanceByName(jobClass);
-		((AbstractJob)job).excuteJob( jobDef.getCustomizeInfo(), jobDef.getId() );
+		AbstractJob job = (AbstractJob) BeanUtil.newInstanceByName(jobClass);
+		String resultMsg = job.excuting(jobDef.getCode(), jobDef.getCustomizeInfo(), jobDef.getId() );
 		
-		return EX.DEFAULT_SUCCESS_MSG;
+		return resultMsg;
 	}
 
 	public String excuteTask(Long taskId, Object tag) {

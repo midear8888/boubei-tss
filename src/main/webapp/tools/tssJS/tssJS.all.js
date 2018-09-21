@@ -1316,6 +1316,10 @@
         });
     };
 
+    $.get = function(url, params, callback, waiting) {
+        $.getJSON(url, params, callback, "GET", waiting);
+    };
+
     $.post = function(url, params, callback, method) {
         $.ajax({
             url : url,
@@ -1591,7 +1595,7 @@
                 if( this.headers.encodeKey ) {
                     this.requestBody = $.encode( this.requestBody, this.headers.encodeKey );
                 } 
-            }        
+            }          
         },
 
         /* 自定义请求头信息 */

@@ -66,17 +66,22 @@ public abstract class AbstractJob implements Job {
     	String jobName = aJob.getKey().getName();
     	
     	JobDataMap dataMap = aJob.getJobDataMap();
+    	String jobConfig = (String) dataMap.get(jobName);
+    	Long jobID = (Long) dataMap.get(jobName + "-ID");
         
         log.info("Job[" + jobName + "] starting...");
         
-        String resultMsg;
+        excuting(jobName, jobConfig, jobID);
+    }
+
+    // 执行Job并记录日志
+	protected String excuting(String jobName, String jobConfig, Long jobID) {
+		String resultMsg;
         Log excuteLog = null;
         
         try {
         	Long preTime = System.currentTimeMillis();
         	
-        	String jobConfig = (String) dataMap.get(jobName);
-        	Long jobID = (Long) dataMap.get(jobName + "-ID");
         	resultMsg = excuteJob(jobConfig, jobID);
         	
         	int methodExcuteTime = (int) (System.currentTimeMillis() - preTime);
@@ -103,7 +108,9 @@ public abstract class AbstractJob implements Job {
         	} 
         	catch(Exception e) { }
         }
-    }
+        
+        return resultMsg;
+	}
 
     protected abstract String excuteJob(String jobConfig, Long jobID);
     

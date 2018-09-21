@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -319,7 +320,6 @@ public class _Recorder extends BaseActionSupport {
 		requestMap.put(_Field.STRICT_QUERY, strictQuery);
 
 		SQLExcutor ex;
-		
 		boolean isWFQuery = "true".equals(requestMap.remove("my_wf_list"));
 		if (isWFQuery && !pointed) {
 			ex = wfService.queryMyTasks(_db, requestMap, _page, _pagesize);
@@ -329,34 +329,73 @@ public class _Recorder extends BaseActionSupport {
 			/* 添加工作流信息 */
 			wfService.fixWFStatus(_db, ex.result);
 		}
-
+		List<Map<String, Object>> result = ex.result;
+			
 		String fileName = DateUtil.format(new Date()) + "_" + recordId + Environment.getUserId() + ".csv";
-		for (Map<String, Object> row : ex.result) { // 剔除
-			row.remove("domain");
-			row.remove("createtime");
-			row.remove("creator");
-			row.remove("updatetime");
-			row.remove("updator");
-			row.remove("version");
-			row.remove("id");
+		for (Map<String, Object> row : result) { // 剔除
+			row.remove("domain"); row.remove("version"); row.remove("id");
+			row.remove("createtime"); row.remove("creator");
+			row.remove("updatetime"); row.remove("updator");
 		}
 
 		// 过滤出用户可见的表头列
-		List<String> visiableFields = _db.getVisiableFields(true, pointed ? ex.selectFields : _db.fieldCodes);
+		List<String> visiableFieldNames = _db.getVisiableFields(true, pointed ? ex.selectFields : _db.fieldCodes);
 		if( WFUtil.checkWorkFlow(_db.wfDefine) && !pointed ) {
-			visiableFields.add("流程状态");
-			visiableFields.add("发起人");
-			visiableFields.add("发起时间");
-			visiableFields.add("审批人列表");
-			visiableFields.add("当前审批人");
-			visiableFields.add("抄送");
+			visiableFieldNames.add("流程状态");
+			visiableFieldNames.add("发起人");
+			visiableFieldNames.add("发起时间");
+			visiableFieldNames.add("审批人列表");
+			visiableFieldNames.add("当前审批人");
+			visiableFieldNames.add("抄送");
 		}
 		
-		String exportPath = DataExport.exportCSV(fileName, ex.result, visiableFields);
-
+		// 自定义导出表头, 订单号:code,货品:sku,数量:qty,类型:{良品},买家:${userName}
+		String headerTL = requestMap.get("headerTL");
+		if( headerTL != null ) {
+			Map<String, String> columnMap = new HashMap<String, String>();
+			Map<String, String> adds = new LinkedHashMap<String, String>();
+			visiableFieldNames = new ArrayList<String>();
+			
+			String[] pairs = headerTL.split(",");
+			for( String _pair : pairs ) {
+				String[] pair = _pair.split(":"); 
+				String xxxColumn  = pair[0].trim();
+				String mappingObj = pair[1].trim();
+				
+				// 新增列：含默认值
+				if( mappingObj.startsWith("{") && mappingObj.endsWith("}") ) {
+					adds.put(xxxColumn, mappingObj.substring(1, mappingObj.length() -1));
+				} 
+				else if( mappingObj.startsWith("${") && mappingObj.endsWith("}") ) {
+					adds.put(xxxColumn, DMUtil.fmParse(mappingObj));
+				}
+				else { // 映射列
+					columnMap.put(xxxColumn, mappingObj);
+				}
+				
+				visiableFieldNames.add(xxxColumn);
+			}
+			
+			// 对数据进行处理，按表头定义的字段重新设置值
+			for (Map<String, Object> row : result) {
+				Map<String, Object> newRow = new LinkedHashMap<String, Object>();
+				for(String xxxColumn : visiableFieldNames) {
+					String fcode = columnMap.get(xxxColumn);
+					Object value =  adds.get(xxxColumn);
+					if(value == null && fcode != null) {
+						value = row.get(fcode);
+					}
+					
+					newRow.put(xxxColumn, value);
+				}
+				row.clear();
+				row.putAll(newRow);
+			}
+		}
+		
+		String exportPath = DataExport.exportCSV(fileName, result, visiableFieldNames);
 		DataExport.downloadFileByHttp(response, exportPath);
-
-		AccessLogRecorder.outputAccessLog("record-" + recordId, _db.recordName, "exportAsCSV", requestMap, start);
+		AccessLogRecorder.outputAccessLog("record-" + recordId, _db.recordName, "export", requestMap, start);
 	}
 
 	@RequestMapping(value = "/{record}/{id}", method = RequestMethod.GET)

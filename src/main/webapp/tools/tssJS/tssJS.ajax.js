@@ -80,6 +80,10 @@ CONTEXTPATH = "tss";
         });
     };
 
+    $.get = function(url, params, callback, waiting) {
+        $.getJSON(url, params, callback, "GET", waiting);
+    };
+
     $.post = function(url, params, callback, method) {
         $.ajax({
             url : url,

@@ -44,6 +44,7 @@ public class LogAction extends BaseActionSupport {
         StringBuffer sb = new StringBuffer("<actionSet><treeNode name=\"全部\" id=\"_root\">");
         for(Iterator<?> it = data.iterator(); it.hasNext();){
             String operateObject = (String) it.next();
+            operateObject = operateObject.replaceAll("&", "");
             sb.append("<treeNode id=\"" + operateObject + "\" name=\"" + operateObject + "\" icon=\"images/folder.gif\"/>");
         }
         print("ObjectTree", sb.append("</treeNode></actionSet>"));

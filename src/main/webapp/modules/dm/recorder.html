@@ -122,7 +122,7 @@ var _operation = ['1','2','3','4','5'],
     userRoles = [], 
     userRoleNames = [], 
     userAssistGroups = [],
-    hasWorkflow, wfCount,
+    hasWorkflow, wfCount = 0,
     isLogicDelete,
     default_sort = "";
 
@@ -1305,7 +1305,7 @@ function batchApprove() {
 }
 
 function showWfCount() {
-    $("#listBT2>span").text("(" + Math.max(wfCount, 0) + ")");
+    $("#listBT2>span").text( (wfCount && wfCount >= 0 ? "("+wfCount+")" : ""));
 }
 
 function showExtension(_item) {
