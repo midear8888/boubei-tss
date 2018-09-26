@@ -137,15 +137,15 @@ var rootId = 0,   // 取”全部“节点
     fisrtGroup;
 
 // 合并录入表和报表，同时要防止彼此ID重复
-function buildMenu(reports, records, permissions) {
+function buildMenu(reports, records, p) {
     if( !reports.length && !records.length ) {
         return openMsgPage();
     }
 
-    var data = [], level1Num = 0;
+    var data = [], level1Num = 0, hasPermission = p.length == 2 && (p[0].length+p[1].length);
     records.each( function(i, item) {
         if( item[2] == rootId && item[1].indexOf("系统功能") >=0 ) return true;
-        if( permissions.length == 2 && !permissions[1].contains(item[0]) && item[0] > 8 ) return true;
+        if( hasPermission && !p[1].contains(item[0]) && item[0] > 8 ) return true;
 
         if( item[1].indexOf("$") == 0 ) return true;  // $打头的节点约定为不显示，不直接开放用户访问
         if( item[2] == rootId ) level1Num ++;
@@ -155,7 +155,7 @@ function buildMenu(reports, records, permissions) {
     });
     reports.each( function(i, item) {
         if( item[2] == rootId && item[1].indexOf("系统报表") >=0 ) return true;
-        if( permissions.length == 2 && !permissions[0].contains(item[0]) ) return true;
+        if( hasPermission && !p[0].contains(item[0]) && item[0] > 15) return true;
 
         if( item[2] == rootId ) level1Num ++;
 
@@ -263,7 +263,7 @@ function openLevelOne(group, firstTime) {
                     <li class="ra"><a onclick="manageToken()">令牌管理</a> </li>                  
                     <li><a onclick="openUrl('modules/_log/log.htm')">系统日志</a></li>
                     <li><a onclick="openUrl('modules/_cache/cache.htm')">缓存监控</a></li> 
-                    <li class="ra"><a onclick="openUrl('more/x/xn.html')">量能监控</a> </li>
+                    <li class="ra"><a onclick="openUrl('more/xn.html')">量能监控</a> </li>
                     <li class="ra"><a onclick="openUrl('modules/_param/param.htm')">系统参数</a></li>
                     <li class="ra"><a onclick="openUrl('modules/_param/param_init.html')">系统初始化</a></li>
                     <li class="ra"><a onclick="openUrl('modules/um/online.html')">在线用户</a></li>
@@ -275,7 +275,7 @@ function openLevelOne(group, firstTime) {
                     <li><a onclick="logout()">注销登陆</a></li>
                     <li><a onclick='changePasswd()'>修改密码</a></li>                    
                     <li><a onclick="feedback()">问题建议</a></li>
-                    <li class="ra"><a onclick="openUrl('more/x/feedback.html')">查看反馈</a></li>
+                    <li class="ra"><a onclick="openUrl('more/feedback.html')">查看反馈</a></li>
                     <li><a href='http://www.boubei.com' target="_blank">卜贝官网</a></li>
                     <li><a href='http://bbs.boubei.com' target="_blank">卜贝社区</a></li>
                     <li class="ra"><a href='admin.html' target="_blank">Admin</a></li>

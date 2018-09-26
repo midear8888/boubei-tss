@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +34,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.boubei.tss.EX;
-import com.boubei.tss.PX;
 import com.boubei.tss.cache.Cacheable;
 import com.boubei.tss.cache.Pool;
 import com.boubei.tss.cache.extension.CacheHelper;
@@ -349,50 +347,6 @@ public class _Recorder extends BaseActionSupport {
 			visiableFieldNames.add("抄送");
 		}
 		
-		// 自定义导出表头, 订单号:code,货品:sku,数量:qty,类型:{良品},买家:${userName}
-		String headerTL = requestMap.get("headerTL");
-		if( headerTL != null ) {
-			Map<String, String> columnMap = new HashMap<String, String>();
-			Map<String, String> adds = new LinkedHashMap<String, String>();
-			visiableFieldNames = new ArrayList<String>();
-			
-			String[] pairs = headerTL.split(",");
-			for( String _pair : pairs ) {
-				String[] pair = _pair.split(":"); 
-				String xxxColumn  = pair[0].trim();
-				String mappingObj = pair[1].trim();
-				
-				// 新增列：含默认值
-				if( mappingObj.startsWith("{") && mappingObj.endsWith("}") ) {
-					adds.put(xxxColumn, mappingObj.substring(1, mappingObj.length() -1));
-				} 
-				else if( mappingObj.startsWith("${") && mappingObj.endsWith("}") ) {
-					adds.put(xxxColumn, DMUtil.fmParse(mappingObj));
-				}
-				else { // 映射列
-					columnMap.put(xxxColumn, mappingObj);
-				}
-				
-				visiableFieldNames.add(xxxColumn);
-			}
-			
-			// 对数据进行处理，按表头定义的字段重新设置值
-			for (Map<String, Object> row : result) {
-				Map<String, Object> newRow = new LinkedHashMap<String, Object>();
-				for(String xxxColumn : visiableFieldNames) {
-					String fcode = columnMap.get(xxxColumn);
-					Object value =  adds.get(xxxColumn);
-					if(value == null && fcode != null) {
-						value = row.get(fcode);
-					}
-					
-					newRow.put(xxxColumn, value);
-				}
-				row.clear();
-				row.putAll(newRow);
-			}
-		}
-		
 		String exportPath = DataExport.exportCSV(fileName, result, visiableFieldNames);
 		DataExport.downloadFileByHttp(response, exportPath);
 		AccessLogRecorder.outputAccessLog("record-" + recordId, _db.recordName, "export", requestMap, start);
@@ -590,7 +544,7 @@ public class _Recorder extends BaseActionSupport {
 		boolean isRecycled = domain.endsWith(_Database.deletedTag);
 
 		// 判断是逻辑删除还是物理删除（系统级、单个表、单次请求）
-		boolean loginDel = db.isLogicDelete() || "true".equals(requestMap.get(PX.LOGIC_DEL));
+		boolean loginDel = db.isLogicDelete();
 		if ( loginDel && !isRecycled ) {
 			db.logicDelete(id);
 		} 

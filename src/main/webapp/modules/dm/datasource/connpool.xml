@@ -35,7 +35,9 @@
 			<TD><input binding="interruptTime" style="width:100px;"/></TD>
 		</TR>
 		<TR>
-            <TD colspan="4"> <b style="color: red; padding: 8px 0; display: block;">*注: 0或空表示不限制，数据源编码为自动生成</b> </TD>
+            <TD colspan="4"> 
+            	<b style="color: red; padding: 8px 0; display: block;">*注: 0或空表示不限制；数据源编码自动生成，也可以自定义，编码不能重复</b> 
+            </TD>
         </TR>
         <TR>
             <TD colspan="4"><hr noshade="true" size="1"/></TD>
@@ -44,7 +46,7 @@
 			<TD><label binding="driver"/></TD>
 			<TD colspan="3">
 				<input binding="driver" style="width:150px;"/>
-				<b style="color: red; padding-left: 8px; display: inline-block;">目前支持的数据库类型：MySQL、Oracle、PostgreSQL、SQLServer.</b>
+				<b style="color: red; padding-left: 8px; display: inline-block;">目前支持的数据库类型：MySQL、Oracle、PostgreSQL、SQLServer等</b>
 			</TD>
 		</TR>
 		<TR>

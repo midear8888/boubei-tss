@@ -85,7 +85,7 @@ function getEndDateOfWeek(paraYear, weekIndex){
     return subDate(getBeginDateOfWeek(paraYear, weekIndex), -6);
 }
 
-//获取日期为某年的第几周
+//计算指定日期为该年的第几周
 function getWeekIndex(day) {
     var firstDay = getFirstWeekBeginDay(day.getFullYear());
     if (day < firstDay) {

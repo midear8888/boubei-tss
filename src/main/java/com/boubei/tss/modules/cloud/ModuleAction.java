@@ -39,8 +39,12 @@ public class ModuleAction {
 	@RequestMapping(value = "/resources/{resource}")
 	@ResponseBody
 	public Object listResource(@PathVariable String resource) {
-		return SQLExcutor.queryL("select id as value, name as text from " + resource + " " +
-				" where disabled = 0 and name not like '$%' order by decode");
+		String permissionTable = resource.replace("_", "_permission_");
+		String sql = "select distinct t.id as value, t.name as text, t.decode " +
+				" from " + resource + " t, " + permissionTable + " p, um_roleusermapping ru  " +
+				" where t.id = p.resourceId and p.roleId = ru.roleId and ru.userId = ? " +
+				"  and disabled = 0 and name not like '$%' and t.id >= 8 order by t.decode";
+		return SQLExcutor.queryL(sql, Environment.getUserId());
 	}
 	
 	/**

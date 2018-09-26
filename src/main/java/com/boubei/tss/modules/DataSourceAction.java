@@ -63,9 +63,8 @@ public class DataSourceAction {
 	
 	@RequestMapping(value = "/connpool", method = RequestMethod.POST)
 	@ResponseBody
-	public Object configConnpool(String code, String name, String value) {
-		Param param = paramService.getParam(code);
-		if(param == null) {
+	public Object configConnpool(Long id, String code, String name, String value) {
+		if(id == null) {
 			// 新增时还需要在 ComboParam（”数据源列表“） 下增加一个param选项
 			Param paramGroup = CacheHelper.getCacheParamGroup(paramService);
 			Param dsGroup = paramService.getParam(PX.DATASOURCE_LIST);
@@ -76,9 +75,10 @@ public class DataSourceAction {
 			return "数据源配置成功";
 		} 
 		else {
-			param.setValue(value);
-			param.setName(name);
-			paramService.saveParam(param);
+			Param old = paramService.getParam(id);
+			old.setValue(value);
+			old.setName(name);
+			paramService.saveParam(old);
 			
 			// 修改“数据源列表”里下拉项的Name值
 			List<Param> list = ParamManager.getComboParam(PX.DATASOURCE_LIST);

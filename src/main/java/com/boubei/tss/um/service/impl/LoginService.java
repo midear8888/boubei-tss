@@ -133,7 +133,7 @@ public class LoginService implements ILoginService {
         return user;
 	}
 	
-	/* 检查用户的密码强度，太弱的话强制要求修改密码 */
+	/* 检查用户的密码强度，太弱的话强制要求修改密码。在用户登录成功访问的第一个页面前在Filter0Security触发 */
 	public int checkPwdSecurity(Long userId) {
     	Object strengthLevel = null;
     	try {

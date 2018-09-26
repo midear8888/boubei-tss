@@ -211,6 +211,11 @@
                 updateField("cyclelife", 1800000, xform);
                 updateField("initNum", 3, xform);
                 updateField("poolSize", 30, xform);
+
+                tssJS.getJSON("/tss/sn/DS-xxxx/1", function(result) {
+                    updateField("code", result[0], xform);
+                });
+                xform.setFieldEditable("code", "true");
             }
 
             attachReminder(treeID, xform); // 离开提醒
@@ -250,6 +255,9 @@
         request.params.value = JSON.stringify(param);
         request.params.code = param.code;
         request.params.name = param.name;
+        if( treeID != '_new_') {
+            request.params.id = treeID;
+        }
        
         syncButton([$1("page1BtSave")], request); // 同步按钮状态
 		detachReminder(treeID); // 解除提醒

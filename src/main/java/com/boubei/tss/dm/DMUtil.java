@@ -329,7 +329,7 @@ public class DMUtil {
 	      		
 	      		try {
 					boolean visible = permissions.contains(recordId); // 浏览|编辑
-					String filterS = wrapTable(tableName, visible);  // 默认按录入wrap
+					String filterS = wrapTable(tableName, visible, Environment.isAdmin());  // 默认按录入wrap
 					
 					data.put(tableName.toUpperCase(), filterS);
 					data.put(tableName.toLowerCase(), filterS);
@@ -337,11 +337,19 @@ public class DMUtil {
 	      		catch(Exception e) { }
 	      	}
 		}
+		
+		script = _customizeParse(script, data);
+		
+		if( script.indexOf("${") >=0 ) {
+			script = DMUtil.fmParse(script, data, withRcTable); // 再解析一次
+      	}
       	
-		return _customizeParse(script, data);
+		return script;
 	}
 	
-	public static String wrapTable(String tableName, boolean visible) {
+	public static String wrapTable(String tableName, boolean visible, boolean isAdmin) {
+		if(isAdmin) return tableName;
+		
 		String innerSelect = "(select * from " +tableName+ " where 1=1 ";
 		if(visible) {
 			innerSelect += DMConstants.DOMAIN_CONDITION;
@@ -386,9 +394,15 @@ public class DMUtil {
 	}
 	
     /*
-     * 展示图标等扩展属性：一个图片地址 或 class，存放在remark里，如icon：
+     * 1、展示图标等扩展属性：一个图片地址 或 class，存放在remark里，如icon：
      *  icon:=<div class='icon icon-key tssicon'></div>
      *  icon:=<img src='/tss/images/icon_refresh.gif'/>
+     *  
+     * 2、允许在录入表备注里配置导入模板的列
+     *  import_tl_fields:=车牌号,经度,纬度,速度
+     *  import_tl_ignores:=gps时刻,航向速度
+     * 
+     * 3、LOGIC_DEL:=true 
      */
 	public static String getExtendAttr(String remark, String attr) {
 		String[] infos = EasyUtils.split(remark + "", "\n");

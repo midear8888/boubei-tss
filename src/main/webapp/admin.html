@@ -105,29 +105,24 @@ var resizeIFrame = function resizeIFrame() {
     <div class="logo"></div>
     <div class="menu"> 
         <ul> 
-            <li><a onclick="openMsgPage()">站内消息</a></li> 
-            <li><a>数据管理</a>    
-                <ul> 
-                    <li><a onclick="openUrl('modules/dm/record.html')">数据表</a> </li>
-                    <li><a onclick="openUrl('modules/dm/report.html')">数据报表</a></li>
-                    <li><a onclick="openUrl('modules/cms/channel.html')">栏目文章</a></li>
-                </ul> 
-            </li>  
-            <li><a>用户权限</a>    
+            <li><a onclick="openMsgPage()">待办提醒</a></li> 
+            <li><a onclick="openUrl('modules/dm/record.html')">数据表</a> </li>
+            <li><a onclick="openUrl('modules/dm/report.html')">数据报表</a></li>
+            <li><a>UM</a>    
                 <ul> 
                     <li><a onclick="openUrl('modules/um/group.html')">用户管理</a></li> 
                     <li><a onclick="openUrl('modules/um/role.html')">设置角色</a></li> 
                     <li class="other"><a onclick="openUrl('modules/um/subauth.html')">权限转授</a></li> 
                     <li class="other"><a onclick="openUrl('modules/um/resource.html')">应用资源</a></li>  
-                    <li><a onclick="openUrl('modules/um/online.html')">在线用户</a></li>
                 </ul> 
             </li> 
-            <li class="other"><a>门户管理</a>    
+            <li class="other"><a>CMS</a>    
                 <ul> 
                     <li><a onclick="openUrl('modules/portal/structure.html')">门户结构</a></li> 
                     <li><a onclick="openUrl('modules/portal/component.html')">门户组件</a></li> 
                     <li><a onclick="openUrl('modules/portal/release.html')">门户发布</a> </li>
                     <li><a onclick="openUrl('modules/portal/navigator.html')">导航菜单</a></li> 
+                    <li><a onclick="openUrl('modules/cms/channel.html')">栏目文章</a></li>
                 </ul>
             </li> 
             <li><a>系统辅助</a>    
@@ -135,13 +130,14 @@ var resizeIFrame = function resizeIFrame() {
                     <li><a onclick="openUrl('modules/_log/log.htm')">系统日志</a></li> 
                     <li><a onclick="openUrl('modules/_param/param.htm')">系统参数</a></li> 
                     <li><a onclick="openUrl('modules/_cache/cache.htm')">缓存监控</a></li> 
-                    <li><a onclick="openUrl('more/x/xn.html')">量能监控</a> </li>
+                    <li><a onclick="openUrl('more/xn.html')">量能监控</a> </li>
                     <li><a onclick="openUrl('modules/dm/datasource.html')">数据源</a></li>
                     <li><a onclick="manageJob()">定时Job</a> </li>
                     <li><a onclick="manageETLTask()">ETL任务</a> </li>
                     <li><a onclick="manageToken()">令牌管理</a> </li>
                     <li><a onclick="releaseModule()">功能发布</a> </li>
-                    <li><a onclick="openUrl('more/x/feedback.html')">查看反馈</a></li>
+                    <li><a onclick="openUrl('modules/_param/param_init.html')">系统初始化</a></li>
+                    <li><a onclick="openUrl('modules/um/online.html')">在线用户</a></li>
                 </ul>
             </li>
             <li>
@@ -150,6 +146,7 @@ var resizeIFrame = function resizeIFrame() {
                     <li><a onclick='changePasswd()'>修改密码</a></li>
                     <li><a onclick="logout()"> 注销登陆</a></li> 
                     <li><a href='bi.html' target="_self">进入BI</a></li>
+                    <li><a onclick="openUrl('more/feedback.html')">查看反馈</a></li>
                     <li><a href='http://www.boubei.com' target="_blank">卜贝官网</a></li>
                     <li><a href='http://bbs.boubei.com' target="_blank">卜贝社区</a></li>
                 </ul>

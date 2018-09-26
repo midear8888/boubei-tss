@@ -138,9 +138,6 @@ public class ReportQuery {
 		String datasource = report.getDatasource();
       	fmDataMap.put("report.info", report.toString()); // 用于解析出错时定位report
       	reportScript = DMUtil.fmParse(reportScript, fmDataMap, true);
-      	if( reportScript.indexOf("${") >=0 ) {
-      		reportScript = DMUtil.fmParse(reportScript, fmDataMap, true); // 再解析一次
-      	}
           
 		SQLExcutor excutor = new SQLExcutor();
 		try {

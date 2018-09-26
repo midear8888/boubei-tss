@@ -169,6 +169,7 @@ public class SQLExcutor {
     }
 
     public void excuteQuery(String sql, Map<Integer, Object> paramsMap, int page, int pagesize, Connection conn) {
+    	sql = sql.replaceAll("？", "?");
         String queryDataSql = sql;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
@@ -275,6 +276,7 @@ public class SQLExcutor {
     		autoCommit = conn.getAutoCommit();
             conn.setAutoCommit(false);
             
+            sql = sql.replaceAll("？", "?");
     		log.debug(" excute  sql: " + sql);
 			statement = conn.createStatement();
 			statement.execute(sql);

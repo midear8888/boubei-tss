@@ -1,4 +1,4 @@
-package com.boubei;
+package com.boubei.mockdata;
 
 import java.util.ArrayList;
 import java.util.Arrays;

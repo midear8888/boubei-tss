@@ -119,7 +119,7 @@ public class EX {
 	public static String F_10 = " code = ${x1} 的参数没有被创建";
 	public static String F_11 = "获取【${x1}】参数信息失败!";
 	public static String F_12 = "您不能执行当前操作，请联系系统管理员！";
-	public static String F_13 = "相同参数名称（指CODE）已经存在，请更改参数名称后再保存!";
+	public static String F_13 = "相同参数编码（CODE）已经存在，请更改后再保存!";
 	public static String F_14 = "参数已存在，不要重复创建! checked by :";
 	
 	public static String U_00 = "账号或密码错误";

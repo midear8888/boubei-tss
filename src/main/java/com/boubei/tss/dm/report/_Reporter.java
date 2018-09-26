@@ -245,6 +245,9 @@ public class _Reporter extends BaseActionSupport {
     			
     	long start = System.currentTimeMillis();
         Object cacheFlag = checkLoginAndCache(request, reportId);
+        requestMap.remove("uName");
+        requestMap.remove("uToken");
+        requestMap.remove("uSign");
 		SQLExcutor excutor = reportService.queryReport(reportId, requestMap, _page, _pagesize, cacheFlag);
         
         AccessLogRecorder.outputAccessLog(reportService, reportId, "showAsJson", requestMap, start);

@@ -286,14 +286,16 @@ public class ReportAction extends BaseActionSupport {
     public void saveReportJob(HttpServletResponse response, Long reportId, boolean self, String configVal) {
 		
 		Report report = reportService.getReport(reportId);
-		String jobName = report.getName() + (self ? "-" + Environment.getUserCode() : "");
+		
+		String tag = (self ? "-" + Environment.getUserId() : "");
+		String jobName = report.getName() + tag;
 		
 		// 0 0 12 * * ? | 17:操作货量汇总:boubei@163.com:param1=2018-08-01,param2=today-3
 		String configs[] = EasyUtils.split(configVal, "|");
 					
 		JobDef job = queryReportJob(reportId, self);
 		if(job == null) {
-			String jobCode = "ReportJob-" + reportId + (self ? "-" + Environment.getUserId() : "");
+			String jobCode = "ReportJob-" + reportId + tag;
 			
 			job = new JobDef();
 			job.setName(jobName);
@@ -304,8 +306,10 @@ public class ReportAction extends BaseActionSupport {
 			commonService.create(job);
 			
 			// 可推送的报表自动设置为允许订阅
-			report.setMailable(ParamConstants.TRUE);
-	        reportService.updateReport(report);
+			if( !self ) {
+				report.setMailable(ParamConstants.TRUE);
+		        reportService.updateReport(report);
+			}
 		}
 		else {
 			job.setName(jobName);
