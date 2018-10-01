@@ -58,7 +58,7 @@ public class APIServiceImpl implements APIService {
     	User user = getUserByCode(userCode);
 		Long userId = user.getId();
 		String sessionId = Context.getRequestContext().getSessionId();
-		sessionId = (String) EasyUtils.checkNull(sessionId, userCode); // WFJob 没有session
+		sessionId = (String) EasyUtils.checkNull(sessionId, userCode); // WFJob等没有session，不适合用mockLogin
 		
 		// 设置令牌到Session，使Environment生效
 		String token = TokenUtil.createToken(sessionId, userId);

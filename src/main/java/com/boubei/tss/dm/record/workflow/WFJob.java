@@ -16,9 +16,10 @@ import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.util.EasyUtils;
 
 /**
- * 1、批量计算wfStatus，适合数据清洗进来的流程数据（逐个取出计算一遍即可）;
+ * 1、报销 + 费用 审批后自动流到 付款流程 ---- 用【ETL 抽取】 或 【Excel批量导入】
+ * 2、WFJob批量计算wfStatus，适合数据清洗进来的流程数据（逐个取出计算一遍即可）;
  * 
- * 示例：报销 + 费用 审批后自动流到 付款流程 ---- 用【ETL 抽取】 或 【Excel批量导入】
+ * TODO 定期器里没有request，没有session，而mockLogin需要session。 只能手动执行触发，页面加刷新按钮
  *    
  *  com.boubei.tss.dm.record.workflow.WFJob | 0 07 * * * ? | 12,13
  */
@@ -45,7 +46,7 @@ public class WFJob extends AbstractJob {
     		for( Map<String, Object> row : result ) {
     			Long id = (Long) row.get("id");
     			
-    			apiService.mockLogin( (String) row.get("creator") );
+    			apiService.mockLogin( (String) row.get("creator") ); 
     			wfService.calculateWFStatus(id, _db);
     		}
     		

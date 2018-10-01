@@ -31,8 +31,12 @@ import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.report.ReportService;
 import com.boubei.tss.dm.report.log.AccessLogRecorder;
 import com.boubei.tss.framework.Global;
+import com.boubei.tss.framework.sso.IOperator;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.modules.timer.AbstractJob;
+import com.boubei.tss.modules.timer.JobDef;
+import com.boubei.tss.um.UMConstants;
+import com.boubei.tss.um.helper.dto.OperatorDTO;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
@@ -53,6 +57,12 @@ public class ReportJob extends AbstractJob {
 	ReportService reportService = (ReportService) Global.getBean("ReportService");
 	ILoginService loginService  = (ILoginService) Global.getBean("LoginService");
 	
+	String currJobCreator = UMConstants.ROBOT_USER_NAME;
+	
+	protected IOperator jobRobot() {
+        return new OperatorDTO(UMConstants.ROBOT_USER_ID, currJobCreator); 
+	}
+	
 	protected boolean needSuccessLog() {
 		return true;
 	}
@@ -65,7 +75,13 @@ public class ReportJob extends AbstractJob {
 	 *	3:报表三:x3@x.com,x4@x.com:param1=a,param2=b
 	 */
 	protected String excuteJob(String jobConfig, Long jobID) {
-		
+		try {
+			JobDef jobDef = (JobDef) Global.getCommonService().getEntity(JobDef.class, jobID);
+			currJobCreator = jobDef.getCreator();
+			initContext(); // 根据Job创建人单独设置Context，用户订阅报表的场景，需要取当前用户域数据
+		} 
+		catch(Exception e) { }
+			
 		String[] jobConfigs = EasyUtils.split(jobConfig, "\n");
 		
 		Map<String, ReceiverReports> map = new HashMap<String, ReportJob.ReceiverReports>();

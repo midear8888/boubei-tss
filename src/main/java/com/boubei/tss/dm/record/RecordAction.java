@@ -98,7 +98,7 @@ public class RecordAction extends BaseActionSupport {
         print("SourceTree", treeEncoder);
     }
     
-	@RequestMapping(value = "/id", method = RequestMethod.POST)
+	@RequestMapping(value = "/id")
     @ResponseBody
     public Object getRecordID( String name ) {
 		return recordService.getRecordID(name, Record.TYPE1, false);

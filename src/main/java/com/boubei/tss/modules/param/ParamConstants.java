@@ -23,9 +23,6 @@ public class ParamConstants {
 	public static final Integer TRUE  = 1; // 是(状态)
 	public static final Integer FALSE = 0; // 否(状态)
 	
-	public static final int SAVE_FLAG = 0;  // 新建操作
-	public static final int EDIT_FLAG = 1;  // 编辑操作
-	
 	//   ========= 组 参数 项 类型 =========
 	public static final Integer GROUP_PARAM_TYPE  = 0;	//参数组
 	public static final Integer NORMAL_PARAM_TYPE = 1;	//参数

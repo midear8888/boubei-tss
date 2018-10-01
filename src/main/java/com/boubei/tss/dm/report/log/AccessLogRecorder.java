@@ -88,6 +88,10 @@ public class AccessLogRecorder extends OutputRecordsManager {
 	public static void outputAccessLog(String className, String name, 
 			String methodName, Map<String, String> requestMap, long start) {
 		
+		requestMap.remove("uName");
+        requestMap.remove("uToken");
+        requestMap.remove("uSign");
+        
 		String params = "";
 		for(Entry<String, String> entry : requestMap.entrySet()) {
 			params += entry.getKey() + "=" + entry.getValue() + ", ";

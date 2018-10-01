@@ -151,7 +151,7 @@ public final class Context {
     
     /**
      * <pre>
-     * 用户登陆成功后初始化用户的身份证信息。将身份证放入到session中，同时也放入到cardsMap中（非web情况即无session时该map会用到），
+     * 用户登陆成功后初始化用户的身份证信息。将身份证放入到session中，同时也放入到cardsMap中（TimerJob等非web情况即无session时该map会用到），
      * 最后还需将令牌信息放入到tokenLocal中。
      * </pre>
      * @param card

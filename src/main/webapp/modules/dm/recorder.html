@@ -75,7 +75,7 @@ XML_SOURCE_LIST = "RecordData";
 /* XMLHTTP请求地址汇总 */
 URL_DATA_XML   = AUTH_PATH + "xdata/xml/";
 URL_DATA_JSON  = AUTH_PATH + "xdata/json/";
-URL_DATA_CSV   = AUTH_PATH + "xdata/export/";
+URL_DATA_EXPORT   = AUTH_PATH + "xdata/export/";
 URL_RECORD_CSV_TL = AUTH_PATH + "xdata/import/tl/";
 URL_GET_SOURCE    = AUTH_PATH + "xdata/";
 URL_SAVE_SOURCE   = AUTH_PATH + "xdata/";
@@ -97,7 +97,7 @@ URL_WF_REAPPLY = AUTH_PATH + "xdata/reApply/";
 if( IS_TEST ) {
     URL_DATA_XML      = "data/data_grid.xml?";
     URL_DATA_JSON     = "data/data_list.json?";
-    URL_DATA_CSV      = "data/_success.xml?";
+    URL_DATA_EXPORT   = "data/_success.xml?";
     URL_GET_SOURCE    = "data/_success.xml?";
     URL_SAVE_SOURCE   = "data/_success.xml?";
     URL_DELETE_SOURCE = "data/_success.xml?";
@@ -568,7 +568,7 @@ function loadDetailData(rowID) {
             // 为有唯一性约束要求的字段添加检查事件
             var code = f.code, unique = f.unique == 'true';
             unique && tssJS("#"+code).blur( function() {
-                var val = (tssJS("#"+code).value()||'').trim();
+                var val = (xform.getData(code) || tssJS("#"+code).value() || '').trim(); // combotree需要用getData获取value
                 updateField(code, val);
                 var params = {"strictQuery": "true"};
                 params[code] = val;
@@ -1008,7 +1008,7 @@ function backup( _params ) {
         queryString += (key + "=" + value);
     });
 
-    var url = encodeURI(URL_DATA_CSV + recordId + queryString);
+    var url = encodeURI(URL_DATA_EXPORT + recordId + queryString);
     tssJS("#downloadFrame").attr( "src", url);
 }
 

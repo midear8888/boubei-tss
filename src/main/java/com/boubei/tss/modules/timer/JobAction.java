@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.Global;
+import com.boubei.tss.util.EasyUtils;
 
 /**
  
@@ -77,9 +78,11 @@ public class JobAction {
 	
 	@RequestMapping(method = RequestMethod.GET)
 	@ResponseBody
-	public List<Map<String, Object>> listJobs() {
+	public List<Map<String, Object>> listJobs(String tag) {
+		tag = EasyUtils.obj2String(tag);
+		
 		String sql = "select id, id as value, name from component_job_def " +
-				" where disabled = 0 and jobClassName like '%etl%' order by name";
+				" where disabled = 0 and jobClassName like '%etl%' and jobClassName like '%" +tag+ "%' order by name";
 		return SQLExcutor.queryL(sql);
 	}
 }

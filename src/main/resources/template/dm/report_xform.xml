@@ -34,7 +34,7 @@
 				<textarea binding="script" style="width:97%;height:240px" class="fullscreenable"/>
 				<p>
 					注：可以在各类数据库的客户端里（PLSQL等）编写并调试好SQL，直接复制到此处，再针对查询条件进行相应配置，即可成为一个正式的数据服务。
-					<a href="http://www.boubei.com/tss/article.portal?articleId=72" target="_blank">详细说明</a>
+					<a href="http://www.boubei.com/doc/tss/manual/tss-report.html?id=#rp1_2" target="_blank">详细说明</a>
 				</p>
 			</TD>
 		</TR>

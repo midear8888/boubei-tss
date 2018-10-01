@@ -835,7 +835,7 @@ public abstract class _Database {
 		
 		/* 
 		 * 如果用户的域不为空，则只筛选出该域下用户创建的记录
-		 * 只有单机部署的BI允许无域（百世快运这类）；SAAS部署必须每个组都要有域，每个人必属于某个域。Admin不属于任何域。
+		 * 只有单机部署的BI允许无域；SAAS部署必须每个组都要有域，每个人必属于某个域。Admin不属于任何域。
 		 * 注：部分全局基础表需要忽略域限制：比如行政区划等，customizeTJ: <#if 1=0>ignoreDomain</#if>
 		 */
 		String _customizeTJ = (String) EasyUtils.checkNull(this.customizeTJ, " 1=1 ");
@@ -843,7 +843,8 @@ public abstract class _Database {
 			_customizeTJ += DMConstants.DOMAIN_CONDITION;
 		}
 		
-		_customizeTJ = (String) EasyUtils.checkNull( DMUtil.fmParse(_customizeTJ), "1=1");
+		// _customizeTJ 可以依据 params 里的参数信息灵活解析成各种查询条件组合
+		_customizeTJ = (String) EasyUtils.checkNull( DMUtil.fmParse(_customizeTJ, params), "1=1" );
 		condition += " and ( ( " + DMUtil.fmParse(_customizeTJ + " )  or -1 = ${_userId!-10000} ") + " ) "; // Admin对所有数据可见
 		
 		// 设置排序方式

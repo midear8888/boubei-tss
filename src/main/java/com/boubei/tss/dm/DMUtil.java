@@ -295,17 +295,17 @@ public class DMUtil {
 		return _customizeParse(script, new HashMap<String, Object>());
 	}
 	
-	public static String fmParse(String script, Map<String, Object> valuesMap) {
+	public static String fmParse(String script, Map<String, ?> valuesMap) {
 		return fmParse(script, valuesMap, false);
 	}
 	
 	// 带录入表${rctable}解析，性能有一定影响
-	public static String fmParse(String script, Map<String, Object> valuesMap, boolean withRcTable) {
+	public static String fmParse(String script, Map<String, ?> valuesMap, boolean withRCTable) {
 		Map<String, Object> data = new HashMap<String, Object>();
 		data.putAll( valuesMap );
 		
 		/*  自动为针对 数据表 的查询加上 按域过滤。 ${tableName} ==> 带按域过滤的子查询 */
-		if(withRcTable) {
+		if(withRCTable) {
 			Pool cache = CacheHelper.getNoDeadCache();
 			String key = DMConstants.RECORD_TABLE_LIST;
 			Cacheable o = cache.getObject(key );
@@ -341,7 +341,7 @@ public class DMUtil {
 		script = _customizeParse(script, data);
 		
 		if( script.indexOf("${") >=0 ) {
-			script = DMUtil.fmParse(script, data, withRcTable); // 再解析一次
+			script = DMUtil.fmParse(script, data, withRCTable); // 再解析一次
       	}
       	
 		return script;

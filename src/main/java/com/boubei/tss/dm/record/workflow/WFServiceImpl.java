@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -133,8 +135,9 @@ public class WFServiceImpl implements WFService {
 	 * 安装流程规则及当前申请人登录信息，获取审批人（或抄送人）列表
 	 */
 	public List<String> getUsers(List<Map<String, String>> rule, boolean justOne) {
-		List<String> users = new ArrayList<String>();
-		if(rule == null) return users;
+		// 去除重复的审批人（同个人多个角色）
+		Set<String> users = new LinkedHashSet<String>();
+		if(rule == null) return new ArrayList<>();
 		
 		String creator = Environment.getUserCode(); 
 		
@@ -159,7 +162,7 @@ public class WFServiceImpl implements WFService {
 		}
  
 		users.remove( creator );
-		return users;
+		return new ArrayList<String>(users);
 	}
 	
 	/**

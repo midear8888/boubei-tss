@@ -68,8 +68,8 @@
 				<a onclick="configDefine()"  style="margin: 4px 0 0 2%;">配 置</a>
 				<a onclick="preview()"  style="margin:4px 10px 0 10px;">预 览</a>
 				<p style="display: inline-block; height:18px;">
-					<a href="http://www.boubei.com/tss/article.portal?articleId=36" target="_blank">《详细说明》</a>
-					<a href="http://www.boubei.com/tss/article.portal?articleId=101" target="_blank" style="margin-left:12px;">《如何快速导入Excel》</a>
+					<a href="http://www.boubei.com/doc/tss/manual/tss-record.html?id=#rc1_3" target="_blank">《详细说明》</a>
+					<a href="http://www.boubei.com/doc/tss/demo1/index.html?id=#p1_2" target="_blank" style="margin-left:12px;">《如何快速导入Excel》</a>
 				</p>
 			</TD>
 		</TR>
@@ -89,7 +89,7 @@
 				<textarea binding="customizeJS" class="fullscreenable"/>
 				<p>
 					注：此处填写的脚本将在新增或修改数据时，录入表单被打开后自动执行，本脚本只限于控制录入表单元素。如需控制表单以外的元素，请在【页面控制脚本】里填写。
-					<a href="http://www.boubei.com/tss/article.portal?articleId=59" target="_blank">详细说明</a>
+					<a href="http://www.boubei.com/doc/tss/manual/tss-record.html?id=#rc1_5" target="_blank">详细说明</a>
 				</p>
 			</TD>
 		</TR>
@@ -98,7 +98,7 @@
 				<textarea binding="customizeGrid" class="fullscreenable"/>
 				<p>
 					注：此处填写的脚本将在数据表被打开后自动执行，可在此定义一些作用于本录入页的全局属性或方法。
-					<a href="http://www.boubei.com/tss/article.portal?articleId=60" target="_blank">详细说明</a>
+					<a href="http://www.boubei.com/doc/tss/manual/tss-record.html?id=#rc1_6" target="_blank">详细说明</a>
 				</p>
 			</TD>
 		</TR>
@@ -107,7 +107,7 @@
 				<textarea binding="customizeTJ" class="fullscreenable"/>
 				<p>
 					注：此处可依据登录用户的组织、角色等信息，定制数据过滤条件。
-					<a href="http://www.boubei.com/tss/article.portal?articleId=61" target="_blank">详细说明</a>
+					<a href="http://www.boubei.com/doc/tss/manual/tss-record.html?id=#rc1_7" target="_blank">详细说明</a>
 				</p>
 			</TD>
 		</TR>

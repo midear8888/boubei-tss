@@ -112,13 +112,13 @@ public class ParamServiceImpl implements ParamService, ParamListener {
     	Long id = param.getId();
         if (null == id) {
             param.setSeqNo(paramDao.getNextSeqNo(param.getParentId()));
-            judgeLegit(param, ParamConstants.SAVE_FLAG);
+            judgeLegit(param);
             paramDao.create(param);
         }
         else {
         	checkPermission(id);
         	
-            judgeLegit(param, ParamConstants.EDIT_FLAG);
+            judgeLegit(param);
             if(param.getLockVersion() == 0) { // 非param.htm维护系统参数的情况
             	Param old = paramDao.getEntity(id);
             	param.setLockVersion(old.getLockVersion());
@@ -143,35 +143,39 @@ public class ParamServiceImpl implements ParamService, ParamListener {
 	}
     
     /**
-     * <p>
-     * 字段重复判断。 （区分参数组、参数、参数项的概念） 不同参数的code不可以相同，必须帮助每个参数 的code值对整个参数表中的“参数”唯一
-     * </p>
-     * 
-     * @param param
+     * 字段重复判断。 （区分参数组、参数、参数项的概念） 不同参数的code不可以相同，确保每个参数的code值对整个参数表中的“参数”唯一
      */
-    private void judgeLegit(Param param, int flag) {
+    private void judgeLegit(Param param) {
         // 如果保存的是参数（区分参数组、参数、参数项的概念），则要保证code值对所有“参数”唯一
         Integer type = param.getType();
         if (ParamConstants.NORMAL_PARAM_TYPE.equals(type)) {
             String hql = "select p.id from Param p where p.type = ? and p.code = ?";
-            List<?> list = paramDao.getEntities(hql, ParamConstants.NORMAL_PARAM_TYPE, param.getCode());
-            if (list.size() > flag) {
-                throw new BusinessException(EX.F_13);
+            String code = param.getCode();
+			List<?> list = paramDao.getEntities(hql, ParamConstants.NORMAL_PARAM_TYPE, code);
+            list.remove(param.getId()); // 自己不算
+            if (list.size() > 0) {
+                throw new BusinessException(EX.parse(EX.F_13, code));
             }
             return;
         }
 
+        String uniqueField;
         String hql = "select p.id from Param p where p.parentId=" + param.getParentId();
         if (ParamConstants.GROUP_PARAM_TYPE.equals(type)) { // 参数组不能同名
-            hql += " and p.name='" + param.getName() + "'";
+        	uniqueField = param.getName();
+            hql += " and p.name='" + uniqueField + "'";
         } else {
             Param parentParam = paramDao.getEntity(param.getParentId());
             param.setModality(parentParam.getModality());
-            hql += " and p.text='" + param.getText() + "' ";
+            
+            uniqueField = param.getText();
+            hql += " and p.text='" + uniqueField + "' ";
         }
 
-        if (paramDao.getEntities(hql).size() > flag) {
-            throw new BusinessException( EX.F_14 + hql);
+        List<?> list = paramDao.getEntities(hql);
+        list.remove(param.getId()); // 自己不算
+		if (list.size() > 0) {
+            throw new BusinessException(EX.parse(EX.F_14, uniqueField));
         }
     }
 
@@ -226,8 +230,9 @@ public class ParamServiceImpl implements ParamService, ParamListener {
             
             // 如果目标根节点是停用状态，则所有新复制出来的节点也一律为停用状态
             param.setDisabled(toParam.getDisabled()); 
-
-            judgeLegit(param, ParamConstants.EDIT_FLAG);
+            param.setName( param.getName() + "_copy" );
+            param.setCode( param.getCode() + "_copy" );
+            judgeLegit(param);
             
             paramDao.create(param);
             paramMapping.put(sourceParamId, param.getId());
