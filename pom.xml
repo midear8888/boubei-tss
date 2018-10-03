@@ -558,6 +558,40 @@
     </repositories>
     
 	<profiles>
+		<profile>
+			<id>ebi</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<environment>ebi</environment>
+				<security.level>6</security.level>
+				<job.enable>true</job.enable>
+				<log.level>info</log.level>
+				<db.username>tssbiu1</db.username>
+				<db.password>www.boubei.com</db.password>
+				<db.url>127.0.0.1:3306/ebi</db.url>
+				<tomcat.url>ebi.boubei.com</tomcat.url>
+			</properties>
+		</profile>
+		
+		<profile>
+			<id>xbi</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<environment>xbi</environment>
+				<security.level>6</security.level>
+				<job.enable>true</job.enable>
+				<log.level>info</log.level>
+				<db.username>tssbiu1</db.username>
+				<db.password>www.boubei.com</db.password>
+				<db.url>127.0.0.1:3306/xbi</db.url>			
+				<tomcat.url>demo.boubei.com</tomcat.url>
+			</properties>
+		</profile>
+
 		<!-- eg: mvn clean install  -Pxxx -Dmaven.test.skip=true -->
 		<profile>
 			<id>dev</id>
@@ -565,7 +599,7 @@
 				<activeByDefault>true</activeByDefault>
 			</activation>
 			<properties>
-				<environment>dev-tss-bi</environment>
+				<environment>ebi-local</environment>
 				<security.level>6</security.level>
 				<job.enable>true</job.enable>
 				<log.level>info</log.level>

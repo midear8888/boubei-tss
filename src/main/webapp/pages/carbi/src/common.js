@@ -1,16 +1,10 @@
-TOMCAT_URL = "";
-// TOMCAT_URL = "http://10.9.45.69:8080";
 
-BASE_JSON_URL  = TOMCAT_URL + '/tss/data/json/';
-BASE_JSONP_URL = TOMCAT_URL + '/tss/data/jsonp/';
-
-function json_url(id) { return BASE_JSON_URL + id; }
-function jsonp_url(id) { return BASE_JSONP_URL + id; }
+function json_url(id) { return '/tss/data/json/' + id; }
 
 var user_info = {}, preMonth, fromTime, toTime, orgs;
 var carnumMap;
 function initCarsInfo(callback) {
-    tssJS.getJSON( json_url(27), {"uCache": "true"}, function(data) {
+    tssJS.getJSON( json_url("s27"), {"uCache": "true"}, function(data) {
         carnumMap = {};
         data.each(function(i, item) {
             delete item.name;

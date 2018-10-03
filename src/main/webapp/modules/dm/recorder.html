@@ -64,6 +64,14 @@
     #opinionLabel { width: 92px; display: inline-block; margin-top: 20px; }
     #opinion { height: 50px; width: 320px; margin-top: 15px; }
 
+    #grid td[name='wfstatus'][value='待审批'] {  color: red;}
+    #grid td[name='wfstatus'][value='审批中'] {  color: blue;}
+    #grid td[name='wfstatus'][value='已通过'] {  color: green;}
+    #grid td[name='wfstatus'][value='已撤销'] {  color: #ccc;}
+    #grid td[name='wfstatus'][value='已删除'] {  font-style: italic;}
+    #grid td[name='wfstatus'][value='已驳回'] {  color: orange;}
+    #grid td[name='nextProcessor'][value] {  color: blue;}
+
 </style>
 
 <SCRIPT type="text/javascript">
@@ -412,7 +420,7 @@ function isRecycled() {
     return (tssJS.G("grid").getColumnValue("domain")||"").indexOf("@--") >= 0;
 }
 
-function canEditRow(rowID) {
+function canEditRow(rowID, _wfStatus) {
     if(rowID === '_new') { // 新增
         return _operation.contains("1");
     }
@@ -428,7 +436,7 @@ function canEditRow(rowID) {
             return false; // 透析模式
         }
 
-        var wfstatus = tssJS.G("grid").getColumnValue("wfstatus");  
+        var wfstatus = _wfStatus || tssJS.G("grid").getColumnValue("wfstatus");  
         if( wfstatus && wfstatus != '待审批' ) { // 流程数据只有待审批状态时能修改
             return false;
         }
@@ -610,11 +618,10 @@ function loadDetailData(rowID) {
 
         tssJS("#cancelBt").hide();  
 
-        if( isCreateRow ) {
-            wfFields.each(function(i, code) {
-                $("#"+code).addClass("field_disabled").attr("disabled", "true");
-            });
-        } else {
+        var opinionDisabled = false, wfFieldsEnable = false, _wfStatus;
+
+        if( isCreateRow === false ) {
+
             tssJS("#cancelBt").click( function() { cancel(rowID); } ); 
             tssJS("#approveBt").click( function() { approve(rowID); } ); 
             tssJS("#rejectBt").click( function() { reject(rowID); } ); 
@@ -623,22 +630,26 @@ function loadDetailData(rowID) {
             showExtension(_item);
 
             // 控制流程按钮
-            if(  _item.creator == userCode ) {
+            _wfStatus = _item.wfstatus;
+            var isCreator = _item.creator == userCode;
+            if( isCreator ) {
                 tssJS("#ws .wf").hide();
-                _item.wfstatus && tssJS("#cancelBt").show();
-
-                if( _item.wfstatus && _item.wfstatus != '待审批' ) {
-                    tssJS("#cancelBt, #saveBt, #btnViewAttach").hide();
-                    tssJS("#opinion").attr("disabled", "true").css("background-color", "#eee");
+                if( _wfStatus ) {
+                    if( _wfStatus != '待审批' ) {
+                        tssJS("#cancelBt, #saveBt, #btnViewAttach").hide();
+                        opinionDisabled = true;
+                    } else {
+                        tssJS("#cancelBt").show();
+                        wfFieldsEnable = true;
+                    }
                 }
-            }
-            if(  _item.nextProcessor != userCode ) {
-                tssJS("#approveBt, #rejectBt, #transBt").hide();
-                tssJS("#opinion").attr("disabled", "true").css("background-color", "#eee");
             } else {
-                wfFields.each(function(i, code) {
-                    $("#"+code).removeClass("field_disabled").attr("disabled", null);
-                });
+                if(  _item.nextProcessor == userCode ) { 
+                    wfFieldsEnable = true;
+                } else { // 非当前流程审批人
+                    tssJS("#approveBt, #rejectBt, #transBt").hide();
+                    opinionDisabled = !isCreator;
+                }
             }
 
             billMode && tssJS("#saveBt").hide();
@@ -650,12 +661,24 @@ function loadDetailData(rowID) {
         }
 
         // 设置保存/关闭按钮操作
-        if( canEditRow(rowID) && (!disableSave || !disableSave())) {
+        if( canEditRow(rowID, _wfStatus) && (!disableSave || !disableSave()) && !opinionDisabled ) {
             tssJS("#saveBt").show().click( function() { saveSource(rowID, isCreateRow, version);  } );
         } else {
             disableForm();
             tssJS("#saveBt, #btnViewAttach").hide();
         }
+
+        if(opinionDisabled) {
+            // tssJS("#opinion").attr("disabled", "true").css("background-color", "#eee");
+            tssJS("#opinion, #opinionLabel").hide();
+        }
+        wfFields.each(function(i, code) {
+            if(wfFieldsEnable) {
+                $("#"+code).removeClass("field_disabled").attr("disabled", null);
+            } else {
+                $("#"+code).addClass("field_disabled").attr("disabled", "true");
+            }
+        });
     }
 
     // 如果已经在打开的tab页里了
@@ -994,8 +1017,9 @@ function backup( _params ) {
    if( _params ) {
         _params.page = 1; // $1("GridPageList").value
         _params.pagesize = EXP_PAGE_SIZE;
-        if( tssJS("#GridPageList>option").length*50 > _params.pagesize ) {
-            return tssJS.alert("单次导出不能超过" +Math.round(_params.pagesize/50)+ "页，请缩短查询条件后再导出");
+        var totalpages = tssJS("#GridPageList>option").length;
+        if( totalpages*50 > _params.pagesize ) {
+            return tssJS.alert("当前导出数据" +totalpages+ "页，单次导出不能超过" +Math.round(_params.pagesize/50)+ "页，请缩短查询条件后再导出");
         }
     } else {
         _params = {};
@@ -1022,6 +1046,7 @@ var uniqueCodes,
     together,
     headerTL,
     otherConfig,
+    charSet = 'GBK',
     afterUploadClass="com.boubei.tss.dm.record.file.ImportCSV";
 function batchImport() {
     function checkFileWrong(subfix) {
@@ -1030,6 +1055,8 @@ function batchImport() {
 
     var url = URL_UPLOAD_FILE + "?afterUploadClass=" + afterUploadClass;
     url += "&recordId=" + recordId;
+    url += "&charSet=" + charSet;
+
     if(uniqueCodes) {
         url += "&uniqueCodes=" + uniqueCodes; // 定义在页面全局变量里：uniqueCodes="oto,sjphone";
     }

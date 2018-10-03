@@ -12,7 +12,6 @@
 <link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
 
 <script src="../../tools/tssJS/tssJS.all.js"></script>
-<script src="../../tools/tssJS/tssJS.jsonp.js"></script>
 <script src="../../tools/tssJS/tssJS.data.js"></script>
 <script src="../../more/bi_template/tssJS.chart.js"></script>
 
@@ -48,7 +47,7 @@ $(function(){
 function query(params) {
 	params = params || {};
 
-	tssJS.getJSON( json_url(29), params, function(data) {
+	tssJS.getJSON( json_url("s29"), params, function(data) {
         if(data.length == 0) {
             return $.messager.show({ title: '提示', msg: '没有查到任何数据，请调整查询条件后再查询。'});
         }

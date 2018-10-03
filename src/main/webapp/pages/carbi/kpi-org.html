@@ -9,7 +9,6 @@
 <link rel="stylesheet" href="src/bi.css">
 
 <script src="../../tools/tssJS/tssJS.all.js"></script>
-<script src="../../tools/tssJS/tssJS.jsonp.js"></script>
 <script src="../../tools/tssJS/tssJS.data.js"></script>
 
 <script src="src/common.js"></script>
@@ -80,7 +79,7 @@ $(function(){
     params.param3 = _params.param3;
     params.param4 = _params.param4;
 
-    var url = json_url(48);
+    var url = json_url('kpi_service');
 
     $.getJSON(url, params, function(data) {
         show(data, params.param2);

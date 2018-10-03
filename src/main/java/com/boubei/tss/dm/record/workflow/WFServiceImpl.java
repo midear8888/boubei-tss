@@ -118,9 +118,14 @@ public class WFServiceImpl implements WFService {
 		List<Map<String, String>> cc = rules.get("cc");
 		List<Map<String, String>> trans = rules.get("trans");
 		
-		List<String> tos = getUsers(to, true);
+		List<String> tos = getUsers(to, true); 
 		List<String> ccs = getUsers(cc, false);
 		List<String> transs = getUsers(trans, false);
+		
+		// 审批和转审人员列表不能包含申请人自己，抄送可以
+		String creator = Environment.getUserCode(); 
+		tos.remove(creator);
+		transs.remove(creator);
 		
 		wfStatus.setNextProcessor( tos.isEmpty() ? null : tos.get(0) );
 		wfStatus.setStepCount( tos.size() );
@@ -139,8 +144,6 @@ public class WFServiceImpl implements WFService {
 		Set<String> users = new LinkedHashSet<String>();
 		if(rule == null) return new ArrayList<>();
 		
-		String creator = Environment.getUserCode(); 
-		
 		for(Map<String, String> m : rule) {
 			if(m == null || (m.containsKey("when") && !"true".equals(m.get("when"))) ) {
 				continue;
@@ -154,24 +157,23 @@ public class WFServiceImpl implements WFService {
 			String role = m.get("roleId"); // 或签名，优先使用和申请人同组的主管
 			if( !EasyUtils.isNullOrEmpty(role) ) {
 				Long roleId = EasyUtils.obj2Long(role);
-				List<Object[]> roleUsers = getSameGroupUserByRole(roleId, creator, justOne);
+				List<Object[]> roleUsers = getSameGroupUserByRole(roleId, justOne);
 				if( roleUsers.size() > 0 ) {
 					users.addAll( Arrays.asList( EasyUtils.list2Str(roleUsers, 0).split(",") ) );
 				}
 			}
 		}
  
-		users.remove( creator );
 		return new ArrayList<String>(users);
 	}
 	
 	/**
 	 * 按角色获取拥有此角色的所有用户 及 组织
 	 */
-	private List<Object[]> getSameGroupUserByRole(Long roleId, String creator, boolean justOne) {
+	private List<Object[]> getSameGroupUserByRole(Long roleId, boolean justOne) {
 		
 		List<Object[]> result = new ArrayList<Object[]>();
-		if( Environment.getOwnRoles().contains(roleId) ) { // 如果自己就拥有该角色，则无需此角色的人审批
+		if( justOne && Environment.getOwnRoles().contains(roleId) ) { // 如果自己就拥有该角色，则无需此角色的人审批；抄送和转审，允许同角色
 			return result;
 		}
 		

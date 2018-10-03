@@ -181,10 +181,10 @@ public class DMUtil {
 		String valueS = value.toString().replaceAll(",", "，"); // 导出时字段含英文逗号会错列
 		valueS = valueS.replaceAll("\r\n", " ").replaceAll("\n", " "); // 替换掉换行符
 		valueS = valueS.replaceAll("\"", ""); // 替换掉英文双引号
-		valueS = valueS.replaceAll("'", "");  // 替换掉英文单引号
+//		valueS = valueS.replaceAll("'", "");  // 替换掉英文单引号，SQL中含有单引号
 		valueS = valueS.replaceAll(";", "；"); // 替换掉英文分号，mac os下csv默认用分号分隔
 		
-		valueS = Pattern.compile("\t|\r|\n|\'").matcher(valueS).replaceAll(" "); // 保险起见，再替换一次
+		valueS = Pattern.compile("\t|\r|\n").matcher(valueS).replaceAll(" "); // 保险起见，再替换一次
 		
 		return valueS; 
     }

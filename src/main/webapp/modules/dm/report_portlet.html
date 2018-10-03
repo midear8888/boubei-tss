@@ -114,7 +114,7 @@ body { width:100%; overflow: hidden; }
     <li class="item" id="li1"> 
       <!-- <a href="#" onclick="tssJS('#tip1').show(true)">  -->
       <a href="#" onmouseover="$('#tip1').show(true)" onmouseout="$('#tip1').hide()"> 
-        <div class="icon icon-graph"></div>
+        <div class="icon icon-search"></div>
         <div class="tip" id="tip1">
           <iframe frameborder="no" scrolling="no"></iframe>
           <div>◆</div>
@@ -122,7 +122,7 @@ body { width:100%; overflow: hidden; }
       </a> 
     </li>
     <li class="item" id="li3"> 
-      <a href="javascript:void(0)" onmouseover="showQueryForm();" > 
+      <a href="javascript:void(0)" onmouseover="openQueryForm();" > 
         <div class="icon icon-search"></div>
       </a> 
     </li>
@@ -285,7 +285,8 @@ else {
 function init() {
     $("body").css("width", (document.body.offsetWidth - 28) + "px" );
     // 需要等空间展开后再加载查询页，不然IE、FF等浏览器里会显示异常
-    $("#tip1>iframe").attr("src", "../../more/bi_condition.html"); 
+    $("#tip1").show(true);
+    // $("#tip1").hide();
 
     getZanNum(2);
     getZanNum(3);
@@ -382,7 +383,7 @@ function initPortlet( hideQueryForm ) {
     if(hideQueryForm) {
         $("#li3,#searchFormDiv").remove();  // 用了通用查询条件或设置为no-need，则把默认的参数框隐藏 
     } else {
-        showQueryForm( params );
+        openQueryForm( params );
     }
 
     if(allReady) {
@@ -398,7 +399,7 @@ function initPortlet( hideQueryForm ) {
     }
 }
 
-function showQueryForm(_params) {
+function openQueryForm(_params) {
     if( !globalValiable.define ) return;
 
     function updateParams() {

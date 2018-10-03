@@ -12,7 +12,6 @@
 <link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
 
 <script src="../../tools/tssJS/tssJS.all.js"></script>
-<script src="../../tools/tssJS/tssJS.jsonp.js"></script>
 <script src="../../tools/tssJS/tssJS.data.js"></script>
 <script src="../../more/bi_template/tssJS.chart.js"></script>
 
@@ -29,17 +28,17 @@
 
 #canvasContainer {
     display: inline-block;
-    width: 70%;
+    width: 67%;
 }
 #tgDiv {
     display: inline-block;
-    width: 29%;
+    width: 32%;
     vertical-align: top;
-    height: 95%;
+    height: 99%;
 }
-#tg1 {
-    width:100%; 
-}
+#tg1 { width:100%; }
+#dataContainer { overflow: hidden; }
+
 
 </STYLE>
 
@@ -63,7 +62,7 @@ $(function(){
 
 function query(params) {
 
-	tssJS.getJSON( json_url(52), params, function(data) {
+	tssJS.getJSON( json_url("s32"), params, function(data) {
         if(!data || data.length == 0) {
             return $.messager.show({ title: '提示', msg: '没有查到任何数据，请调整查询条件后再查询。'});
         }

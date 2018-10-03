@@ -4287,7 +4287,10 @@
 });
 
 /* Grid组件 
- * 事件: onLoad, Grid更新加载完成后触发 $("#grid").attr("onLoad", "f1()");
+ * 事件: 
+ * 1、onLoad:   Grid更新加载完成后触发 $("#grid").attr("onLoad", "f1"); 注意此时Grid对象还没有完全生成
+ * 2、onFinish: Grid生成后触发 $("#grid").attr("onFinish", "f2"); 
+ * 
  * TODO:
  *  !. Grid控件表头增加求和功能
  */
@@ -4303,6 +4306,9 @@
             grid = new $.Grid($1(id), data);
             GridCache[grid.id] = grid;  
         }
+
+        var onFinish = $("#" + id).attr("onFinish");
+        onFinish && $.execCommand( onFinish + "()" );
         
         return grid;
     };
@@ -4587,7 +4593,7 @@
             bindSortHandler(table);
 
             var onLoad = $(this.el).attr("onLoad");
-            onLoad && $.execCommand(onLoad);
+            onLoad && $.execCommand( onLoad + "()" );
         }, 
 
         /* 处理数据行,将值解析成下拉列表值、图片、选择框等 */

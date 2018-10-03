@@ -12,7 +12,6 @@
 <link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
 
 <script src="../../tools/tssJS/tssJS.all.js"></script>
-<script src="../../tools/tssJS/tssJS.jsonp.js"></script>
 <script src="../../tools/tssJS/tssJS.data.js"></script>
 <script src="../../more/bi_template/tssJS.chart.js"></script>
 
@@ -53,7 +52,7 @@ var _data;
 function query(params) {
 	params = params || {};
 
-	tssJS.getJSON( json_url(30), params, function(data) {
+	tssJS.getJSON( json_url("s30"), params, function(data) {
         if(data.length == 0) {
             return $.messager.show({ title: '提示', msg: '没有查到任何数据，请调整查询条件后再查询。'});
         }
@@ -149,7 +148,7 @@ function showChart(_scope) {
 }
 
 function openMLC() {
-	window.parent.parent.addTab("行驶里程-按月累积", "/tss/pages/carbi/lc-month.html");
+	window.parent.parent.addTab("里程-按月累积", "/tss/pages/carbi/lc-month.html");
 }
 
 </script>

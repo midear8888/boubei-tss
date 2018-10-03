@@ -12,7 +12,6 @@
 <link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
 
 <script src="../../tools/tssJS/tssJS.all.js"></script>
-<script src="../../tools/tssJS/tssJS.jsonp.js"></script>
 <script src="../../tools/tssJS/tssJS.data.js"></script>
 
 <script src="../../tools/easyui/jquery.min.js"></script>
@@ -66,7 +65,7 @@ $(function() {
 
 	$("#x1").text("【" +month+ "】");
 	tssJS("#x2").click(function(){
-		window.parent.showQueryForm();
+		window.parent.openQueryForm();
 	});
 	tssJS("#x3").click(function(){
 		showGrid2();
@@ -74,7 +73,7 @@ $(function() {
 	initCarsInfo(showGrid);
 
 	// 取出里程日报里的里程数据
-	tssJS.getJson(json_url(28), {"param8": month, "param9": month}, function(data) {
+	tssJS.getJson(json_url("s28"), {"param8": month, "param9": month}, function(data) {
 		data.each(function(i,item) {
 			daily_lc[item.carnum] = item["总里程"];
 		});
@@ -133,14 +132,14 @@ function cellStyler2(value,row,index){
 }
 
 function showGrid() {
-	tssJS.getJson(json_url(36), {"param1": month, "param2": tssJS.Cookie.getValue("_g1")}, function(data) {
+	tssJS.getJson(json_url("s36"), {"param1": month, "param2": tssJS.Cookie.getValue("_g1")}, function(data) {
 		getKTHX(data);
 
 	}, "POST");	
 }
 
 function getKTHX(data) {
-	tssJS.getJson(json_url(35), 
+	tssJS.getJson(json_url("s35"), 
 		{"param2": tssJS.Cookie.getValue("_g1"), "param6": fromDay, "param7": toDay, "param10": 'kthx_c'}, 
 		function(data2) {
 
@@ -228,15 +227,9 @@ function doShow(data) {
 	sort(cysPM, '综合得分', '综合排名');
 }
 
-JK_CAR_TYPES = ["奔驰", "沃尔沃", "斯堪尼亚"];
+// 是否进口车
 function isJKCar(brand) {
-	var flag = false;
-	JK_CAR_TYPES.each(function(i, item) {
-		if (brand.indexOf(item) >= 0) {
-			flag = true;
-		}
-	});
-	return flag;
+	return ["奔驰", "沃尔沃", "斯堪尼亚"].indexOf(brand) >= 0;
 }
 
 var FIELDS_3 = [        

@@ -80,6 +80,9 @@ public interface PX {
     
     // ParamManager: component_param
     
+    /** 强制用户修改密码间隔天数。默认180天 */
+    static String PASSWD_CYCLELIFE = "passwd.cyclelife";
+    
     /** 读取最新、最热门、最近访问报表时，选取的日志天数，日志量大的，不宜取太多天。默认3天 */
     static String TOP_REPORT_LOG_DAYS = "TOP_REPORT_LOG_DAYS";
     

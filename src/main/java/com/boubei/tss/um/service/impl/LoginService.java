@@ -149,8 +149,9 @@ public class LoginService implements ILoginService {
     	// 检查用户上次修改密码时间，如果超过了180天，则将安全等级降低为0
 		User user = userDao.getEntity(userId);
 		Date lastPwdChangeTime = user.getLastPwdChangeTime();
+		int passwdCyclelife = EasyUtils.obj2Int(ParamManager.getValue("passwd.cyclelife", "180"));
 		lastPwdChangeTime = (Date) EasyUtils.checkNull(lastPwdChangeTime, user.getLastLogonTime(), new Date());
-		if( DateUtil.addDays(lastPwdChangeTime, 180).before( new Date() ) ) {
+		if( DateUtil.addDays(lastPwdChangeTime, passwdCyclelife).before( new Date() ) ) {
 			return -1;
 		}
     	

@@ -53,7 +53,9 @@ var all_codes = [
 
         // {code:'url.white.list',content:'资源地址白名单，白名单内的资源允许【匿名访问】url.white.list = /version,.in,.do,.portal,login.html,_forget.html,_register.html.....'},
         {code:'ip.white.list',content:'ip白名单，名单内的ip允许跨域访问系统的服务和资源'},
-        {code:'session.cyclelife',content:'离开超时时间，单位（秒）'},
+        {code:'session.cyclelife',content:'输入数字，单位（秒），默认为1800秒'},
+        {code:'passwd.cyclelife',content:'输入数字，单位（天），默认为180天', name: '密码有效期'},
+         
         // {code:'log_flush_max_size',content:'日志缓冲池最多可存日志条数的参数'},
         // {code:'report.template.dir',content:'报表自定义展示页上传目录'},
         // {code:'userdefinedParams',content:'用户自定义的参与Freemarker解析参数'},
@@ -63,7 +65,7 @@ var all_codes = [
         // {code:'TOP_REPORT_LOG_DAYS',content:'读取最新、最热门、最近访问报表时，选取的日志天数，日志量大的，不宜取太多天。默认3天'},
         // {code:'ADMIN_ROLE',content:'可以指定一个系统管理员之外的角色为超级管理员'},
         // {code:'MAX_QUERY_REQUEST',content:'QueryCache支持的最大等待线程数量，没有配置默认100'},
-        {code:'MAX_XLSX_SIZE',content:'导入XLSX文件大小上限, 单位K, 默认为1024K'},
+        {code:'MAX_XLSX_SIZE', name: "导入XLSX文件大小上限", content:'输入数字，单位K，默认为1024K'},
     ];
 var codes_string = '';
 var result = [], result_obj = {},require_code = [];

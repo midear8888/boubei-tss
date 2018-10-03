@@ -145,6 +145,10 @@ function disableForm() {
     tssJS("#saveBt").hide(); 
     tssJS.F("page1Form").setEditable("false");
 }
+function enableForm() {
+    tssJS("#saveBt").show(); 
+    tssJS.F("page1Form").setEditable("true");
+}
 
 /** 
  * 将指定字段从录入表单里隐藏起来不显示
