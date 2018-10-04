@@ -75,13 +75,13 @@ function initList() {
       $li.attr("id", "li" + item.id);
       $li.find("div.module>h2").text(item.module);
 
-      if(description.length > 50) {
-        description = description.substring(0, 50) + "...";
+      if(description.length > 150) {
+        description = description.substring(0, 150) + "...";
         $li.find("div.module>p").hover( function() {  
           $(this).notice(item.description);
         } );
       }
-      $li.find("div.module>p>span").text( description);
+      $li.find("div.module>p>span").html( description);
 
       $li.find("div.issue").text(item.creator + " 发布于 " + (item.updateTime||item.createTime).split(" ")[0]);
 

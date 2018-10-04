@@ -224,6 +224,14 @@ function init() {
                         return;
                     }
 
+                    if(customizeGrid) {
+                        var scripts = customizeGrid.split("/* --- before load --- */");
+                        if(scripts.length == 2) {
+                            tssJS.createScript( scripts[0] );
+                        }
+                        customizeGrid = scripts[scripts.length-1];
+                    }
+
                     recordDefine.each(function(i, field){
                         field._defaultValue = field.defaultValue;
 

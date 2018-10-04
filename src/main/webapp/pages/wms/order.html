@@ -22,8 +22,8 @@
 
 <script type="text/javascript">
 
-var role_owner = '仓库主管', 
-    role_customer = '下单客户'; 
+var role_owner = '商家', 
+    role_customer = '买家'; 
 
 // 使用表名作为录入表的标识
 var orderTable = 'j_order', orderItemTable = 'j_order_item', skuTable = 'j_sku', invTable = 'j_inv';
@@ -132,41 +132,6 @@ $(function(){
     dg2.datagrid('enableCellEditing');
 
     querySKUs();
-
-    // 获取到角色的ID
-    tssJS.getJSON("/tss/auth/service/rid", {"role": role_customer}, function(result) { 
-        var role_customer_id = result;
-
-        // 根据角色ID获取 被授予此角色的用户列表
-        $.getJSON("/tss/auth/service/rusers/"+role_customer_id, {}, function(data) {
-            data.each(function(i, item) {
-                receivers[item.userName] = item;
-            });
-
-            $("#receiver").combobox( {
-                panelHeight: '150px',
-                editable: true,
-                data: data,
-                textField: "userName",
-                valueField: "userName",
-                onChange: function( newOrg, oldOrg ) {
-                    var u = receivers[newOrg];
-                    if(u) {
-                        $('#mobile1').textbox('setValue', u.telephone);
-                        $('#receiveaddr').textbox('setValue', u.address);
-                    }
-                }
-            });
-        });
-    });
-
-    // 支持模糊查询
-    $('#receiver').combobox({
-        filter: function(q, row){
-            var options = $(this).combobox('options');
-            return row[options.textField].indexOf(q) >= 0;
-        }
-    });
 });
 
 function queryOrder( params ) {
@@ -256,7 +221,7 @@ function queryOrder( params ) {
 
             if( userRoles.contains(role_customer) 
                     && !userRoles.contains(role_owner) 
-                    && row.status == '已发货') { // 下单客户
+                    && row.status == '已发货') { // 买家
 
                 $('#btn7').linkbutton("enable");
             }
@@ -327,9 +292,8 @@ function add() {
 
     $('#lockVersion').val('0'); // 給版本号设置默认值.
 
-    tssJS.getJSON( ORDER.QUERY, {"day": cday, "fields":"id"}, function(data){
-        var newno = "LH" + userHas[2] + "_" + new Date().format("yyyyMMdd") + "_" + (data.length+1);
-        $('#orderno').textbox('setValue', newno);
+    tssJS.getJSON("/tss/sn/O/1", {}, function(sns) {
+         $('#orderno').textbox('setValue', sns[0]);
     });
 
     if(receivers[userName]) { // 客户自行下单
@@ -350,14 +314,6 @@ function add() {
 function filterForm() {
     $('#orderno').textbox("readonly");
     $('#day').textbox("readonly");
-
-    if( !userRoles.contains(role_owner) ) {
-        $('#receiver').combobox("readonly");
-        $('#sender').textbox("readonly");
-        $('#sendorg').textbox("readonly");
-        $('#mobile2').textbox("readonly");
-        $('#money').textbox("readonly");
-    }
 }
 
 function edit() {
@@ -493,7 +449,7 @@ function showItems(data, opable) {
         dg2.datagrid("showColumn", "opts");
     }
 
-    if( userRoles.contains(role_customer) && !userRoles.contains(role_owner) ) { // 下单客户，不能操作批次信息
+    if( userRoles.contains(role_customer) && !userRoles.contains(role_owner) ) { // 买家，不能操作批次信息
        dg2.datagrid("hideColumn", "createdate");
        dg2.datagrid("hideColumn", "expiredate");
     }
@@ -619,11 +575,11 @@ function saveItems() {
                 </td>
             </tr>
             <tr>
-                <td class="label">收货人电话:</td>
+                <td class="label">收货电话:</td>
                 <td>
                     <input name="mobile1" id="mobile1" class="easyui-textbox" required="true"/>
                 </td>
-                <td class="label">配送人电话:</td>
+                <td class="label">配送电话:</td>
                 <td>
                     <input name="mobile2" id="mobile2" class="easyui-textbox"/>
                 </td>

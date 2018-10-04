@@ -20,6 +20,9 @@ import com.boubei.tss.util.EasyUtils;
 /**
  *	取号器，支持指定前缀及一次获取多个连号
  *	配合数据表字段使用，在字段定义默认值填入：XX-yyMMddxxxx，则在界面新增或导入数据时自动调用本取号器
+ 	
+ 	$.getJSON("/tss/sn/O/1", {}, function(sns) { console.log(sns[0]); });
+ 	
  */
 @Controller
 @RequestMapping("/sn")
