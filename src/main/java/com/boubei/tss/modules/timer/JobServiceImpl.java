@@ -49,12 +49,11 @@ public class JobServiceImpl implements JobService {
 			else if( "yes".equals( log.getException() ) ) {
 				throw new BusinessException(task.getJobName() + EX._ERROR_TAG + log.getDetail() );
 			}
+			return "Success! result: " + log.getDetail() +", maxID="+ log.getMaxID() +", lastday="+ log.getDataDay();
 		}
 		else {
 			throw new BusinessException( EX.parse(EX.DM_28, task.getJobId(), task.getJobName()) );
 		}
-		
-		return EX.DEFAULT_SUCCESS_MSG;
 	}
 
 }
