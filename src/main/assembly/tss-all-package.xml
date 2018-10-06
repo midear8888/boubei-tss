@@ -17,6 +17,7 @@
                 <include>template/**/*.xml</include>
                 <include>tss/rights.xml</include>  
                 <include>com/boubei/tss/**/*.class</include> 
+                <include>com/boubei/tssx/**/*.class</include> 
 			 </includes>
 			 <excludes>
 			 	<!-- 

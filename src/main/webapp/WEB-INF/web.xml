@@ -126,6 +126,17 @@
 	    <filter-name>Filter7AccessingCheck</filter-name>
 	    <url-pattern>*.html</url-pattern>
 	</filter-mapping>
+	
+	<filter>  
+	    <filter-name>Filter8APITokenCheck</filter-name>  
+	    <filter-class>com.boubei.tss.framework.web.filter.Filter8APITokenCheck</filter-class> 
+	</filter> 
+	<filter-mapping>
+	    <filter-name>Filter8APITokenCheck</filter-name>
+	    <url-pattern>/wx/api/*</url-pattern>
+	    <url-pattern>/img/api/*</url-pattern>
+	    <url-pattern>/api/*</url-pattern>
+	</filter-mapping>
 
 	
 	<servlet>

@@ -4,35 +4,25 @@ import java.util.List;
 
 import junit.framework.Assert;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.boubei.tss.AbstractTest4;
-import com.boubei.tss.modules.param.Param;
 
 public class CRUDTest extends AbstractTest4 {
 	
 	@Autowired DemoAction action;
 	
-	List<Param> list1;
-	
-	@Before
-	public void setUp() throws Exception {
-		super.setUp();
-		
-		list1 = paramService.getComboParam("EntityState");
-	}
-	
 	@Test
 	public void test() {
+		
 		List<DemoEntity> list = action.getAllEntities();
 		Assert.assertEquals(0, list.size());
 		
 		DemoEntity entity = new DemoEntity();
 		entity.setCode("test 1");
 		entity.setName("test 1");
-		entity.setState(list1.get(0));
+		entity.setState(null);
 		entity = action.save(entity );
 		
 		Long id = entity.getId();

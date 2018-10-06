@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.log4j.Logger;
 
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.Global;
@@ -15,6 +16,10 @@ import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.util.EasyUtils;
 
 public class MonitorUtil {
+	
+	static final String MONITOR_ERR = "Monitor-Err";
+
+	static Logger log = Logger.getLogger(MonitorUtil.class);
 	
 	static final String MONITORING_RECEIVERS = "Monitoring-Receivers";
 
@@ -28,13 +33,15 @@ public class MonitorUtil {
 	
 	public static void recordErrLog(String typeCode, String content) {
 		Log errLog = new Log( typeCode, content );
-		errLog.setOperateTable("Monitor-Err");
+		errLog.setOperateTable(MONITOR_ERR);
 		
 		try {
-			((IBusinessLogger) Global.getBean("BusinessLogger")).output(errLog);
+			IBusinessLogger iBusinessLogger = (IBusinessLogger) Global.getBean("BusinessLogger");
+			iBusinessLogger.output(errLog);
+			iBusinessLogger.flush();  // 实时输出
 		} 
 		catch (Exception e) {
-			System.out.println(errLog);
+			log.info(errLog);
 		}
 	}
 	
@@ -71,7 +78,7 @@ public class MonitorUtil {
 				String ret = new String(responseBody.getBytes("UTF-8"));
 				return ret;
 			} else {
-				System.out.println("调用失败！错误码：" + statusCode + ", " + url);
+				log.error("调用失败！错误码：" + statusCode + ", " + url);
 			}
 		} catch(Exception e) {
 			recordErrLog("Tomcat & Apache", "URL【" +url+ "】访问异常，" + e.getMessage());

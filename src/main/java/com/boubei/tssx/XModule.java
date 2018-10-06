@@ -117,7 +117,9 @@ public class XModule implements AfterUpload {
 		dataSources.remove( DMConstants.LOCAL_CONN_POOL );
 		List<Param> dsList = new ArrayList<Param>();
 		for(String ds : dataSources) {
-			dsList.add( ParamManager.getSimpleParam(ds) );
+			if(ds != null) {
+				dsList.add( ParamManager.getSimpleParam(ds) );
+			}
 		}
 		
 		// 对资源进行排序，其中 roleList 只有角色、没有角色组，无需排序
@@ -193,14 +195,14 @@ public class XModule implements AfterUpload {
 		if(filepath.endsWith("zip")) {
 			File zipFile = new File(filepath);
 			File tempDir = new File(zipFile.getParentFile() + "/" + System.currentTimeMillis());
+			FileHelper.createDir(tempDir.getPath());
 	        try {
 				FileHelper.upZip(zipFile, tempDir);
 			} catch (Exception e) { }
 	        
 	        filepath =  tempDir + "/module.json";
 	        
-	        String workDir = "pages/" + Environment.getUserCode();
-			File toDir = new File(URLUtil.getWebFileUrl(workDir).getPath());
+			File toDir = new File(URLUtil.getWebFileUrl( "pages/" + Environment.getUserCode() ).getPath());
 	        File fromDir = new File(tempDir.getPath() + "/files");
 	       	FileHelper.copyFolder(fromDir, toDir);
 		}

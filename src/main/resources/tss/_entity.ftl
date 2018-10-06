@@ -1,4 +1,4 @@
-package com.boubei.demo.crud;
+package com.boubei.scm.entity;
 
 import java.util.Date;
 import java.io.Serializable;
@@ -20,20 +20,20 @@ public class DemoEntity extends ARecordTable  {
     
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "${tableName}_seq")
-	private Long   	id;
+    private Long id;
     
-    ${fields};
+${fields};
     
     public Serializable getPK() {
-		return this.id;
-	}
+        return this.id;
+    }
 
-	public Long getId() {
-		return id;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 	
 }

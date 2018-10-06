@@ -16,8 +16,8 @@ import com.boubei.tss.util.MailUtil;
  * 每30分钟，轮询最近30分钟 Monitor-Err 日志， 有的话发邮件出来。
  * 
  * 配置步骤（可监视多台服务器）：
- * 1、Job：com.boubei.tssx.MonitorJob | 0 0/30 * * * ? | 10,www.boubei.com,卜贝
- * 10,tms.boudata.com,车队管理
+ * 1、Job：com.boubei.tssx.MonitorJob | 0 0/30 * * * ? | 30,www.boubei.com,卜贝
+ * 30,tms.boudata.com,车队管理
  * 2、系统参数： Monitoring-Receivers
  */
 public class MonitorJob extends AbstractJob {
@@ -30,7 +30,7 @@ public class MonitorJob extends AbstractJob {
 			String[] info = jobX.split(",");
 			if(info.length != 3) continue;
 			
-			interval = Integer.parseInt(info[0]);  // 间隔时间（分钟）
+			interval = Integer.parseInt(info[0]);  // 过去x分钟内产生的err日志
 			String domain  = info[1];
 			String sysName = info[2];
 			
@@ -40,16 +40,19 @@ public class MonitorJob extends AbstractJob {
 		}
 		
 		String sysName = "卜数科技";
-		checking(DMConstants.LOCAL_CONN_POOL, sysName, "Monitor-Err", "", interval);
-		checking(DMConstants.LOCAL_CONN_POOL, sysName, "ETL-Err", "", interval);
-		checking(DMConstants.LOCAL_CONN_POOL, sysName, "定时任务", "and t.operationCode like '%【失败!!!】%'", interval);
+		
+		// 检查是否有被监控记录的网络异常、数据库异常等
+		checking(DMConstants.LOCAL_CONN_POOL, sysName, MonitorUtil.MONITOR_ERR, "", interval);
+		
+		// 检查失败的定时任务日志（含普通Job、ETL Job等）
+		checking(DMConstants.LOCAL_CONN_POOL, sysName, AbstractJob.TIMER, "and t.operationCode like '%【失败!!!】%'", interval);
 		
 		return "done";
 	}
 	
 	/**
 	 * 每30分钟，轮询最近30分钟 Monitor-Err 日志， 有的话发邮件出来
-	 * checking(DMConstants.LOCAL_CONN_POOL, sysName, "定时任务", "and t.operationCode like '%【失败!!!】%'");
+	 * checking(DMConstants.LOCAL_CONN_POOL, sysName, "Timer", "and t.operationCode like '%【失败!!!】%'");
 	 */
 	public void checking(String ds, String sysName, String errName, String fitler, int interval) {
 		String sql = "select operationCode 类型, content 内容, operateTime 监测时间 " +
@@ -68,11 +71,12 @@ public class MonitorJob extends AbstractJob {
 		MailUtil.send(title, content,  MonitorUtil.getReceiver() , "sys");
 	}
 	
-	/** 主从同步、是否宕机 */
+	/** 
+	 * 主从同步、是否宕机
+	 * MonitorUtil.monitoringMySQL("connpool-tssbi-master", "connpool-tssbi-slave");
+	 */
 	void monitoringMySQL() {
-//		MonitorUtil.monitoringMySQL("connpool-tssbi-master", "connpool-tssbi-slave");
 		MonitorUtil.testDBConn( DMConstants.LOCAL_CONN_POOL );
-		
 		log.info("monitoring MySQL finished. ");
 	}
 
@@ -93,8 +97,12 @@ public class MonitorJob extends AbstractJob {
 	 * 访问 param/json/simple/sysTitle、si/version 服务，返回object数组，以检查 Tomcat是否正常 
 	 */
 	void monitoringTomcat(String domain, String sysName) {
-		MonitorUtil.monitoringRestfulUrl("http://" +domain+ "/tss/si/version", null);
-		MonitorUtil.monitoringRestfulUrl("http://" +domain+ "/tss/param/json/simple/sysTitle", sysName);
+		String _domain = domain;
+		if(!domain.startsWith("http")) {
+			_domain = "http://" +domain;
+		}
+		MonitorUtil.monitoringRestfulUrl(_domain + "/tss/si/version", null);
+		MonitorUtil.monitoringRestfulUrl(_domain + "/tss/param/json/simple/sysTitle", sysName);
 		
 		log.info("monitoring Tomcat finished. ");
 	}

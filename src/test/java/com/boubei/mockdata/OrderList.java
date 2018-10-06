@@ -26,8 +26,8 @@ public class OrderList  {
 	static int[] provinces2 = new int[]{3,3,0,4,3,3,3,3,3,0,0,0,1,1,3,
 		2,4,4,1,1,4,4,4,2,2,2,2,2,2,2,2,1,1,1};
 	
-	static String[] warehouses = new String[]{"上海仓","广州仓","西安仓","北京仓","武汉仓"};
-	static String[] pingtais = new String[]{"天猫","京东","一号店","网易严选"};
+	static String[] warehouses = new String[]{"华东仓","华南仓","华西仓","华北仓","华中仓"};
+	static String[] pingtais = new String[]{"天猫","京东","一号店","其它"};
 		
 	public static void f1() {
 		
@@ -48,14 +48,26 @@ public class OrderList  {
 		int index = 0;
 		for(String province : provinces) {
 			String warehouse = warehouses[ provinces2[index] ];
-			for(int i = 0; i < 366; i++) {
+			for(int i = 0; i < 365; i++) {
 				Date d = DateUtil.addDays(startDay, i);
 				
 				int factor = MathUtil.randomInt( provinces1[index] / 3 );
 				if( DateUtil.getDayOfWeek(d) == 6 ) {
 					factor = factor*13/10;
 				}
-				if( d.after( DateUtil.parse("2018-11-11") ) && d.before( DateUtil.parse("2018-12-15") ) ) {
+				if( d.after( DateUtil.parse("2017-02-01") ) && d.before( DateUtil.parse("2017-03-01") ) ) {
+					factor = factor*2/4;
+				}
+				if( d.after( DateUtil.parse("2017-03-01") ) && d.before( DateUtil.parse("2017-05-01") ) ) {
+					factor = factor*4/3;
+				}
+				if( d.after( DateUtil.parse("2017-06-01") ) && d.before( DateUtil.parse("2017-09-01") ) ) {
+					factor = factor*5/6;
+				}
+				if( d.after( DateUtil.parse("2017-09-01") ) && d.before( DateUtil.parse("2017-11-01") ) ) {
+					factor = factor*5/4;
+				}
+				if( d.after( DateUtil.parse("2017-11-11") ) && d.before( DateUtil.parse("2017-12-15") ) ) {
 					factor = factor*2;
 				}
 				
@@ -68,7 +80,7 @@ public class OrderList  {
 						pingtai = pingtais[2];
 					}
 					if( data.size() % 10 == 9 ) {
-						pingtai = pingtais[2 - MathUtil.randomInt(2)];
+						pingtai = pingtais[3 - MathUtil.randomInt(2)];
 					}
 					// 品项数量
 					int px = Math.abs(MathUtil.randomInt(3) - MathUtil.randomInt(2));

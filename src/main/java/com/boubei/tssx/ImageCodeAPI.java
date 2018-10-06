@@ -37,7 +37,7 @@ import com.google.zxing.qrcode.QRCodeWriter;
 public class ImageCodeAPI {
 	
 	/**
-	 * 生成图形验证码：http://localhost:9000/tss/imgcode/ck/8341
+	 * 生成图形验证码：http://localhost:9000/tss/img/api/ck/8341
 	 */
 	@RequestMapping(value = "/ck/{code}", method = RequestMethod.GET)
 	public void createCKCodeImg(@PathVariable("code") String code,
@@ -68,17 +68,15 @@ public class ImageCodeAPI {
 	        
 		} catch (IOException e) {
 		} finally {
-			if(outputStream != null) {
-				try {
-					outputStream.flush();
-					outputStream.close();
-				} catch (IOException e) { }
-			}
+			try {
+				outputStream.flush();
+				outputStream.close();
+			} catch (Exception e) { }
 		}	
 	}
 	
 	/**
-	 * 生成条形码：http://localhost:9000/tss/imgcode/bar/10249025592?size=1.2
+	 * 生成条形码：http://localhost:9000/tss/img/api/bar/10249025592?size=1.2
 	 */
 	@RequestMapping(value = "/bar/{code}", method = RequestMethod.GET)  
     public void createBarCodeImg(@PathVariable("code") String code, 
@@ -122,6 +120,9 @@ public class ImageCodeAPI {
         }
     }  
 
+	/**
+	 * 生成二维码：http://localhost:9000/tss/img/api/qrbar/8341
+	 */
 	@RequestMapping(value = "/qrbar/{code}", method = RequestMethod.GET)  
 	public void createQrBarCodeImg(@PathVariable("code") String code,
 			HttpServletRequest request, HttpServletResponse response) {
@@ -153,10 +154,9 @@ public class ImageCodeAPI {
 	private static final int BLACK = 0xFF000000;
 	private static final int WHITE = 0xFFFFFFFF;
 	public static void writeToStream(BitMatrix matrix, String format, OutputStream stream) throws IOException {
-		int width = matrix.getWidth();
+		int width  = matrix.getWidth();
 		int height = matrix.getHeight();
-		BufferedImage image = new BufferedImage(width, height,
-				BufferedImage.TYPE_INT_RGB);
+		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		for (int x = 0; x < width; x++) {
 			for (int y = 0; y < height; y++) {
 				image.setRGB(x, y, matrix.get(x, y) ? BLACK : WHITE);
