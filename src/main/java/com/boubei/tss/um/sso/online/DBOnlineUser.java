@@ -23,6 +23,7 @@ import javax.persistence.Table;
 import com.boubei.tss.framework.persistence.IEntity;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.sso.online.OnlineUser;
+import com.boubei.tss.matrix.MatrixUtil;
 
 /** 
  * <p> 在线用户信息 </p> 
@@ -39,6 +40,7 @@ public class DBOnlineUser extends OnlineUser implements IEntity {
     private Date   loginTime;
     private String clientIp;
     private String userName;
+    private String serverIp;
     
     public DBOnlineUser() { }
  
@@ -48,6 +50,7 @@ public class DBOnlineUser extends OnlineUser implements IEntity {
         this.setLoginTime( new Date() );
         this.setClientIp( Environment.getClientIp() );
         this.setUserName( userName );
+        this.setServerIp( MatrixUtil.getIpAddress() );
     }
     
 	public Serializable getPK() {
@@ -84,5 +87,13 @@ public class DBOnlineUser extends OnlineUser implements IEntity {
 
 	public void setUserName(String userName) {
 		this.userName = userName;
+	}
+
+	public String getServerIp() {
+		return serverIp;
+	}
+
+	public void setServerIp(String serverIp) {
+		this.serverIp = serverIp;
 	}
 }

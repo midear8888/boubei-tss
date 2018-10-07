@@ -61,6 +61,7 @@
     #lcontainer li.done { color: green; }
     #lcontainer li.todo { color: blue; }
 
+    #reApplyBt { display: hidden; }
     #opinionLabel { width: 92px; display: inline-block; margin-top: 20px; }
     #opinion { height: 50px; width: 320px; margin-top: 15px; }
 
@@ -94,13 +95,12 @@ URL_GET_USER_HAS  = AUTH_PATH + "user/has";
 URL_GET_RECORD_ID = AUTH_PATH + "rc/id";  // {id}
 URL_GET_OPERATION = AUTH_PATH + "rc/operations/";  // {id}
 
-URL_WF_CANCEL = AUTH_PATH + "xdata/cancel/";
+URL_WF_CANCEL  = AUTH_PATH + "xdata/cancel/";
 URL_WF_APPROVE = AUTH_PATH + "xdata/approve/";
-URL_WF_REJECT = AUTH_PATH + "xdata/reject/";
-URL_WF_TRANS = AUTH_PATH + "xdata/transApprove/";
+URL_WF_REJECT  = AUTH_PATH + "xdata/reject/";
+URL_WF_REAPPLY = AUTH_PATH + "xdata/reapply/";
+URL_WF_TRANS   = AUTH_PATH + "xdata/transApprove/";
 URL_WF_TRANS_LIST = AUTH_PATH + "xdata/translist/xml/";
-URL_WF_REAPPLY = AUTH_PATH + "xdata/reApply/";
-
 
 if( IS_TEST ) {
     URL_DATA_XML      = "data/data_grid.xml?";
@@ -624,7 +624,7 @@ function loadDetailData(rowID) {
             tssJS("#ws .cs").show();
         }
 
-        tssJS("#cancelBt").hide();  
+        tssJS("#cancelBt, #reApplyBt").hide();  
 
         var opinionDisabled = false, wfFieldsEnable = false, _wfStatus;
 
@@ -633,6 +633,7 @@ function loadDetailData(rowID) {
             tssJS("#cancelBt").click( function() { cancel(rowID); } ); 
             tssJS("#approveBt").click( function() { approve(rowID); } ); 
             tssJS("#rejectBt").click( function() { reject(rowID); } ); 
+            tssJS("#reApplyBt").click( function() { reApply(rowID); } ); 
             tssJS("#transBt").click( function() { transApprove(rowID); } ); 
 
             showExtension(_item);
@@ -649,6 +650,11 @@ function loadDetailData(rowID) {
                     } else {
                         tssJS("#cancelBt").show();
                         wfFieldsEnable = true;
+                    }
+
+                    if( _wfStatus == '已驳回') {
+                        $("#reApplyBt").show();
+                        opinionDisabled = false;
                     }
                 }
             } else {
@@ -1221,6 +1227,7 @@ function delAttach() {
             <WorkSpace:PageStep>
                 <input type="button" class="tssbutton small white wf" value="同 意" id="approveBt"/>
                 <input type="button" class="tssbutton small white wf" value="驳 回" id="rejectBt"/>
+                <input type="button" class="tssbutton small white" value="重新提交" id="reApplyBt"/>
                 <input type="button" class="tssbutton small white wf" value="转 审" id="transBt"/>
 
                 <input type="button" class="tssbutton small white cs" value="保 存" id="saveBt"/>
@@ -1274,6 +1281,10 @@ function transApprove(rowID) {
 } 
 function reject(rowID) {
     executeWF(URL_WF_REJECT, rowID, {}, "驳回");
+}
+
+function reApply(rowID) {
+    executeWF(URL_WF_REAPPLY, rowID, {}, "重新提交");
 }
 
 function executeWF(url, rowID, _params, op) {
@@ -1381,7 +1392,7 @@ function showExtension(_item) {
         tssJS("#page1Form").appendChild(lcontainer);
 
         var label = $.createElement("label", "", "opinionLabel");
-        $(label).html( _item.creator == userCode ? "撤销原因" : "审批意见" );
+        $(label).html( _item.creator == userCode ? (_item.wfstatus == "已驳回" ? "补充信息" : "撤销原因") : "审批意见" );
         tssJS("#page1Form").appendChild(label);
 
         var opinionEL = $.createElement("textarea", "", "opinion");

@@ -28,6 +28,8 @@ public interface WFService {
 	
 	void reject(Long recordId, Long id, String opinion);
 	
+	void reApply(Long recordId, Long id, String opinion);
+	
 	void transApprove(Long recordId, Long id, String opinion, String target);
 	
 	void cancel(Long recordId, Long id, String opinion);

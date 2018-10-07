@@ -30,6 +30,7 @@ public class WFStatus implements IEntity {
 	public final static String REJECTED  = "已驳回";
 	public final static String CANCELED  = "已撤销";
 	public final static String UNAPPROVE = "未审批";
+	public final static String REAPPLY   = "重新提交";
 	public final static String REMOVED   = "已删除";
 	
 	@Id

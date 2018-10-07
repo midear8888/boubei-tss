@@ -423,6 +423,22 @@ public class WFServiceImpl implements WFService {
 		commonDao.createObject(wfLog);
 	}
 	
+	// 重新修改状态为待审批，清空已审批人列表。完提交人还可以重新编辑申请内容及附件
+	public void reApply(Long recordId, Long id, String opinion) {
+		WFStatus wfStatus = this.getWFStatus(recordId, id);
+		  
+    	wfStatus.setCurrentStatus(WFStatus.NEW);
+    	wfStatus.setNextProcessor( wfStatus.toUsers().get(0) );
+    	wfStatus.setProcessors(null);
+    	wfStatus.setLastProcessor(Environment.getUserCode());
+    	wfStatus.setLastProcessTime(new Date());
+    	updateWFStatus(wfStatus);
+    	
+		WFLog wfLog = new WFLog(wfStatus, opinion);
+		wfLog.setProcessResult(WFStatus.REAPPLY);
+		commonDao.createObject(wfLog);
+	}
+	
 	public void transApprove(Long recordId, Long id, String opinion, String target) {
 		
 		if( EasyUtils.isNullOrEmpty(target) || this.getUserList(target).isEmpty() ) {

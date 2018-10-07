@@ -302,6 +302,10 @@ public class UserAction extends BaseActionSupport {
     
     /**
      * 读取所有在线用户列表信息
+     * SELECT userName, clientIp, max(loginTime) loginTime, serverIp, count(*) 登录次数
+		FROM e8.online_user 
+		group by userId, userName, clientIp, serverIp
+		order by clientIp,userName
      */
     @RequestMapping("/online/1")
     public void getOnlineUserInfo(HttpServletResponse response) {
@@ -315,13 +319,10 @@ public class UserAction extends BaseActionSupport {
             gridNode.getAttrs().put("user", ou.getUserName());
             gridNode.getAttrs().put("userIp", ou.getClientIp());
 			gridNode.getAttrs().put("loginTime", DateUtil.formatCare2Second(ou.getLoginTime()) );
-			gridNode.getAttrs().put("appCode", ou.getAppCode());
-			String sessionId = ou.getSessionId();
-			gridNode.getAttrs().put("sessionId", sessionId);
+			gridNode.getAttrs().put("serverIp", ou.getServerIp());
+			gridNode.getAttrs().put("sessionId", ou.getSessionId());
             
-			if( Context.sessionMap.containsKey(sessionId) ) {
-				dataList.add(gridNode);
-			}
+			dataList.add(gridNode);
         }
         
         StringBuffer template = new StringBuffer();
@@ -330,13 +331,13 @@ public class UserAction extends BaseActionSupport {
         template.append("<column name=\"user\" caption=\"用户名\" width=\"80px\" sortable=\"true\"/>");
         template.append("<column name=\"userIp\" caption=\"用户IP\" width=\"100px\"/>");
         template.append("<column name=\"loginTime\" caption=\"登录时间\" width=\"120px\" sortable=\"true\"/>");
-        template.append("<column name=\"appCode\" caption=\"登录应用\" width=\"70px\"/>");
+        template.append("<column name=\"serverIp\" caption=\"服务器\" width=\"70px\"/>");
         template.append("<column name=\"sessionId\" caption=\"sessionId\" width=\"120px\"/>");
         template.append("</declare><data></data></grid>");
         
         GridDataEncoder gEncoder = new GridDataEncoder(dataList, XMLDocUtil.dataXml2Doc(template.toString()));
            
-        int totalRows = list.size();
+        int totalRows = dataList.size();
         String pageInfo = generatePageInfo(totalRows, 1, totalRows + 1, totalRows); // 加入分页信息，总是只有一页。
         print(new String[]{"ItemList", "PageInfo"}, new Object[]{  gEncoder, pageInfo});
     }

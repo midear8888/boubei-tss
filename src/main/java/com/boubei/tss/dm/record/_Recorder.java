@@ -726,6 +726,18 @@ public class _Recorder extends BaseActionSupport {
 
 		printJSON("驳回成功");
 	}
+	
+	// 重新发起
+	@RequestMapping(value = "/reapply/{record}/{id}", method = RequestMethod.POST)
+	public void reApply(HttpServletRequest request, HttpServletResponse response, @PathVariable("record") Object record, @PathVariable("id") Long id) {
+
+		Long recordId = recordService.getRecordID(record, false);
+		Map<String, String> requestMap = prepareParams(request, recordId);
+
+		wfService.reApply(recordId, id, requestMap.get("opinion"));
+
+		printJSON("重新发起成功");
+	}
 
 	// 转审
 	@RequestMapping(value = "/transApprove/{record}/{id}", method = RequestMethod.POST)
