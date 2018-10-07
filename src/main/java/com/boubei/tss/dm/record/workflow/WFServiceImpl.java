@@ -127,7 +127,14 @@ public class WFServiceImpl implements WFService {
 		tos.remove(creator);
 		transs.remove(creator);
 		
-		wfStatus.setNextProcessor( tos.isEmpty() ? null : tos.get(0) );
+		String nextProcessor = null;
+		if( tos.isEmpty() ) { // 没有审批人
+			wfStatus.setCurrentStatus(WFStatus.AUTO_PASSED);
+		} else {
+			nextProcessor = tos.get(0);
+		}
+		wfStatus.setNextProcessor( nextProcessor );
+		
 		wfStatus.setStepCount( tos.size() );
 		wfStatus.setTo( EasyUtils.list2Str(tos) );
 		wfStatus.setCc( EasyUtils.list2Str(ccs) );

@@ -32,6 +32,7 @@ public class WFStatus implements IEntity {
 	public final static String UNAPPROVE = "未审批";
 	public final static String REAPPLY   = "重新提交";
 	public final static String REMOVED   = "已删除";
+	public final static String AUTO_PASSED = "自动通过"; // 适用没有审批人的情形，比如总经理直接提交的记录
 	
 	@Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "workflow_status_sequence")

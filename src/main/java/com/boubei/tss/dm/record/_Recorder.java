@@ -945,6 +945,7 @@ public class _Recorder extends BaseActionSupport {
 		List<String> statusList = new ArrayList<String>();
 		statusList.add(WFStatus.NEW);
 		statusList.add(WFStatus.REMOVED);
+		statusList.add(WFStatus.AUTO_PASSED);
 		
 		if (wfStatus != null && !statusList.contains(wfStatus.getCurrentStatus())) {
 			throw new BusinessException(EX.WF_1);

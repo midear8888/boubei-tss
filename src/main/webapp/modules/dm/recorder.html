@@ -68,6 +68,7 @@
     #grid td[name='wfstatus'][value='待审批'] {  color: blue;}
     #grid td[name='wfstatus'][value='审批中'] {  color: red;}
     #grid td[name='wfstatus'][value='已通过'] {  color: green;}
+    #grid td[name='wfstatus'][value='自动通过'] {  color: green;}
     #grid td[name='wfstatus'][value='已撤销'] {  color: #ccc;}
     #grid td[name='wfstatus'][value='已删除'] {  font-style: italic;}
     #grid td[name='wfstatus'][value='已驳回'] {  color: orange;}
@@ -445,12 +446,17 @@ function canEditRow(rowID, _wfStatus) {
         }
 
         var wfstatus = _wfStatus || tssJS.G("grid").getColumnValue("wfstatus");  
-        if( wfstatus && wfstatus != '待审批' ) { // 流程数据只有待审批状态时能修改
+        if( wfstatus && !wfEditable(wfstatus) ) { 
             return false;
         }
 
         return (_operation.contains("1") && userCode == creator) || _operation.contains("5");
     }
+}
+
+// 流程数据只有【待审批】和【自动通过】状态能修改
+function wfEditable(wfStatus) {
+    return wfStatus == '待审批' || wfStatus == '自动通过';
 }
 
 /* grid加载数据  */
@@ -644,7 +650,7 @@ function loadDetailData(rowID) {
             if( isCreator ) {
                 tssJS("#ws .wf").hide();
                 if( _wfStatus ) {
-                    if( _wfStatus != '待审批' ) {
+                    if( !wfEditable(_wfStatus) ) {
                         tssJS("#cancelBt, #saveBt, #btnViewAttach").hide();
                         opinionDisabled = true;
                     } else {
@@ -1377,7 +1383,7 @@ function showExtension(_item) {
     if(wf_logs) {
         var lcontainer = $.createElement("ul", "ext", "lcontainer");
         var header = $.createElement("header");
-        $(header).html( "审批流程：" );
+        $(header).html( "流程状态：【" + (_item.wfstatus||"") + "】" );
         $(lcontainer).appendChild(header);
 
         wf_logs.each(function(i, t){
