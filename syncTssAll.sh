@@ -2,6 +2,7 @@
 # mv src/main/webapp/login.html src/main/webapp/login.htm
 mv src/main/webapp/WEB-INF/web.xml src/main/webapp/WEB-INF/web.xml0
 mv src/main/resources/META-INF/spring.xml src/main/resources/META-INF/spring.xml0
+mv src/main/resources/META-INF/persistence.xml src/main/resources/META-INF/persistence.xml0
 mv src/main/resources/application.properties src/main/resources/application.properties0
 
 
@@ -16,8 +17,10 @@ cp -r ../boubei-tss/src/main/resources  src/main/
 
 # mv -f src/main/webapp/login.htm src/main/webapp/login.html
 mv src/main/webapp/WEB-INF/web.xml0 src/main/webapp/WEB-INF/web.xml
-mv src/main/resources/application.properties0 src/main/resources/application.properties
+mv src/main/resources/META-INF/persistence.xml0 src/main/resources/META-INF/persistence.xml
 mv src/main/resources/META-INF/spring.xml0 src/main/resources/META-INF/spring.xml
+mv src/main/resources/application.properties0 src/main/resources/application.properties
+
 rm -f src/main/resources/*.key
 rm -f src/main/resources/*.license
 

@@ -473,6 +473,12 @@ function showDetail(rowID) {
         if(rowID == '_copy') {
             rowID = tssJS.G("grid").getColumnValue("id") + '_copy';
         }
+        if(rowID == '_update') {
+            var ids  = tssJS.G("grid").getCheckedRows();
+            if(!ids) return alert("您没有选中任何记录，请勾选后再点修改。");
+            if(ids.split(',').length > 1) return alert("一次只能修改一条记录。");
+            rowID = ids;
+        }
     }
     else {
         rowID = tssJS.G("grid").getColumnValue("id");
@@ -681,7 +687,7 @@ function loadDetailData(rowID) {
         }
 
         // 设置保存/关闭按钮操作
-        if( canEditRow(rowID, _wfStatus) && (!disableSave || !disableSave()) && !opinionDisabled ) {
+        if( canEditRow(rowID, _wfStatus) && (!disableSave || !disableSave()) ) {
             tssJS("#saveBt").show().click( function() { saveSource(rowID, isCreateRow, version);  } );
         } else {
             disableForm();
@@ -832,7 +838,7 @@ function removeBatch() {
     var grid = tssJS.G("grid");
     var ids  = grid.getCheckedRows();
     if(!ids) {
-        return alert("你没有选中任何记录，请勾选后再进行批量删除。");
+        return alert("您没有选中任何记录，请勾选后再进行批量删除。");
     }
     tssJS.confirm("您确定要批量删除选中记录吗？", "批量删除确认", function(){
         tssJS.ajax({
@@ -904,6 +910,7 @@ function showQueryForm() {
             delete copy["height"];
             // delete copy["width"];
             delete copy["defaultValue"];
+            delete copy["readonly"];
 
             // 放入传入页面的默认值
             if( params[fcode] ) {
@@ -1212,6 +1219,7 @@ function delAttach() {
 <button class="tssbutton small white" onclick="listWorkflow('wfcc')" id="btn_cc">抄送我</button>
 
 <input type="button" class="tssbutton small white" value="新 增" id="btn_create" onclick="showDetail('_new')"/>
+<input type="button" class="tssbutton small white" value="修 改" id="btn_update" onclick="showDetail('_update')"/>
 <input type="button" class="tssbutton small white" value="删 除" id="btn_batch_del" onclick="removeBatch()"/>
 <input type="button" class="tssbutton small white" value="查 询" id="btn_search" onclick="showQueryForm()"/>
 <input type="button" class="tssbutton small white" value="导出数据" id="btn_ex" onclick="backup(params)"/>
