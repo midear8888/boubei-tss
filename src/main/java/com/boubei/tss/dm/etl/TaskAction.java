@@ -28,10 +28,10 @@ public class TaskAction {
 	@Autowired ICommonService commonService;
 	@Autowired JobService jobService;
 	
-	@RequestMapping(value = "/{id}", method = RequestMethod.POST)
+	@RequestMapping(value = "/{idOrName}", method = RequestMethod.POST)
 	@ResponseBody
-	public Object exucteTask(@PathVariable Long id) {
-		return jobService.excuteTask( id, Environment.getUserId() );
+	public Object exucteTask(@PathVariable String idOrName) {
+		return jobService.excuteTask( idOrName, Environment.getUserId() );
 	}
 	
 	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)

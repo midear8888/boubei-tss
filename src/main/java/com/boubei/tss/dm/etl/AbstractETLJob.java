@@ -58,9 +58,11 @@ public abstract class AbstractETLJob extends AbstractJob {
 		for(Object obj : tasks) {
 			Task task = (Task) obj;
 			
-			// 为每个任务单独设置Context
-			currTaskCreator = task.getCreator();
-			initContext();
+			// 判断是否为定时自动触发Job执行，是则为每个任务单独设置Context
+			if( auto ) {
+				currTaskCreator = task.getCreator();
+				initContext();
+			}
 			
 			TaskLog log = excuteTask( task );
 			msgList.add( task.getName() + ": " + (log == null ? "" : log.getDetail()) );

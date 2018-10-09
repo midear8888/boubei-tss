@@ -33,6 +33,7 @@ import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.web.servlet.AfterUpload;
 import com.boubei.tss.modules.sn.SerialNOer;
+import com.boubei.tss.modules.timer.JobService;
 import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
@@ -232,6 +233,20 @@ public class ImportCSV implements AfterUpload {
 		log.debug("import2db start");
 		String result = import2db(_db, request, rowList, headers, originData, errLineIndexs, fileName);
 		log.debug("import2db end");
+		
+		// 导入完成触发 ETL
+		JobService jobService = (JobService) Global.getBean("JobService");
+		Object tag = System.currentTimeMillis();
+		String etlKey = request.getParameter("etlAfterImport");
+		String jobKey = request.getParameter("jobAfterImport");
+		if( etlKey != null) {
+			String rt = jobService.excuteTask(etlKey, tag);
+			log.info("execute ETL atfer import: " + rt);
+		}
+		if( jobKey != null) {
+			String rt = jobService.excuteJob(jobKey, tag);
+			log.info("execute Job atfer import: " + rt);
+		}
 		
 		return result;
 	}

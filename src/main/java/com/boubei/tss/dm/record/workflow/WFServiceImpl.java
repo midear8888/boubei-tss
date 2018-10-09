@@ -92,6 +92,7 @@ public class WFServiceImpl implements WFService {
 			wfStatus.setCurrentStatus(WFStatus.NEW);
 			wfStatus.setApplier( Environment.getUserCode() );
 			wfStatus.setApplierName( Environment.getUserName() );
+			wfStatus.setApplyTime( new Date() );
 			commonDao.createObject(wfStatus);
 			isCreate = true;
 		}
@@ -396,7 +397,7 @@ public class WFServiceImpl implements WFService {
     	return wfStatus;
 	}
 	
-	public void approve(Long recordId, Long itemId, String opinion) {
+	public String approve(Long recordId, Long itemId, String opinion) {
 
 		WFStatus wfStatus = setWFStatus(recordId, itemId, false, true);
 		String processors = wfStatus.getProcessors();
@@ -416,6 +417,8 @@ public class WFServiceImpl implements WFService {
     	WFLog wfLog = new WFLog(wfStatus, opinion);
     	wfLog.setProcessResult( WFStatus.APPROVED );
 		commonDao.createObject(wfLog);
+		
+		return currentStatus;
 	}
 	
 	public void reject(Long recordId, Long id, String opinion) {

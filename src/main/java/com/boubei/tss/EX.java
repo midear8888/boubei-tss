@@ -39,6 +39,7 @@ public class EX {
 	public static String CACHE_CONFIG = "缓存池配置";
 	public static String COLUMN = "字段（列）";
 	public static String EXCEPTION = "异常：";
+	public static String XX_NOT_FOUND = "没有找到标识为【${x1}】的{x2}";
 	
 	public static String ERR_UNIQUE = "字段违反唯一性约束，值和其它数据重复了";
 	public static String ERR_HAS_FKEY = "该数据已被其它数据引用，不能删除";

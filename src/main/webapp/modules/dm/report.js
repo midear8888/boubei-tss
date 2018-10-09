@@ -515,7 +515,8 @@ function scheduleReport() {
 var paramTree, count = 0;
 function configParams() {
 	var rform = $.F("reportForm");
-	var paramsConfig = $.parseJSON(rform.getData("param")) || [];
+	var _paramsConfig = (rform.getData("param")||'').revertEntry(); // getData里执行了XML符号处理方法 converEntity，& --> &amp;  需要替换回来
+	var paramsConfig = $.parseJSON(_paramsConfig) || [];
 
 	var paramNodes = [];
 	paramsConfig.each(function(index, item){

@@ -20,6 +20,6 @@ public interface JobService {
 	 */
 	@QueryCached
 	@Cached(cyclelife = CacheLife.SHORTER)
-	String excuteTask(Long taskId, Object tag);
+	String excuteTask(String idOrName, Object tag);
 
 }

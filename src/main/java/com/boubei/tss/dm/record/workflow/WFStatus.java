@@ -47,6 +47,7 @@ public class WFStatus implements IEntity {
 	
 	private String applier; // 申请人
 	private String applierName; // 申请人名称
+	private Date   applyTime;
 	
 	@Column(name = "to_")
 	private String to;
@@ -209,5 +210,13 @@ public class WFStatus implements IEntity {
 
 	public void setLastProcessTime(Date lastProcessTime) {
 		this.lastProcessTime = lastProcessTime;
+	}
+
+	public Date getApplyTime() {
+		return applyTime;
+	}
+
+	public void setApplyTime(Date applyTime) {
+		this.applyTime = applyTime;
 	} 
 }

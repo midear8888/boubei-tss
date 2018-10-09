@@ -161,13 +161,10 @@ public class DMUtil {
     public static String insertSingleQuotes(String param) {
         if (param == null) return null;
         
-        // 支持列表in查询，分隔符支持中英文逗号、中英文分号、空格、顿号
-        param = param.replaceAll("，", ",").replaceAll(" ", ",").replaceAll("、", ",");
+        // 支持列表in查询，分隔符支持中英文逗号、中英文分号、空格、顿号，已有的引号也先去掉
+        param = param.replaceAll("，", ",").replaceAll(" ", ",").replaceAll("、", ",").replaceAll("\'", "");
         if ( param.contains(",") ) {
-        	if( param.indexOf("'") < 0 ) {
-        		return "\'" + param.replaceAll(",", "\',\'") + "\'";
-        	}
-        	return param;
+        	return "\'" + param.replaceAll(",", "\',\'") + "\'";
         } 
         else {
             return "\'" + param + "\'";

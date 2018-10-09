@@ -270,7 +270,8 @@ public class LoginService implements ILoginService {
     	
         String hql = "select distinct u." +field+ " from Group g, GroupUser gu, User u" +
                 " where gu.id.userId = u.id and gu.id.groupId = g.id and groupType = 1 " +
-                "	and g.domain = ? order by u." + field;
+                "	and g.domain = ? " +
+                " order by u." + field;
        
         return userDao.getEntities( hql, domain );
     }

@@ -34,7 +34,7 @@ public abstract class AbstractJob implements Job {
 
 	protected Logger log = Logger.getLogger(this.getClass());
 	
-	IBusinessLogger businessLogger;
+	public boolean auto = false;
 	
 	/**
 	 * 任务执行人
@@ -56,11 +56,8 @@ public abstract class AbstractJob implements Job {
 	}
 	
     public void execute(JobExecutionContext context) throws JobExecutionException {
-    	try {
-    		initContext(); 
-    		businessLogger = (IBusinessLogger) Global.getBean("BusinessLogger"); // 跑Test时可能没有spring IOC
-    	} 
-    	catch (Exception e) { }
+    	initContext(); 
+		auto = true; 
     	
     	JobDetail aJob = context.getJobDetail();
     	String jobName = aJob.getKey().getName();
@@ -103,6 +100,8 @@ public abstract class AbstractJob implements Job {
         	try {
         		if(excuteLog != null) {
         			excuteLog.setOperateTable(TIMER);
+        			
+        			IBusinessLogger businessLogger = (IBusinessLogger) Global.getBean("BusinessLogger"); // 跑Test时可能没有spring IOC
         			businessLogger.output(excuteLog);
         		}
         	} 

@@ -24,7 +24,7 @@ public interface WFService {
 
 	void calculateWFStatus(Long itemId, _Database _db);
 	
-	void approve(Long recordId, Long id, String opinion);
+	String approve(Long recordId, Long id, String opinion);
 	
 	void reject(Long recordId, Long id, String opinion);
 	

@@ -21,9 +21,9 @@ public class JobServiceImpl implements JobService {
 	@Autowired IBusinessLogger businessLogger;
 	
 	public String excuteJob(String jobKey, Object tag) {
-		List<?> list = commonDao.getEntities("from JobDef where ? in (id, code) and disabled <> 1 ", jobKey);
+		List<?> list = commonDao.getEntities("from JobDef where ? in (id, code) ", jobKey);
 		if( list.isEmpty() ) {
-			return EX.EXCEPTION;
+			throw new BusinessException( EX.parse(EX.XX_NOT_FOUND, jobKey, "Job") );
 		}
 		
 		JobDef jobDef = (JobDef) list.get(0);
@@ -35,8 +35,13 @@ public class JobServiceImpl implements JobService {
 		return resultMsg;
 	}
 
-	public String excuteTask(Long taskId, Object tag) {
-		Task task = (Task) commonDao.getEntity(Task.class, taskId);
+	public String excuteTask(String idOrName, Object tag) {
+		List<?> list = commonDao.getEntities("from Task where ? in (id, name) ", idOrName);
+		if( list.isEmpty() ) {
+			throw new BusinessException( EX.parse(EX.XX_NOT_FOUND, idOrName, "ETL") );
+		}
+		
+		Task task = (Task) list.get(0);
 		JobDef jobDef = (JobDef) commonDao.getEntity(JobDef.class, task.getJobId());
 		String jobClass = jobDef.getJobClassName();
 		

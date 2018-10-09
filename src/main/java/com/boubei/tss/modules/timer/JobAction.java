@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.Global;
+import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.util.EasyUtils;
 
 /**
@@ -54,14 +55,18 @@ function setJobStatus(status) {
 public class JobAction {
 	
 	@Autowired JobService jobService;
+	@Autowired ICommonService commonService;
 	
 	@RequestMapping(value = "/{key}", method = RequestMethod.POST)
 	@ResponseBody
 	public Object exucteJob(@PathVariable String key) {
 		Object tag = 0;
 		try {
-			Long.parseLong(key);  // 按Job id查询，通常是在Job列表页面里，没有业务关联性；防止反复点击
-		} catch(Exception e) {
+			Long id = Long.parseLong(key);   // 按Job id查询，通常是在Job列表页面里，没有业务关联性；防止反复点击
+			JobDef jobDef = (JobDef) commonService.getEntity(JobDef.class, id);
+			tag = jobDef.getCustomizeInfo(); // 按Job的参数来缓存 
+		} 
+		catch(Exception e) {
 			tag = System.currentTimeMillis();  // 按Job Code刷新通常是跟着业务逻辑（比如人员组织角色变动了需要同步，需要实时）
 		}
 		

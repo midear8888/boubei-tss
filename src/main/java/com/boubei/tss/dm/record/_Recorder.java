@@ -270,7 +270,7 @@ public class _Recorder extends BaseActionSupport {
 
 		_Database _db = getDB(recordId, Record.OPERATION_CDATA, Record.OPERATION_VDATA, Record.OPERATION_EDATA);
 
-		// 默认模糊查询
+		// 默认模糊查询（EasyUI网页上需要模糊查询）
 		String strictQuery = (String) EasyUtils.checkNull(requestMap.get(_Field.STRICT_QUERY), "false");
 		requestMap.put(_Field.STRICT_QUERY, strictQuery);
 
@@ -710,9 +710,13 @@ public class _Recorder extends BaseActionSupport {
 			db.update(id, requestMap);
 		}
 				
-		wfService.approve(recordId, id, opinion);
+		String msg = "审批成功";
+		String wfStatus = wfService.approve(recordId, id, opinion);
+		if( WFStatus.PASSED.equals(wfStatus) ) {
+			msg = "审批通过";
+		}
 		
-		printJSON("审批成功");
+		printJSON(msg);
 	}
 
 	// 驳回

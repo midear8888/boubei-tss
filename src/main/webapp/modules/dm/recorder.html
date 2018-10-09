@@ -49,7 +49,7 @@
     .bt_unselected:hover { text-decoration: underline; }
 
     #page1Form .ext { margin: 10px 4px 0 2px; }
-    #pcontainer { min-height: 36px; margin-top: 5px; }
+    #pcontainer { min-height: 36px; margin-top: 5px; overflow: scroll; }
     #pcontainer li { float: left; margin-right: 15px; line-height: 25px; }
 
     #lcontainer {  }
@@ -1074,6 +1074,8 @@ var uniqueCodes,
     headerTL,
     otherConfig,
     charSet = 'GBK',
+    etlAfterImport,
+    jobAfterImport,
     afterUploadClass="com.boubei.tss.dm.record.file.ImportCSV";
 function batchImport() {
     function checkFileWrong(subfix) {
@@ -1095,6 +1097,12 @@ function batchImport() {
     }
     if(headerTL) { // 模板表头字段映射，适用于第三方系统导出的数据导入至TSS数据表，映射表以外的字段则被忽略不进行导入
         url += "&headerTL=" + headerTL; // eg: headerTL = 订单号:订单编码,货品:sku,数量:qty;
+    }
+    if(etlAfterImport) {
+        url += "&etlAfterImport=" + etlAfterImport; 
+    }
+    if(jobAfterImport) {
+        url += "&jobAfterImport=" + jobAfterImport; 
     }
     if( otherConfig ) {
         url += otherConfig;
