@@ -100,7 +100,7 @@ public class WxLogin extends HttpServlet {
 		
 		@SuppressWarnings("unchecked")
 		Map<String, String> m = new ObjectMapper().readValue(ret, Map.class); 
-		String openid = m.get("openid");
+		String openid = m.get("openid");   // EasyUtils.checkNull( m.get("unionId"), m.get("openid") );
 		
 		User user = wxService.getUserByAuthToken(openid);
 		if (user == null) {
