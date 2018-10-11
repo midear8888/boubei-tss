@@ -44,6 +44,10 @@ public abstract class OperateInfo implements IOperatable, IEntity {
 		IEntity entity = (IEntity) obj;
         return this.getPK().equals( entity.getPK() ) && this.getClass().equals( entity.getClass() );
     }
+	
+	public int hashCode() {
+		return this.getPK().hashCode() + this.getClass().hashCode()*17;
+	}
  
     public Long getCreatorId() {
         return creatorId;
