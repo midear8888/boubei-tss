@@ -39,6 +39,10 @@ public class SyncStaffRoleJob extends AbstractJob {
 	
 	IUserService loginService = (IUserService) Global.getBean("UserService");
 	
+	protected boolean needSuccessLog() {
+		return true;
+	}
+	
 	/* 
 	 * jobConfig的格式为 : sql 
 	 */

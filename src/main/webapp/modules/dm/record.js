@@ -257,7 +257,7 @@ function loadRecordDetail(isCreate, type, readonly, isPage) {
 			attachReminder(treeNodeID, xform); // 离开提醒
 
 			if(type == "1") {
-				for( var i = 7; i <= 10; i++) {
+				for( var i = 7; i <= 11; i++) {
 					$("#recordForm tr:nth-child(" +i+ ")").hide();
 				}
 				$("#recordForm td>a").addClass("tssbutton").addClass("small").addClass("blue")
@@ -741,7 +741,7 @@ function saveDefine() {
 function tab(index) {
 	$("#tabmenu li").removeClass("selected");
 	$("#tabmenu li:nth-child(" +(index-5)+ ")").addClass("selected");
-	for( var i = 6; i <= 10; i++) {
+	for( var i = 6; i <= 11; i++) {
 		$("#recordForm tr:nth-child(" +i+ ")").hide();
 	}
 	$("#recordForm tr:nth-child(" +index+ ")").show();

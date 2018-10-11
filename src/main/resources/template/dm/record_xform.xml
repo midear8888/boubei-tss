@@ -15,6 +15,11 @@
 		<column name="needLog"  caption="记录更新日志" mode="combo" values="0|1" texts="否|是"/>
 		<column name="needFile" caption="是否上传文件" mode="combo" values="0|1" texts="否|是"/>
 		<column name="batchImp" caption="允许批量导入" mode="combo" values="0|1" texts="否|是"/>
+		<column name="mobilable" caption="移动端录入" mode="combo" values="1|0" texts="支持|不支持"/>
+		<column name="icon" caption="自定义图标"/>
+		<column name="wxicon" caption="手机展示图标"/>
+		<column name="logicDel" caption="启用回收站" mode="combo" values="0|1" texts="否|是"/>
+		
 	</declare>
 	<layout>
 		<TR>
@@ -59,6 +64,7 @@
 		            <li onclick="tab(8)"> 表单控制脚本 </li>
 		            <li onclick="tab(9)"> 页面控制脚本 </li>
 		            <li onclick="tab(10)"> 数据过滤条件 </li>
+		            <li onclick="tab(11)"> 更多高级配置 </li>
 		        </ul>
 			</TD>
 		</TR>
@@ -108,6 +114,18 @@
 				<p>
 					注：此处可依据登录用户的组织、角色等信息，定制数据过滤条件。
 					<a href="http://www.boubei.com/doc/tss/manual/tss-record.html?id=#rc1_7" target="_blank">详细说明</a>
+				</p>
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan="6" id="moreConfig">
+				<label binding="mobilable"/>: <input binding="mobilable"/><br/>
+				<label binding="icon"/>: <input binding="icon" style="width:250px;margin-right: 15px"/><br/>
+				<label binding="wxicon"/>: <input binding="wxicon" style="width:250px;" /><br/>
+				<label binding="logicDel"/>: <input binding="logicDel"/>
+				<p>
+					注：此处可定义录入表在PC和移动端展示目录的图标。
+					<a href="http://www.boubei.com/doc/tss/manual/tss-record.html?id=#rc2_4" target="_blank">详细说明</a>
 				</p>
 			</TD>
 		</TR>

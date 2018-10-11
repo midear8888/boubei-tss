@@ -28,6 +28,7 @@ import javax.persistence.Table;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 import com.boubei.tss.dm.DMConstants;
+import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.record.permission.RecordResource;
 import com.boubei.tss.framework.persistence.entityaop.IDecodable;
 import com.boubei.tss.framework.persistence.entityaop.OperateInfo;
@@ -112,6 +113,11 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
     
     @Column(length = 2000)  
     private String workflow;
+    
+    private String icon;
+    private Integer mobilable = ParamConstants.FALSE; // 移动端录入 1：支持 0：不支持
+    private String wxicon;
+    private Integer logicDel = ParamConstants.FALSE;
    
     @Column(length = 2000)
     private String  remark; 
@@ -352,5 +358,37 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
 
 	public void setWorkflow(String workflow) {
 		this.workflow = workflow;
+	}
+
+	public String getIcon() {
+		return (String) EasyUtils.checkNull(this.icon, DMUtil.getExtendAttr(this.remark, "icon"));
+	}
+
+	public void setIcon(String icon) {
+		this.icon = icon;
+	}
+
+	public String getWxicon() {
+		return wxicon;
+	}
+
+	public void setWxicon(String wxicon) {
+		this.wxicon = wxicon;
+	}
+
+	public Integer getLogicDel() {
+		return logicDel;
+	}
+
+	public void setLogicDel(Integer logicDel) {
+		this.logicDel = logicDel;
+	}
+
+	public Integer getMobilable() {
+		return mobilable;
+	}
+
+	public void setMobilable(Integer mobilable) {
+		this.mobilable = mobilable;
 	}
 }

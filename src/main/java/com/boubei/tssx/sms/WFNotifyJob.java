@@ -12,6 +12,10 @@ import com.boubei.tss.util.EasyUtils;
  * com.boubei.tssx.sms.WFNotifyJob | 0 0 9 * * ? | X
  */
 public class WFNotifyJob extends AbstractJob {
+	
+	protected boolean needSuccessLog() {
+		return true;
+	}
 
 	protected String excuteJob(String jobConfig, Long jobID) {
 		

@@ -35,6 +35,7 @@ import com.boubei.tss.dm.report.Report;
 import com.boubei.tss.dm.report.ReportService;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.modules.param.ParamConfig;
+import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.modules.timer.JobService;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.EasyUtils;
@@ -181,14 +182,16 @@ public class WxAPI {
 	
 	@RequestMapping("/wftables")
     @ResponseBody
-    public List<Map<String, Object>> getRecords4WX(HttpServletResponse response) {
+    public List<Map<String, Object>> getWfRecords4WX(HttpServletResponse response) {
     	List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
     	
     	List<Record> list = recordService.getRecordables();
     	Map<Object, Object> countMap = wfService.getMyWFCount();
     	for(Record record : list) {
+    		if(!record.isActive() ) continue;
+    		
     		String wxicon = DMUtil.getExtendAttr(record.getRemark(), "wxicon");
-    		if( wxicon == null || !record.isActive() ) continue;
+    		if( wxicon == null && !ParamConstants.TRUE.equals(record.getMobilable()) ) continue;
     		
     		Map<String, Object> item = new HashMap<String, Object>();
     		Long id = record.getId();
@@ -197,8 +200,31 @@ public class WxAPI {
     		item.put("name", record.getName());
     		item.put("table", record.getTable());
     		item.put("wxurl", DMUtil.getExtendAttr(record.getRemark(), "wxurl"));
-			item.put("wxicon", wxicon);
+			item.put("wxicon", EasyUtils.checkNull(record.getWxicon(), "/tss/images/wf.png"));
 			item.put("wfingCount", countMap.get(id));
+    		
+			result.add( item );
+    	}
+    	
+    	return result;
+    }
+	
+	@RequestMapping("/rctables")
+    @ResponseBody
+    public List<Map<String, Object>> getRecords4WX(HttpServletResponse response) {
+    	List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+    	
+    	List<Record> list = recordService.getRecordables();
+    	for(Record record : list) {
+    		if( !ParamConstants.TRUE.equals(record.getMobilable()) || !record.isActive() ) continue;
+    		
+    		Map<String, Object> item = new HashMap<String, Object>();
+    		Long id = record.getId();
+			item.put("id", id);
+    		item.put("pid", record.getParentId());
+    		item.put("name", record.getName());
+    		item.put("table", record.getTable());
+			item.put("icon", EasyUtils.checkNull(record.getIcon(), "/tss/images/record.png"));
     		
 			result.add( item );
     	}

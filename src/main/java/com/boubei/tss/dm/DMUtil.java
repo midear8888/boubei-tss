@@ -391,15 +391,13 @@ public class DMUtil {
 	}
 	
     /*
-     * 1、展示图标等扩展属性：一个图片地址 或 class，存放在remark里，如icon：
+     * 1、展示图标等扩展属性：一个图片地址 或 class，存放在remark里，如icon | wxicon：
      *  icon:=<div class='icon icon-key tssicon'></div>
      *  icon:=<img src='/tss/images/icon_refresh.gif'/>
      *  
      * 2、允许在录入表备注里配置导入模板的列
      *  import_tl_fields:=车牌号,经度,纬度,速度
      *  import_tl_ignores:=gps时刻,航向速度
-     * 
-     * 3、LOGIC_DEL:=true 
      */
 	public static String getExtendAttr(String remark, String attr) {
 		String[] infos = EasyUtils.split(remark + "", "\n");

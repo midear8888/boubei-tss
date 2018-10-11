@@ -86,7 +86,7 @@ public class InstallListener {
 		MatrixUtil.remoteRecord(60, map); // 注册令牌
 		
 		map = new HashMap<String, String>();
-		map.put("product", product + "-" + Config.getAttribute("environment"));
+		map.put("product", Config.getAttribute("environment"));
 		map.put("appversion", version);
 		map.put("packagetime", Config.getAttribute("last.package.time"));
 		map.put("owner", license.owner);

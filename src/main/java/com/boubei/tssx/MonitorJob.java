@@ -5,6 +5,8 @@ import java.util.Map;
 
 import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.dml.SQLExcutor;
+import com.boubei.tss.framework.Config;
+import com.boubei.tss.matrix.MatrixUtil;
 import com.boubei.tss.modules.timer.AbstractJob;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.MailUtil;
@@ -62,11 +64,18 @@ public class MonitorJob extends AbstractJob {
 		List<Map<String, Object>> errList = SQLExcutor.query(ds, sql);
 		if(errList.isEmpty()) return;
 		
-		String content = "", title = "异常提醒：" + sysName + "，" +errName+ ": ";
+		String content = "", title = "异常：" + sysName + "，" +errName+ ": ";
 		for(Map<String, Object> log : errList) {
 			content += log + " \n ";
 			title += log.get("类型") + "|";
 		}
+		
+		Map<String, String> env = System.getenv();  
+		content += "\n from: " + EasyUtils.checkNull(env.get("USERNAME"), env.get("USER"));
+		content += ", " + System.getProperties().getProperty("os.name");
+		content += ", " + MatrixUtil.getIpAddress();
+		content += ", " + Config.getAttribute("environment");
+		content += ", " + Config.getAttribute("last.package.time");
 		
 		MailUtil.send(title, content,  MonitorUtil.getReceiver() , "sys");
 	}

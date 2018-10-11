@@ -51,7 +51,7 @@ import com.boubei.tss.util.MailUtil;
 import com.boubei.tss.util.URLUtil;
 
 @Controller
-@RequestMapping( {"/data", "/api", "/display"} )
+@RequestMapping( {"/data", "/data/api"} )
 public class _Reporter extends BaseActionSupport {
     
     @Autowired ReportService reportService;

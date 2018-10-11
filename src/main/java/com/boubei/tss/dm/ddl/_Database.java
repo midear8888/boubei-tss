@@ -66,6 +66,7 @@ public abstract class _Database {
 	
 	private boolean needLog;
 	public boolean needFile;
+	public boolean logicDel;
 	
 	public String remark;
 	
@@ -106,6 +107,7 @@ public abstract class _Database {
 		this.customizeTJ = record.getCustomizeTJ();
 		this.needLog  = ParamConstants.TRUE.equals(record.getNeedLog());
 		this.needFile = ParamConstants.TRUE.equals(record.getNeedFile());
+		this.logicDel = ParamConstants.TRUE.equals(record.getLogicDel());
 		this.remark = record.getRemark();
 		
 		this.initFieldCodes();
@@ -588,7 +590,7 @@ public abstract class _Database {
 	// 判断是逻辑删除还是物理删除（系统级、单个表级）, 所有审批表都默认打开？
 	public boolean isLogicDelete() {
 		return "true".equals(ParamManager.getValue(PX.LOGIC_DEL, "false")) 
-			|| "true".equals(DMUtil.getExtendAttr(this.remark, PX.LOGIC_DEL))
+			|| this.logicDel
 			|| WFUtil.checkWorkFlow(wfDefine);
 	}
 
