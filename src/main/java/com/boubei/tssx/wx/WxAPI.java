@@ -192,7 +192,8 @@ public class WxAPI {
     	List<Record> list = recordService.getRecordables();
     	Map<Object, Object> countMap = wfService.getMyWFCount();
     	for(Record record : list) {
-    		if(!record.isActive() ) continue;
+    		boolean isWFRecord = WFUtil.checkWorkFlow(record.getWorkflow());
+    		if(!record.isActive() || !isWFRecord ) continue;
     		
     		String wxicon = DMUtil.getExtendAttr(record.getRemark(), "wxicon");
     		if( wxicon == null && !ParamConstants.TRUE.equals(record.getMobilable()) ) continue;

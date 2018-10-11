@@ -3,14 +3,19 @@
 	<declare>	
 		<column name="id"   caption="分组ID"  mode="number" editable="false"/>
 		<column name="name" caption="分组名称" mode="string" maxLength="30" empty="false"/>
+		<column name="icon" caption="自定义图标" mode="string" maxLength="200"/>
 		<column name="remark" caption="描述" mode="string" maxLength="200"/>
 	</declare>
 	<layout>
 		<TR>
-			<TD width="60"><label binding="name"/></TD>
-			<TD width="300"><input binding="name" style="width:200px;"/></TD>
-			<TD width="60"><label binding="id"/></TD>
+			<TD width="65"><label binding="name"/></TD>
+			<TD width="400"><input binding="name" style="width:200px;"/></TD>
+			<TD width="65"><label binding="id"/></TD>
 			<TD><input binding="id" style="width:60px;"/></TD>
+		</TR>
+		<TR>
+			<TD width="65"><label binding="icon"/></TD>
+			<TD width="400" colspan="3"><input binding="icon" style="width:320px;"/></TD>
 		</TR>
 		<TR>
 			<TD valign="top"><label binding="remark"/></TD>
