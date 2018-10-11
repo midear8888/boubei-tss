@@ -5,8 +5,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -220,8 +222,10 @@ public class WxAPI {
     	List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
     	
     	PermissionHelper ph = PermissionHelper.getInstance();
-    	List<Record> list = recordService.getRecordables();
-    	for(Record record : list) {
+    	Set<Record> set = new LinkedHashSet<>();
+    	set.addAll(recordService.getRecordables());
+    	set.addAll(recordService.getVisiables());
+    	for(Record record : set) {
     		boolean isWFRecord = WFUtil.checkWorkFlow(record.getWorkflow());
     		if( !ParamConstants.TRUE.equals(record.getMobilable()) || !record.isActive() || isWFRecord ) continue;
     		
