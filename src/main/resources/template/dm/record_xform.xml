@@ -119,8 +119,8 @@
 		</TR>
 		<TR>
 			<TD colspan="6" id="moreConfig">
-				<label binding="mobilable"/>: <input binding="mobilable"/><br/>
 				<label binding="icon"/>: <input binding="icon" style="width:250px;margin-right: 15px"/><br/>
+				<label binding="mobilable"/>: <input binding="mobilable"/><br/>
 				<label binding="wxicon"/>: <input binding="wxicon" style="width:250px;" /><br/>
 				<label binding="logicDel"/>: <input binding="logicDel"/>
 				<p>

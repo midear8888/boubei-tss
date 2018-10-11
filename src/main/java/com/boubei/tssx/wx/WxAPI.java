@@ -30,13 +30,17 @@ import com.boubei.tss.dm.DataExport;
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.record.Record;
 import com.boubei.tss.dm.record.RecordService;
+import com.boubei.tss.dm.record.permission.RecordPermission;
+import com.boubei.tss.dm.record.permission.RecordResource;
 import com.boubei.tss.dm.record.workflow.WFService;
+import com.boubei.tss.dm.record.workflow.WFUtil;
 import com.boubei.tss.dm.report.Report;
 import com.boubei.tss.dm.report.ReportService;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.modules.param.ParamConfig;
 import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.modules.timer.JobService;
+import com.boubei.tss.um.permission.PermissionHelper;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
@@ -214,9 +218,11 @@ public class WxAPI {
     public List<Map<String, Object>> getRecords4WX(HttpServletResponse response) {
     	List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
     	
+    	PermissionHelper ph = PermissionHelper.getInstance();
     	List<Record> list = recordService.getRecordables();
     	for(Record record : list) {
-    		if( !ParamConstants.TRUE.equals(record.getMobilable()) || !record.isActive() ) continue;
+    		boolean isWFRecord = WFUtil.checkWorkFlow(record.getWorkflow());
+    		if( !ParamConstants.TRUE.equals(record.getMobilable()) || !record.isActive() || isWFRecord ) continue;
     		
     		Map<String, Object> item = new HashMap<String, Object>();
     		Long id = record.getId();
@@ -225,6 +231,7 @@ public class WxAPI {
     		item.put("name", record.getName());
     		item.put("table", record.getTable());
 			item.put("icon", EasyUtils.checkNull(record.getIcon(), "/tss/images/record.png"));
+			item.put("permissions", ph.getOperationsByResource(id, RecordPermission.class.getName(), RecordResource.class));
     		
 			result.add( item );
     	}

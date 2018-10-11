@@ -11,11 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.boubei.tss.dm.dml.SQLExcutor;
-import com.boubei.tss.dm.record.permission.RecordPermission;
-import com.boubei.tss.dm.record.permission.RecordResource;
 import com.boubei.tss.portal.helper.MenuDTO;
 import com.boubei.tss.portal.service.INavigatorService;
-import com.boubei.tss.um.permission.PermissionHelper;
 import com.boubei.tss.um.service.ILoginService;
 
 /**
@@ -33,13 +30,6 @@ public class API {
 	@ResponseBody
     public List<MenuDTO> menuJSON(@PathVariable("id") Long id) {
         return menuService.getMenuTree(id);
-    }
-	
-	@RequestMapping("/rcpermission/{resourceId}")
-	@ResponseBody
-    public List<String> getRCPermission(@PathVariable("resourceId") Long resourceId) {
-        PermissionHelper ph = PermissionHelper.getInstance();
-		return ph.getOperationsByResource(resourceId, RecordPermission.class.getName(), RecordResource.class);
     }
 	
 	/**

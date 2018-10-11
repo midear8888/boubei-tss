@@ -369,7 +369,7 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
 	}
 
 	public String getWxicon() {
-		return wxicon;
+		return (String) EasyUtils.checkNull(this.wxicon, DMUtil.getExtendAttr(this.remark, "wxicon"));
 	}
 
 	public void setWxicon(String wxicon) {
