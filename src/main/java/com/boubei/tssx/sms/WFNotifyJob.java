@@ -23,7 +23,7 @@ public class WFNotifyJob extends AbstractJob {
 		String rejectCode = "SMS_147436558";
 		
 		String waitSql = "select u.telephone, u.userName, count(*) num from dm_workflow_status t, um_user u" +
-				" where t.nextProcessor = u.loginName and u.telephone is not null and applyTime >= DATE_SUB(NOW(), INTERVAL 48 hour) " +
+				" where t.nextProcessor = u.loginName and u.telephone is not null and IFNULL(lastProcessTime, applyTime) >= DATE_SUB(NOW(), INTERVAL 48 hour) " +
 				" group by nextProcessor ";
 		String rejectSql = "select  u.telephone, u.userName, count(*) num,group_concat( distinct tableName separator ',' ) tn from dm_workflow_status t, um_user u" +
 				" where t.applier = u.loginName and u.telephone is not null and currentStatus = '已驳回' and lastProcessTime >= DATE_SUB(NOW(), INTERVAL 24 hour)" +
