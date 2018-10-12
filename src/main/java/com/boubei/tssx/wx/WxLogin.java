@@ -96,7 +96,7 @@ public class WxLogin extends HttpServlet {
     		response.getWriter().println( WXUtil.returnCode(503, e.getMessage()) );
     		return;
     	}
-    	log.debug("1. WXUtil.getOpenId: " + ret);
+    	log.info("1. WXUtil.getOpenId: " + ret);
 		
 		@SuppressWarnings("unchecked")
 		Map<String, String> m = new ObjectMapper().readValue(ret, Map.class); 

@@ -13,22 +13,25 @@
 		<column name="workflow" caption="流程控制定义" maxLength="4000"/>
 		<column name="remark" caption="数据表简介" maxLength="2000"/>
 		<column name="needLog"  caption="记录更新日志" mode="combo" values="0|1" texts="否|是"/>
-		<column name="needFile" caption="是否上传文件" mode="combo" values="0|1" texts="否|是"/>
+		<column name="needFile" caption="是否上传附件" mode="combo" values="0|1" texts="否|是"/>
 		<column name="batchImp" caption="允许批量导入" mode="combo" values="0|1" texts="否|是"/>
 		<column name="mobilable" caption="移动端录入" mode="combo" values="1|0" texts="支持|不支持"/>
 		<column name="icon" caption="自定义图标"/>
 		<column name="wxicon" caption="手机展示图标"/>
+		<column name="wxurl" caption="手机展示页"/>
 		<column name="logicDel" caption="启用回收站" mode="combo" values="0|1" texts="否|是"/>
+		<column name="showCreator" caption="显示创建信息" mode="combo" values="0|1" texts="否|是"/>
+		<column name="ignoreDomain" caption="忽略域" mode="combo" values="0|1" texts="否|是"/>
 		
 	</declare>
 	<layout>
 		<TR>
 			<TD width="80"><label binding="name"/></TD>
 			<TD width="280"><input binding="name" style="width:200px;"/></TD>
-			<TD width="80"><label binding="id"/></TD>
+			<TD width="100"><label binding="id"/></TD>
 			<TD width="250"><input binding="id" style="width:60px;"/></TD>
-			<TD width="100"><label binding="needLog"/></TD>
-			<TD><input binding="needLog"/></TD>
+			<TD width="100"></TD>
+			<TD></TD>
 		</TR>
 		<TR>
 			<TD width="80"><label binding="datasource"/></TD>
@@ -36,10 +39,10 @@
 				<input binding="datasource" style="width:150px; margin-right:10px;"/>
 				<a onclick="manageDS()" >管理数据源</a>
 			</TD>
-			<TD width="80"><label binding="table"/></TD>
+			<TD><label binding="table"/></TD>
 			<TD><input binding="table" style="width:180px;"/></TD>
-			<TD width="100"><label binding="needFile"/></TD>
-			<TD><input binding="needFile"/></TD>
+			<TD></TD>
+			<TD></TD>
 		</TR>
 		<TR>		
 			<TD><label binding="customizePage"/></TD>
@@ -48,8 +51,8 @@
 				<a onclick="selectTL(true)"  style="margin-right:10px;">选择页面</a>
 				<a onclick="uploadTL()" >上传页面</a>
 			</TD>
-			<TD><label binding="batchImp"/></TD>
-			<TD><input binding="batchImp"/></TD>
+			<TD></TD>
+			<TD></TD>
 		</TR>
 		<TR>
 			<TD valign="top"><label binding="remark"/></TD>
@@ -118,15 +121,23 @@
 			</TD>
 		</TR>
 		<TR>
-			<TD colspan="6" id="moreConfig">
+			<TD colspan="3" id="moreConfig2">
 				<label binding="icon"/>: <input binding="icon" style="width:250px;margin-right: 15px"/><br/>
 				<label binding="mobilable"/>: <input binding="mobilable"/><br/>
 				<label binding="wxicon"/>: <input binding="wxicon" style="width:250px;" /><br/>
-				<label binding="logicDel"/>: <input binding="logicDel"/>
+				<label binding="wxurl"/>: <input binding="wxurl" style="width:250px;" /><br/>
+				<label binding="showCreator"/>: <input binding="showCreator"/><br/>
 				<p>
 					注：此处可定义录入表在PC和移动端展示目录的图标。
 					<a href="http://www.boubei.com/doc/tss/manual/tss-record.html?id=#rc2_4" target="_blank">详细说明</a>
 				</p>
+			</TD>
+			<TD colspan="3" id="moreConfig2">
+				<label binding="needLog" />: <input binding="needLog"/><br/>
+				<label binding="needFile"/>: <input binding="needFile"/><br/>
+				<label binding="batchImp"/>: <input binding="batchImp"/><br/>
+				<label binding="logicDel"/>: <input binding="logicDel"/><br/>
+				<label binding="ignoreDomain"/>: <input binding="ignoreDomain"/>
 			</TD>
 		</TR>
 	</layout>

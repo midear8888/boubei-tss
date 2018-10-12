@@ -114,10 +114,14 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
     @Column(length = 2000)  
     private String workflow;
     
+    /* 更多高级配置 */
     private String icon;
     private Integer mobilable = ParamConstants.FALSE; // 移动端录入 1：支持 0：不支持
-    private String wxicon;
+    private String  wxicon;
+    private String  wxurl;  // 自定义小程序展示页面
     private Integer logicDel = ParamConstants.FALSE;
+    private Integer showCreator  = ParamConstants.FALSE;  // 显示创建人、创建时间
+    private Integer ignoreDomain = ParamConstants.FALSE;  // 忽略域名
    
     @Column(length = 2000)
     private String  remark; 
@@ -375,6 +379,14 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
 	public void setWxicon(String wxicon) {
 		this.wxicon = wxicon;
 	}
+	
+	public String getWxurl() {
+		return (String) EasyUtils.checkNull(this.wxurl, DMUtil.getExtendAttr(this.remark, "wxurl"));
+	}
+
+	public void setWxurl(String wxurl) {
+		this.wxurl = wxurl;
+	}
 
 	public Integer getLogicDel() {
 		return logicDel;
@@ -390,5 +402,21 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
 
 	public void setMobilable(Integer mobilable) {
 		this.mobilable = mobilable;
+	}
+
+	public Integer getShowCreator() {
+		return showCreator;
+	}
+
+	public void setShowCreator(Integer showCreator) {
+		this.showCreator = showCreator;
+	}
+
+	public Integer getIgnoreDomain() {
+		return ignoreDomain;
+	}
+
+	public void setIgnoreDomain(Integer ignoreDomain) {
+		this.ignoreDomain = ignoreDomain;
 	}
 }

@@ -64,9 +64,12 @@ public abstract class _Database {
 	public String customizeTJ;  // 1=1<#if 1=0>showCUV & ignoreDomain</#if>
 	public String wfDefine;
 	
-	private boolean needLog;
-	public boolean needFile;
 	public boolean logicDel;
+	public boolean needFile;
+	
+	private boolean needLog;
+	private boolean showCreator;
+    private boolean ignoreDomain;
 	
 	public String remark;
 	
@@ -108,6 +111,8 @@ public abstract class _Database {
 		this.needLog  = ParamConstants.TRUE.equals(record.getNeedLog());
 		this.needFile = ParamConstants.TRUE.equals(record.getNeedFile());
 		this.logicDel = ParamConstants.TRUE.equals(record.getLogicDel());
+		this.showCreator = ParamConstants.TRUE.equals(record.getShowCreator());
+		this.ignoreDomain = ParamConstants.TRUE.equals(record.getIgnoreDomain());
 		this.remark = record.getRemark();
 		
 		this.initFieldCodes();
@@ -841,7 +846,7 @@ public abstract class _Database {
 		 * 注：部分全局基础表需要忽略域限制：比如行政区划等，customizeTJ: <#if 1=0>ignoreDomain</#if>
 		 */
 		String _customizeTJ = (String) EasyUtils.checkNull(this.customizeTJ, " 1=1 ");
-		if( _customizeTJ.indexOf("ignoreDomain") < 0 && !pointedDomain && !anonymousVisiable) {  // 匿名用户可浏览，则无需过滤域
+		if( !(this.ignoreDomain || _customizeTJ.indexOf("ignoreDomain") > 0) && !pointedDomain && !anonymousVisiable) {  // 匿名用户可浏览，则无需过滤域
 			_customizeTJ += DMConstants.DOMAIN_CONDITION;
 		}
 		
@@ -962,20 +967,21 @@ public abstract class _Database {
         	sb.append("<column name=\"fileNum\" mode=\"string\" caption=\"附件\" width=\"30px\"/>").append("\n");
         }
         
-        // 判断是否显示这5列, customizeTJ: 1=1<#if 1=0>showCUV< /#if>
-        if( (this.customizeTJ+"").indexOf("showCUV") >= 0 ) {
+        // 判断是否显示创建人和创建时间, customizeTJ: 1=1<#if 1=0>showCUV< /#if>
+        if( showCreator || (this.customizeTJ+"").indexOf("showCUV") >= 0 ) {
         	sb.append("<column name=\"createtime\"  caption=\"创建时间\" sortable=\"true\" width=\"60px\"/>").append("\n");
             sb.append("<column name=\"creator\"  caption=\"创建人\" sortable=\"true\" width=\"40px\"/>").append("\n");
-            sb.append("<column name=\"updatetime\"  caption=\"更新时间\" sortable=\"true\" width=\"60px\"/>").append("\n");
-            sb.append("<column name=\"updator\"  caption=\"更新人\" sortable=\"true\" width=\"40px\"/>").append("\n");
-            sb.append("<column name=\"version\"  caption=\"更新次数\" width=\"30px\"/>").append("\n");
         } else {
         	sb.append("<column name=\"creator\" display=\"none\"/>").append("\n");
         }
+        sb.append("<column name=\"updatetime\" display=\"none\"/>").append("\n");
+        sb.append("<column name=\"updator\" display=\"none\"/>").append("\n");
+        sb.append("<column name=\"version\" display=\"none\"/>").append("\n");
         
         // ID列默认隐藏
         sb.append("<column name=\"id\" display=\"none\"/>").append("\n");
-        sb.append("<column name=\"domain\" caption=\"域\" " +( Environment.isAdmin() ? "" : "display=\"none\"" )+ " width=\"30px\"/>").append("\n");
+        String domainShow = Environment.isAdmin() && !this.ignoreDomain ? "" : "display=\"none\"";
+		sb.append("<column name=\"domain\" caption=\"域\" " +domainShow+ " width=\"30px\"/>").append("\n");
         
         sb.append("</declare>\n<data></data></grid>");
         
