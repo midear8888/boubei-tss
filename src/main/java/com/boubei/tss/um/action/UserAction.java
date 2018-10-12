@@ -29,6 +29,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.boubei.tss.EX;
 import com.boubei.tss.cache.extension.CacheHelper;
 import com.boubei.tss.cache.extension.CacheLife;
+import com.boubei.tss.dm.DMConstants;
+import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.Config;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.ICommonService;
@@ -309,7 +311,7 @@ public class UserAction extends BaseActionSupport {
      */
     @RequestMapping("/online/1")
     public void getOnlineUserInfo(HttpServletResponse response) {
-        Collection<?> list = commonService.getList("from DBOnlineUser");
+        Collection<?> list = commonService.getList("from DBOnlineUser order by loginTime desc");
         
         List<IGridNode> dataList = new ArrayList<IGridNode>();
         for(Object item : list) {
@@ -350,6 +352,7 @@ public class UserAction extends BaseActionSupport {
 			try {
 				Context.sessionMap.get(sessionId).invalidate();
 			} catch(Exception e) { }
+			SQLExcutor.excute("delete from online_user where sessionId='" +sessionId+ "'", DMConstants.LOCAL_CONN_POOL);
 		}
 		
         printSuccessMessage();

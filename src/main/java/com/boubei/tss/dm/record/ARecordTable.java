@@ -43,7 +43,7 @@ public abstract class ARecordTable implements IEntity, IOperatable {
 	}
 	
 	public int hashCode() {
-		return this.getPK().hashCode();
+		return this.getPK().hashCode() + this.getClass().hashCode()*17;
 	}
 	
 	public boolean equals(Object other) {

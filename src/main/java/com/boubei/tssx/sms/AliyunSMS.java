@@ -130,6 +130,8 @@ public class AliyunSMS {
         	log.setRandomnum( EasyUtils.obj2Int(outId) );
         	log.setSendDay( DateUtil.format(new Date()) );
         	log.setMsg( ssr.getMessage() );
+        	log.setTlcode(tlCode);
+        	log.setParams(tlParam);
         	commService.create(log);
 		} 
         catch (Exception e) {

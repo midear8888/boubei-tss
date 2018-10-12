@@ -50,7 +50,7 @@ public class WFNotifyJob extends AbstractJob {
 			AliyunSMS.instance().send(phone, rejectCode, tlParam, -1);
 		}
 		
-		return "共发送" + (waitList.size() + rejectList.size()) + "条流程短信提醒。";
+		return "共发送" + (waitList.size() + rejectList.size()) + "条流程提醒，其中驳回提醒 " +rejectList.size()+ "条";
 	}
 
 }

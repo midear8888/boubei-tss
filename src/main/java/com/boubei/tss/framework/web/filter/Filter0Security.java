@@ -168,8 +168,8 @@ public class Filter0Security implements Filter {
     	}
 		else if( servletPath.indexOf(".") < 0 ) { // 无后缀，一般restful地址 或 /download
     		boolean apiCall = request.getParameter("uName") != null;
-			if(servletPath.indexOf("/data/export/") >= 0 || apiCall) { 
-    			return false; // 跨机器数据导出请求 & 接口调用，放行
+			if(servletPath.indexOf("/data/export/") >= 0 || apiCall) {  // 跨机器数据导出请求 & 【接口】调用，放行
+    			return false; 
     		}
     		
     		String requestType = request.getHeader(RequestContext.REQUEST_TYPE);

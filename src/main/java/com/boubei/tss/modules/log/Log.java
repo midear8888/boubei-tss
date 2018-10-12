@@ -34,6 +34,7 @@ import com.boubei.tss.framework.web.display.grid.IGridNode;
 import com.boubei.tss.framework.web.display.xform.IXForm;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
+import com.boubei.tss.util.URLUtil;
 
 /** 
  * 日志表
@@ -159,9 +160,10 @@ public class Log implements IEntity, IXForm, IGridNode {
     public Map<String, Object> getAttributes4XForm() {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("id", this.id);
-        map.put("_content", EasyUtils.obj2String(this.operatorBrowser) + "\n" + this.content);
+        map.put("_content", this.content);
         map.put("_operateTime", DateUtil.formatCare2Second(this.operateTime));
         map.put("_operatorName", this.operatorName);
+        map.put("_browser", this.getOperatorBrowser());
         
         return map;
     }
@@ -174,7 +176,11 @@ public class Log implements IEntity, IXForm, IGridNode {
         map.put("operatorIP", this.operatorIP);
         map.put("operatorName", this.operatorName);
         map.put("methodExcuteTime", this.methodExcuteTime);
-        map.put("operatorBrowser", this.getOperatorBrowser());
+        
+        String content = EasyUtils.obj2Json(this.getContent()).replaceAll("\"", "");
+        map.put("content", content.substring(0, Math.min(content.length(), 60)));
+        map.put("origin", URLUtil.parseBrowser( this.getOperatorBrowser() ));
+        map.put("_browser", this.getOperatorBrowser());
         
         return map;
     }

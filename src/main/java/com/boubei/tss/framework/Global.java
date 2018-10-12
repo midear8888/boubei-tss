@@ -14,7 +14,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.boubei.tss.PX;
+import com.boubei.tss.dm.DMConstants;
+import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.persistence.ICommonService;
+import com.boubei.tss.matrix.MatrixUtil;
 import com.boubei.tss.modules.param.ParamListener;
 import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.modules.param.ParamService;
@@ -61,6 +64,10 @@ public class Global {
     	getParamService().fireListener(null); // 系统启动时，自动触发一次所有的监听器，以完成缓存池等初始化。
     	
     	schedulerBean = SchedulerBean.getInstanse(); // 定时器初始化
+    	
+    	// 清空在线用户库
+    	String serverIp = MatrixUtil.getIpAddress();
+    	SQLExcutor.excute("delete from online_user where serverIp='" +serverIp+ "'", DMConstants.LOCAL_CONN_POOL);
 	}
 
 	public static synchronized void destroyContext() {

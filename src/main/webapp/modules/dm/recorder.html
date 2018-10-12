@@ -462,6 +462,7 @@ function wfEditable(wfStatus) {
 /* grid加载数据  */
 function loadGridData(page) {
     if( !params.sortField && default_sort) {
+        delete params["sortType"];
         params.sortField = default_sort;
     }
     tssJS.showGrid(URL_DATA_XML + recordId, XML_SOURCE_LIST, showDetail, "grid", page, params);

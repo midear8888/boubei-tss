@@ -30,6 +30,9 @@ public class SMSLog extends ARecordTable {
 	private String msg;
 	
 	private String sendDay;  // 日期，用以统计
+	
+	private String tlcode;
+	private String params;
 
 
 	public Serializable getPK() {
@@ -74,5 +77,21 @@ public class SMSLog extends ARecordTable {
 
 	public void setMsg(String msg) {
 		this.msg = msg;
+	}
+
+	public String getTlcode() {
+		return tlcode;
+	}
+
+	public void setTlcode(String tlcode) {
+		this.tlcode = tlcode;
+	}
+
+	public String getParams() {
+		return params;
+	}
+
+	public void setParams(String params) {
+		this.params = params;
 	}
 }

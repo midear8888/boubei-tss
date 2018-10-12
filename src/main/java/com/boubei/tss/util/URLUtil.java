@@ -17,6 +17,10 @@ import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 
+import nl.bitwalker.useragentutils.Browser;
+import nl.bitwalker.useragentutils.OperatingSystem;
+import nl.bitwalker.useragentutils.UserAgent;
+
 import org.apache.log4j.helpers.Loader;
 
 /** 
@@ -121,5 +125,19 @@ public class URLUtil {
     	}
 		
 		return paramsMap;
+    }
+    
+    public static String parseBrowser(String origin) {
+    	if( origin == null || origin.length() < 10 )  return origin;
+    	
+    	try {
+			UserAgent userAgent = UserAgent.parseUserAgentString( origin );
+        	Browser browser = userAgent.getBrowser();
+        	OperatingSystem opsys = userAgent.getOperatingSystem(); // 访问设备系统
+        	origin = browser.getName()  + ", " + opsys;  // 访问设备类型  + ", " + opsys.getDeviceType()
+        } catch(Exception e) { 
+        }
+        	
+        return origin;
     }
 }

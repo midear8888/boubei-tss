@@ -34,7 +34,7 @@ public class Environment {
 	public static long threadID() {
 		String ip = MatrixUtil.getIpAddress();
 		long threadID = Thread.currentThread().getId();
-		return (ip + threadID).hashCode();
+		return Math.abs( (ip + "_" + threadID).hashCode() );
 	}
 	
 	public static boolean isAnonymous() {

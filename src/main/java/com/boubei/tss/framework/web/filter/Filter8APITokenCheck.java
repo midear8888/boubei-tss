@@ -39,7 +39,7 @@ import com.boubei.tss.util.InfoEncoder;
  * 	可扩展性：
  * 	高性能：大业务量时,需要交互的接口性能较高,需要双方的接口都能快速处理调用方发送的请求。
  * 
- * http://api?uName=JK&sign=md5(params+secret+timestamp)&timestamp=&参数1=value1&参数2=value2.......
+ * http://api?uName=JK&uSign=md5(params+secret+timestamp)&timestamp=&参数1=value1&参数2=value2.......
  * JS 和 Java分别对params进行排序，拼接成json字符串，然后进行签名
  * 
  * 安全等级 > 6, 必须以签名的方式过滤：md5(secret + timestamp)

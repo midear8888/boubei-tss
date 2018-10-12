@@ -75,10 +75,10 @@ public class DBOnlineUserManager implements IOnlineUserManager {
         	token = ou.getToken();
     	}
     	
-    	// 将三天前的在线信息删除（应该都是漏删除的了）
+    	// 将12小时前的在线信息删除（应该都是漏删除的了）
     	long nowLong = new Date().getTime(); 
-        Date time = new Date(nowLong - (long) (72 * 60 * 60 * 1000)); 
-    	dao.deleteAll(dao.getEntities(" from DBOnlineUser o where o.loginTime < ?", time));
+        Date time = new Date(nowLong - (long) (12 * 60 * 60 * 1000)); 
+    	dao.deleteAll(dao.getEntities("from DBOnlineUser o where o.loginTime < ?", time));
     	
 		return token;
     }
