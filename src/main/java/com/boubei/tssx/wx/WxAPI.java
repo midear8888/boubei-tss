@@ -251,8 +251,10 @@ public class WxAPI {
     	
     	List<Report> list = reportService.getAllReport();
     	for(Report report : list) {
-    		String wxicon = DMUtil.getExtendAttr(report.getRemark(), "wxicon");
-    		if( wxicon == null || !report.isActive() || report.isGroup() ) continue;
+    		if( !report.isActive() || report.isGroup() 
+    				|| !ParamConstants.TRUE.equals(report.getMobilable()) ) {
+    			continue;
+    		}
     		
     		Map<String, Object> item = new HashMap<String, Object>();
     		Long id = report.getId();
@@ -260,7 +262,8 @@ public class WxAPI {
     		item.put("name", report.getName());
     		item.put("code", report.getCode());
     		item.put("wxurl", DMUtil.getExtendAttr(report.getRemark(), "wxurl"));
-			item.put("wxicon", wxicon);
+    		String wxicon = DMUtil.getExtendAttr(report.getRemark(), "wxicon");
+			item.put("wxicon", EasyUtils.checkNull(wxicon, "/tss/images/report.png"));
     		
 			result.add( item );
     	}

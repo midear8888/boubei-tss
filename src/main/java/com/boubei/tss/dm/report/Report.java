@@ -100,6 +100,7 @@ public class Report extends OperateInfo implements IXForm, IDecodable, IResource
     private Integer disabled = ParamConstants.TRUE; // 停用/启用标记。默认为停用，开发完成后再启用
     private Integer needLog  = ParamConstants.TRUE; // 记录修改日志
     private Integer mailable = ParamConstants.FALSE; // 是否可邮件订阅
+    private Integer mobilable= ParamConstants.FALSE; // 移动端查看 1：支持 0：不支持
     
     public Integer getNeedLog() {
 		return needLog;
@@ -287,5 +288,13 @@ public class Report extends OperateInfo implements IXForm, IDecodable, IResource
 
 	public void setIcon(String icon) {
 		this.icon = icon;
+	}
+
+	public Integer getMobilable() {
+		return mobilable;
+	}
+
+	public void setMobilable(Integer mobilable) {
+		this.mobilable = mobilable;
 	}
 }
