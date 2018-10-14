@@ -11,7 +11,6 @@
 package com.boubei.tss.framework.sso.online;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -37,13 +36,13 @@ import org.springframework.stereotype.Component;
 @Component("CacheOnlineUserManager")
 public class CacheOnlineUserManager implements IOnlineUserManager {
 
-    protected Map<String, Set<OnlineUser>> tokenMap = new HashMap<String, Set<OnlineUser>>();
-    protected Map<String, OnlineUser> sessionIdMap = new HashMap<String, OnlineUser>(); 
-    protected Map<Long, String> usersMap = new HashMap<Long, String>();
+    Map<String, Set<OnlineUser>> tokenMap = new HashMap<String, Set<OnlineUser>>();
+    Map<String, OnlineUser> sessionIdMap = new HashMap<String, OnlineUser>(); 
+    Map<Long, String> usersMap = new HashMap<Long, String>();
  
     public String logout(String appCode, String sessionId) {
         // 删除当前sessionId在当前应用中登陆后产生的在线用户信息
-        OnlineUser userInfo = (OnlineUser) sessionIdMap.remove(getSessionIdMapKey(appCode, sessionId));
+        OnlineUser userInfo = (OnlineUser) sessionIdMap.remove(sessionId);
         
         if (userInfo == null) return null;
         
@@ -71,17 +70,13 @@ public class CacheOnlineUserManager implements IOnlineUserManager {
 		}
 		
 		for(OnlineUser ou : list) {
-			sessionIdMap.remove(getSessionIdMapKey(ou.getAppCode(), ou.getSessionId()));
+			sessionIdMap.remove(ou.getSessionId());
 			tokenMap.remove(ou.getToken());
 		}
 		
 		usersMap.remove(userId);
 	}
- 
-    public  Set<OnlineUser> getOnlineUsersByToken(String token) {
-        return tokenMap.get(token);
-    }
- 
+	
     public boolean isOnline(String token) {
         return tokenMap.containsKey(token);
     }
@@ -102,23 +97,8 @@ public class CacheOnlineUserManager implements IOnlineUserManager {
          */
         onlineUsers.add(user); 
         
-        sessionIdMap.put(getSessionIdMapKey(appCode, sessionId), user);
+        sessionIdMap.put(sessionId, user);
         usersMap.put(userId, userName);
     }
 
-    /**
-     * <p>
-     * 根据当前应用Code和当前SessionId生成SessionIdMap的key
-     * </p>
-     * @param appCode
-     * @param sessionId
-     * @return
-     */
-    protected String getSessionIdMapKey(String appCode, String sessionId) {
-        return appCode + "_" + sessionId;
-    }
-
-    public Collection<String> getOnlineUsers() {
-        return usersMap.values();
-    }
 }

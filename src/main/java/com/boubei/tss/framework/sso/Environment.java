@@ -20,6 +20,7 @@ import com.boubei.tss.framework.sso.context.RequestContext;
 import com.boubei.tss.matrix.MatrixUtil;
 import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.util.EasyUtils;
+import com.boubei.tss.util.URLUtil;
 
 /**
  * <p>
@@ -179,24 +180,14 @@ public class Environment {
     public static String getContextPath(){
         return Context.getApplicationContext().getCurrentAppServer().getPath();
     }
-    
+ 
     public static String getOrigin() {
-        RequestContext rc = Context.getRequestContext();
+    	RequestContext rc = Context.getRequestContext();
         if(rc == null || rc.getRequest() == null) {
-        	return "unkown";
+        	return "unknown";
         }
         
         String browser = rc.getRequest().getHeader("USER-AGENT");
-		return getOrigin(browser);
-    }
-    
-    public static String getOrigin(String browser) {
-    	browser = (browser + "").toLowerCase();
-    	if(browser.indexOf("micromessenger") >= 0) { // 微信客户端
-    		browser = "微信," + browser;
-    	} 
-    	
-    	int length = Math.min(browser.length(), 200);
-		return browser.substring(0, length);
+    	return URLUtil.parseBrowser(browser);
     }
 }

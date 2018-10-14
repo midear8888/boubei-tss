@@ -51,6 +51,8 @@ public class WFLog implements IEntity {
 	
 	private String processOpinion;
 	
+	private String origin; // 来源：微信、H5、PC
+	
 	public WFLog() { }
 	
 	public WFLog(WFStatus wfStatus, String opinion) {
@@ -60,6 +62,7 @@ public class WFLog implements IEntity {
 		this.setProcessTime( new Date() );
 		this.setProcessResult( wfStatus.getCurrentStatus() );
 		this.setProcessOpinion( EasyUtils.obj2String(opinion) );
+		this.setOrigin( Environment.getOrigin() );
 	}
 	
 	public String toString() {
@@ -124,5 +127,13 @@ public class WFLog implements IEntity {
 
 	public void setProcessOpinion(String processOpinion) {
 		this.processOpinion = processOpinion;
+	}
+
+	public String getOrigin() {
+		return origin;
+	}
+
+	public void setOrigin(String origin) {
+		this.origin = origin;
 	}
 }

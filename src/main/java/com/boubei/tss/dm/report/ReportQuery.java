@@ -240,15 +240,10 @@ public class ReportQuery {
 		ex.excuteQuery(sql, params , DMConstants.LOCAL_CONN_POOL);
 	    
 	    List<String> tops = new ArrayList<String>();
-	    int max = onlySelf ? 5 : 3;
-	    for( Map<String, Object> row : ex.result){
-	    	if(tops.size() < max) {
-	    		String reportName = (String) row.get("name");
-	    		String reportCnName = (String) row.get("cn");
-	    	    if(StringUtil.hasCNChar(reportCnName)) {
-	    	    	tops.add(reportName);
-	    	    }
-	    	}
+	    List<Map<String, Object>> list = ex.result.subList(0, Math.min(onlySelf ? 5 : 3, ex.count));
+	    for( Map<String, Object> row : list){
+    		String reportName = (String) row.get("name");
+    		tops.add(reportName);
 	    }
 	    return tops;
     }

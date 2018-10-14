@@ -22,6 +22,8 @@ public class MenuDTO {
 
 	public Long id;
 	public String name;   // 菜单（项）名称
+	public String icon;
+	
 	public Long parentId; // 菜单项对应菜单
 	public String url;    // url地址
 	public String target; // 目标区域，_blank/_self 等
@@ -39,6 +41,7 @@ public class MenuDTO {
 		this.target = menu.getTarget();
 		this.methodName = menu.getMethodName();
 		this.params = menu.getParams();
+		this.icon = menu.getIcon();
 	}
 	
 	// 要求默认按 decode 排好序

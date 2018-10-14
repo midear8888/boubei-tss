@@ -263,9 +263,9 @@
 		</dependency>
 		
 		<dependency>
-			<groupId>nl.bitwalker</groupId>
-			<artifactId>UserAgentUtils</artifactId>
-			<version>1.2.4</version>
+		    <groupId>eu.bitwalker</groupId>
+		    <artifactId>UserAgentUtils</artifactId>
+		    <version>1.21</version>
 		</dependency>
 
 		<dependency>

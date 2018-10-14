@@ -22,7 +22,6 @@ import com.boubei.tss.cache.extension.workqueue.OutputRecordsManager;
 import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.dml.SQLExcutor;
-import com.boubei.tss.dm.dml.SqlConfig;
 import com.boubei.tss.dm.report.Report;
 import com.boubei.tss.dm.report.ReportService;
 import com.boubei.tss.modules.param.ParamConstants;
@@ -71,15 +70,14 @@ public class AccessLogRecorder extends OutputRecordsManager {
                 paramsMap.put(index++, log.getParams());
                 paramsMap.put(index++, log.getUserId());
                 paramsMap.put(index++, log.getIp());
+                paramsMap.put(index++, log.getOrigin());
 
                 paramsMapList.add(paramsMap);
             }
 
-            String script = SqlConfig.getScript("saveAccessLog");
-            String _script = "insert into dm_access_log " +
-        			"(className, methodName, methodCnName, accessTime, runningTime, params, userId, ip) " +
-        			"values (?, ?, ?, ?, ?, ?, ?, ?)";
-            script = (String) EasyUtils.checkNull(script, _script);
+            String script = "insert into dm_access_log " +
+        			"(className, methodName, methodCnName, accessTime, runningTime, params, userId, ip, origin) " +
+        			"values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             SQLExcutor.excuteBatch(script, paramsMapList, DMConstants.LOCAL_CONN_POOL);
         }

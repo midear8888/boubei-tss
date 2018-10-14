@@ -15,7 +15,7 @@
 		</TR>
 		<TR>
 			<TD width="65"><label binding="icon"/></TD>
-			<TD width="400" colspan="3"><input binding="icon" style="width:320px;"/></TD>
+			<TD width="400" colspan="3"><input binding="icon" style="width:320px;" placeholder="示例: icon icon-key 或 /tss/images/xxx.png"/></TD>
 		</TR>
 		<TR>
 			<TD valign="top"><label binding="remark"/></TD>

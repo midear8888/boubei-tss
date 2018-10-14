@@ -206,7 +206,7 @@ public class WxAPI {
     		item.put("pid", record.getParentId());
     		item.put("name", record.getName());
     		item.put("table", record.getTable());
-    		item.put("wxurl", DMUtil.getExtendAttr(record.getRemark(), "wxurl"));
+    		item.put("wxurl", record.getWxurl());
 			item.put("wxicon", EasyUtils.checkNull(record.getWxicon(), "/tss/images/wf.png"));
 			item.put("wfingCount", countMap.get(id));
     		

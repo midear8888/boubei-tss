@@ -153,4 +153,5 @@ public class AccessLog implements IEntity {
 	public void setOrigin(String origin) {
 		this.origin = origin;
 	}
+
 }

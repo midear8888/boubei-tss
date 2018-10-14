@@ -93,6 +93,7 @@ public class Navigator extends OperateInfo implements IXForm, IDecodable, IResou
 	private Long   parentId;    // 菜单项对应菜单
     private String url;         // url地址                     
     private String target;      // 目标区域，_blank/_self 等  
+    private String icon;
     
     @Column(length = 1000)
     private String description; // 菜单内容的描述信息
@@ -349,5 +350,13 @@ public class Navigator extends OperateInfo implements IXForm, IDecodable, IResou
 
 	public void setCode(String code) {
 		this.code = code;
+	}
+
+	public String getIcon() {
+		return icon;
+	}
+
+	public void setIcon(String icon) {
+		this.icon = icon;
 	}
 }	

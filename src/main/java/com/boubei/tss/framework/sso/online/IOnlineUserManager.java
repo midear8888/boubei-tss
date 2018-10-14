@@ -10,8 +10,6 @@
 
 package com.boubei.tss.framework.sso.online;
 
-import java.util.Collection;
-import java.util.Set;
 
 /**
  * 在线用户管理类接口
@@ -67,18 +65,4 @@ public interface IOnlineUserManager {
      * @return
      */
     void logout(Long userId);
-
-    /**
-     * <p>
-     * 根据Token获取当前用户登录的所有系统的相关信息
-     * </p>
-     * @param token
-     */
-    Set<OnlineUser> getOnlineUsersByToken(String token);
-    
-    /**
-     * 获取所有在线用户
-     * @return
-     */
-    Collection<?> getOnlineUsers();
 }

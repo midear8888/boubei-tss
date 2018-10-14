@@ -121,7 +121,7 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
     private String  wxurl;  // 自定义小程序展示页面
     private Integer logicDel = ParamConstants.FALSE;
     private Integer showCreator  = ParamConstants.FALSE;  // 显示创建人、创建时间
-    private Integer ignoreDomain = ParamConstants.FALSE;  // 忽略域名
+    private Integer ignoreDomain = ParamConstants.FALSE;  // 忽略【域】
    
     @Column(length = 2000)
     private String  remark; 
@@ -133,6 +133,7 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
     
     private Integer disabled = ParamConstants.FALSE; // 停用/启用标记，默认为启用
     private Integer needLog  = ParamConstants.FALSE; // 记录修改日志，适用于重要性高的数据表
+    private Integer needQLog = ParamConstants.FALSE; // 记录查询日志，适用于数据量大的数据表，统计查询性能和次数
     private Integer needFile = ParamConstants.FALSE; // 是否需要附件上传
     private Integer batchImp = ParamConstants.FALSE; // 是否允许批量导入
 	
@@ -418,5 +419,13 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
 
 	public void setIgnoreDomain(Integer ignoreDomain) {
 		this.ignoreDomain = ignoreDomain;
+	}
+
+	public Integer getNeedQLog() {
+		return needQLog;
+	}
+
+	public void setNeedQLog(Integer needQLog) {
+		this.needQLog = needQLog;
 	}
 }

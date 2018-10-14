@@ -105,13 +105,29 @@ $(function(){
 	_default && $("#if1").attr("src", _default);
 });
 
+function fixICON(icon) {
+	icon = icon ||'';
+	if(icon.indexOf('.') > 0 && icon.toLowerCase().indexOf("img") < 0) {
+		icon = "<img src='" +icon+ "'/>";
+	} 
+	else if(icon.indexOf("<") < 0 && icon.indexOf('.') < 0 && icon.indexOf('/') < 0) {
+		icon = "<div class='" +icon+ " tssicon'></div>";
+	}
+
+	if(icon.indexOf("<") < 0 && icon.indexOf(">") < 0) { 
+		icon = "";
+	}
+
+	return icon;
+}
+
 //初始化左侧
 function initMenu() {
 	$("#nav").accordion({animate:true, fit:true, border:false});
 
 	var selectedPanelname = '', index = 0;
 	$.each(_menus, function(i, menu1) {
-		var menu1Name =  (menu1[5]||"&nbsp;&nbsp;") +  menu1[1];
+		var menu1Name =  (fixICON(menu1[5])||"&nbsp;&nbsp;") +  menu1[1];
 		// 没有任何报表的二级目录将被过滤掉
 		if( !menu1.children || menu1.children.length == 0 ) {
 			return true;
@@ -120,7 +136,7 @@ function initMenu() {
 		var menuHTML = [];
 		menuHTML.push('<ul class="navlist">');
 	    menu1.children && $.each(menu1.children, function(j, menu2) {
-	    	var icon = (menu2[5]||'');  // 自定义图标
+	    	var icon = fixICON(menu2[5]);  // 自定义图标
 	    	var wfCount = menu2[6] ? '(' +menu2[6]+ ')' : '';
 
 	    	menuHTML.push('<li>');

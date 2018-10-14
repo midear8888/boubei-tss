@@ -57,7 +57,7 @@
 			<TD colspan="5">
 				<input binding="paramUri" style="width:200px;margin-right:10px;"/>
 				<label binding="icon"/>
-				<input binding="icon" style="width:220px;margin-left:5px;"/>
+				<input binding="icon" style="width:220px;margin-left:5px;" placeholder="示例: icon icon-key 或 /tss/.../xxx.png "/>
 			</TD>
 		</TR>
 		<TR>

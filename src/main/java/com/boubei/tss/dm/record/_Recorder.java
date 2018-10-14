@@ -191,8 +191,6 @@ public class _Recorder extends BaseActionSupport {
 	}
 
 	private SQLExcutor queryRecordData(_Database _db, int page, int pagesize, Map<String, String> requestMap, boolean pointedFileds, boolean isTssGrid) {
-
-		long start = System.currentTimeMillis();
 		SQLExcutor ex;
 		boolean isWFQuery = requestMap.remove("my_wf_list") != null;
 		if (isWFQuery) {
@@ -203,8 +201,6 @@ public class _Recorder extends BaseActionSupport {
 			/* 添加工作流信息 */
 			wfService.fixWFStatus(_db, ex.result);
 		}
-
-		AccessLogRecorder.outputAccessLog("record-" + _db.recordId, _db.recordName, "select_" + pointedFileds, requestMap, start);
 
 		if (pointedFileds || requestMap.containsKey("id") ) {
 			return ex;
@@ -302,11 +298,10 @@ public class _Recorder extends BaseActionSupport {
 
 	@RequestMapping("/export/{record}")
 	public void export(HttpServletRequest request, HttpServletResponse response, @PathVariable("record") Object record) {
-
-		long start = System.currentTimeMillis();
-
 		Map<String, String> requestMap = DMUtil.getRequestMap(request, true); // GET Method Request
 		boolean pointed = requestMap.containsKey("fields");
+		requestMap.put("export", "true");
+		
 		Long recordId = recordService.getRecordID(record, true);
 		_Database _db = getDB(recordId, Record.OPERATION_CDATA, Record.OPERATION_VDATA);
 
@@ -349,7 +344,6 @@ public class _Recorder extends BaseActionSupport {
 		
 		String exportPath = DataExport.exportCSV(fileName, result, visiableFieldNames);
 		DataExport.downloadFileByHttp(response, exportPath);
-		AccessLogRecorder.outputAccessLog("record-" + recordId, _db.recordName, "export", requestMap, start);
 	}
 
 	@RequestMapping(value = "/{record}/{id}", method = RequestMethod.GET)

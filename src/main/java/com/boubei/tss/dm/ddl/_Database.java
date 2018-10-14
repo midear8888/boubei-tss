@@ -40,6 +40,7 @@ import com.boubei.tss.dm.record.permission.RecordPermission;
 import com.boubei.tss.dm.record.permission.RecordResource;
 import com.boubei.tss.dm.record.workflow.WFStatus;
 import com.boubei.tss.dm.record.workflow.WFUtil;
+import com.boubei.tss.dm.report.log.AccessLogRecorder;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.Anonymous;
@@ -68,6 +69,7 @@ public abstract class _Database {
 	public boolean needFile;
 	
 	private boolean needLog;
+	private boolean needQLog;
 	private boolean showCreator;
     private boolean ignoreDomain;
 	
@@ -109,6 +111,7 @@ public abstract class _Database {
 		this.fields = parseJson(record.getDefine());
 		this.customizeTJ = record.getCustomizeTJ();
 		this.needLog  = ParamConstants.TRUE.equals(record.getNeedLog());
+		this.needQLog = ParamConstants.TRUE.equals(record.getNeedQLog());
 		this.needFile = ParamConstants.TRUE.equals(record.getNeedFile());
 		this.logicDel = ParamConstants.TRUE.equals(record.getLogicDel());
 		this.showCreator = ParamConstants.TRUE.equals(record.getShowCreator());
@@ -319,6 +322,11 @@ public abstract class _Database {
 		this.customizeTJ = _new.getCustomizeTJ();
 		this.needLog  = ParamConstants.TRUE.equals(_new.getNeedLog());
 		this.needFile = ParamConstants.TRUE.equals(_new.getNeedFile());
+		this.needQLog = ParamConstants.TRUE.equals(_new.getNeedQLog());
+		this.logicDel = ParamConstants.TRUE.equals(_new.getLogicDel());
+		this.showCreator = ParamConstants.TRUE.equals(_new.getShowCreator());
+		this.ignoreDomain = ParamConstants.TRUE.equals(_new.getIgnoreDomain());
+		
 		this.wfDefine = _new.getWorkflow(); // 更新流程配置
 		
 		// 比较新旧字段定义的异同（新增的和删除的，暂时只关心新增的）
@@ -703,6 +711,7 @@ public abstract class _Database {
 		return select(page, pagesize, params, false);
 	}
 	public SQLExcutor select(int page, int pagesize, Map<String, String> params, boolean isApprover) {
+		long start = System.currentTimeMillis();
 		Map<Integer, Object> paramsMap = new HashMap<Integer, Object>();
 		paramsMap.put(1, EasyUtils.checkNull(Environment.getUserCode(), Anonymous._CODE));
 		
@@ -852,6 +861,9 @@ public abstract class _Database {
 		
 		// _customizeTJ 可以依据 params 里的参数信息灵活解析成各种查询条件组合
 		_customizeTJ = (String) EasyUtils.checkNull( DMUtil.fmParse(_customizeTJ, params), "1=1" );
+		if( _customizeTJ.toLowerCase().trim().startsWith("and")) {
+			_customizeTJ = "1=1 " + _customizeTJ;
+		}
 		condition += " and ( ( " + DMUtil.fmParse(_customizeTJ + " )  or -1 = ${_userId!-10000} ") + " ) "; // Admin对所有数据可见
 		
 		// 设置排序方式
@@ -910,6 +922,11 @@ public abstract class _Database {
 	    			}
 	    		}
 	        }
+		}
+		
+		if(this.needQLog) {
+			String tag = "pointed:" + !noPointed + ",wf:" + isApprover + ",export:"+params.get("export");
+			AccessLogRecorder.outputAccessLog("record-" + recordId, recordName, tag, params, start);
 		}
 		
 		return ex;

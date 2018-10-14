@@ -95,6 +95,14 @@ public class WFServiceImpl implements WFService {
 			wfStatus.setApplyTime( new Date() );
 			commonDao.createObject(wfStatus);
 			isCreate = true;
+			
+			WFLog wfLog = new WFLog(wfStatus, null);
+			wfLog.setProcessResult(WFStatus.APPLIED);
+			commonDao.createObject(wfLog);
+		} else {
+			WFLog wfLog = new WFLog(wfStatus, null);
+			wfLog.setProcessResult(WFStatus.MODIFIED);
+			commonDao.update(wfLog);
 		}
 		
 		// 把提交人的信息也作为规则运算条件
@@ -346,8 +354,9 @@ public class WFServiceImpl implements WFService {
 		item.put("cc_list", EasyUtils.attr2Str(getUserList(cc), "username"));
 		
 		// 流程日志
+		String hql = "from WFLog where tableId = ? and itemId = ? and processResult <> ? order by id ";
 		@SuppressWarnings("unchecked")
-		List<WFLog> logs = (List<WFLog>) commonDao.getEntities("from WFLog where tableId = ? and itemId = ? order by id ", _db.recordId, itemId);
+		List<WFLog> logs = (List<WFLog>) commonDao.getEntities(hql, _db.recordId, itemId, WFStatus.MODIFIED);
 		
 		// 根据to审批人列表，模拟出审批步骤
 		if( WFStatus.NEW.equals( curStatus ) || WFStatus.APPROVING.equals( curStatus ) || WFStatus.TRANS.equals( curStatus ) ) {

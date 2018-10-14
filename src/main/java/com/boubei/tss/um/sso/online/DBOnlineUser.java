@@ -41,6 +41,8 @@ public class DBOnlineUser extends OnlineUser implements IEntity {
     private String clientIp;
     private String userName;
     private String serverIp;
+    private String origin;
+    private Integer loginCount = 1; // 重复登录次数
     
     public DBOnlineUser() { }
  
@@ -51,6 +53,7 @@ public class DBOnlineUser extends OnlineUser implements IEntity {
         this.setClientIp( Environment.getClientIp() );
         this.setUserName( userName );
         this.setServerIp( MatrixUtil.getIpAddress() );
+        this.setOrigin( Environment.getOrigin() );
     }
     
 	public Serializable getPK() {
@@ -95,5 +98,21 @@ public class DBOnlineUser extends OnlineUser implements IEntity {
 
 	public void setServerIp(String serverIp) {
 		this.serverIp = serverIp;
+	}
+
+	public String getOrigin() {
+		return origin;
+	}
+
+	public void setOrigin(String origin) {
+		this.origin = origin;
+	}
+
+	public Integer getLoginCount() {
+		return loginCount;
+	}
+
+	public void setLoginCount(Integer loginCount) {
+		this.loginCount = loginCount;
 	}
 }

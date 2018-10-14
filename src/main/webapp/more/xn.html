@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
 <meta charset="UTF-8">
-<title>流量|性能|异常监控</title>
+<title>量能监控【流量|性能|流程|异常】</title>
 
 <link rel="stylesheet" href="../tools/tssJS/css/boubei.css">
 
@@ -32,29 +32,25 @@
 
 <script type="text/javascript">
 
-TOMCAT_URL = "";
-BASE_JSON_URL  = TOMCAT_URL + '/tss/data/json/';
-BASE_JSONP_URL = TOMCAT_URL + '/tss/data/jsonp/';
-
-function json_url(id)  { return BASE_JSON_URL + id; }
-function jsonp_url(id) { return BASE_JSONP_URL + id; }
-
+function json_url(id)  { return '/tss/data/json/' + id; }
 
 $(document).ready(function(){
-    beginQuery();
-
+    
     $('#time1').datebox("setValue", today);
     $('#time2').datebox("setValue", nextDay);
 
     $("#theme").combobox( {
-        panelHeight: '80px',
+        panelHeight: '100px',
         data: [ 
-            {"text": "数据报表", "value": 1}, 
             {"text": "数据录入", "value": 2}, 
+            {"text": "流程审批", "value": 4}, 
+            {"text": "数据查询", "value": 1}, 
             {"text": "数据ETL", "value": 3}
         ],
-        value: 1
+        value: 2
     });
+
+    beginQuery();
 
     setInterval(query, 1000*60*10);
 });
@@ -78,6 +74,7 @@ function query() {
         if( params.param3.indexOf('@') == 0 ) {
             var domain = params.param3.substring(1);
             $.getJSON("/tss/auth/service/domainuser", {'domain': domain, 'field': 'loginName'}, function(data) {
+                data.push("God");
                 // $('#vistor').textbox("setValue", data.join(","));
                 _params.vistor = data.join(",");
                 query();
@@ -85,7 +82,7 @@ function query() {
 
             return;
         }
-    }
+    } 
 
     FIELDS_1[3].hidden = FIELDS_1[4].hidden = false;
     FIELDS_1[2].sortable = false;
@@ -112,6 +109,13 @@ function query() {
         FIELDS_1[3].title = '最长耗时';
         FIELDS_1[4].title = '数据量/次';
         break;
+    case '4' :
+        FIELDS_1[0].title = '处理结果';
+        FIELDS_1[1].title = '次数';
+        FIELDS_1[2].title = '参与人数';
+        FIELDS_1[3].title = '流程数';
+        FIELDS_1[4].title = '申请数';
+        break;
     }
 
     tssJS.getJSON(json_url('visit-summary'), params, function(data){
@@ -136,17 +140,18 @@ function query() {
 var FIELDS_2 = [[],
     [
         { field: '服务名称', title: '服务名称', width: 100 , sortable: true},
-        { field: '参数', title: '参数', width: 350 },
+        { field: '参数', title: '参数', width: 300 },
         { field: '访问时间', title: '访问时间', width: 100, sortable: true},
         { field: '运行时长', title: '运行时长', width: 60, align: "right"},
-        { field: '访问人', title: '访问人', width: 60, sortable: true }
+        { field: '访问人', title: '访问人', width: 60, sortable: true },
+        { field: 'origin', title: '来源', width: 110 },
     ],
     [
         { field: '操作对象', title: '操作对象', width: 80 },
         { field: '操作人', title: '操作人', width: 70, sortable: true },
         { field: '操作内容', title: '操作内容', width: 350},
         { field: '操作时间', title: '操作时间', width: 100, sortable: true},
-        { field: '浏览器', title: '浏览器', width: 180 },
+        { field: 'origin', title: '来源', width: 110 },
         { field: 'ip', title: 'ip', width: 90 }
     ],
     [
@@ -157,6 +162,14 @@ var FIELDS_2 = [[],
         { field: '耗时', title: '耗时', width: 50 },
         { field: '最早一次出错', title: '最早一次出错', width: 90 },
         { field: '最近一次出错', title: '最近一次出错', width: 90 }
+    ],
+    [
+        { field: '流程表', title: '流程表', width: 90 },
+        { field: '处理结果', title: '处理结果', width: 80 },
+        { field: '处理人', title: '处理人', width: 70, sortable: true },
+        { field: '处理意见', title: '处理意见', width: 350},
+        { field: '处理时间', title: '处理时间', width: 100, sortable: true},
+        { field: 'origin', title: '来源', width: 110 }
     ]
 ];
 
@@ -204,7 +217,7 @@ function showChart(serviceName, type) {
     params.param3 = _params.time1; 
     params.param4 = _params.time2;
     params.param5 = type;
-    params.param6 = _params.theme || '1';
+    params.param6 = _params.theme || '2';
 
     if(_params.vistor) params.param2 = _params.vistor;
     if(serviceName)    params.param1 = serviceName;
@@ -232,15 +245,22 @@ function showChart(serviceName, type) {
         legend2 = '抽取数据行'
         ya1 = '秒/次';
         break;
+    case '4' :
+        legend1 = '参与人数';
+        legend2 = '操作次数'
+        ya1 = '人数';
+        break;
     }
 
     tssJS.getJSON(json_url('visit-trend'), params, function(data){
+        if(data.length == 0) return $("#" + canvas).html("");
+
         var data2 = [], labels = [], _v1 = 1000, _v2 = 0;
 
         data.each( function(i, item) {
             _v2 += item.v2||0;
         } );
-        if(params.param6 == '2') { 
+        if(params.param6 == '2' || params.param6 == '4') { 
             _v1 = 1;
         }
 
@@ -291,13 +311,15 @@ function showChart(serviceName, type) {
 
 var _params = {};
 function beginQuery() {
-    _params.time1 = $('#time1').datebox("getValue") || today;
-    _params.time2 = $('#time2').datebox("getValue") || nextDay;
-    if($('#theme').val()) {
-        _params.theme = $('#theme').combobox("getValue");
-    }
+    _params.time1 = $('#time1').datebox("getValue");
+    _params.time2 = $('#time2').datebox("getValue");
+
+    _params.theme = $('#theme').combobox("getValue");
+    
     if( $('#vistor').val() ) {
         _params.vistor = $('#vistor').val();
+    } else {
+        delete _params["vistor"];
     }
     
     query();

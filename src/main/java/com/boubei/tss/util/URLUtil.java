@@ -17,11 +17,12 @@ import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 
-import nl.bitwalker.useragentutils.Browser;
-import nl.bitwalker.useragentutils.OperatingSystem;
-import nl.bitwalker.useragentutils.UserAgent;
-
 import org.apache.log4j.helpers.Loader;
+
+import eu.bitwalker.useragentutils.Browser;
+import eu.bitwalker.useragentutils.OperatingSystem;
+import eu.bitwalker.useragentutils.UserAgent;
+import eu.bitwalker.useragentutils.Version;
 
 /** 
  * <p> URLUtil.java </p> 
@@ -128,16 +129,23 @@ public class URLUtil {
     }
     
     public static String parseBrowser(String origin) {
-    	if( origin == null || origin.length() < 10 )  return origin;
+    	origin = (origin + "").toLowerCase();
+    	if(origin.indexOf("micromessenger") >= 0) { // 微信客户端
+    		return "微信";
+    	} 
     	
     	try {
 			UserAgent userAgent = UserAgent.parseUserAgentString( origin );
         	Browser browser = userAgent.getBrowser();
         	OperatingSystem opsys = userAgent.getOperatingSystem(); // 访问设备系统
-        	origin = browser.getName()  + ", " + opsys;  // 访问设备类型  + ", " + opsys.getDeviceType()
+        	Version browserVersion = userAgent.getBrowserVersion(); // 详细版本
+            String version = browserVersion.getMajorVersion();      // 浏览器主版本
+            
+            origin = browser.getGroup().getName() + version + "-" + opsys;
+            
         } catch(Exception e) { 
         }
         	
-        return origin;
+        return origin.toLowerCase();
     }
 }

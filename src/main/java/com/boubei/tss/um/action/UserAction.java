@@ -29,8 +29,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.boubei.tss.EX;
 import com.boubei.tss.cache.extension.CacheHelper;
 import com.boubei.tss.cache.extension.CacheLife;
-import com.boubei.tss.dm.DMConstants;
-import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.Config;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.ICommonService;
@@ -323,6 +321,8 @@ public class UserAction extends BaseActionSupport {
 			gridNode.getAttrs().put("loginTime", DateUtil.formatCare2Second(ou.getLoginTime()) );
 			gridNode.getAttrs().put("serverIp", ou.getServerIp());
 			gridNode.getAttrs().put("sessionId", ou.getSessionId());
+			gridNode.getAttrs().put("origin", ou.getOrigin());
+			gridNode.getAttrs().put("loginCount", ou.getLoginCount());
             
 			dataList.add(gridNode);
         }
@@ -332,7 +332,9 @@ public class UserAction extends BaseActionSupport {
         template.append("<column name=\"id\" mode=\"string\" display=\"none\"/>");
         template.append("<column name=\"user\" caption=\"用户名\" width=\"80px\" sortable=\"true\"/>");
         template.append("<column name=\"userIp\" caption=\"用户IP\" width=\"100px\"/>");
+        template.append("<column name=\"origin\" caption=\"客户端\" width=\"100px\"/>");
         template.append("<column name=\"loginTime\" caption=\"登录时间\" width=\"120px\" sortable=\"true\"/>");
+        template.append("<column name=\"loginCount\" caption=\"登录次数\" width=\"60px\" sortable=\"true\"/>");
         template.append("<column name=\"serverIp\" caption=\"服务器\" width=\"70px\"/>");
         template.append("<column name=\"sessionId\" caption=\"sessionId\" width=\"120px\"/>");
         template.append("</declare><data></data></grid>");
@@ -352,7 +354,11 @@ public class UserAction extends BaseActionSupport {
 			try {
 				Context.sessionMap.get(sessionId).invalidate();
 			} catch(Exception e) { }
-			SQLExcutor.excute("delete from online_user where sessionId='" +sessionId+ "'", DMConstants.LOCAL_CONN_POOL);
+			
+			List<?> list = commonService.getList("from DBOnlineUser where sessionId = ?", sessionId);
+			for(Object o : list) {
+				commonService.delete(DBOnlineUser.class, ((DBOnlineUser)o).getId() );
+			}
 		}
 		
         printSuccessMessage();
