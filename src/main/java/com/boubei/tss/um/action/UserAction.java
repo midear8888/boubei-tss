@@ -35,6 +35,7 @@ import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.persistence.pagequery.PageInfo;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.sso.LoginCustomizerFactory;
+import com.boubei.tss.framework.sso.SSOConstants;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.web.display.grid.DefaultGridNode;
 import com.boubei.tss.framework.web.display.grid.GridDataEncoder;
@@ -379,7 +380,7 @@ public class UserAction extends BaseActionSupport {
 	        LoginCustomizerFactory.instance().getCustomizer().execute();
 		}
 		
-		Object[] userHas = new Object[13];
+		Object[] userHas = new Object[15];
 		userHas[0] = loginService.getGroupsByUserId(userId);  //List<[groupId, groupName]>，截掉"主用户组"
 		userHas[1] = Environment.getOwnRoles(); // List<roleId>
 		userHas[2] = userId;
@@ -393,6 +394,8 @@ public class UserAction extends BaseActionSupport {
 		userHas[10]= Environment.getUserInfo("employeeNo");
 		userHas[11]= Environment.getOwnRoleNames();
 		userHas[12]= Environment.getDomainOrign();
+		userHas[13]= Environment.getInSession(SSOConstants.USER_MODULE_I);
+		userHas[14]= Environment.getInSession(SSOConstants.USER_MODULE_N);
 		
 		return userHas;
 	}

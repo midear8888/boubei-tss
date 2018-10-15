@@ -11,11 +11,14 @@
 package com.boubei.tss.um.sso;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 
 import com.boubei.tss.dm.DMUtil;
+import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.sso.ILoginCustomizer;
@@ -24,6 +27,7 @@ import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.modules.log.IBusinessLogger;
 import com.boubei.tss.modules.log.Log;
 import com.boubei.tss.um.service.ILoginService;
+import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 
 /**
@@ -94,7 +98,18 @@ public class FetchPermissionAfterLogin implements ILoginCustomizer {
     	session.setAttribute("GROUP_LAST_NAME", lastGroup[1]);
     	session.setAttribute(SSOConstants.USER_GROUP_ID, lastGroup[0]);
     	session.setAttribute(SSOConstants.USER_GROUP, lastGroup[1]);
-    }
+
+		List<Map<String,Object>> list = SQLExcutor.queryL("select distinct s.* from cloud_module_def s,cloud_module_user t where s.id = t.moduleid and t.domain = ? ", domain);
+		//todo 正式使用2.0版本，需对功能模块加有效期限制 sql：and t.expiredate > ?   param：DateUtil.addDays(new Date(), -1)
+		List<Object> modules = new ArrayList<Object>();
+		List<Object> moduleNames = new ArrayList<Object>();
+		for(Map<String,Object> map : list){
+			modules.add(map.get("id"));
+			moduleNames.add(map.get("module"));
+		}
+		session.setAttribute(SSOConstants.USER_MODULE_I, modules);
+	    session.setAttribute(SSOConstants.USER_MODULE_N, moduleNames);
+	}
 
     public void execute() {
         Long logonUserId = Environment.getUserId();
