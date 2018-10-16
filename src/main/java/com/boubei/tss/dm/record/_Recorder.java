@@ -143,7 +143,7 @@ public class _Recorder extends BaseActionSupport {
 	}
 
 	public Map<String, String> prepareParams(HttpServletRequest request, Long recordId) {
-		Map<String, String> requestMap = DMUtil.getRequestMap(request, false);
+		Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
 
 		/* 其它系统调用接口时，传入其在TSS注册的用户ID; 检查令牌，令牌有效则自动完成登陆 */
 		if (recordId > 0) {
@@ -298,7 +298,7 @@ public class _Recorder extends BaseActionSupport {
 
 	@RequestMapping("/export/{record}")
 	public void export(HttpServletRequest request, HttpServletResponse response, @PathVariable("record") Object record) {
-		Map<String, String> requestMap = DMUtil.getRequestMap(request, true); // GET Method Request
+		Map<String, String> requestMap = DMUtil.parseRequestParams(request, true); // GET Method Request
 		boolean pointed = requestMap.containsKey("fields");
 		requestMap.put("export", "true");
 		
@@ -829,7 +829,6 @@ public class _Recorder extends BaseActionSupport {
 
 	/************************************* record attach operation **************************************/
 
-	// TODO 支持批量读取多行记录附件 ？
 	@RequestMapping("/attach/json/{record}/{itemId}")
 	@ResponseBody
 	public List<?> getAttachList(HttpServletRequest request, @PathVariable("record") Object record, @PathVariable("itemId") Long itemId) {

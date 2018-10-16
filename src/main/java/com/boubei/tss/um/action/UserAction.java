@@ -369,24 +369,25 @@ public class UserAction extends BaseActionSupport {
 	@RequestMapping(value = "/has", method = RequestMethod.GET)
 	@ResponseBody
 	public Object[] getUserHas(String refreshFlag) {
-		
-		Long userId = Environment.getUserId();
-		
 		if( Config.TRUE.equals(refreshFlag) ) {
 			// 刷新用户的缓存信息
-	        CacheHelper.flushCache(CacheLife.SHORT.toString(), "ByUserId(" +userId+ ")");
+	        CacheHelper.flushCache(CacheLife.SHORT.toString(), "ByUserId(" +Environment.getUserId()+ ")");
             
-            // 刷新session里的缓存
+            // 刷新Session里的角色、组织等信息
 	        LoginCustomizerFactory.instance().getCustomizer().execute();
 		}
-		
+
+		return getUserHas();
+	}
+	
+	public static Object[] getUserHas() {
 		Object[] userHas = new Object[15];
-		userHas[0] = loginService.getGroupsByUserId(userId);  //List<[groupId, groupName]>，截掉"主用户组"
+		userHas[0] = Environment.getInSession("GROUPS_MAIN");  //List 不含"主用户组"
 		userHas[1] = Environment.getOwnRoles(); // List<roleId>
-		userHas[2] = userId;
+		userHas[2] = Environment.getUserId();
 		userHas[3] = Environment.getUserCode();
 		userHas[4] = Environment.getUserName();
-		userHas[5] = loginService.getAssistGroupIdsByUserId(userId); // List<assistGroupID>
+		userHas[5] = Environment.getInSession("GROUPS_ASSIT");
 		userHas[6] = Environment.isFirstTimeLogon();
 		userHas[7] = Environment.getUserInfo("telephone");
 		userHas[8] = Environment.getUserInfo("address");

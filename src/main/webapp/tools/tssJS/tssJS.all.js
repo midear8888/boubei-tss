@@ -1005,8 +1005,11 @@
                     var curName = cookie.substring(0, index).replace(/^ /gi, "");
                     $.Cookie.del(curName, path);
                 }
-            }
+            },
 
+            decode: function(name) {
+                return $.parseJSON($.decode( $.Cookie.getValue(name), 12 ));
+            }
         }
     });
 })(tssJS);
@@ -1240,9 +1243,8 @@
     $.ajax({
         url : url,
         method : "GET",
-        headers : {},
         headers : { "noAlert": true },
-        formNode : formNode,
+        params : {......},
         exEmpty: true,
         ondata : function() { },
         onresult : function() { },
@@ -1595,7 +1597,7 @@
                 if( this.headers.encodeKey ) {
                     this.requestBody = $.encode( this.requestBody, this.headers.encodeKey );
                 } 
-            }          
+            }           
         },
 
         /* 自定义请求头信息 */
@@ -4592,6 +4594,7 @@
             bindAdjustTHHandler(table);
             bindSortHandler(table);
 
+            // Grid更新加载完成后触发
             var onLoad = $(this.el).attr("onLoad");
             onLoad && $.execCommand( onLoad + "()" );
         }, 

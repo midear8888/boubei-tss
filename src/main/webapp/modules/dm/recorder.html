@@ -92,7 +92,6 @@ URL_SAVE_SOURCE   = AUTH_PATH + "xdata/";
 URL_DELETE_SOURCE = AUTH_PATH + "xdata/";
 URL_BATCH_OPERATE = AUTH_PATH + "xdata/batch/";
 URL_GET_DEFINES   = AUTH_PATH + "xdata/define/";
-URL_GET_USER_HAS  = AUTH_PATH + "user/has";
 URL_GET_RECORD_ID = AUTH_PATH + "rc/id";  // {id}
 URL_GET_OPERATION = AUTH_PATH + "rc/operations/";  // {id}
 
@@ -112,7 +111,6 @@ if( IS_TEST ) {
     URL_DELETE_SOURCE = "data/_success.xml?";
     URL_BATCH_OPERATE = "data/_success.xml?";   
     URL_GET_DEFINES   = "data/record_define.json?";
-    URL_GET_USER_HAS  = "data/user_has.json?";
     URL_GET_RECORD_ID = "data/record_id.json?";
     URL_GET_OPERATION = "data/_operation.xml?";
 }
@@ -124,13 +122,13 @@ var recordId=1, recordName="录入表", openItemId,
 
 // 用户权限信息、流程信息等
 var _operation = ['1','2','3','4','5'], 
+    userHas,
     userCode, 
     userName, 
     userDomain,
     userGroups = [], 
     userRoles = [], 
     userRoleNames = [], 
-    userAssistGroups = [],
     hasWorkflow, wfCount = 0,
     isLogicDelete,
     default_sort = "";
@@ -187,96 +185,87 @@ function getOperation() {
 /* 页面初始化 */
 function init() {
     // 先取用户权限信息，Grid定制依赖具体权限
+    var userHas   = $.Cookie.decode("userHas");
+    userGroups    = userHas[0];
+    userRoles     = userHas[1];
+    userCode      = userHas[3];
+    userName      = userHas[4];
+    userRoleNames = userHas[11];
+    userDomain    = userHas[12];
+
+    // 获取表单定义信息
     tssJS.ajax({
-        url : URL_GET_USER_HAS,
-        method : "GET",
-        params: {},
+        url : URL_GET_DEFINES + recordId,
         type : "json",
         ondata: function() {
             var result = this.getResponseJSON();
-            userGroups = result[0];
-            userRoles  = result[1];
-            userRoleNames  = result[11];
-            userCode   = result[3];
-            userName   = result[4];
-            userAssistGroups = result[5];
-            userDomain = result[12];
+            recordDefine  = result[0];
+            customizeJS   = result[1];
+            customizeGrid = result[2];
+            needFile      = result[3];
+            batchImp      = (result[4] == 1);
+            recordName    = result[5];
+            customizePage = result[6];
+            visiableFields= result[7];
+            hasWorkflow   = result[8];
+            isLogicDelete = result[9];
 
-            // 获取表单定义信息
-            tssJS.ajax({
-                url : URL_GET_DEFINES + recordId,
-                type : "json",
-                ondata: function() {
-                    var result = this.getResponseJSON();
-                    recordDefine  = result[0];
-                    customizeJS   = result[1];
-                    customizeGrid = result[2];
-                    needFile      = result[3];
-                    batchImp      = (result[4] == 1);
-                    recordName    = result[5];
-                    customizePage = result[6];
-                    visiableFields= result[7];
-                    hasWorkflow   = result[8];
-                    isLogicDelete = result[9];
+            // if has customize page
+            if( (customizePage||"").indexOf("html") > 0 ) {
+                location.href = customizePage;
+                return;
+            }
 
-                    // if has customize page
-                    if( (customizePage||"").indexOf("html") > 0 ) {
-                        location.href = customizePage;
-                        return;
+            if(customizeGrid) {
+                var scripts = customizeGrid.split("/* --- before load --- */");
+                if(scripts.length == 2) {
+                    tssJS.createScript( scripts[0] );
+                }
+                customizeGrid = scripts[scripts.length-1];
+            }
+
+            recordDefine.each(function(i, field){
+                field._defaultValue = field.defaultValue;
+
+                // 检测有没有传入初始查询条件
+                var fcode = field.code;
+                var fval = tssJS.Query.get(fcode);
+                if(fval) {
+                    params[fcode] = decodeURI( fval );
+                }
+
+                if( fcode.indexOf('wf_') == 0 || field.wfeditable ) {
+                    wfFields.push(fcode);
+                }
+
+                if( field.sort ) {
+                    if( default_sort.length) {
+                        default_sort += ","
                     }
-
-                    if(customizeGrid) {
-                        var scripts = customizeGrid.split("/* --- before load --- */");
-                        if(scripts.length == 2) {
-                            tssJS.createScript( scripts[0] );
-                        }
-                        customizeGrid = scripts[scripts.length-1];
-                    }
-
-                    recordDefine.each(function(i, field){
-                        field._defaultValue = field.defaultValue;
-
-                        // 检测有没有传入初始查询条件
-                        var fcode = field.code;
-                        var fval = tssJS.Query.get(fcode);
-                        if(fval) {
-                            params[fcode] = decodeURI( fval );
-                        }
-
-                        if( fcode.indexOf('wf_') == 0 || field.wfeditable ) {
-                            wfFields.push(fcode);
-                        }
-
-                        if( field.sort ) {
-                            if( default_sort.length) {
-                                default_sort += ","
-                            }
-                            default_sort += fcode + " " + field.sort;
-                        }
-                    });
-
-                    initMenus();
-                    initWorkSpace();
-
-                    if( hasWorkflow ) {
-                        wfCount || openItemId ? listWorkflow() : listApply();
-                        wfCount && showWfCount();
-                    } else {
-                        refreshTable();
-                    }
-
-                    openItemId && showDetail(openItemId);
-
-                    /* 添加tssGrid定制的script，需要放initMenus后，以便对menu进行定制。
-                     * 注：customizeGrid可用作全局js，customizeJS只有在录入Form打开后才加载。
-                     */
-                    if(customizeGrid) {
-                        tssJS.createScript( customizeGrid );
-                    }
-
-                    billMode && tssJS("#btn_batch_del").hide();
+                    default_sort += fcode + " " + field.sort;
                 }
             });
+
+            initMenus();
+            initWorkSpace();
+
+            if( hasWorkflow ) {
+                wfCount || openItemId ? listWorkflow() : listApply();
+                wfCount && showWfCount();
+            } else {
+                refreshTable();
+            }
+
+            openItemId && showDetail(openItemId);
+
+            /* 添加tssGrid定制的script，需要放initMenus后，以便对menu进行定制。
+             * 注：customizeGrid可用作全局js，customizeJS只有在录入Form打开后才加载。
+             */
+            if(customizeGrid) {
+                tssJS.createScript( customizeGrid );
+            }
+
+            billMode && tssJS("#btn_batch_del").hide();
         }
     });
 }

@@ -82,7 +82,7 @@ public class MultiSQLExcutor {
 	@RequestMapping(value = "/multi", method = RequestMethod.POST)
     @ResponseBody
     public Object exeMultiSQLs(HttpServletRequest request, String ds) throws Exception {
-		String json = DMUtil.getRequestMap(request, true).get("json");
+		String json = DMUtil.parseRequestParams(request, true).get("json");
     	return _exeMultiSQLs(json, ds, new HashMap<String, Object>());
     }
     	

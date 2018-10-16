@@ -253,7 +253,7 @@
             label:"编辑",
             callback:editUserInfo,
             icon:ICON + "edit.gif",
-            visible:function() { return getUserOperation("2"); }
+            visible:function() { return getUserOperation("2") || getGroupOperation(); }
         }
         var item5 = {
             label:"移动到其它组",
@@ -575,10 +575,27 @@
     }
     
     function getUserOperation(code) {
+        var rowID   = $.G("grid").getColumnValue("id");   
+        if(parseInt(rowID) < 0) return;
+        
         var groupId   = $.G("grid").getColumnValue("groupId");  
         var groupNode = $.T("tree").getTreeNodeById(groupId);
         var _operation = groupNode.getAttribute("_operation");
         return checkOperation(code, _operation);
+    }
+
+    function getGroupOperation() {
+        var groupId = $.G("grid").getColumnValue("groupId");   
+        var groupNode = $.T("tree").getTreeNodeById(groupId);
+        if( groupNode.getAttribute("_operation") ) return;
+
+        $.ajax({
+            url : URL_GET_OPERATION + groupId,
+            onresult : function() {
+                _operation = this.getNodeValue(XML_OPERATION);
+                groupNode.setAttribute("_operation", _operation);
+            }
+        }); 
     }
  
     /* 显示用户列表 */
@@ -598,6 +615,21 @@
         var groupId = $.G("grid").getColumnValue("groupId");   
         if( getUserOperation("2") ) {
             loadUserInfo(OPERATION_EDIT, rowID, rowName, groupId);
+        } else {
+            var groupNode = $.T("tree").getTreeNodeById(groupId);
+            if( groupNode.getAttribute("_operation") ) return;
+
+            $.ajax({
+                url : URL_GET_OPERATION + groupId,
+                onresult : function() {
+                    _operation = this.getNodeValue(XML_OPERATION);
+                    groupNode.setAttribute("_operation", _operation);
+
+                    if ( getUserOperation("2") ) {
+                        loadUserInfo(OPERATION_EDIT, rowID, rowName, groupId);
+                    }
+                }
+            }); 
         }
     }
     

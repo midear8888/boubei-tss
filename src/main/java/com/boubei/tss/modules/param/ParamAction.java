@@ -227,7 +227,7 @@ public class ParamAction extends BaseActionSupport {
 	@RequestMapping(value = "/init/save", method = RequestMethod.POST)
 	@ResponseBody
 	public void saveParams(HttpServletRequest request) throws Exception {
-		Map<String, String> params = DMUtil.getRequestMap(request, false);
+		Map<String, String> params = DMUtil.parseRequestParams(request, false);
 		List<Map<String, Object>> list = new ObjectMapper().readValue(params.get("json"), List.class);
 		paramService.saveParams(list); 	
     }

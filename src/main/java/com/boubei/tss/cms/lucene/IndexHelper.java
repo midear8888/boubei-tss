@@ -125,7 +125,6 @@ public class IndexHelper {
                     executor.createIndex(articleContent, indexWriter);
                 } catch(Exception e){
                     log.error("创建发布路径为:" + articleContent.getPubUrl() + "的文章索引时出错", e);
-                    // TODO　将创建索引失败的文章记录下来
                     continue;
                 }
                 

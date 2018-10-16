@@ -69,35 +69,33 @@ window.history.forward(1);  // 产生一个“前进”的动作，以抵消浏�
 /* 用户信息初始化  */
 var roles = [], userHas, isSelfDomain = false;
 $(function(){
-    initUserInfo(function() {
-        resizeIFrame();
 
-        tssJS.getJSON("/tss/auth/user/has", {}, 
-            function(info) {
-                userHas = info;
-                if( info && info[1] ) {
-                    roles = info[1], isSelfDomain = (info[0].length && info[0][0][0] == -7);                   
-                    roles.contains(-9) && $("li.r9").show(true) && $("li.r8").hide();  // 开发者
-                    roles.contains(-8) && !isSelfDomain && $("li.r8").show(true);  // 域管理员(非自注册域)
-                    roles.contains(-1) && $("li.r9,li.r8,li.ra,li.ru").show(true);  // Admin
+    resizeIFrame();
 
-                    if(  userHas[11].join('').indexOf('人事') >= 0 || roles.contains(-8)) {
-                        $("li.ru").show(true);
-                    }
-                }
-            }, 
-        "GET");
+    userHas = $.Cookie.decode("userHas");
+    if( userHas && userHas[1] ) {
+        roles = userHas[1], isSelfDomain = (userHas[0].length && userHas[0][0][0] == -7);                   
+        roles.contains(-9) && $("li.r9").show(true) && $("li.r8").hide();  // 开发者
+        roles.contains(-8) && !isSelfDomain && $("li.r8").show(true);  // 域管理员(非自注册域)
+        roles.contains(-1) && $("li.r9,li.r8,li.ra,li.ru").show(true);  // Admin
 
-        dbsx();
-        getBIMenu();
+        if(  userHas[11].join('').indexOf('人事') >= 0 || roles.contains(-8)) {
+            $("li.ru").show(true);
+        }
 
-        getParam("index_logo", function(result) {
-            result && $(".top .logo").css("background", "url(" +result+ ") no-repeat center");
-        });
-        getParam("sysTitle", function(result) {
-            document.title = result;
-        });
+        $("#userInfo").html(userHas[4] || '个人信息');
+    }
+
+    dbsx();
+    getBIMenu();
+
+    getParam("index_logo", function(result) {
+        result && $(".top .logo").css("background", "url(" +result+ ") no-repeat center");
     });
+    getParam("sysTitle", function(result) {
+        document.title = result;
+    });
+
 });
 
 window.onresize = resizeIFrame;

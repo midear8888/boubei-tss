@@ -168,6 +168,7 @@ public class HttpClientUtil {
             log.debug(name + "=" + value);
         }
         httpMethod.setRequestHeader("Accept-Encoding", "UTF-8");
+        httpMethod.setRequestHeader("http-client", "proxyFilter");
         
         // 设置用户令牌
         if (Context.isOnline()){
@@ -221,7 +222,6 @@ public class HttpClientUtil {
 	/**
 	 * <p>
 	 * 设置需要返回的Cookie对象到response中
-	 * 
 	 * </p>
 	 * @param res   HttpServletResponse 返回对象
 	 * @param name  String 名称
@@ -236,12 +236,6 @@ public class HttpClientUtil {
         response.addCookie(cookie);
 	}
 	
-    
-    /**
-     * TODO tomcat7下如果往cookie写入中文，会出现异常：Control character in cookie value or attribute.
-	 * 解决办法，生成Cookie时，对value编码：new Cookie(name, URLEncoder.encode(value, "UTF-8")); 
-	 * 			    取出Cookie时再解码：URLDecoder.decode(cookies[i].getName(),"utf-8")
-     */
     public static javax.servlet.http.Cookie createCookie(String name, String value, String path) {
     	javax.servlet.http.Cookie cookie = new javax.servlet.http.Cookie(name, value);
         cookie.setPath(path);

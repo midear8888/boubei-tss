@@ -36,7 +36,7 @@ import com.boubei.tss.util.EasyUtils;
  */
 public class FetchPermissionAfterLogin implements ILoginCustomizer {
     
-    ILoginService loginSerivce = (ILoginService) Global.getBean("LoginService");
+    ILoginService loginService = (ILoginService) Global.getBean("LoginService");
     IBusinessLogger businessLogger = ((IBusinessLogger) Global.getBean("BusinessLogger"));
     
     /**
@@ -45,8 +45,8 @@ public class FetchPermissionAfterLogin implements ILoginCustomizer {
     public HttpSession loadRights(Long logonUserId) {
 
     	// 保存到用户权限（拥有的角色）对应表
-        List<Long> roleIds = loginSerivce.saveUserRolesAfterLogin(logonUserId);
-        List<String> roleNames = loginSerivce.getRoleNames(roleIds);
+        List<Long> roleIds = loginService.saveUserRolesAfterLogin(logonUserId);
+        List<String> roleNames = loginService.getRoleNames(roleIds);
         
         // 将用户角色信息塞入到session里        
         HttpSession session = Context.getRequestContext().getSession();
@@ -69,10 +69,12 @@ public class FetchPermissionAfterLogin implements ILoginCustomizer {
      */
     public void loadGroups(Long logonUserId, HttpSession session) {
     	// 获取登陆用户所在父组
-        List<Object[]> fatherGroups = loginSerivce.getGroupsByUserId(logonUserId);
+        List<Object[]> fatherGroups = loginService.getGroupsByUserId(logonUserId);
         int index = 1, level = fatherGroups.size(); // 层级
         session.setAttribute("GROUP_LEVEL", level);
-     
+        session.setAttribute("GROUPS_MAIN", fatherGroups);
+        session.setAttribute("GROUPS_ASSIT", loginService.getAssistGroupIdsByUserId(logonUserId));
+        
         Object[] lastGroup = new Object[] {-0L, "noGroup"};
         String domain = null;
         for(Object[] temp : fatherGroups) {
@@ -86,9 +88,9 @@ public class FetchPermissionAfterLogin implements ILoginCustomizer {
         
         session.setAttribute(SSOConstants.USER_DOMAIN, domain); // 用户所属域
         if( domain != null) { // 取出域下所有用户
-        	List<?> users = loginSerivce.getUsersByDomain(domain, "loginName", logonUserId);
+        	List<?> users = loginService.getUsersByDomain(domain, "loginName", logonUserId);
         	session.setAttribute(SSOConstants.USERS_OF_DOMAIN, DMUtil.insertSingleQuotes(EasyUtils.list2Str(users)));
-        	users = loginSerivce.getUsersByDomain(domain, "id", logonUserId);
+        	users = loginService.getUsersByDomain(domain, "id", logonUserId);
         	session.setAttribute(SSOConstants.USERIDS_OF_DOMAIN, EasyUtils.list2Str(users));
         }
         
@@ -97,6 +99,7 @@ public class FetchPermissionAfterLogin implements ILoginCustomizer {
     	session.setAttribute(SSOConstants.USER_GROUP_ID, lastGroup[0]);
     	session.setAttribute(SSOConstants.USER_GROUP, lastGroup[1]);
 
+    	// 获取用户所属域的功能模块信息
     	List<Map<String,Object>> list;
     	if(logonUserId == -1L){
     		list = SQLExcutor.queryL("select * from cloud_module_def");

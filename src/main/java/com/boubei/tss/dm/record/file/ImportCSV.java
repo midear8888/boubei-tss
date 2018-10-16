@@ -159,7 +159,7 @@ public class ImportCSV implements AfterUpload {
 		
 		String charSet  = (String) EasyUtils.checkNull(request.getParameter("charSet"), DataExport.CSV_GBK); // 默认GBK
 		
-		Map<String, String> requestMap = DMUtil.getRequestMap(request, false); 
+		Map<String, String> requestMap = DMUtil.parseRequestParams(request, false); 
 		String headerTL = requestMap.get("headerTL"); // 防中文乱码 
 
 		// 解析附件数据   
@@ -239,13 +239,19 @@ public class ImportCSV implements AfterUpload {
 		Object tag = System.currentTimeMillis();
 		String etlKey = request.getParameter("etlAfterImport");
 		String jobKey = request.getParameter("jobAfterImport");
-		if( etlKey != null) {
-			String rt = jobService.excuteTask(etlKey, tag);
-			log.info("execute ETL atfer import: " + rt);
+		if( !EasyUtils.isNullOrEmpty(etlKey) ) {
+			String[] etlKeys = etlKey.split(",");
+			for(String key : etlKeys) {
+				String rt = jobService.excuteTask(key, tag);
+				log.info("execute ETL atfer import: " + rt);
+			}
 		}
-		if( jobKey != null) {
-			String rt = jobService.excuteJob(jobKey, tag);
-			log.info("execute Job atfer import: " + rt);
+		if( !EasyUtils.isNullOrEmpty(jobKey) ) {
+			String[] jobKeys = jobKey.split(",");
+			for(String key : jobKeys) {
+				String rt = jobService.excuteJob(key, tag);
+				log.info("execute Job atfer import: " + rt);
+			}
 		}
 		
 		return result;

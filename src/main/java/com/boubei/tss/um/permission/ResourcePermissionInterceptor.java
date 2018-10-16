@@ -53,7 +53,6 @@ public class ResourcePermissionInterceptor extends MatchByDaoMethodNameIntercept
 			/* 
 			 * 新增时注册资源。
 	         * 注：修改的时候也会被本拦截器拦住，但IResourcePermission.addResource方法会判断节点的权限是否已经补齐了， 如果已经补齐则不再补齐。 
-			 *  TODO 这种做法需要改进，最好能区分“修改”还是“新增”。
 			 */
 			case SAVE:
 				Object returnObj = invocation.proceed();

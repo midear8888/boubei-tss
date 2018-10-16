@@ -88,38 +88,38 @@ public class DMUtil {
 	 *  
 	 *  注：自定义的接口入口处，需要单独调用 URLUtil.parseQueryString 来替代 Request.getParamter()
 	 */
-    public static Map<String, String> getRequestMap(HttpServletRequest request, boolean isGet) {
+    public static Map<String, String> parseRequestParams(HttpServletRequest request, boolean isGet) {
     	// Tomcat 或 Jetty 默认已经对queryString上的参数 URLDecode 处理
-    	Map<String, String[]> parameterMap = request.getParameterMap();
-    	boolean apiCall = parameterMap.containsKey("uName");
+    	Map<String, String[]> requestMap = request.getParameterMap();
+    	boolean httpClient = request.getHeader("http-client") != null;
     	
-    	Map<String, String> requestMap = new LinkedHashMap<String, String>();
+    	Map<String, String> params = new LinkedHashMap<String, String>();
     	
     	// 处理通过queryString传递过来的中文参数，这些参数已经过URLEncode处理
     	String queryString = request.getQueryString();
-		requestMap.putAll( URLUtil.parseQueryString(queryString) );
+		params.putAll( URLUtil.parseQueryString(queryString) );
     	
     	// 没有经过URLEncode处理的GetRequest的参数，Tomcat对这一类参数默认为ISO-8859-1编码
-    	for(String key : parameterMap.keySet()) {
-			if(requestMap.containsKey(key)) continue;
+    	for(String key : requestMap.keySet()) {
+			if(params.containsKey(key)) continue;
 			
-			String[] values = parameterMap.get(key);
+			String[] values = requestMap.get(key);
 			String value = null;
-			if( isGet || apiCall ) { // (tomcat7 or httpClient call API(uToken) )
+			if( isGet || httpClient ) { // (tomcat7'Get or httpClient call  )
 				try {
 					value = new String(values[0].getBytes("ISO-8859-1"), "UTF-8"); 
 				} catch (UnsupportedEncodingException e) {
 				}
 			}
-			requestMap.put( key, (String) EasyUtils.checkNull(value, values[0]) );
+			params.put( key, (String) EasyUtils.checkNull(value, values[0]) );
     	}
     	
-    	requestMap.remove("_time");          // 剔除jsonp为防止url被浏览器缓存而加的时间戳参数
-    	requestMap.remove("jsonpCallback"); // jsonp__x,其名也是唯一的
-    	requestMap.remove("appCode");      // 其它系统向当前系统转发请求
-    	requestMap.remove("ac");
+    	params.remove("_time");          // 剔除jsonp为防止url被浏览器缓存而加的时间戳参数
+    	params.remove("jsonpCallback"); // jsonp__x,其名也是唯一的
+    	params.remove("appCode");      // 其它系统向当前系统转发请求
+    	params.remove("ac");
     	
-    	return requestMap;
+    	return params;
     }
 	
 	public static String getExportPath() {

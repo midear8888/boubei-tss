@@ -107,8 +107,9 @@ public class Filter4AutoLogin implements Filter {
 	            Context.initIdentityInfo(card);
 	            /* 登录自定义操作 */
 	            customizerExcuteAfterLogin();
-	            /* 保存Cookie信息到客户端 */
-	            HttpClientUtil.setCookie((HttpServletResponse)response, RequestContext.USER_TOKEN, card.getToken());
+	            /* 保存token到客户端Cookie */
+	            HttpServletResponse res = (HttpServletResponse)response;
+				HttpClientUtil.setCookie(res, RequestContext.USER_TOKEN, card.getToken());
 	        }
 			
 			chain.doFilter(request, response);

@@ -116,7 +116,7 @@ public class _Reporter extends BaseActionSupport {
             @PathVariable("pagesize") int pagesize) {
     	
     	long start = System.currentTimeMillis();
-    	Map<String, String> requestMap = DMUtil.getRequestMap(request, false);
+    	Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
 		Object cacheFlag = checkLoginAndCache(request, reportId);
 		SQLExcutor excutor = reportService.queryReport(reportId, requestMap, page, pagesize, cacheFlag);
     	
@@ -139,7 +139,7 @@ public class _Reporter extends BaseActionSupport {
     }
     
     /**
-     * 可直接导出发送电子邮件：http://localhost:9000/tss/data/export/42/1/10000?paramX=XXX&email=boubei@163.com
+     * 可直接导出发送电子邮件：http://localhost:9000/tss/data/export/42/1/10000?paramX=xxx&email=boubei@163.com
      * 支持用report name
      */
     @RequestMapping("/export/{report}/{page}/{pagesize}")
@@ -148,7 +148,7 @@ public class _Reporter extends BaseActionSupport {
             @PathVariable("page") int page,
             @PathVariable("pagesize") int pagesize) {
         
-    	Map<String, String> requestMap = DMUtil.getRequestMap(request, true);
+    	Map<String, String> requestMap = DMUtil.parseRequestParams(request, true);
     	Long reportId = reportService.getReportId( report.toString() );
     	
 		Object cacheFlag = checkLoginAndCache(request, reportId);
@@ -193,7 +193,7 @@ public class _Reporter extends BaseActionSupport {
     @RequestMapping("/export/data2csv")
     @ResponseBody
     public String[] data2CSV(HttpServletRequest request, HttpServletResponse response) {
-    	Map<String, String> requestMap = DMUtil.getRequestMap(request, false);
+    	Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
     	String name = requestMap.get("name");
     	String data = requestMap.get("data");
 		
@@ -214,7 +214,7 @@ public class _Reporter extends BaseActionSupport {
     
     @RequestMapping("/download")
     public void download(HttpServletRequest request, HttpServletResponse response) {
-    	String fileName = DMUtil.getRequestMap(request, true).get("filename");
+    	String fileName = DMUtil.parseRequestParams(request, true).get("filename");
         String exportPath = DataExport.getExportPath() + "/" + fileName ;
         DataExport.downloadFileByHttp(response, exportPath);
     }
@@ -234,7 +234,7 @@ public class _Reporter extends BaseActionSupport {
     	Long reportId = reportService.getReportId(report);
     	
     	String jsonpCallback = request.getParameter("jsonpCallback"); // jsonp是用GET请求
-    	Map<String, String> requestMap = DMUtil.getRequestMap(request, jsonpCallback != null);
+    	Map<String, String> requestMap = DMUtil.parseRequestParams(request, jsonpCallback != null);
     	
     	Object page = requestMap.get("page");
     	Object pagesize = requestMap.get("pagesize");

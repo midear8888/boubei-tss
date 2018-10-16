@@ -51,14 +51,15 @@ public class Article extends OperateInfo implements IGridNode, IXForm {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO, generator = "article_sequence")
-    private Long   id;			//文章编号 PK
+    private Long   id;			
 	
 	@Column(nullable = false)
-    private String title;		//标题
-    private String subtitle;	//副标题
-    private String keyword;		//关键字
-    private String author;		//作者
-    private String summary;		//摘要 
+    private String title;		// 标题
+    private String subtitle;	// 副标题
+    private String keyword;		// 关键字
+    private String author;		// 作者
+    private String summary;		// 摘要
+    private String htmlRef;		// 引用的网页地址，全文检索时直接连接到此地址
     
     @Column(length = 4000)
     private String  content = ""; //正文内容  
@@ -258,5 +259,13 @@ public class Article extends OperateInfo implements IGridNode, IXForm {
 
 	public void setSeqNo(Integer seqNo) {
 		this.seqNo = seqNo;
+	}
+
+	public String getHtmlRef() {
+		return htmlRef;
+	}
+
+	public void setHtmlRef(String htmlRef) {
+		this.htmlRef = htmlRef;
 	}
 }
