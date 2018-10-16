@@ -121,6 +121,9 @@ public class DMUtil {
     	
     	return params;
     }
+    public static Map<String, String> getRequestMap(HttpServletRequest request, boolean isGet) {
+    	return parseRequestParams(request, isGet);
+    }
 	
 	public static String getExportPath() {
 		return getConfigedPath(PX.ATTACH_PATH).replaceAll("\n", "");

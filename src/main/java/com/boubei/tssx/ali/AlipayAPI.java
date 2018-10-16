@@ -40,7 +40,7 @@ public class AlipayAPI {
 	@ResponseBody
 	public void pagepay(HttpServletRequest request, HttpServletResponse response) throws Exception {
 		
-		Map<String, String> requestMap = DMUtil.getRequestMap(request, false);
+		Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
 		AlipayConfig alipay = new AlipayConfig( requestMap.remove("appid") );
 		
 		AlipayClient aClient = new DefaultAlipayClient(alipay.getUrl(), alipay.appid, alipay.getPrivateKey(), "json", AlipayConfig.Char_Set, alipay.getAlipayKey(), AlipayConfig.Sign_Type); //获得初始化的AlipayClient
@@ -70,7 +70,7 @@ public class AlipayAPI {
 	@ResponseBody
 	public void query(HttpServletRequest request, HttpServletResponse response) throws AlipayApiException, IOException {
 		
-        Map<String, String> requestMap = DMUtil.getRequestMap(request, false);
+        Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
 		AlipayConfig alipay = new AlipayConfig( requestMap.remove("appid") );
 		
 		AlipayClient aClient = new DefaultAlipayClient(alipay.getUrl(), alipay.appid, alipay.getPrivateKey(),

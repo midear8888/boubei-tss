@@ -62,7 +62,7 @@ public class WxRegister extends HttpServlet {
 
     	response.setContentType("text/html;charset=UTF-8");
     	
-    	log.info(DMUtil.getRequestMap(request, false));
+    	log.info(DMUtil.parseRequestParams(request, false));
     	
     	String _domain= request.getParameter("domain");
     	String domain = _domain;

@@ -162,7 +162,7 @@ public class WxAPI {
 	
 	// domain="0": 是【商家】注册二维码；否则是【客户】注册二维码
 	protected String getDomain(HttpServletRequest request) {
-		Map<String, String> requestMap = DMUtil.getRequestMap(request, false);
+		Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
 		String domain = requestMap.get("domain");
 		return EasyUtils.obj2String( "0".equals(domain) ? domain : Environment.getDomain() );  // null --> 空字符串
 	}
@@ -301,7 +301,7 @@ public class WxAPI {
 	@ResponseBody
 	public void unifiedorder(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-		Map<String, String> requestMap = DMUtil.getRequestMap(request, false);
+		Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
 		
 		HashMap<String, String> data = new HashMap<String, String>();
         data.put("body", requestMap.get("body"));
@@ -347,7 +347,7 @@ public class WxAPI {
 	@ResponseBody
 	public void doOrderClose(HttpServletRequest request, HttpServletResponse response)  throws Exception {  
         
-        Map<String, String> requestMap = DMUtil.getRequestMap(request, false);
+        Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
         
         HashMap<String, String> data = new HashMap<String, String>();
         data.put("out_trade_no", requestMap.get("out_trade_no"));
@@ -382,7 +382,7 @@ public class WxAPI {
 	@ResponseBody
 	public void doOrderQuery(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-        Map<String, String> requestMap = DMUtil.getRequestMap(request, false);
+        Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
         
         HashMap<String, String> data = new HashMap<String, String>();
         data.put("out_trade_no", requestMap.get("out_trade_no"));
@@ -426,7 +426,7 @@ public class WxAPI {
 		
 		Logger logger = Logger.getLogger(this.getClass());
 		
-		Map<String, String> requestMap = DMUtil.getRequestMap(request, false);
+		Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
 		response.setContentType("text/plain;charset=UTF-8");
 		String ret = null;
 		

@@ -80,7 +80,7 @@ public class WxLogin extends HttpServlet {
     	
     	response.setContentType("text/html;charset=UTF-8");
     	
-    	log.debug(DMUtil.getRequestMap(request, false));
+    	log.debug(DMUtil.parseRequestParams(request, false));
     	
     	// 新打开小程序
     	String jscode = request.getParameter("jscode");

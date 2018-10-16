@@ -33,7 +33,7 @@ public class AlipayNotify extends HttpServlet {
 		ICommonService commService = (ICommonService) Global.getBean("CommonService");
 		response.setContentType("text/html;charset=UTF-8");
 		
-		Map<String, String> map = DMUtil.getRequestMap(request, false);
+		Map<String, String> map = DMUtil.parseRequestParams(request, false);
 		String charSet  = map.get("charset");
 		String signType = map.get("sign_type");
         String appid    = map.get("auth_app_id");
