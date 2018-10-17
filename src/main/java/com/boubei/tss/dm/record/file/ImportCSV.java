@@ -29,9 +29,11 @@ import com.boubei.tss.dm.ddl._Database;
 import com.boubei.tss.dm.ddl._Field;
 import com.boubei.tss.dm.record.Record;
 import com.boubei.tss.dm.record.RecordService;
+import com.boubei.tss.dm.record.workflow.WFUtil;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.web.servlet.AfterUpload;
+import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.modules.sn.SerialNOer;
 import com.boubei.tss.modules.timer.JobService;
 import com.boubei.tss.util.BeanUtil;
@@ -156,6 +158,11 @@ public class ImportCSV implements AfterUpload {
 		Long recordId = recordService.getRecordID(_record, false);
 		Record record = recordService.getRecord(recordId);
 		_Database _db = _Database.getDB(record);
+		
+		// 检查录入表是否允许批量导入（设置为手动录入 或 审批表的，不允许批量导入）
+		if( ParamConstants.FALSE.equals( record.getBatchImp() )  || WFUtil.checkWorkFlow(_db.wfDefine)) {
+			return "parent.alert('【" +record.getName()+ "】不允许批量导入');";
+		}
 		
 		String charSet  = (String) EasyUtils.checkNull(request.getParameter("charSet"), DataExport.CSV_GBK); // 默认GBK
 		

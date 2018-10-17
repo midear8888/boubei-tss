@@ -185,7 +185,7 @@ function getOperation() {
 /* 页面初始化 */
 function init() {
     // 先取用户权限信息，Grid定制依赖具体权限
-    var userHas   = $.Cookie.decode("userHas");
+    userHas  = $.Cookie.decode("userHas");
     userGroups    = userHas[0];
     userRoles     = userHas[1];
     userCode      = userHas[3];
@@ -318,6 +318,7 @@ function listApply() {
 
     tssJS("#gridTitle>input").show();
     tssJS("#gridTitle>button").hide();
+    tssJS("#btn_imp, #btn_tl").hide();
 }
 // 回收站模式
 function recycleBin() {
@@ -339,9 +340,8 @@ function filterTopMenu() {
     if( !_operation.contains("1") ) {
         tssJS("#btn_create").hide();
     } 
-    if( !_operation.contains("1") || !batchImp ) {
-        tssJS("#btn_imp").hide();
-        tssJS("#btn_tl").hide();
+    if( !_operation.contains("1") || !batchImp || hasWorkflow ) {
+        tssJS("#btn_imp, #btn_tl").hide();
     }
     if( !_operation.contains("1") && !_operation.contains("4") && !_operation.contains("5")) {
         tssJS("#btn_search").hide();

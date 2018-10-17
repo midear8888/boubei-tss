@@ -1,3 +1,13 @@
+/* ==================================================================   
+ * Created [2018-07-26] by Jon.King 
+ * ==================================================================  
+ * TSS 
+ * ================================================================== 
+ * mailTo:boubei@163.com
+ * Copyright (c) boubei.com, 2015-2018 
+ * ================================================================== 
+ */
+
 package com.boubei.tss.dm.record.workflow;
 
 import java.util.ArrayList;
@@ -17,6 +27,7 @@ import com.boubei.tss.EX;
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.ddl._Database;
 import com.boubei.tss.dm.dml.SQLExcutor;
+import com.boubei.tss.dm.record.Record;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.pagequery.MacrocodeQueryCondition;
 import com.boubei.tss.framework.sso.Environment;
@@ -26,6 +37,7 @@ import com.boubei.tss.um.entity.Group;
 import com.boubei.tss.um.helper.dto.OperatorDTO;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.um.service.IMessageService;
+import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
 
 /**
@@ -505,6 +517,14 @@ public class WFServiceImpl implements WFService {
 		Long tableId = wfStatus.getTableId();
 		Long itemId = wfStatus.getItemId();
 		
+		// 触发审批流程操作自定义事件（审批通过、驳回、撤销等都可以自定义相应事件）
+		Record record = (Record) commonDao.getEntity(Record.class, tableId);
+		String wfEventClazz = DMUtil.getExtendAttr(record.getRemark(), "wfEventClass");
+		wfEventClazz = (String) EasyUtils.checkNull(wfEventClazz, WFEventN.class.getName());
+		WFEvent we = (WFEvent) BeanUtil.newInstanceByName(wfEventClazz);
+		we.after(wfStatus);
+		
+		// 发送站内信请求
 		String url = "javascript:void(0)"; // "'/tss/modules/dm/recorder.html?id=" +tableId+ "&itemId=" +itemId+ "' target='_blank'";
 		String onclick = "parent.openUrl('more/bi_nav.html?_default=" +tableId+ "&_defaultItem=" +itemId+ "')";
 		
