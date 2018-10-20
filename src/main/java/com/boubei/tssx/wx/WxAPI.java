@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -48,6 +49,7 @@ import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
 import com.boubei.tssx.ImageCodeAPI;
 import com.github.wxpay.sdk.WXPay;
+import com.github.wxpay.sdk.WXPayUtil;
 
 @Controller
 @RequestMapping("/wx/api")
@@ -287,6 +289,127 @@ public class WxAPI {
 	}
     
 	/**
+	 * 扫码支付
+	 * http://127.0.0.1:9000/tss/wx/api/scanpay?body=支付测试&out_trade_no=8001&total_fee=1&spbill_create_ip=123.12.12.123&product_id=8001&appid=wx32ecfcea6f822096&mchid=1503974521
+	 */
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/scanpay")
+	@ResponseBody
+	public void scanPay(HttpServletRequest request, HttpServletResponse response) throws Exception{
+		Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
+		
+		HashMap<String, String> data = new HashMap<String, String>();
+        data.put("body", requestMap.get("body"));
+        data.put("out_trade_no", requestMap.get("out_trade_no"));
+        data.put("total_fee", requestMap.get("total_fee"));
+        data.put("spbill_create_ip", requestMap.get("spbill_create_ip"));
+        data.put("trade_type", "NATIVE");
+        data.put("product_id", requestMap.get("product_id"));
+        
+        data.put("appid", requestMap.get("appid"));
+        data.put("mchid", requestMap.get("mchid"));
+        
+        response.setContentType("text/plain;charset=UTF-8");
+        
+        Map<String, Object> result  = unifiedOrder(data);
+        
+        if(result.get("code").equals("success")){
+			Map<String, String> ret = (Map<String, String>) result.get("data");
+        	new ImageCodeAPI().createQrBarCodeImg(ret.get("code_url"), request, response);
+        }
+        else{
+        	response.getWriter().println("{\"code\": \"fail\", \"errorMsg\": \"" + result.get("errorMsg") + "\"}");
+        }
+	}
+	
+	/**
+	 * 小程序支付
+	 * http://127.0.0.1:9000/tss/wx/api/minipay?body=支付测试&out_trade_no=8002&total_fee=1&spbill_create_ip=123.12.12.123&openid=oNi3W5XOKp6GoFtHoX3iKa5gxyRg&appid=wx32ecfcea6f822096&mchid=1503974521
+	 */
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/minipay")
+	@ResponseBody
+	public void miniProgramPay(HttpServletRequest request, HttpServletResponse response) throws Exception{
+		Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
+		
+		String appid = requestMap.get("appid");
+		String mchid = requestMap.get("mchid");
+		
+		HashMap<String, String> data = new HashMap<String, String>();
+        data.put("body", requestMap.get("body"));
+        data.put("out_trade_no", requestMap.get("out_trade_no"));
+        data.put("total_fee", requestMap.get("total_fee"));
+        data.put("spbill_create_ip", requestMap.get("spbill_create_ip"));
+        data.put("trade_type", "JSAPI");
+        data.put("openid", requestMap.get("openid"));
+        
+        data.put("appid", appid);
+        data.put("mchid", mchid);
+        
+        WXPayConfigImpl config = new WXPayConfigImpl(appid, mchid);
+        String key = config.getKey();
+        
+        response.setContentType("text/plain;charset=UTF-8");
+        
+        Map<String, Object> result  = unifiedOrder(data);
+        
+        if(result.get("code").equals("success")){
+        	Map<String, String> ret = (Map<String, String>) result.get("data");
+        	String nonceStr = ret.get("nonce_str");
+        	String packAge = "prepay_id=" + ret.get("prepay_id");
+        	String timeStamp = EasyUtils.obj2String(new Date().getTime());
+        	
+        	Map<String, String> signMap = new HashMap<String, String>();
+        	signMap.put("appId", appid);
+        	signMap.put("nonceStr", nonceStr);
+        	signMap.put("package", packAge);
+        	signMap.put("signType", "MD5");
+        	signMap.put("timeStamp", timeStamp);
+        	String sign = WXPayUtil.generateSignature(signMap, key);
+        	
+        	Map<String, String> returnMap = new HashMap<String, String>();
+        	returnMap.put("nonceStr", nonceStr);
+        	returnMap.put("package", packAge);
+        	returnMap.put("signType", "MD5");
+        	returnMap.put("timeStamp", timeStamp);
+        	returnMap.put("paySign", sign);
+        	
+        	response.getWriter().println("{\"code\": \"success\", \"data\": \"" + returnMap.toString() + "\"}");
+        }
+        else{
+        	response.getWriter().println("{\"code\": \"fail\", \"errorMsg\": \"" + result.get("errorMsg") + "\"}");
+        }
+		
+	}
+	
+	public Map<String, Object> unifiedOrder(Map<String, String> data) throws Exception {
+		String domain = ParamConfig.getAttribute("notify_Url", "");
+		String notify_url = "https://"+ domain + "/tss/wxnotify.in";
+		data.put("notify_url", notify_url);
+		
+		WXPay wxpay = getWXPay(data);
+		Map<String, String> r = wxpay.unifiedOrder(data);
+		
+		Map<String, Object> result = new HashMap<String, Object>();
+        
+    	if( "SUCCESS".equals(r.get("return_code")) && "SUCCESS".equals(r.get("result_code")) ) {
+    		result.put("code", "success");
+    		result.put("data", r);
+    	}
+    	else {
+    		result.put("code", "fail");
+    		if ("SUCCESS".equals(r.get("return_code")) && "FAIL".equals(r.get("result_code"))){
+    			result.put("errorMsg", r.get("err_code_des"));
+    		}
+    		else{
+    			result.put("errorMsg", "支付下单失败!");
+    		}
+    	}
+        
+        return result;
+	}
+	
+	/**
 	 * 统一下单
 	 * body 商品描述
 	 * out_trade_no 商户订单号
@@ -299,7 +422,7 @@ public class WxAPI {
 	 */
 	@RequestMapping(value = "/unifiedorder")
 	@ResponseBody
-	public void unifiedorder(HttpServletRequest request, HttpServletResponse response) throws Exception {
+ 	public void unifiedorder2(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
 		Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
 		
@@ -338,7 +461,6 @@ public class WxAPI {
         }
 	}
 
-	
 	/**
      * 关闭订单
      * out_trade_no 商户订单号
