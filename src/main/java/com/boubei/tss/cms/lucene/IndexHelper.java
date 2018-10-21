@@ -12,7 +12,6 @@ package com.boubei.tss.cms.lucene;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
@@ -143,7 +142,7 @@ public class IndexHelper {
             progress.add(count); // 确保最后一次进度信息更新
             try {
             	indexWriter.close();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 // log.error("关闭索引文件错误！", e);
             }
         }

@@ -66,8 +66,10 @@ public class Global {
     	schedulerBean = SchedulerBean.getInstanse(); // 定时器初始化
     	
     	// 清空在线用户库
-    	String serverIp = MatrixUtil.getIpAddress();
-    	SQLExcutor.excute("delete from online_user where serverIp='" +serverIp+ "'", DMConstants.LOCAL_CONN_POOL);
+    	try {
+    		String serverIp = MatrixUtil.getIpAddress();
+    		SQLExcutor.excute("delete from online_user where serverIp='" +serverIp+ "'", DMConstants.LOCAL_CONN_POOL);
+    	} catch( Exception e ) { }
 	}
 
 	public static synchronized void destroyContext() {

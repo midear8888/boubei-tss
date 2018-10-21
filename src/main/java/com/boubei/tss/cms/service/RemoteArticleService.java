@@ -164,16 +164,16 @@ public class RemoteArticleService implements IRemoteArticleService {
         return channelElement.asXML();
     }
     
-    // fields : a.id, a.title, a.author, a.summary, a.issueDate, a.createTime, a.hitCount, a.isTop, a.commentNum
+    // fields : a.id, a.title, a.author, a.summary, a.issueDate, a.createTime, a.hitCount, a.isTop, a.commentNum, a.seqNo, a.htmlRef
     private Element createArticleElement(Element channelElement, Object[] fields) {
 		return createArticleElement(channelElement, (Long) fields[0],
 				(String) fields[1], (String) fields[2], (Date) fields[4],
-				(String) fields[3], (Integer) fields[6], (Integer) fields[8]);
+				(String) fields[3], (Integer) fields[6], (Integer) fields[8], (String) fields[10]);
     }
     
     private Element createArticleElement(Element channelElement, 
     		Object articleId, String title, String author, Date issueDate, String summary, 
-    		int hitCount, int commentNum) {
+    		int hitCount, int commentNum, String htmlRef) {
         
         Element itemElement = channelElement.addElement("item");
         itemElement.addElement("id").setText(EasyUtils.obj2String(articleId));
@@ -183,6 +183,7 @@ public class RemoteArticleService implements IRemoteArticleService {
         itemElement.addElement("summary").setText(EasyUtils.obj2String(summary));
         itemElement.addElement("hitCount").setText(EasyUtils.obj2String(hitCount));
         itemElement.addElement("commentNum").setText(EasyUtils.obj2String(commentNum));
+        itemElement.addElement("htmlRef").setText(EasyUtils.obj2String(htmlRef));
         
         return itemElement;
     }
@@ -280,7 +281,7 @@ public class RemoteArticleService implements IRemoteArticleService {
                 Object articleId = document.get("id");
                 Date issueDate = DateUtil.parse(document.get("issueDate"));
                 createArticleElement(channelElement, articleId, document.get("title"), document.get("author"), 
-                        issueDate, document.get("summary"), 0, 0);
+                        issueDate, document.get("summary"), 0, 0, document.get("htmlRef") );
             }
             searcher.close();
         } catch (Exception e) {
@@ -359,7 +360,7 @@ public class RemoteArticleService implements IRemoteArticleService {
                 		XMLDocUtil.getNodeText(authorNode),
                 		DateUtil.parse(XMLDocUtil.getNodeText(issueDateNode)), 
                 		XMLDocUtil.getNodeText(summaryNode), 
-                        0, 0);
+                        0, 0, null);
             }
         }
         return "<Response><ArticleList>" + channelElement.asXML() + "</ArticleList></Response>";

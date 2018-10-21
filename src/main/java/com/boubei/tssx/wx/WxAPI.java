@@ -208,8 +208,8 @@ public class WxAPI {
     		item.put("pid", record.getParentId());
     		item.put("name", record.getName());
     		item.put("table", record.getTable());
-    		item.put("wxurl", record.getWxurl());
 			item.put("wxicon", EasyUtils.checkNull(record.getWxicon(), "/tss/images/wf.png"));
+			item.put("wxurl", record.getWxurl());
 			item.put("wfingCount", countMap.get(id));
     		
 			result.add( item );
@@ -237,7 +237,9 @@ public class WxAPI {
     		item.put("pid", record.getParentId());
     		item.put("name", record.getName());
     		item.put("table", record.getTable());
-			item.put("icon", EasyUtils.checkNull(record.getIcon(), "/tss/images/record.png"));
+			item.put("wxicon", EasyUtils.checkNull(record.getWxicon(), "/tss/images/record.png"));
+			item.put("icon", item.get("wxicon"));
+			item.put("wxurl", record.getWxurl());
 			item.put("permissions", ph.getOperationsByResource(id, RecordPermission.class.getName(), RecordResource.class));
     		
 			result.add( item );

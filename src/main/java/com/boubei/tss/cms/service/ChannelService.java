@@ -161,6 +161,11 @@ public class ChannelService implements IChannelService {
         for ( Channel child : list ) {
             child.setDisabled(CMSConstants.STATUS_STOP);
         }
+        
+        // 同时将栏目下所有文章设为待发布状态，禁止被搜索到
+        channelDao.executeHQL("update Article set status = ? where channel.id = ? and status = ?", 
+        		CMSConstants.TOPUBLISH_STATUS, siteOrChannelId, CMSConstants.XML_STATUS);
+        
         channelDao.flush();
     }
 

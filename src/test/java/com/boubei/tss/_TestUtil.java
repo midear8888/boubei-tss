@@ -34,8 +34,6 @@ public class _TestUtil {
 	
 	protected static Logger log = Logger.getLogger(_TestUtil.class);
 	
-	static final String PROJECT_NAME = "boubei-tss";
-	
     static String dbDriverName = Config.getAttribute("db.connection.driver_class");
     
     public static boolean isH2Database() {

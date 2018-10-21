@@ -148,8 +148,8 @@ public class ArticleDao extends BaseDao<Article> implements IArticleDao {
 	//* *****************************************  for portlet  ********************************************
      
     public PageInfo getChannelPageArticleList(ArticleQueryCondition condition) {
-    	// Select字段的顺序不能变，新增字段放最后
-        String hql = "select o.id, o.title, o.author, o.summary, o.issueDate, o.createTime, o.hitCount, o.isTop, o.commentNum, o.seqNo "
+    	// select字段的顺序不能变，新增字段放最后
+        String hql = "select o.id, o.title, o.author, o.summary, o.issueDate, o.createTime, o.hitCount, o.isTop, o.commentNum, o.seqNo, o.htmlRef "
                 + " from Article o"
                 + " where 1=1 ${channelId} ${status} ${domain} "
                 + " order by o.isTop desc, o.seqNo desc, o.issueDate desc, o.id desc";
@@ -162,7 +162,7 @@ public class ArticleDao extends BaseDao<Article> implements IArticleDao {
         insertIds2TempTable(condition.getChannelIds());
         condition.setChannelIds(null);
  
-        String hql = "select o.id, o.title, o.author, o.summary, o.issueDate, o.createTime, o.hitCount, o.isTop, o.commentNum, o.seqNo "
+        String hql = "select o.id, o.title, o.author, o.summary, o.issueDate, o.createTime, o.hitCount, o.isTop, o.commentNum, o.seqNo, o.htmlRef "
                     + " from Article o, Temp t "
                     + " where o.channel.id = t.id and t.thread=" + Environment.threadID()
                     + " ${status} ${createTime} ${domain} "

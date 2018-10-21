@@ -108,7 +108,7 @@ public class ExceptionEncoder {
      * 打印详细错误信息到日志中
      * @param be
      */
-    private static void printErrorMessage(Throwable be) {
+    public static void printErrorMessage(Throwable be) {
         Throwable first = getFirstCause(be);
         
         // 过滤掉不需要输出到控制台（或日志）的异常，比如SocketException等

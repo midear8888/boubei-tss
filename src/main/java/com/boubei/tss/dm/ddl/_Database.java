@@ -960,6 +960,11 @@ public abstract class _Database {
             	fieldWidth = " display=\"none\" ";
             } 
             else {
+            	try {
+            		Integer.parseInt(fieldWidth);
+            		fieldWidth = fieldWidth + "px";
+            	} catch(Exception e) { }
+            	
             	fieldWidth = " width=\"" + fieldWidth + "\" ";
             }
             

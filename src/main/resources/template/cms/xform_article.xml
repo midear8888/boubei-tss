@@ -6,7 +6,8 @@
 		-->
 		<column name="author" caption="作者"  empty="false" maxLength="50"/>
 		<column name="summary" caption="摘要"  maxLength="500"/>
-		<column name="keyword" caption="关键字"  empty="false" maxLength="100"/>
+		<column name="keyword" caption="关键字" maxLength="100"/>
+		<column name="htmlRef" caption="引用页" maxLength="200"/>
 		<column name="issueDate" caption="发布日期" mode="date"/>
 		<column name="overdueDate" caption="过期日期" mode="date"/>
 		<column name="seqNo" caption="排序号" inputReg="^\d{0,10}$"/>
@@ -20,13 +21,13 @@
 		</TR>
 		<TR>
 			<TD><label binding="author"/></TD>
-			<TD><input binding="author"/></TD>
+			<TD><input binding="author" style="width:50%"/></TD>
 			<TD><label binding="issueDate"/></TD>
 			<TD><input binding="issueDate"/></TD>
 		</TR>
 		<TR>
-			<TD><label binding="keyword"/></TD>
-			<TD><input binding="keyword" style="width:88%"/></TD>
+			<TD><label binding="htmlRef"/></TD>
+			<TD><input binding="htmlRef" style="width:88%"/></TD>
 			<TD><label binding="overdueDate"/></TD>
 			<TD><input binding="overdueDate"/></TD>
 		</TR>

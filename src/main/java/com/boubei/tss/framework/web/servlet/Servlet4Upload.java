@@ -27,6 +27,7 @@ import javax.servlet.http.Part;
 import org.apache.log4j.Logger;
 
 import com.boubei.tss.dm.DMUtil;
+import com.boubei.tss.framework.exception.ExceptionEncoder;
 import com.boubei.tss.framework.exception.convert.ExceptionConvertorFactory;
 import com.boubei.tss.framework.web.filter.Filter8APITokenCheck;
 import com.boubei.tss.util.BeanUtil;
@@ -78,9 +79,9 @@ public class Servlet4Upload extends HttpServlet {
 			
 		} catch (Exception _e) {
 			Exception e = ExceptionConvertorFactory.getConvertor().convert(_e);
-			String errorMsg = "上传（导入）失败：" + e.getMessage();
-			log.error(errorMsg, _e);
+			ExceptionEncoder.printErrorMessage(_e);
 			
+			String errorMsg = "上传（导入）失败：" + e.getMessage();
 			errorMsg = Pattern.compile("\t|\r|\n|\'").matcher(errorMsg).replaceAll(" "); // 剔除换行，以免alert不出来
 			script = "parent.alert('" + errorMsg + "');";
 		} 

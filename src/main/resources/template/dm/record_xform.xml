@@ -18,8 +18,8 @@
 		<column name="batchImp" caption="Excel导入" mode="combo" values="0|1" texts="只能手动录入|支持批量导入"/>
 		<column name="mobilable" caption="移动端录入" mode="combo" values="1|0" texts="支持|不支持"/>
 		<column name="icon" caption="自定义图标"/>
-		<column name="wxicon" caption="手机展示图标"/>
-		<column name="wxurl" caption="手机展示页"/>
+		<column name="wxicon" caption="移动端图标"/>
+		<column name="wxurl" caption="移动端展示页"/>
 		<column name="logicDel" caption="启用回收站" mode="combo" values="0|1" texts="否|是"/>
 		<column name="showCreator" caption="显示创建信息" mode="combo" values="0|1" texts="隐藏|显示"/>
 		<column name="ignoreDomain" caption="忽略域" mode="combo" values="0|1" texts="否|是"/>

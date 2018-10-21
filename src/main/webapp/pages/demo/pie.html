@@ -102,6 +102,7 @@ var FIELDS_1 = [
 
 var dg1;
 function query(params) {
+    params.pagesize = 300;
     tssJS.getJSON(data_url, params, function(data){
         showGrid(data);
         showChart(data);
