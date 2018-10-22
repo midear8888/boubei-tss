@@ -292,6 +292,13 @@ public class WxAPI {
     
 	/**
 	 * 扫码支付
+	 * body 商品描述
+	 * out_trade_no 商户订单号
+	 * total_fee 标价金额
+	 * spbill_create_ip 终端IP
+	 * product_id 商品ID
+	 * appid 小程序app ID
+	 * mchid 商户ID
 	 * http://127.0.0.1:9000/tss/wx/api/scanpay?body=支付测试&out_trade_no=8001&total_fee=1&spbill_create_ip=123.12.12.123&product_id=8001&appid=wx32ecfcea6f822096&mchid=1503974521
 	 */
 	@SuppressWarnings("unchecked")
@@ -326,6 +333,13 @@ public class WxAPI {
 	
 	/**
 	 * 小程序支付
+	 * body 商品描述
+	 * out_trade_no 商户订单号
+	 * total_fee 标价金额
+	 * spbill_create_ip 终端IP
+	 * openid 小程序账号唯一标识
+	 * appid 小程序app ID
+	 * mchid 商户ID
 	 * http://127.0.0.1:9000/tss/wx/api/minipay?body=支付测试&out_trade_no=8002&total_fee=1&spbill_create_ip=123.12.12.123&openid=oNi3W5XOKp6GoFtHoX3iKa5gxyRg&appid=wx32ecfcea6f822096&mchid=1503974521
 	 */
 	@SuppressWarnings("unchecked")
@@ -369,21 +383,23 @@ public class WxAPI {
         	signMap.put("timeStamp", timeStamp);
         	String sign = WXPayUtil.generateSignature(signMap, key);
         	
-        	Map<String, String> returnMap = new HashMap<String, String>();
-        	returnMap.put("nonceStr", nonceStr);
-        	returnMap.put("package", packAge);
-        	returnMap.put("signType", "MD5");
-        	returnMap.put("timeStamp", timeStamp);
-        	returnMap.put("paySign", sign);
+        	JSONObject r = new JSONObject();
+        	r.put("nonceStr", nonceStr);
+        	r.put("package", packAge);
+        	r.put("signType", "MD5");
+        	r.put("timeStamp", timeStamp);
+        	r.put("paySign", sign);
         	
-        	response.getWriter().println("{\"code\": \"success\", \"data\": \"" + returnMap.toString() + "\"}");
+        	response.getWriter().println("{\"code\": \"success\", \"data\": " + r.toString() + "}");
         }
         else{
         	response.getWriter().println("{\"code\": \"fail\", \"errorMsg\": \"" + result.get("errorMsg") + "\"}");
         }
-		
 	}
 	
+	/**
+	 * 统一下单
+	 */
 	public Map<String, Object> unifiedOrder(Map<String, String> data) throws Exception {
 		String domain = ParamConfig.getAttribute("notify_Url", "");
 		String notify_url = "https://"+ domain + "/tss/wxnotify.in";
@@ -410,58 +426,6 @@ public class WxAPI {
         
         return result;
 	}
-	
-	/**
-	 * 统一下单
-	 * body 商品描述
-	 * out_trade_no 商户订单号
-	 * total_fee 标价金额
-	 * spbill_create_ip 终端IP
-	 * trade_type 交易类型
-	 * product_id 商品ID
-	 * http://127.0.0.1:9000/tss/wx/api/unifiedorder?body=test&out_trade_no=1003&total_fee=2&spbill_create_ip=123.12.12.123&trade_type=NATIVE&product_id=1003&appid=wx32ecfcea6f822096&mchid=1503974521
-	 * https://www.boudata.com/tss/wx/api/unifiedorder?body=test&out_trade_no=3000&total_fee=2&spbill_create_ip=123.12.12.123&trade_type=NATIVE&product_id=3000&appid=wx32ecfcea6f822096&mchid=1503974521
-	 */
-	@RequestMapping(value = "/unifiedorder")
-	@ResponseBody
- 	public void unifiedorder2(HttpServletRequest request, HttpServletResponse response) throws Exception {
-
-		Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
-		
-		HashMap<String, String> data = new HashMap<String, String>();
-        data.put("body", requestMap.get("body"));
-        data.put("out_trade_no", requestMap.get("out_trade_no"));
-        data.put("total_fee", requestMap.get("total_fee"));
-        data.put("spbill_create_ip", requestMap.get("spbill_create_ip"));
-        data.put("trade_type", requestMap.get("trade_type"));
-        data.put("product_id", requestMap.get("product_id"));
-		
-		String domain = ParamConfig.getAttribute("notify_Url", "");
-		String notify_url = "https://"+ domain + "/tss/wxnotify.in";
-		data.put("notify_url", notify_url);
-		
-		WXPay wxpay = getWXPay(requestMap);
-	    
-        try {
-        	Map<String, String> r = wxpay.unifiedOrder(data);
-            
-        	if( "SUCCESS".equals(r.get("return_code")) && "SUCCESS".equals(r.get("result_code")) ) {
-        		new ImageCodeAPI().createQrBarCodeImg(r.get("code_url"), request, response);
-        	}
-        	else {
-        		response.setContentType("text/plain;charset=UTF-8");
-        		
-        		if ("SUCCESS".equals(r.get("return_code")) && "FAIL".equals(r.get("result_code"))){
-        			response.getWriter().println("{\"code\": \"fail\", \"error\": \"" + r.get("err_code_des") + "\"}");
-        		}
-        		else{
-        			response.getWriter().println("{\"code\": \"fail\", \"error\": \"微信付款下单失败\"}");
-        		}
-        	}
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-	}
 
 	/**
      * 关闭订单
@@ -483,14 +447,14 @@ public class WxAPI {
         	response.setContentType("text/plain;charset=UTF-8");
         	
         	if( "SUCCESS".equals(r.get("return_code")) && "SUCCESS".equals(r.get("result_code")) ) {
-        		response.getWriter().println("{\"code\": \"success\", \"error\": \"ok\"}");
+        		response.getWriter().println("{\"code\": \"success\", \"data\": \"ok\"}");
         	}
         	else {
         		if ("SUCCESS".equals(r.get("return_code")) && "FAIL".equals(r.get("result_code"))){
-        			response.getWriter().println("{\"code\": \"fail\", \"error\": \"" + r.get("err_code_des") + "\"}");
+        			response.getWriter().println("{\"code\": \"fail\", \"errorMsg\": \"" + r.get("err_code_des") + "\"}");
         		}
         		else{
-        			response.getWriter().println("{\"code\": \"fail\", \"error\": \"订单关闭失败\"}");
+        			response.getWriter().println("{\"code\": \"fail\", \"errorMsg\": \"订单关闭失败\"}");
         		}
         	}
         } catch (Exception e) {
@@ -518,14 +482,14 @@ public class WxAPI {
         	
         	if( "SUCCESS".equals(r.get("return_code")) && "SUCCESS".equals(r.get("result_code")) ) {
         		if ("SUCCESS".equals(r.get("trade_state"))){
-        			response.getWriter().println("{\"code\": \"success\", \"error\": \"支付成功\"}");
+        			response.getWriter().println("{\"code\": \"success\", \"data\": \"支付成功\"}");
         		}
         		else{
-        			response.getWriter().println("{\"code\": \"success\", \"error\": \"" + r.get("trade_state_desc") + "\"}");
+        			response.getWriter().println("{\"code\": \"success\", \"errorMsg\": \"" + r.get("trade_state_desc") + "\"}");
         		}
         	}
         	else {
-        		response.getWriter().println("{\"code\": \"fail\", \"error\": \"订单查询失败\"}");
+        		response.getWriter().println("{\"code\": \"fail\", \"errorMsg\": \"订单查询失败\"}");
         	}
         } catch (Exception e) {
             e.printStackTrace();

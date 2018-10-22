@@ -31,7 +31,7 @@ public class WXPayConfigImpl implements WXPayConfig{
     }
 
     public String getMchID() {
-    	return mchid; // "1503974521";
+    	return mchid;
     }
 
     public String getKey() {
