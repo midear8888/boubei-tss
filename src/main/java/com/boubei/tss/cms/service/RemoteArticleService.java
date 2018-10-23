@@ -164,7 +164,7 @@ public class RemoteArticleService implements IRemoteArticleService {
         return channelElement.asXML();
     }
     
-    // fields : a.id, a.title, a.author, a.summary, a.issueDate, a.createTime, a.hitCount, a.isTop, a.commentNum, a.seqNo, a.htmlRef
+    // fields : a.id, a.title, a.author, a.summary, a.issueDate, a.createTime, a.hitCount, a.isTop, a.commentNum, a.htmlRef
     private Element createArticleElement(Element channelElement, Object[] fields) {
 		return createArticleElement(channelElement, (Long) fields[0],
 				(String) fields[1], (String) fields[2], (Date) fields[4],

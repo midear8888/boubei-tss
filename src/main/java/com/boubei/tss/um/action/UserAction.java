@@ -323,6 +323,7 @@ public class UserAction extends BaseActionSupport {
 			gridNode.getAttrs().put("serverIp", ou.getServerIp());
 			gridNode.getAttrs().put("sessionId", ou.getSessionId());
 			gridNode.getAttrs().put("origin", ou.getOrigin());
+			gridNode.getAttrs().put("domain", ou.getDomain());
 			gridNode.getAttrs().put("loginCount", ou.getLoginCount());
             
 			dataList.add(gridNode);
@@ -334,6 +335,7 @@ public class UserAction extends BaseActionSupport {
         template.append("<column name=\"user\" caption=\"用户名\" width=\"80px\" sortable=\"true\"/>");
         template.append("<column name=\"userIp\" caption=\"用户IP\" width=\"100px\"/>");
         template.append("<column name=\"origin\" caption=\"客户端\" width=\"100px\"/>");
+        template.append("<column name=\"domain\" caption=\"域\" width=\"30px\" sortable=\"true\"/>");
         template.append("<column name=\"loginTime\" caption=\"登录时间\" width=\"120px\" sortable=\"true\"/>");
         template.append("<column name=\"loginCount\" caption=\"登录次数\" width=\"60px\" sortable=\"true\"/>");
         template.append("<column name=\"serverIp\" caption=\"服务器\" width=\"70px\"/>");

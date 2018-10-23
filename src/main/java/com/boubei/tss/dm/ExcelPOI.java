@@ -153,6 +153,8 @@ public class ExcelPOI extends Excel {
 	public static String getCellVal(Cell cell, int i, int j) {
 		if(cell == null) return "";
 		
+		NumberFormat f = NumberFormat.getInstance();
+		f.setMaximumFractionDigits(8);
 		try {
 	        switch(cell.getCellTypeEnum()) { // 判断cell类型
 		        case NUMERIC:
@@ -162,7 +164,7 @@ public class ExcelPOI extends Excel {
 		            } 
 		            else { // 数字,常规类型的数字会自动多出 .0（因转换后是double类型），需要格式化掉
 		            	double cellVal = cell.getNumericCellValue();
-						String val = NumberFormat.getInstance().format( cellVal );
+						String val = f.format( cellVal );
 		            	return val.replace(",", "");
 		            }
 		        case FORMULA:
