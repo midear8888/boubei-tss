@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -107,9 +108,10 @@ public class ExcelPOI extends Excel {
 			int rsRows  = sheet1.getPhysicalNumberOfRows();   // 获取Sheet表中所包含的总行数
 			
 			// 获取指定单元格的对象引用
-			for (int i = 0; i < rsRows; i++) {
+			for (int i = 0; i <= rsRows; i++) {
 				Map<String, Object> row = new LinkedHashMap<String, Object>();
 				Row _row = sheet1.getRow(i);
+				if( _row == null) continue;
 				
 				for (int j = 0; j < rsColumns; j++) {
 					Cell cell = _row.getCell(j);
@@ -153,18 +155,21 @@ public class ExcelPOI extends Excel {
 	public static String getCellVal(Cell cell, int i, int j) {
 		if(cell == null) return "";
 		
-		NumberFormat f = NumberFormat.getInstance();
-		f.setMaximumFractionDigits(8); // 最多保留8位小数
 		try {
 	        switch(cell.getCellTypeEnum()) { // 判断cell类型
 		        case NUMERIC:
 		            // 判断cell是否为日期格式
 		            if( org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted(cell) ) {
-		                return DateUtil.formatCare2Second( cell.getDateCellValue() );
+		                Date dateCellVal = cell.getDateCellValue();
+						return DateUtil.formatCare2Second( dateCellVal );
 		            } 
 		            else { // 数字,常规类型的数字会自动多出 .0（因转换后是double类型），需要格式化掉
 		            	double cellVal = cell.getNumericCellValue();
+		            	
+		            	NumberFormat f = NumberFormat.getInstance();
+		        		f.setMaximumFractionDigits(8); // 最多保留8位小数
 						String val = f.format( cellVal );
+						
 		            	return val.replace(",", "");
 		            }
 		        case FORMULA:

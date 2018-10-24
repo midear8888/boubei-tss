@@ -349,10 +349,10 @@ public class WFServiceImpl implements WFService {
 	}
 
 	public void appendWFInfo(_Database _db, Map<String, Object> item, Long itemId) {
-		if( !WFUtil.checkWorkFlow(_db.wfDefine) ) return;
+		WFStatus wfStatus = getWFStatus(_db.recordId, itemId);
+		if( !WFUtil.checkWorkFlow(_db.wfDefine) || wfStatus == null ) return;
 		
 		// 流程状态
-		WFStatus wfStatus = getWFStatus(_db.recordId, itemId);
 		String processors = EasyUtils.obj2String( wfStatus.getProcessors() );
 		String curStatus = wfStatus.getCurrentStatus();
 		

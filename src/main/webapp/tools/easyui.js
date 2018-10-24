@@ -206,10 +206,12 @@ function clone(from, to){
 function _export(recordId, _params) {
    if( _params ) {
         _params.page = 1;
-        _params.pagesize = 10*0000;
+        _params.pagesize = 100000;
     } else {
         _params = {};
     }
+
+    if( fields ) _params.fields = fields; // 指定导出列，'name,phone,addr'
 
     var queryString = "?";
     $.each(_params, function(key, value) {

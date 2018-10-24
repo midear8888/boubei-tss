@@ -337,7 +337,7 @@ public class UserAction extends BaseActionSupport {
         template.append("<column name=\"origin\" caption=\"客户端\" width=\"100px\"/>");
         template.append("<column name=\"domain\" caption=\"域\" width=\"30px\" sortable=\"true\"/>");
         template.append("<column name=\"loginTime\" caption=\"登录时间\" width=\"120px\" sortable=\"true\"/>");
-        template.append("<column name=\"loginCount\" caption=\"登录次数\" width=\"60px\" sortable=\"true\"/>");
+        template.append("<column name=\"loginCount\" caption=\"登录次数\" width=\"40px\" sortable=\"true\"/>");
         template.append("<column name=\"serverIp\" caption=\"服务器\" width=\"70px\"/>");
         template.append("<column name=\"sessionId\" caption=\"sessionId\" width=\"120px\"/>");
         template.append("</declare><data></data></grid>");

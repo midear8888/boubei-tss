@@ -55,7 +55,6 @@ public class DBOnlineUser extends OnlineUser implements IEntity {
         this.setUserName( userName );
         this.setServerIp( MatrixUtil.getIpAddress() );
         this.setOrigin( Environment.getOrigin() );
-        this.setDomain(Environment.getDomainOrign());
     }
     
 	public Serializable getPK() {

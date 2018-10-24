@@ -88,8 +88,10 @@ public class Excel2Record implements AfterUpload {
 		int rsRows  = sheet.getPhysicalNumberOfRows();   // 获取Sheet表中所包含的总行数
 		
 		// 获取指定单元格的对象引用
-		for (int i = 0; i < rsRows; i++) {
+		for (int i = 0; i <= rsRows; i++) {
 			Row _row = sheet.getRow(i);
+			if( _row == null) continue;
+			
 			List<String> row = new ArrayList<String>();
 			
 			for (int j = 0; j < rsColumns; j++) {
