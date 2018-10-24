@@ -160,7 +160,7 @@ public class ExcelPOI extends Excel {
 		        case NUMERIC:
 		            // 判断cell是否为日期格式
 		            if( org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted(cell) ) {
-		                return DateUtil.format( cell.getDateCellValue() );
+		                return DateUtil.formatCare2Second( cell.getDateCellValue() );
 		            } 
 		            else { // 数字,常规类型的数字会自动多出 .0（因转换后是double类型），需要格式化掉
 		            	double cellVal = cell.getNumericCellValue();
