@@ -132,10 +132,10 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
     private Integer levelNo;// 层次值
     
     private Integer disabled = ParamConstants.FALSE; // 停用/启用标记，默认为启用
-    private Integer needLog  = ParamConstants.FALSE; // 记录修改日志，适用于重要性高的数据表
+    private Integer needLog  = ParamConstants.TRUE;  // 记录修改日志，适用于重要性高的数据表
     private Integer needQLog = ParamConstants.FALSE; // 记录查询日志，适用于数据量大的数据表，统计查询性能和次数
-    private Integer needFile = ParamConstants.FALSE; // 是否需要附件上传
-    private Integer batchImp = ParamConstants.FALSE; // 是否允许批量导入
+    private Integer needFile = ParamConstants.TRUE;  // 是否需要附件上传
+    private Integer batchImp = ParamConstants.TRUE;  // 是否允许批量导入
 	
     public boolean isActive() {
     	return !ParamConstants.TRUE.equals(this.getDisabled());

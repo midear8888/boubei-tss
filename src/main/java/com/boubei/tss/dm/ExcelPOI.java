@@ -154,7 +154,7 @@ public class ExcelPOI extends Excel {
 		if(cell == null) return "";
 		
 		NumberFormat f = NumberFormat.getInstance();
-		f.setMaximumFractionDigits(8);
+		f.setMaximumFractionDigits(8); // 最多保留8位小数
 		try {
 	        switch(cell.getCellTypeEnum()) { // 判断cell类型
 		        case NUMERIC:
