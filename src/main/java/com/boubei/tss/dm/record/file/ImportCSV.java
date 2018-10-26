@@ -29,7 +29,6 @@ import com.boubei.tss.dm.ddl._Database;
 import com.boubei.tss.dm.ddl._Field;
 import com.boubei.tss.dm.record.Record;
 import com.boubei.tss.dm.record.RecordService;
-import com.boubei.tss.dm.record.workflow.WFUtil;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.web.servlet.AfterUpload;
@@ -159,8 +158,8 @@ public class ImportCSV implements AfterUpload {
 		Record record = recordService.getRecord(recordId);
 		_Database _db = _Database.getDB(record);
 		
-		// 检查录入表是否允许批量导入（设置为手动录入 或 审批表的，不允许批量导入）
-		if( ParamConstants.FALSE.equals( record.getBatchImp() )  || WFUtil.checkWorkFlow(_db.wfDefine)) {
+		// 检查录入表是否允许批量导入（设置为手动录入的）
+		if( ParamConstants.FALSE.equals( record.getBatchImp() ) ) {
 			return "parent.alert('【" +record.getName()+ "】不允许批量导入');";
 		}
 		

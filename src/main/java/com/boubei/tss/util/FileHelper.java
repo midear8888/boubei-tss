@@ -683,7 +683,7 @@ public class FileHelper {
 	}
 	
 	public static boolean isImage(String fileName) {
-		String[] imgTags = new String[] {"gif", "png", "bmp", "jpg", "jpeg"};
+		String[] imgTags = {"gif", "png", "bmp", "jpg", "jpeg"};
 		String fileExt = getFileSuffix(fileName).toLowerCase();
 		return Arrays.asList(imgTags).contains(fileExt);
 	}

@@ -51,6 +51,7 @@ import com.boubei.tss.dm.record.workflow.WFService;
 import com.boubei.tss.dm.record.workflow.WFStatus;
 import com.boubei.tss.dm.record.workflow.WFUtil;
 import com.boubei.tss.dm.report.log.AccessLogRecorder;
+import com.boubei.tss.framework.Config;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.SecurityUtil;
 import com.boubei.tss.framework.exception.BusinessException;
@@ -383,6 +384,7 @@ public class _Recorder extends BaseActionSupport {
 		Long recordId = recordService.getRecordID(record, false);
 		Map<String, String> requestMap = prepareParams(request, recordId);
 		Long _tempID = EasyUtils.obj2Long(requestMap.remove("_tempID"));
+		boolean isDraft = Config.TRUE.equalsIgnoreCase( requestMap.remove("saveDraft") );
 
 		_Database _db = getDB(recordId, Record.OPERATION_CDATA);
 		Long newID = null;
@@ -411,7 +413,9 @@ public class _Recorder extends BaseActionSupport {
 			exeAfterOperation(requestMap, _db, newID);
 
 			// 计算并初始化流程
-			wfService.calculateWFStatus(newID, _db);
+			if( !isDraft ) {
+				wfService.calculateWFStatus(newID, _db);
+			}
 		} 
 		catch (Exception e) {
 			_db.delete(newID); // 回滚
@@ -482,8 +486,8 @@ public class _Recorder extends BaseActionSupport {
 	}
 
 	/**
-	 * 批量更新选中记录行的某个字段值，用在批量审批等场景 $.post("/tss/xdata/batch/13", {'ids':
-	 * '1,2,3,4', 'field': 'brand', 'value': '农夫'} , function(data) {});
+	 * 批量更新选中记录行的某个字段值，用在批量审批等场景:
+	 * $.post("/tss/xdata/batch/13", {'ids': '1,2,3,4', 'field': 'brand', 'value': '农夫'} , function(data) {});
 	 */
 	@RequestMapping(value = "/batch/{record}", method = RequestMethod.POST)
 	public void updateBatch(HttpServletRequest request, HttpServletResponse response, @PathVariable("record") Object record, String ids,
@@ -689,6 +693,27 @@ public class _Recorder extends BaseActionSupport {
 	}
 
 	/************************************* record workflow **************************************/
+	
+	// 批量提交草稿状态流程申请
+	@RequestMapping(value = "/apply/{record}/batch", method = RequestMethod.POST)
+	public void apply(HttpServletResponse response, @PathVariable("record") Object record, String ids) {
+
+		Long recordId = recordService.getRecordID(record, false);
+		_Database _db = recordService.getDB(recordId);
+
+		String[] idArray = ids.trim().split(",");
+		int count = 0;
+		for (String id : idArray) {
+			Long itemId = EasyUtils.obj2Long(id);
+			WFStatus wfStatus = wfService.getWFStatus(recordId, itemId);
+			if(wfStatus == null) {
+				wfService.calculateWFStatus(itemId, _db);
+				count++;
+			}
+		}
+		printJSON("成功提交" + count + "条" + _db.recordName + "申请");
+	}
+	
 	// 审核
 	@RequestMapping(value = "/approve/{record}/{id}", method = RequestMethod.POST)
 	public void approve(HttpServletRequest request, HttpServletResponse response, @PathVariable("record") Object record, @PathVariable("id") Long id) {
@@ -938,13 +963,14 @@ public class _Recorder extends BaseActionSupport {
 		if (!SecurityUtil.isHardMode() || recordId < 0) return;
 		
 		// 先检查流程是否存在且是否已开始处理
-		WFStatus wfStatus = wfService.getWFStatus(recordId, itemId);
 		List<String> statusList = new ArrayList<String>();
 		statusList.add(WFStatus.NEW);
 		statusList.add(WFStatus.REMOVED);
 		statusList.add(WFStatus.AUTO_PASSED);
 		
-		if (wfStatus != null && !statusList.contains(wfStatus.getCurrentStatus())) {
+		WFStatus wfStatus = wfService.getWFStatus(recordId, itemId);
+		String userCode = Environment.getUserCode();
+		if (wfStatus != null && !(statusList.contains(wfStatus.getCurrentStatus()) && userCode.equals(wfStatus.getApplier()))) {
 			throw new BusinessException(EX.WF_1);
 		}
 

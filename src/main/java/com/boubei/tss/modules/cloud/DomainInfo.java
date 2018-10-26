@@ -156,6 +156,4 @@ public class DomainInfo extends ARecordTable {
 	public void setKd100(Boolean kd100) {
 		this.kd100 = kd100;
 	}
-	
-	
 }

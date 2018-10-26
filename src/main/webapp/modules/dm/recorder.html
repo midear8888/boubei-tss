@@ -22,7 +22,7 @@
 <style type="text/css">
     body { overflow-x: auto; }
     .gridContainer { vertical-align: top; }
-    #gridTitle .tssbutton { margin-left: 3px; }
+    #gridTitle .tssbutton { margin-left: 3px; padding: .15em .4em .2em; }
 
     #ws { width: 40%; max-width: 600px; min-width: 400px; height: 100%; position: fixed; right: 0; top: 0; }
 
@@ -61,7 +61,6 @@
     #lcontainer li.done { color: green; }
     #lcontainer li.todo { color: blue; }
 
-    #reApplyBt { display: hidden; }
     #opinionLabel { width: 92px; display: inline-block; margin-top: 20px; }
     #opinion { height: 50px; width: 320px; margin-top: 15px; }
 
@@ -95,6 +94,7 @@ URL_GET_DEFINES   = AUTH_PATH + "xdata/define/";
 URL_GET_RECORD_ID = AUTH_PATH + "rc/id";  // {id}
 URL_GET_OPERATION = AUTH_PATH + "rc/operations/";  // {id}
 
+URL_WF_APPLY   = AUTH_PATH + "xdata/apply/";
 URL_WF_CANCEL  = AUTH_PATH + "xdata/cancel/";
 URL_WF_APPROVE = AUTH_PATH + "xdata/approve/";
 URL_WF_REJECT  = AUTH_PATH + "xdata/reject/";
@@ -286,6 +286,7 @@ function refreshTable() {
     !isLogicDelete && tssJS("#listBT4").hide();
 
     tssJS("#gridTitle>input").show();
+    tssJS("#btn_batch_apply").hide();
     filterTopMenu();
 } 
 // 审批模式
@@ -318,7 +319,7 @@ function listApply() {
 
     tssJS("#gridTitle>input").show();
     tssJS("#gridTitle>button").hide();
-    tssJS("#btn_imp, #btn_tl").hide();
+    // tssJS("#btn_imp, #btn_tl").hide();
 }
 // 回收站模式
 function recycleBin() {
@@ -626,7 +627,8 @@ function loadDetailData(rowID) {
             tssJS("#ws .cs").show();
         }
 
-        tssJS("#cancelBt, #reApplyBt").hide();  
+        tssJS("#draftBt, #cancelBt, #reApplyBt").hide();  
+        tssJS("#saveBt").attr("value", "保 存");
 
         var opinionDisabled = false, wfFieldsEnable = false, _wfStatus;
 
@@ -668,7 +670,12 @@ function loadDetailData(rowID) {
                 }
             }
 
+            tssJS("#saveBt").attr("value", "保存修改");
             billMode && tssJS("#saveBt").hide();
+        }
+        else if(hasWorkflow) {
+            tssJS("#saveBt").attr("value", "提 交");
+            tssJS("#draftBt").show().click( function() { saveSource(rowID, isCreateRow, version, true); } ); 
         }
 
         // 回收站中的记录禁止修改
@@ -735,7 +742,7 @@ function loadDetailData(rowID) {
 }
 
 var _after_;  // 新增数据后续自定义操作（eg：改写管理表的状态）
-function saveSource(rowID, isCreate, version) {
+function saveSource(rowID, isCreate, version, isDraft) {
     var xform = tssJS.F("page1Form");  
     if( !xform.checkForm() ) return;
 
@@ -757,6 +764,10 @@ function saveSource(rowID, isCreate, version) {
     request.setFormContent(dataNode);
     request.addParam("_tempID", _tempID);
     request.addParam("_version", version||0);  // 乐观锁
+
+    if( isDraft ) {
+        request.addParam("saveDraft", "true");
+    }
 
     var isUpdate = !isCreate;
     if( isUpdate ) {
@@ -1098,7 +1109,7 @@ function batchImport() {
         url += otherConfig;
     }
     
-    var importDiv = createImportDiv("请点击图标选择CSV或Excel文件导入", checkFileWrong, url);
+    var importDiv = createImportDiv("点击图标选择Excel文件导入", checkFileWrong, url);
     tssJS(importDiv).show();
 }
 
@@ -1220,9 +1231,10 @@ function delAttach() {
 <input type="button" class="tssbutton small white" value="修 改" id="btn_update" onclick="showDetail('_update')"/>
 <input type="button" class="tssbutton small white" value="删 除" id="btn_batch_del" onclick="removeBatch()"/>
 <input type="button" class="tssbutton small white" value="查 询" id="btn_search" onclick="showQueryForm()"/>
-<input type="button" class="tssbutton small white" value="导出数据" id="btn_ex" onclick="backup(params)"/>
+<input type="button" class="tssbutton small white" value="导 出" id="btn_ex" onclick="backup(params)"/>
 <input type="button" class="tssbutton small white" value="Excel模板" id="btn_tl" onclick="getImportTL()"/>
 <input type="button" class="tssbutton small white" value="Excel导入" id="btn_imp" onclick="batchImport()"/>
+<input type="button" class="tssbutton small white" value="批量提交" id="btn_batch_apply" onclick="applyBatch()"/>
 
 <span id="customizeBox"></span>
 <span class="buttonBox" id="gridToolBar"></span>
@@ -1242,9 +1254,12 @@ function delAttach() {
                 <input type="button" class="tssbutton small white" value="重新提交" id="reApplyBt"/>
                 <input type="button" class="tssbutton small white wf" value="转 审" id="transBt"/>
 
+                <input type="button" class="tssbutton small white cs" value="暂存草稿" id="draftBt"/>
                 <input type="button" class="tssbutton small white cs" value="保 存" id="saveBt"/>
                 <input type="button" class="tssbutton small white cs" value="撤 销" id="cancelBt"/>
-                <!-- <input type="button" class="tssbutton small white cs" value="关 闭" id="closeBt" onclick="ws.closeActiveTab();"/> -->
+                <!-- 
+                <input type="button" class="tssbutton small white cs" value="关 闭" id="closeBt" onclick="ws.closeActiveTab();"/> 
+                -->
             </WorkSpace:PageStep>
         </WorkSpace:Page>
     </WorkSpace:Box>
@@ -1271,6 +1286,25 @@ function delAttach() {
     <iframe id="downloadFrame" style="display:none"></iframe>
 
 <script type="text/javascript">
+
+function applyBatch() {
+    var grid = tssJS.G("grid");
+    var ids  = grid.getCheckedRows();
+    if(!ids) {
+        return alert("您没有选中任何记录，请勾选后再进行批量提交。");
+    }
+    var wfStatus = grid.getCheckedRowsValue("wfstatus");
+    if(wfStatus.join("").trim().length) {
+        return alert("只有草稿状态（流程状态为空）的记录可以批量提交。");
+    }
+
+    tssJS.confirm("您确定要批量提交选中流程申请吗？", "批量提交确认", function(){
+        tssJS.post(URL_WF_APPLY + recordId + "/batch", {"ids": ids}, function(rtObj) { 
+                tssJS.alert( rtObj.result );
+                loadGridData( $1("GridPageList").value || 1 ); // 更新Grid 
+            }); 
+    });
+}
   
 function cancel(rowID) {
     executeWF(URL_WF_CANCEL, rowID, {}, "撤销");
