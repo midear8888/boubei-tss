@@ -61,6 +61,8 @@ public class DomainInfo extends ARecordTable {
 	private String ggpic;
 	private String contact_info;
 	
+	private Boolean kd100;
+	
 	public Long getId() {
 		return id;
 	}
@@ -148,4 +150,12 @@ public class DomainInfo extends ARecordTable {
 	public void setContact_info(String contact_info) {
 		this.contact_info = contact_info;
 	}
+	public Boolean getKd100() {
+		return kd100;
+	}
+	public void setKd100(Boolean kd100) {
+		this.kd100 = kd100;
+	}
+	
+	
 }
