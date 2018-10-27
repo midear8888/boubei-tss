@@ -319,7 +319,6 @@ function listApply() {
 
     tssJS("#gridTitle>input").show();
     tssJS("#gridTitle>button").hide();
-    // tssJS("#btn_imp, #btn_tl").hide();
 }
 // 回收站模式
 function recycleBin() {
@@ -341,7 +340,7 @@ function filterTopMenu() {
     if( !_operation.contains("1") ) {
         tssJS("#btn_create").hide();
     } 
-    if( !_operation.contains("1") || !batchImp || hasWorkflow ) {
+    if( !_operation.contains("1") || !batchImp ) {
         tssJS("#btn_imp, #btn_tl").hide();
     }
     if( !_operation.contains("1") && !_operation.contains("4") && !_operation.contains("5")) {

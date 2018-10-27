@@ -24,11 +24,15 @@ public class CommonService implements ICommonService {
 		commonDao.createObject(entity);
 	}
 	
-	public void createWithoutLog(IEntity entity) {
-		commonDao.createObject(entity);
+	public void createWithLog(IEntity entity) {
+		commonDao.createWithLog(entity);
 	}
-
+	
 	public void update(IEntity entity) {
+		commonDao.update(entity);
+	}
+	
+	public void updateWithLog(IEntity entity) {
 		commonDao.updateWithLog(entity);
 	}
 

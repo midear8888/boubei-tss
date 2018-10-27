@@ -944,7 +944,7 @@ public class _Recorder extends BaseActionSupport {
 
 	/************************************* check permissions：安全级别 >= 6 才启用 **************************************/
 
-	private boolean checkPermission(Long recordId, String permitOption) {
+	public static boolean checkPermission(Long recordId, String permitOption) {
 		if (!SecurityUtil.isHardMode() || recordId < 0)
 			return true;
 

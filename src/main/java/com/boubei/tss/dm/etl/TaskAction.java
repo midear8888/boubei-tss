@@ -39,7 +39,7 @@ public class TaskAction {
 	public void disableTask(@PathVariable Long id) {
 		Task task = (Task) commonService.getEntity(Task.class, id);
 		task.setStatus(Task.STATUS_OFF);
-		commonService.update(task);
+		commonService.updateWithLog(task);
 	}
 	
 	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
@@ -47,6 +47,6 @@ public class TaskAction {
 	public void enableTask(@PathVariable Long id) {
 		Task task = (Task) commonService.getEntity(Task.class, id);
 		task.setStatus(Task.STATUS_ON);
-		commonService.update(task);
+		commonService.updateWithLog(task);
 	}
 }

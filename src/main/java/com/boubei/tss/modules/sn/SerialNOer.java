@@ -68,7 +68,7 @@ public class SerialNOer {
 			snItem.setPrecode(precode);
 			snItem.setLastNum(0);
 			
-			commonService.create(snItem);
+			commonService.createWithLog(snItem);
 			snItem.setDomain(domain);
 		} 
 		else {

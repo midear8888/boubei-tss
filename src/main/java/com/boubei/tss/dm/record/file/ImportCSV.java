@@ -29,6 +29,7 @@ import com.boubei.tss.dm.ddl._Database;
 import com.boubei.tss.dm.ddl._Field;
 import com.boubei.tss.dm.record.Record;
 import com.boubei.tss.dm.record.RecordService;
+import com.boubei.tss.dm.record._Recorder;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.web.servlet.AfterUpload;
@@ -158,9 +159,12 @@ public class ImportCSV implements AfterUpload {
 		Record record = recordService.getRecord(recordId);
 		_Database _db = _Database.getDB(record);
 		
-		// 检查录入表是否允许批量导入（设置为手动录入的）
+		// 检查录入表是否允许批量导入（设置为手动录入的）; 用户对录入表没有录入权限，则也禁止批量导入
 		if( ParamConstants.FALSE.equals( record.getBatchImp() ) ) {
-			return "parent.alert('【" +record.getName()+ "】不允许批量导入');";
+			return "parent.alert('【" +record.getName()+ "】不允许批量导入');"; 
+		}
+		if( !_Recorder.checkPermission(recordId, Record.OPERATION_CDATA) ) {
+			return "parent.alert('【" +record.getName()+ "】批量导入失败，权限不足.');";
 		}
 		
 		String charSet  = (String) EasyUtils.checkNull(request.getParameter("charSet"), DataExport.CSV_GBK); // 默认GBK

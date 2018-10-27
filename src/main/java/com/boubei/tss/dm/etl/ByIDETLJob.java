@@ -76,7 +76,7 @@ public class ByIDETLJob extends AbstractETLJob {
 		finally {
 			 // 记录任务日志，不管是否成功
 			tLog.setRunningMS(System.currentTimeMillis() - start);
-	        commonService.createWithoutLog(tLog);
+	        commonService.create(tLog);
 		}
 
 		log.info(task.getName() + "Done! Cost time: " + (System.currentTimeMillis() - start));
@@ -137,7 +137,7 @@ public class ByIDETLJob extends AbstractETLJob {
 				tLog.setDetail("page-" +pageNum+ "=" + list.size());
 				tLog.setMaxID(maxID);
 				tLog.setRunningMS(System.currentTimeMillis() - start);
-		        commonService.createWithoutLog(tLog);
+		        commonService.create(tLog);
         	}
         }
         

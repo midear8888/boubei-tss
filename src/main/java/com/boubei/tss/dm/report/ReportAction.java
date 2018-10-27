@@ -303,7 +303,7 @@ public class ReportAction extends BaseActionSupport {
 			job.setJobClassName (ReportJob.class.getName());
 			job.setTimeStrategy (configs[0].trim());
 			job.setCustomizeInfo(configs[1].trim());
-			commonService.create(job);
+			commonService.createWithLog(job);
 			
 			// 可推送的报表自动设置为允许订阅
 			if( !self ) {
@@ -315,7 +315,7 @@ public class ReportAction extends BaseActionSupport {
 			job.setName(jobName);
 			job.setTimeStrategy (configs[0].trim());
 			job.setCustomizeInfo(configs[1].trim());
-			commonService.update(job);
+			commonService.updateWithLog(job);
 		}
 		new JobAction().refresh();
 		
