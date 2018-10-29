@@ -14,7 +14,8 @@ $(function() {
 var timer;
 function init() {
     getParam("sysTitle", function(result) {
-        result && $(".sysTitle").html(result);
+        if(!result) return;
+        $(".sysTitle").html(result);
         document.title = result;
     });
     getParam("subTitle", function(result) {

@@ -128,14 +128,16 @@ public class URLUtil {
 		return paramsMap;
     }
     
-    public static String parseBrowser(String origin) {
-    	origin = (origin + "").toLowerCase();
-    	if(origin.indexOf("micromessenger") >= 0) { // 微信客户端
+    static String[] browsers = {"qqbrowser", "metasr", "2345explorer", "ubrowser", "360"};
+    public static String parseBrowser(String useragent) {
+    	useragent = (useragent + "").toLowerCase();
+    	if(useragent.indexOf("micromessenger") >= 0 && useragent.indexOf("qqbrowser") < 0) { // 微信客户端，注意区分QQ浏览器
     		return "微信";
     	} 
     	
+    	String origin = useragent;
     	try {
-			UserAgent userAgent = UserAgent.parseUserAgentString( origin );
+			UserAgent userAgent = UserAgent.parseUserAgentString( useragent );
         	Browser browser = userAgent.getBrowser();
         	OperatingSystem opsys = userAgent.getOperatingSystem(); // 访问设备系统
         	Version browserVersion = userAgent.getBrowserVersion(); // 详细版本
@@ -143,9 +145,13 @@ public class URLUtil {
             
             origin = browser.getGroup().getName() + version + "-" + opsys;
             
-        } catch(Exception e) { 
-        }
+        } catch(Exception e) { }
         	
+    	for(String _b : browsers) {
+    		if(useragent.indexOf(_b) >= 0) {
+    			origin += "," + _b;
+    		}
+    	}
         return origin.toLowerCase();
     }
 }
