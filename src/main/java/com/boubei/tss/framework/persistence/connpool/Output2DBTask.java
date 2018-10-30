@@ -37,11 +37,11 @@ public abstract class Output2DBTask extends AbstractTask {
 		try {
 			statement = createRecords(conn);
 		} 
-		catch (SQLException e) {
+		catch (Exception e) {
 			log.error("写入记录到数据库时候出错。records = " + records, e);
 		} 
 		finally {
-			try { statement.close(); } catch (SQLException e) { }
+			try { statement.close(); } catch (Exception e) { }
 			
 			connectionPool.checkIn(connItem);
 		}

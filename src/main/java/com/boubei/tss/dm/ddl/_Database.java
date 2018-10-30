@@ -833,17 +833,20 @@ public abstract class _Database {
 						condition += " and " + key + " in (" + ("\'" + valueStr.replaceAll(",", "\',\'") + "\'") + ") ";
 					}
 					else {
-						Object val = DMUtil.preTreatValue(vals[0], paramType);
-						String val_ = EasyUtils.obj2String(val).trim().toLowerCase();
+						String val_ = EasyUtils.obj2String(vals[0]).trim().toLowerCase();
 						if( val_.startsWith("is ") && val_.endsWith(" null") ) {
-							condition += " and " + key + " " + val;
+							condition += " and " + key + " " + val_;
 						}
-						/* 字符串支持模糊查询（_Recorder过来的前台查询默认用模糊查询，_Database自己发起的则严格查询）*/
-						else if( isStringType && "false".equals(strictQuery) && !"true".equals(cmatch.get("strictQuery")) ) { 
-							condition += " and " + key + " like ? ";
-							paramsMap.put(paramsMap.size() + 1, "%"+val+"%");
-						} else {
-							condition += " and " + key + " = ? ";
+						else { 
+							Object val = DMUtil.preTreatValue(vals[0], paramType);
+							
+							/* 字符串支持模糊查询（_Recorder过来的前台查询默认用模糊查询，_Database自己发起的则严格查询）*/
+							if( isStringType && "false".equals(strictQuery) && !"true".equals(cmatch.get("strictQuery")) ) { 
+								condition += " and " + key + " like ? ";
+								val = "%"+val+"%";
+							} else {
+								condition += " and " + key + " = ? ";
+							}
 							paramsMap.put(paramsMap.size() + 1, val);
 						}
 					}

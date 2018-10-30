@@ -86,7 +86,7 @@ public class MonitorJob extends AbstractJob {
 	 */
 	void monitoringMySQL() {
 		MonitorUtil.testDBConn( DMConstants.LOCAL_CONN_POOL );
-		log.info("monitoring MySQL finished. ");
+		log.debug("monitoring MySQL finished. ");
 	}
 
 	/** 文件夹同步（交由 crontab 来监控） */
@@ -99,7 +99,7 @@ public class MonitorJob extends AbstractJob {
 		if( !"www.boubei.com".equals(domain) ) {  // boubei.com 是 nginx
 			MonitorUtil.monitoringApache( domain ); 
 		}
-		log.info("monitoring Apache finished. ");
+		log.debug("monitoring Apache finished. ");
 	}
 	
 	/** 
@@ -113,6 +113,6 @@ public class MonitorJob extends AbstractJob {
 		MonitorUtil.monitoringRestfulUrl(_domain + "/tss/si/version", null);
 		MonitorUtil.monitoringRestfulUrl(_domain + "/tss/param/json/simple/sysTitle", sysName);
 		
-		log.info("monitoring Tomcat finished. ");
+		log.debug("monitoring Tomcat finished. ");
 	}
 }
