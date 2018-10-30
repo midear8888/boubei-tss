@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>在途监控</title>
+
+<link rel="stylesheet" href="../../tools/tssJS/css/boubei.css">
+<link rel="stylesheet" href="../../css/easyui.css">
+
+<link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
+<link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../../tools/tssJS/tssJS.data.js"></script>
+<script src="../../tools/util_date.js"></script>
+
+<script src="../../tools/easyui/jquery.min.js"></script>
+<script src="../../tools/easyui/jquery.easyui.min.js"></script>
+<script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
+
+<script src="../../tools/easyui.js"></script>
+<script src="../_js/scm.js"></script>
+
+<style type="text/css">
+iframe.container { width: 100%; height: 100%; }
+b{
+    font-size:12px;
+    font-weight: 400;
+}
+
+</style>
+
+<script type="text/javascript">
+var reportName = 'onRoad';
+$(document).ready(function () {
+    var eventDate = tssJS.Query.get('eventdate') ? new Date(tssJS.Query.get('eventdate')) : new Date();
+    $('#start_date').datebox('setValue',getFirstDayOfMonth(eventDate))
+    $('#end_date').datebox('setValue',getLastDayOfMonth(eventDate))
+    $('#code').textbox('setValue',tssJS.Query.get('tcode'))
+    query();
+
+});
+var columns=[
+        [
+            {field: 'ck', checkbox: true},
+            {field: '运单号',title: '运单号',align: 'center',width:'100px'},
+            {field: '目的站',title: '目的站',align: 'center',width:'70px'},//,formatter:format
+            {field: '预计到达时间',title: '预计到达时间',align: 'center',width:'100px'},
+            {field: '签收时间',title: '签收时间',align: 'center',width:'100px'}
+        ]];
+
+function query(){
+    $("#dg").datagrid({
+        fit: true,
+        url:'/tss/data/json/guiji?noCache=true', 
+        toolbar:'#tb',
+        queryParams: getParams(),
+        rownumbers: true,
+        pagination: true,
+        pageSize : 50,
+        pageList : [50,100,200,300,400,500],
+        singleSelect: true,
+        columns: columns,
+        onLoadSuccess: function() {
+            $('#dg').datagrid('selectRow', 0);
+            var row = $('#dg').datagrid('getSelected');
+            if(row && row['运单号']) { beginQuery(row); }           
+        },
+        onClickRow: function(rowIndex, rowData){
+            beginQuery(rowData)
+        }
+    })
+}
+var index = 0,data = [];
+function beginQuery(row){
+    waybill_number = row['运单号'];
+    var plate_num = row.plate_num;
+    var gpsdate = '[' + (row.actual_start_date || row.start_date) + ',' + (row.actual_end_date || row.end_date) + ']';
+
+    $("iframe.container").attr("src", "guiji.html?waybill_number=" + waybill_number);
+}
+
+
+function getParams(){
+    var params = {
+        start_eta: $('#start_eta').val(),
+        end_eta: $('#end_eta').val(),
+        start_pod: $('#start_pod').val(),
+        end_pod :  $('#end_pod').val(),
+        waybill_number :  $('#waybill_number').val(),
+        end_station:$('#end_station').val(),
+        type:'alldata'
+    };
+    for(k in params){
+        if( !params[k] ){
+            delete params[k];
+        }
+    }
+    return params;
+}
+
+function exportReport(reportId, params) {
+    var frameId = "exportFrame";
+    if( $(frameId).length == 0 ) {
+        var exportEl = tssJS.createElement("div"); 
+        exportEl.innerHTML = "<div><iframe id='" + frameId + "' src='about:blank' style='display:none'></iframe></div>";
+        document.body.appendChild(exportEl);
+    }
+
+    var queryString = "?";
+    $.each(params, function(key, value) {
+        if( queryString.length > 1 ) {
+            queryString += "&";
+        }
+        queryString += (key + "=" + value);
+    });
+    $("#exportFrame").attr( "src", encodeURI("/tss/data/export/" + reportId + "/1/100000" + queryString) );
+}
+
+</script>
+
+</head>
+<body>
+<div  class="easyui-layout" fit="true" >
+    <div  data-options="region:'west',split:false,collapsible:true" border="false" style="width:31%" title='运单列表'>
+        
+        <div id="tb" style="height: auto;" border="false">
+            <div style="padding:5px"><b>预计到达时间</b>
+                    <input id="start_eta" class="easyui-datebox" style="width: 95px"> 
+                  &nbsp;→ &nbsp;<input id="end_eta" class="easyui-datebox" style="width: 95px">
+            </div>
+            <div style="padding:5px 20px 5px 10px"> <b style="padding:0 10px 0 8px;" >签收时间</b>
+                    <input id="start_pod" class="easyui-datebox" style="width: 95px"> 
+                  &nbsp;→ &nbsp;<input id="end_pod" class="easyui-datebox" style="width: 95px">
+            </div>
+            <div style="padding:5px"><b style="padding:0 10px 0 12px;" >订单编号 </b>
+                <input id="waybill_number" class="easyui-textbox">
+            </div>
+            <div style="padding-left:5px"><b style="padding:0 15px 0 20px;" >目的站 </b>           
+                <input id="end_station" class="easyui-textbox">
+                <a href="#" id="query" class="easyui-linkbutton" iconCls="icon-search" style='width:60px'plain="true" onclick="query()">查询</a>
+                <a href="#" id="export" class="easyui-linkbutton" iconCls="icon-redo" style="width:60px" plain='true' onclick="exportReport('guiji',getParams())">导出</a>
+            </div>               
+        </div>
+
+        <table id="dg"  data-options="fit:true"></table>  
+
+    </div> 
+    <div title="在途监控" data-options="region:'center',split:false,collapsible:false" border="false" style="width:69%">
+        <iframe class="container" src="guiji.html"></iframe>
+    </div>      
+</div>
+</body>
+</html>

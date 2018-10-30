@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>EChart图表示例</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+		<!-- <meta name="apple-mobile-web-app-capable" content="yes"> -->
+		<!-- <meta name="apple-mobile-web-app-status-bar-style" content="black"> -->
+		<!--标准mui.css-->
+		<!-- <link href="../tools/mui/css/mui.min.css" rel="stylesheet" /> -->
+		<!--App自定义的css-->
+		<!--<link rel="stylesheet" type="text/css" href="../css/app.css" />-->
+		<script src="../../tools/tssJS/tssJS.all.js"></script>
+		<style>
+			.chart {
+				height: 500px;
+				margin: 0px;
+				padding: 0px;
+			}
+			#pieChart{
+				height:300px;
+			}
+			h5 {
+				margin-top: 30px;
+				font-weight: bold;
+			}
+			h5:first-child {
+				margin-top: 15px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div style="height:500px;">
+			<div >
+				<!-- <h5>柱图示例</h5> -->
+				<div class="chart" id="barChart"></div>
+				<!-- <h5>线图示例</h5> -->
+				<div class="chart" id="lineChart"></div>
+			</div>
+		</div>
+		
+		<script src="../../tools/echarts/echarts-all-3.1.2.js"></script>
+	    <script src="../../tools/easyui/jquery.min.js"></script>
+		<script>
+        var table = tssJS.Query.get("table") || 'jsl';
+		var type = '2.1';
+        var x_axis = table == 'jsl' ? 'eta' : (type == '2.2' ? 'create_date' : 'operate_date');
+        var echarts_type = table == 'jsl' ? 'bar' : 'line';
+        var line_name = table == 'jsl' ? '及时率' : '合格率';
+        var globalValiable = window.parent.globalValiable, data,  params;
+		if(globalValiable && globalValiable.queryParams) {
+		    params = globalValiable.queryParams;
+		    data = globalValiable.data || [];
+		    console.log(data,params)
+		}
+
+		$(function(){
+			var xdata = [],ydata = [],x;
+
+			// $.getJSON('/tss/data/json/' + table, {"type":type}, function(data) { 
+				$.each(data,function(i,item){
+					xdata.push(item[x_axis]);
+					ydata.push(item.rate);
+				})
+				var getOption = function(chartType) {
+				var chartOption = 
+					{
+					legend: {
+						data: [line_name]
+					},
+					grid: {
+						x: 35,
+						x2: 10,
+						y: 30,
+						y2: 25
+					},
+					toolbox: {
+						show: false,
+						feature: {
+							mark: {
+								show: true
+							},
+							dataView: {
+								show: true,
+								readOnly: false
+							},
+							magicType: {
+								show: true,
+								type: ['line', 'bar']
+							},
+							restore: {
+								show: true
+							},
+							saveAsImage: {
+								show: true
+							}
+						}
+					},
+					calculable: false,
+					xAxis: [{
+						type: 'category',
+						data: xdata//['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
+					}],
+					yAxis: [{
+						type: 'value',
+						splitArea: {
+							show: true
+						}
+					}],
+					series: [{
+						name: line_name,
+						type: chartType,
+						data: ydata,//[2.0, 4.9, 7.0, 23.2, 25.6, 76.7, 135.6, 162.2, 32.6, 20.0, 6.4, 3.3],
+						itemStyle : { normal: {label : {show: true}}}
+					}]
+				};
+				return chartOption;
+			};
+			var barChart = echarts.init($('#barChart')[0]);
+			barChart.setOption(getOption(echarts_type));
+			// });
+		})
+		
+			
+
+		</script>
+	</body>
+
+</html>

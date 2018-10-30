@@ -630,6 +630,23 @@
 				<db.username>tssbiu1</db.username>
 				<db.password>www.boubei.com</db.password>
 				<db.url>127.0.0.1:3306/xbi</db.url>			
+				<tomcat.url>xbi.boubei.com</tomcat.url>
+			</properties>
+		</profile>
+		
+		<profile>
+			<id>demo</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<environment>demo</environment>
+				<security.level>6</security.level>
+				<job.enable>true</job.enable>
+				<log.level>info</log.level>
+				<db.username>tssbiu1</db.username>
+				<db.password>www.boubei.com</db.password>
+				<db.url>127.0.0.1:3306/demo</db.url>			
 				<tomcat.url>demo.boubei.com</tomcat.url>
 			</properties>
 		</profile>

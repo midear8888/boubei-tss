@@ -1,0 +1,314 @@
+
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <title>轨迹回放</title>
+    
+    <link rel="stylesheet" href="https://cache.amap.com/lbs/static/main1119.css"/>
+    <link rel="stylesheet" href="../../tools/tssJS/css/boubei.css">
+
+    <script src="https://webapi.amap.com/maps?v=1.4.6&key=您申请的key值"></script>
+    <script src="https://webapi.amap.com/ui/1.0/main.js?v=1.0.11"></script>
+    <script src="https://cache.amap.com/lbs/static/addToolbar.js"></script>
+    <script src="../../tools/easyui/jquery.min.js"></script>
+    <script src="../../tools/easyui/jquery.easyui.min.js"></script>
+    <script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
+	<script src="../../tools/tssJS/tssJS.all.js"></script>
+
+</head>
+<body>
+<div id="container"></div>
+<div class="button-group">
+    <input type="button" class="button" value="轨迹重放" id="start"/>
+    <input type="button" class="button" value="暂停" id="pause"/>
+    <input type="button" class="button" value="继续" id="resume"/>
+    <input type="button" class="button" value="停止" id="stop"/>
+</div>
+<script>
+
+var gpsdate = decodeURI($.Query.get('gpsdate') || '[2018-05-14 00:00:00,2018-05-17 23:59:59]'),
+	waybill_number = $.Query.get('waybill_number') || '316B536514403';
+
+
+var map = new AMap.Map("container", { resizeEnable: true, zoom: 5 });
+var marker, lineArr = [], gpsList = [];
+var datas=[];
+
+// $.getJSON('/tss/xdata/json/g7_gps', {"plate_num": plate_num, "gpsdate": gpsdate,strictQuery:true}, 
+// 	function(data) {
+// 		gpsList = data;
+//         lineArr = [];
+// 		data.each(function(i, item){
+// 			lineArr.push([item.lng, item.lat]);
+// 		});
+
+// 		drawMap();
+// 	}
+// );
+
+$.getJSON('/tss/data/json/guiji', {"type":"alldata1","waybill_number":waybill_number}, 
+function(data) { 
+    gpsList = data;
+    lineArr = [];
+     data.each(function(i, item){
+         lineArr.push([item.longitude, item.latitude]);
+     });
+
+     drawMap();
+});
+
+function getEvents() {
+    var onroad='',attendance='';
+	tssJS.getJSON( '/tss/xdata/json/t_onorder_event', {tcode: tcode},function(data){
+        onroad = data;
+		data.each( function(i, e) {
+			queryAttach(e, data.length, function() {
+				var address = e.address.split(',');
+				var point = [ parseFloat(address[0]), parseFloat(address[1]) ];
+
+			    // var marker = new AMap.Marker({ 
+       //              position: point, 
+       //              map: map,
+       //          });  
+            datas.push({title:'异常',body:e.fj_html+e.event+'<br>'+(e.content || ''),point:point})
+            drawPoint('yic')
+                // drawInfoWin('异常',e.fj_html+e.event+'<br>'+(e.content || ''),marker)
+	        });
+		});
+	});
+    tssJS.getJSON('/tss/xdata/json/t_attendance',{tcode: tcode},function(data){
+        attendance=data;
+        data.each( function(i,item){
+            if(item.actual_arrive_date && item.arrive_date && item.addr){
+                var content = dateDiffer(item.arrive_date,item.actual_arrive_date);
+                var address = item.addr.split(',');
+                var point = [ parseFloat(address[0]), parseFloat(address[1]) ];
+                // var marker = new AMap.Marker({
+                //     position: point,
+                //     map: map,
+                // })
+                var title = item.node == 1 ? '靠台' : '到港';
+                datas.push({title:title,body:content,point:point})
+                // drawInfoWin('到港',content,marker)
+                // AMapUI.loadUI(['overlay/SimpleInfoWindow'], function(SimpleInfoWindow) {
+                //     infoWindow = new SimpleInfoWindow({
+                //         infoTitle: '到港',
+                //         infoBody: '<div id="infoWin" style="height:50px;width:180px;">' + content1 + '</div>'
+                //     });
+                //     infoWindow.open(map, marker1.getPosition());
+                // });
+            }
+            if(item.actual_leave_date && item.leave_date && item.leave_addr){
+                var content = dateDiffer(item.leave_date,item.actual_leave_date);
+                var address = item.leave_addr.split(',');
+                var point = [ parseFloat(address[0]), parseFloat(address[1]) ];
+                var marker = new AMap.Marker({
+                    position: point,
+                    map: map
+                })
+                datas.push({title:'离港',body:content,point:point})
+                // drawInfoWin('离港',content,marker)
+                // AMapUI.loadUI(['overlay/SimpleInfoWindow'], function(SimpleInfoWindow) {
+                //     infoWindow = new SimpleInfoWindow({
+                //         infoTitle: '离港',
+                //         infoBody: '<div id="infoWin" style="height:50px;width:180px;">' + content2 + '</div>'
+                //     });
+                //     infoWindow.open(map, marker2.getPosition());
+                // });
+            }
+        })
+        drawPoint('zaitu');
+    })
+}
+
+function drawInfoWin(title,body,marker){
+    AMapUI.loadUI(['overlay/SimpleInfoWindow'], function(SimpleInfoWindow) {
+        infoWindow = new SimpleInfoWindow({
+            infoTitle: title,
+            infoBody: '<div id="infoWin" style="height:50px;width:180px;">' + body + '</div>',
+        });
+        infoWindow.open(map, marker.getPosition());
+    });
+    marker.on('click', function(e) {  
+        infoWindow.open(map, e.target.getPosition());  
+    }); 
+}
+
+function drawPoint(a){
+    for(var i = 0;i < datas.length; i++) {
+        (function(n){
+            var marker = new AMap.Marker({
+                position: datas[n].point,
+                map: map
+            })
+            marker.content = '<div id="infoWin" style="height:50px;width:180px;">' + datas[n].body + '</div>';
+            marker.title = datas[n].title;
+            marker.on('click', function(e) {  
+                infoWindow.open(map, e.target.getPosition());  
+            });
+            // markers.push(marker)
+            AMapUI.loadUI(['overlay/SimpleInfoWindow'], function(SimpleInfoWindow) {
+                infoWindow = new SimpleInfoWindow({
+                    infoTitle: datas[n].title,
+                    infoBody: '<div id="infoWin" style="height:50px;width:180px;">' + datas[n].body + '</div>',
+                });
+                infoWindow.open(map, marker.getPosition());
+                // infoWins.push(infoWindow)
+            });
+            marker.on('click', function(e) {  
+                infoWindow.setInfoTitle(e.target.title)
+                infoWindow.setInfoBody(e.target.content)
+                infoWindow.open(map, e.target.getPosition());  
+            });
+           
+        })(i);
+    } 
+
+};
+   
+function drawMap() {
+	if(lineArr.length){
+        marker = new AMap.Marker({
+            map: map,
+            position: lineArr[0],
+            autoRotation: true
+        });
+    }
+
+    // 绘制轨迹
+    var polyline = new AMap.Polyline({
+        map: map,
+        path: lineArr,
+        strokeColor: "#00A",  //线颜色
+        strokeWeight: 3,      //线宽
+    });
+    var passedPolyline = new AMap.Polyline({
+        map: map,
+        strokeColor: "#F00",  //线颜色
+        strokeWeight: 3,      //线宽
+    });
+
+    // 设置移动过的路线
+
+    gpsList.length && marker.on('moving',function(e){
+        passedPolyline.setPath(e.passedPath);
+
+        var curIndex = e.passedPath.length;
+        var p = gpsList[curIndex-1];
+
+		var location = e.passedPath[curIndex-1];
+		var position = new AMap.LngLat(location.lng, location.lat);
+
+		infoWindow.setInfoBody('<div>' + '操作时间' + p.operate_date + '</div>');
+		infoWindow.setPosition(position);
+		passedPolyline.setPath(e.passedPath);
+    })
+
+	//视野居中
+    map.setFitView();
+
+    AMap.event.addDomListener($1('start'), 'click', function() { marker.moveAlong(lineArr, 200000); /* 设置移动路线及速度 */ }, false);
+    AMap.event.addDomListener($1('pause'), 'click', function() { marker.pauseMove(); }, false);
+    AMap.event.addDomListener($1('resume'), 'click', function() { marker.resumeMove(); }, false);
+    AMap.event.addDomListener($1('stop'), 'click', function() {  marker.stopMove(); }, false);
+
+	gpsList.length && AMapUI.loadUI(['overlay/SimpleInfoWindow'], function(SimpleInfoWindow) {
+         infoWindow = new SimpleInfoWindow({
+             infoTitle: '<strong>' +waybill_number+ '轨迹重放</strong>',
+             infoBody: '出发时间：' + gpsList[0].operate_date,
+         });
+         infoWindow.open(map, marker.getPosition());
+     });
+
+	// getEvents();
+
+    AMapUI.load(['ui/misc/PathSimplifier', 'lib/$'], function(PathSimplifier, $) {
+        var pathSimplifierIns = new PathSimplifier({
+            zIndex: 100,
+            autoSetFitView: true,
+            map: map, //所属的地图实例
+
+            getPath: function(pathData, pathIndex) {
+                return pathData.path;
+            },
+            getHoverTitle: function(pathData, pathIndex, pointIndex) {
+                if (pointIndex >= 0) {
+                	var p = gpsList[pointIndex];
+                    return '操作时间' + p.operate_date;
+                }
+                return '';
+            },
+            renderOptions: {
+                renderAllPointsIfNumberBelow: 100 //绘制路线节点，如不需要可设置为-1
+            }
+        });
+
+        window.pathSimplifierIns = pathSimplifierIns;
+
+        // 设置路线上点的数据
+        pathSimplifierIns.setData([{
+            name: '路线',
+            path: lineArr
+        }]);
+    });
+}
+
+
+function queryAttach(ev, maxloop, callback){
+    var fj_html = '';
+    tssJS.getJSON( '/tss/xdata/attach/json/t_onorder_event/' + ev.id, function(attach_data) {
+        if(attach_data && attach_data.length) {
+            for(var m = 0; m < attach_data.length; m++){
+                fj_html += '<img style="float:left;width:30px;height:30px" src="'+attach_data[m].downloadUrl+'" onmouseover="imgMoustOver(this)" onmouseout="imgMouseOut(this)" onclick="window.open(this.src)"/>';
+            }
+            ev.fj_html = fj_html;
+        };
+        callback && callback();
+    }, 
+    'GET');
+}
+
+function imgMoustOver(a){
+    a.parentNode.style.width='350px'
+    a.parentNode.parentNode.parentNode.style.width='300px'
+    a.parentNode.parentNode.parentNode.style.height='300px'
+    a.style="float:left;width:300px;height:500px";
+}
+
+function imgMouseOut(a){
+    a.parentNode.parentNode.parentNode.style.width='180px'
+    a.parentNode.parentNode.parentNode.style.height='84px'
+    a.style="float:left;width:30px;height:30px";
+}
+
+function dateDiffer(a, b) {
+    if (a == '' || b == '') return '';
+
+    var date1 = new Date(a)
+    var date2 = new Date(b)
+    var s1 = date1.getTime(),
+    s2 = date2.getTime();
+    var total = (s2 - s1) / 1000;
+    var day = parseInt(total / (24 * 60 * 60)); //计算整数天数
+    var afterDay = total - day * 24 * 60 * 60; //取得算出天数后剩余的秒数
+    var hour = parseInt(afterDay / (60 * 60)); //计算整数小时数
+    var afterHour = total - day * 24 * 60 * 60 - hour * 60 * 60; // 取得算出小时数后剩余的秒数
+    var min = parseInt(afterHour / 60);  // 计算整数分
+    var afterMin = total - day * 24 * 60 * 60 - hour * 60 * 60 - min * 60; // 取得算出分后剩余的秒数
+    if(day < 0 || hour < 0 || min < 0) {
+        return '准点';
+    }
+    else {
+        day  = day ? day + '天' : '';
+        hour = hour ? hour + '小时' : '';
+        min  = min ? min + '分钟' : '';
+        return '晚点' + day + hour + min;
+    }
+}
+
+</script>
+</body>
+</html>

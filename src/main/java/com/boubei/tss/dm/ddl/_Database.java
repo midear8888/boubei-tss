@@ -96,6 +96,7 @@ public abstract class _Database {
 	public Map<String, String> cnull = new HashMap<String, String>(); // code -- nullable
 	public Map<String, String> creg = new HashMap<String, String>(); // code -- checkReg
 	public Map<String, String> csql = new HashMap<String, String>(); // code -- valSQL
+	public Map<String, String> cmatch = new HashMap<String, String>(); // code -- Match partter 严格匹配，不允许模糊查询
 	
 	public String toString() {
 		return "【" + this.datasource + "." + this.recordName + "】";
@@ -161,6 +162,7 @@ public abstract class _Database {
 			cuni.put(code, (String) fDefs.get("unique"));
 			creg.put(code, (String) fDefs.get("checkReg"));
 			csql.put(code, (String) fDefs.get("valSQL"));
+			cmatch.put(code, (String) fDefs.get("match"));
 			
 			String role2 = (String) fDefs.get("role2");
 			this.fieldRole2s.add(role2);
@@ -810,7 +812,7 @@ public abstract class _Database {
 				continue;
 			}
 			
-			// eg: othercondition=and curdate() between c3 and c4
+			// eg: othercondition = "and curdate() between c3 and c4";
 			if("othercondition".equals(key)) {
 				condition += " " + _valueStr + " ";
 				continue;
@@ -832,13 +834,18 @@ public abstract class _Database {
 					}
 					else {
 						Object val = DMUtil.preTreatValue(vals[0], paramType);
-						if( isStringType && "false".equals(strictQuery) ) { // 字符串支持模糊查询（_Recorder过来的前台查询默认用模糊查询，_Database自己发起的则严格查询）
+						String val_ = EasyUtils.obj2String(val).trim().toLowerCase();
+						if( val_.startsWith("is ") && val_.endsWith(" null") ) {
+							condition += " and " + key + " " + val;
+						}
+						/* 字符串支持模糊查询（_Recorder过来的前台查询默认用模糊查询，_Database自己发起的则严格查询）*/
+						else if( isStringType && "false".equals(strictQuery) && !"true".equals(cmatch.get("strictQuery")) ) { 
 							condition += " and " + key + " like ? ";
-							val = "%"+val+"%";
+							paramsMap.put(paramsMap.size() + 1, "%"+val+"%");
 						} else {
 							condition += " and " + key + " = ? ";
+							paramsMap.put(paramsMap.size() + 1, val);
 						}
-						paramsMap.put(paramsMap.size() + 1, val);
 					}
 				}
 				else if(vals.length == 2) {
@@ -868,25 +875,33 @@ public abstract class _Database {
 		
 		// 设置排序方式
 		String _sortField = params.get("sortField");
-		String sortType  = EasyUtils.obj2String( params.get("sortType"));
 		
 		List<String> sortFieldList = new ArrayList<String>();
 		if( !EasyUtils.isNullOrEmpty(_sortField) ) {
 			String[] sortFields = _sortField.split(","); // 支持按多个字段排序
+			String[] sortTypes  = EasyUtils.obj2String( params.get("sortType") ).split(",");
+			String[] sortTypes_ = new String[sortFields.length];
+			for(int i = 0; i < sortTypes.length; i++) {
+				sortTypes_[i] = sortTypes[i];
+			}
+			
+			int index = 0;
 			for(String sortField : sortFields) {
 				// 判断字段是否存在，无需再检查SQL注入
-				String sortField_ = sortField.toLowerCase().replaceAll(" desc", "").replaceAll(" asc", "").trim();
+				String sortField_= sortField.toLowerCase().replaceAll(" desc", "").replaceAll(" asc", "").trim();
+				String sortType_ = EasyUtils.obj2String( sortTypes_[index] );
 				if( this.fieldCodes.contains(sortField_) || "id,createtime,creator,updatetime,updator".indexOf(sortField_) >= 0 ) { 
-					if("onlynull".equals(sortType)) {
+					if("onlynull".equals(sortType_)) {
 						condition += " and " + sortField + " is null ";
 					}
-					else if("notnull".equals(sortType)) {
+					else if("notnull".equals(sortType_)) {
 						condition += " and " + sortField + " is not null ";
 					}
 					else if( noPointed || _fields.indexOf(sortField_) >= 0 ) {
-						sortFieldList.add( sortField + " " + sortType );
+						sortFieldList.add( sortField + " " + sortType_ );
 					}
 				}
+				index ++;
 			}
 		}
 		if( noPointed ) {
