@@ -96,6 +96,7 @@ public class ExceptionEncoder {
                 encoder.print( new XmlPrintWriter(out) );
             } 
             else { // HTTP JSON: 默认用json格式往response写入异常信息
+            	beMsg = beMsg.replaceAll("\"", "`");
             	out.println("{\"code\": \"500\", \"errorMsg\": \"" + beMsg + "\"}");
             }
         } 
