@@ -9,7 +9,7 @@
 		<column name="operatorIP"    caption="操作人IP" mode="string" width="80px"/>
 		<column name="content"       caption="详情" mode="string" width="180px"/>
 		<column name="origin"        caption="来源" mode="string" width="80px"/>
-		<column name="_browser"      caption="浏览器" display="none"/>
+		<column name="udf1"          caption="udf1"  display="none"/>
 		<column name="operateTime"   caption="操作完成时间"  mode="date" pattern="yyyy-MM-dd HH:mm:ss" width="100px"/>
 	</declare>			
 	<data>

@@ -69,7 +69,7 @@
     #grid td[name='wfstatus'][value='已通过'] {  color: green;}
     #grid td[name='wfstatus'][value='自动通过'] {  color: green;}
     #grid td[name='wfstatus'][value='已撤销'] {  color: #ccc;}
-    #grid td[name='wfstatus'][value='已删除'] {  font-style: italic;}
+    #grid td[name='wfstatus'][value='已删除'] {  text-decoration:line-through; }
     #grid td[name='wfstatus'][value='已驳回'] {  color: orange;}
     #grid td[name='nextProcessor'][value] {  color: blue;}
 
@@ -319,6 +319,7 @@ function listApply() {
 
     tssJS("#gridTitle>input").show();
     tssJS("#gridTitle>button").hide();
+    filterTopMenu();
 }
 // 回收站模式
 function recycleBin() {
@@ -1252,9 +1253,9 @@ function delAttach() {
                 <input type="button" class="tssbutton small white wf" value="驳 回" id="rejectBt"/>
                 <input type="button" class="tssbutton small white" value="重新提交" id="reApplyBt"/>
                 <input type="button" class="tssbutton small white wf" value="转 审" id="transBt"/>
-
-                <input type="button" class="tssbutton small white cs" value="暂存草稿" id="draftBt"/>
+                
                 <input type="button" class="tssbutton small white cs" value="保 存" id="saveBt"/>
+                <input type="button" class="tssbutton small white cs" value="暂存草稿" id="draftBt"/>
                 <input type="button" class="tssbutton small white cs" value="撤 销" id="cancelBt"/>
                 <!-- 
                 <input type="button" class="tssbutton small white cs" value="关 闭" id="closeBt" onclick="ws.closeActiveTab();"/> 

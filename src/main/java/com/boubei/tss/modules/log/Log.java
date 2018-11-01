@@ -34,7 +34,6 @@ import com.boubei.tss.framework.web.display.grid.IGridNode;
 import com.boubei.tss.framework.web.display.xform.IXForm;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
-import com.boubei.tss.util.URLUtil;
 
 /** 
  * 日志表
@@ -63,6 +62,7 @@ public class Log implements IEntity, IXForm, IGridNode {
     private String  content;      // 操作内容
     
     private Integer methodExcuteTime; // 方法执行时间（单位: 微秒）
+    private String udf1;
     
     public Log() { }
 
@@ -179,8 +179,8 @@ public class Log implements IEntity, IXForm, IGridNode {
         
         String content = EasyUtils.obj2Json(this.getContent()).replaceAll("\"", "");
         map.put("content", content.substring(0, Math.min(content.length(), 60)));
-        map.put("origin", URLUtil.parseBrowser( this.getOperatorBrowser() ));
-        map.put("_browser", this.getOperatorBrowser());
+        map.put("origin", this.getOperatorBrowser() );
+        map.put("udf1", this.getUdf1());
         
         return map;
     }
@@ -203,6 +203,14 @@ public class Log implements IEntity, IXForm, IGridNode {
 
 	public void setOperatorBrowser(String operatorBrowser) {
 		this.operatorBrowser = operatorBrowser;
+	}
+
+	public String getUdf1() {
+		return udf1;
+	}
+
+	public void setUdf1(String udf1) {
+		this.udf1 = udf1;
 	}
 }
 

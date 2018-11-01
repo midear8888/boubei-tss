@@ -33,6 +33,8 @@ import com.boubei.tss.dm.record._Recorder;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.web.servlet.AfterUpload;
+import com.boubei.tss.modules.log.IBusinessLogger;
+import com.boubei.tss.modules.log.Log;
 import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.modules.sn.SerialNOer;
 import com.boubei.tss.modules.timer.JobService;
@@ -152,6 +154,7 @@ public class ImportCSV implements AfterUpload {
 	public String processUploadFile(HttpServletRequest request,
 			String filepath, String oldfileName) throws Exception {
 
+		Long start = System.currentTimeMillis();
 		String _record = request.getParameter("recordId");
 		_record = (String) EasyUtils.checkNull( _record, request.getParameter("record") );
 		
@@ -220,17 +223,19 @@ public class ImportCSV implements AfterUpload {
 		log.debug("vaild end");
 		
 		String fileName = null;
+		StringBuffer logMsg = new StringBuffer();
 		if(errLineIndexs.size() > 0) {
 			// 将 errorLines 输出到一个单独文件
-			StringBuffer sb = new StringBuffer("行号,导入失败原因," + EasyUtils.list2Str(rowList.get(0))).append("\n");
+			StringBuffer errs = new StringBuffer();
 			for(String err : errLines) {
-				sb.append(err).append("\n");
+				errs.append(err).append("\n");
 			}
-			log.info( sb.substring(0, Math.min(300, sb.length())) );
+			logMsg.append("校验失败记录: " + errs.substring(0, Math.min(250, errs.length())) + "\n");
+			String content = "行号,导入失败原因," + EasyUtils.list2Str(rowList.get(0)) + "\n" + errs;
 			
 			fileName = "err-" + recordId + Environment.getUserId()+ ".csv";
 	        String exportPath = DataExport.getExportPath() + "/" + fileName ;
-	        DataExport.exportCSV(exportPath, sb.toString()); // 先输出内容到服务端的导出文件中
+	        DataExport.exportCSV(exportPath, content); // 先输出内容到服务端的导出文件中
 			
 			// 根据配置，是够终止导入。默认要求一次性导入，不允许分批
 			if( !"false".equals( request.getParameter("together") ) ) {
@@ -242,6 +247,7 @@ public class ImportCSV implements AfterUpload {
 		headers = rowList.get(0);
 		log.debug("import2db start");
 		String result = import2db(_db, request, rowList, headers, originData, errLineIndexs, fileName);
+		logMsg.append(result.replace("parent.alert('", "").replace("');", ""));
 		log.debug("import2db end");
 		
 		// 导入完成触发 ETL
@@ -253,16 +259,25 @@ public class ImportCSV implements AfterUpload {
 			String[] etlKeys = etlKey.split(",");
 			for(String key : etlKeys) {
 				String rt = jobService.excuteTask(key, tag);
-				log.info("execute ETL atfer import: " + rt);
+				logMsg.append("\nexecute ETL[" +key+ "] atfer import: " + rt);
 			}
 		}
 		if( !EasyUtils.isNullOrEmpty(jobKey) ) {
 			String[] jobKeys = jobKey.split(",");
 			for(String key : jobKeys) {
 				String rt = jobService.excuteJob(key, tag);
-				log.info("execute Job atfer import: " + rt);
+				logMsg.append("\nexecute Job[" +key+ "] atfer import: " + rt);
 			}
 		}
+		
+		logMsg.append( "\nrequest params: " + requestMap.toString() );
+		log.info(logMsg);
+		
+		Log impLog = new Log(_db.recordName, logMsg.toString());
+		impLog.setOperateTable("导入Excel");
+		impLog.setUdf1( String.valueOf(rowList.size()) );
+		impLog.setMethodExcuteTime( (int) (System.currentTimeMillis() - start) );
+		((IBusinessLogger) Global.getBean("BusinessLogger")).output(impLog);
 		
 		return result;
 	}

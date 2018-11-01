@@ -150,6 +150,7 @@ public class URLUtil {
     	for(String _b : browsers) {
     		if(useragent.indexOf(_b) >= 0) {
     			origin += "," + _b;
+    			break;
     		}
     	}
         return origin.toLowerCase();
