@@ -40,11 +40,12 @@
 		myChart.setOption(option);					
 	}
 
+/*
 	var label  = ["广东", "浙江", "江苏", "四川", "山东", "湖北", "河南", "湖南", "河北", "安徽", "上海", "福建", "北京", "辽宁", "江西"];
 	var data = [5782, 5672, 5167, 4610, 4560, 4475, 4168, 4022, 3690, 3470, 3290, 3168, 2914, 2567, 2538];
 	show(label, data);
-
-	$.getJSON("/tss/data/json/52", {}, function(result) {
+*/
+	$.getJSON("/tss/data/json/72", {}, function(result) {
 		var data = [], label = [];
 		for(var i = 0; i < result.length; i++) {
 			var item = result[i];

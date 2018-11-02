@@ -63,7 +63,10 @@ $(function(){
   }
 
   initList();
-  
+
+  if(location.host.indexOf("demo") >= 0) {
+    $($("#list>li")[9]).html("<img src='../images/wx.jpg'/>");
+  }
 });
 
 function initList() {
