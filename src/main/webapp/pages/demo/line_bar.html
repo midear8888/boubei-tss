@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>柱状折线混合图</title>
+</head>
+<body>
+	<div style="height:600px;margin:10px;" id="chart1"></div>
+
+	<script src="../../tools/echarts/echarts-all-3.1.2.js"></script>
+	<script src="../../tools/easyui/jquery.min.js"></script>
+	<script type="text/javascript">
+
+    function show(label,data1,data2,data3,data4){
+        var dom = document.getElementById('chart1');
+        var myChart = echarts.init(dom);
+        var option = {
+            title: {
+                text: 'TSS-BI 展示入门示例',
+                },
+            toolbox: {
+                feature: {
+                    dataView: {show: true, readOnly: false},
+                    magicType: {show: true, type: ['line', 'bar']},
+                    restore: {show: true},
+                    saveAsImage: {show: true}
+                }
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross',
+                    crossStyle: {
+                        color: '#999'
+                    }
+                }
+            },
+            legend: {
+                data:['2017年销量','2018年销量','2017年营业额','2018年营业额']
+            },
+            xAxis: [
+                {
+                    data: label
+                }
+            ],
+            yAxis: [
+                {
+                    name: '件',
+                    min: 0,
+                    max: 25000,
+                    interval: 5000
+                },
+                {
+                    name: '元',
+                    min: 500000,
+                    max: 2500000,
+                    interval: 400000
+                }
+            ],
+            series: [
+                {
+                    name:'2017年销量',
+                    type:'bar',
+                    data:data1
+                },
+                {
+                    name:'2018年销量',
+                    type:'bar',
+                    data:data2
+                },
+                {
+                    name:'2017年营业额',
+                    type:'line',
+                    yAxisIndex: 1,
+                    data:data3
+                },
+                {
+                    name:'2018年营业额',
+                    type:'line',
+                    yAxisIndex: 1,
+                    data:data4
+                }
+            ]
+        }
+        myChart.setOption(option, true);  
+    }
+
+    $.getJSON("/tss/data/json/75", {}, function(result) {
+        var label = [], data1 = [], data2 = [], data3 = [], data4 = [];
+        for(var i = 0; i < result.length; i++) {
+            var item = result[i];
+            if( label.indexOf(item.month) < 0){
+                label.push(item.month + '月');
+            }
+            if( item.year == '2017'){
+                data1.push(item.num);
+                data3.push(item.money);
+            }
+            if( item.year == '2018'){
+                data2.push(item.num);
+                data4.push(item.money);
+            }  
+        }
+        show(label, data1,data2,data3,data4);
+    });
+
+	</script>
+</body>
+</html>
