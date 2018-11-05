@@ -22,6 +22,7 @@ public class MenuDTO {
 
 	public Long id;
 	public String name;   // 菜单（项）名称
+	public String code;
 	public String icon;
 	
 	public Long parentId; // 菜单项对应菜单
@@ -30,18 +31,22 @@ public class MenuDTO {
 
 	public String methodName; // 方法名
 	public String params;    // 参数
+	
+	public String description;
 
 	public List<MenuDTO> children = new ArrayList<MenuDTO>();
 	
 	public MenuDTO(Navigator menu) {
 		this.id = menu.getId();
 		this.name = menu.getName();
+		this.code = menu.getCode();
 		this.parentId = menu.getParentId();
 		this.url = menu.getUrl();
 		this.target = menu.getTarget();
 		this.methodName = menu.getMethodName();
 		this.params = menu.getParams();
 		this.icon = menu.getIcon();
+		this.description = menu.getDescription();
 	}
 	
 	// 要求默认按 decode 排好序

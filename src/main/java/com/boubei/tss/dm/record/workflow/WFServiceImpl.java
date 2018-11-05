@@ -261,9 +261,15 @@ public class WFServiceImpl implements WFService {
 			params.put("wfcc", "true");
 			condition = EasyUtils.fmParse(_condition, params);
 		}
-		String hsql = "from WFStatus where ( 1=0 " +condition+ " )  and tableId = ? and currentStatus <> ? "; 
-
-		List<?> statusList = commonDao.getEntities(hsql, _db.recordId, WFStatus.CANCELED);
+		String hsql = "from WFStatus where ( 1=0 " +condition+ " )  and tableId = ? and currentStatus ";
+		String currStatus = params.get("currStatus");
+		if( currStatus != null ) {
+			hsql += " = ? ";
+		} else {
+			currStatus = WFStatus.CANCELED;
+			hsql += " <> ? ";
+		}
+		List<?> statusList = commonDao.getEntities(hsql, _db.recordId, currStatus);
 		
 		boolean isApprover = statusList.size() > 0; // 判断当前用户是否为审批人
     	List<Long> itemIds = new ArrayList<Long>();

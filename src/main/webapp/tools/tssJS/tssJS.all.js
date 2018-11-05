@@ -1310,7 +1310,7 @@
             type : "json",
             method : method || "POST",
             params : _params,
-            waiting : waiting || true, 
+            waiting : waiting !== false, 
             ondata : function() { 
                 var data = this.getResponseJSON();
                 callback(data);

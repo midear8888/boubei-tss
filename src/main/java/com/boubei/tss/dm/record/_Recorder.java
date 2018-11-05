@@ -203,7 +203,7 @@ public class _Recorder extends BaseActionSupport {
 			wfService.fixWFStatus(_db, ex.result);
 		}
 
-		if (pointedFileds || requestMap.containsKey("id") ) {
+		if (pointedFileds) {
 			return ex;
 		}
 
@@ -460,6 +460,7 @@ public class _Recorder extends BaseActionSupport {
 
 		Long recordId = recordService.getRecordID(record, false);
 		Map<String, String> requestMap = prepareParams(request, recordId);
+		boolean isDraft = Config.TRUE.equalsIgnoreCase( requestMap.remove("saveDraft") );
 
 		// 检查用户对当前记录是否有编辑权限，防止篡改别人创建的记录
 		checkRowEditable(recordId, id);
@@ -476,7 +477,9 @@ public class _Recorder extends BaseActionSupport {
 			exeAfterOperation(requestMap, _db, id);
 
 			// 计算并初始化流程
-			wfService.calculateWFStatus(id, _db);
+			if( !isDraft ) {
+				wfService.calculateWFStatus(id, _db);
+			}
 
 			printSuccessMessage();
 		} catch (Exception e) {
@@ -964,9 +967,9 @@ public class _Recorder extends BaseActionSupport {
 		
 		// 先检查流程是否存在且是否已开始处理
 		List<String> statusList = new ArrayList<String>();
-		statusList.add(WFStatus.NEW);
-		statusList.add(WFStatus.REMOVED);
-		statusList.add(WFStatus.AUTO_PASSED);
+		statusList.add(WFStatus.NEW);         // 已提交允许继续修改
+		statusList.add(WFStatus.REMOVED);     // 还原
+		statusList.add(WFStatus.AUTO_PASSED); // 自动通过的允许修改
 		
 		WFStatus wfStatus = wfService.getWFStatus(recordId, itemId);
 		String userCode = Environment.getUserCode();

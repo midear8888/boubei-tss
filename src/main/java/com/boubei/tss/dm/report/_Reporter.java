@@ -252,7 +252,7 @@ public class _Reporter extends BaseActionSupport {
         
         AccessLogRecorder.outputAccessLog(reportService, reportId, "showAsJson", requestMap, start);
         
-        if(page != null) {
+        if(page != null || requestMap.containsKey("rows")) {
         	Map<String, Object> returlVal = new HashMap<String, Object>();
         	returlVal.put("total", excutor.count);
         	returlVal.put("rows", excutor.result);

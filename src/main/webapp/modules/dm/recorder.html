@@ -278,6 +278,7 @@ var approveMode    = false; // 审批模式
 function refreshTable() {
     recycleBinMode = false;
     params = {};
+    delete tssJS.cache.XmlDatas["searchFormXML"];
     loadGridData(1);
 
     ws.closeAllTabs();
@@ -639,13 +640,14 @@ function loadDetailData(rowID) {
             tssJS("#rejectBt").click( function() { reject(rowID); } ); 
             tssJS("#reApplyBt").click( function() { reApply(rowID); } ); 
             tssJS("#transBt").click( function() { transApprove(rowID); } ); 
+            tssJS("#saveBt").attr("value", "保存修改");
 
             showExtension(_item);
 
             // 控制流程按钮
             _wfStatus = _item.wfstatus;
             var isCreator = _item.creator == userCode;
-            if( isCreator ) {
+            if( isCreator ) {               
                 tssJS("#ws .wf").hide();
                 if( _wfStatus ) {
                     if( !wfEditable(_wfStatus) ) {
@@ -660,6 +662,9 @@ function loadDetailData(rowID) {
                         $("#reApplyBt").show();
                         opinionDisabled = false;
                     }
+                } else if(hasWorkflow) {
+                    tssJS("#saveBt").attr("value", "提 交");
+                    tssJS("#draftBt").show().click( function() { saveSource(rowID, isCreateRow, version, true); } ); 
                 }
             } else {
                 if(  _item.nextProcessor == userCode ) { 
@@ -669,8 +674,7 @@ function loadDetailData(rowID) {
                     opinionDisabled = !isCreator;
                 }
             }
-
-            tssJS("#saveBt").attr("value", "保存修改");
+            
             billMode && tssJS("#saveBt").hide();
         }
         else if(hasWorkflow) {
@@ -870,15 +874,29 @@ function clone (obj) {
     return copy;
 }
 
-function showQueryForm() {
-    if(tssJS.cache.XmlDatas["searchFormXML"]) {
+function filterQueryFields(isTJ) {
+    if( isTJ ) {
+        $("#searchForm table tr").hide();
+        $($1("sortField").parentNode.parentNode).show();
+        $($1("tjField").parentNode.parentNode).show();
+        $($("#searchForm .buttonBox")[0].parentNode.parentNode).show();
+    } 
+    else {
+        $("#searchForm table tr").show();
+    }
+}
+
+function showQueryForm(isTJ) {
+    var cacheKey = "searchFormXML";
+    if(tssJS.cache.XmlDatas[cacheKey]) {
         tssJS("#searchFormDiv").show(true).css("zIndex", "101");
+        filterQueryFields(isTJ);
         return;
     }
 
     var $panel = tssJS("#searchFormDiv").show(true);
     var html = '<div id="searchForm"></div>';
-    $panel.html("").panel("查询【" + recordName + "】里的数据", html);
+    $panel.html("").panel( (isTJ ? "统计": "查询") + "【" + recordName + "】里的数据", html);
     $panel.css("zIndex", "101");
 
     var buttonBox = [];
@@ -967,6 +985,7 @@ function showQueryForm() {
     codes.push("updatetime");
     names.push("创建时间");
     names.push("更新时间");
+
     var _sortObj = {"label":"按列", "name":"sortField", "width": "180px", "options": {"codes":codes.join("|"), "names":names.join("|")}, "multiple": "true"};
     // _sortObj.defaultValue = "createtime";
     paramsConfig.push(_sortObj);
@@ -979,13 +998,13 @@ function showQueryForm() {
     paramsConfig.push(_sortType);
 
     var searchForm = tssJS.json2Form("searchForm", paramsConfig, buttonBox.join("")); 
-    tssJS.cache.XmlDatas["searchFormXML"] = searchForm.template.sourceXML;
-
+    tssJS.cache.XmlDatas[cacheKey] = searchForm.template.sourceXML;
+    filterQueryFields(isTJ);
     
     $1("btSearch").onclick = function () {
         if( searchForm.checkForm() ) {
             tssJS("#searchFormDiv").hide();
-            var searchFormXML = tssJS.cache.XmlDatas["searchFormXML"];
+            var searchFormXML = tssJS.cache.XmlDatas[cacheKey];
             var dataNode = searchFormXML.querySelector("data");
         
             // 清空查询条件，除了my_wf_list
@@ -1231,6 +1250,7 @@ function delAttach() {
 <input type="button" class="tssbutton small white" value="修 改" id="btn_update" onclick="showDetail('_update')"/>
 <input type="button" class="tssbutton small white" value="删 除" id="btn_batch_del" onclick="removeBatch()"/>
 <input type="button" class="tssbutton small white" value="查 询" id="btn_search" onclick="showQueryForm()"/>
+<input type="button" class="tssbutton small white" value="统 计" id="btn_tj" onclick="showQueryForm(true)"/>
 <input type="button" class="tssbutton small white" value="导 出" id="btn_ex" onclick="backup(params)"/>
 <input type="button" class="tssbutton small white" value="Excel模板" id="btn_tl" onclick="getImportTL()"/>
 <input type="button" class="tssbutton small white" value="Excel导入" id="btn_imp" onclick="batchImport()"/>

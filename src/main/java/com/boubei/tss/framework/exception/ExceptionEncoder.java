@@ -33,6 +33,7 @@ import com.boubei.tss.framework.web.display.XmlPrintWriter;
 import com.boubei.tss.modules.log.IBusinessLogger;
 import com.boubei.tss.modules.log.Log;
 import com.boubei.tss.modules.param.ParamConfig;
+import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.MailUtil;
 
 /**
@@ -96,7 +97,7 @@ public class ExceptionEncoder {
                 encoder.print( new XmlPrintWriter(out) );
             } 
             else { // HTTP JSON: 默认用json格式往response写入异常信息
-            	beMsg = beMsg.replaceAll("\"", "`");
+            	beMsg = EasyUtils.obj2String(beMsg).replaceAll("\"", "`");
             	out.println("{\"code\": \"500\", \"errorMsg\": \"" + beMsg + "\"}");
             }
         } 
