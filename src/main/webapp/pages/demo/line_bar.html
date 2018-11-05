@@ -3,12 +3,19 @@
 <head>
 	<meta charset="utf-8">
 	<title>柱状折线混合图</title>
+    <link rel="stylesheet" href="../../css/easyui.css">
+    <link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
 </head>
 <body>
-	<div style="height:600px;margin:10px;" id="chart1"></div>
+	<div style="height:500px;margin:10px;" id="chart1"></div>
+    <div style="margin:0px 210px 10px 210px;">
+        <table id="t1" style="height:290px;" class="easyui-datagrid"></table>
+    </div>
 
 	<script src="../../tools/echarts/echarts-all-3.1.2.js"></script>
 	<script src="../../tools/easyui/jquery.min.js"></script>
+    <script src="../../tools/easyui/jquery.easyui.min.js"></script>
+    <script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
 	<script type="text/javascript">
 
     function show(label,data1,data2,data3,data4){
@@ -36,7 +43,7 @@
                 }
             },
             legend: {
-                data:['2017年销量','2018年销量','2017年营业额','2018年营业额']
+                data:['销量','金额（百元）','销量环比','金额同比']
             },
             xAxis: [
                 {
@@ -45,37 +52,36 @@
             ],
             yAxis: [
                 {
-                    name: '件',
                     min: 0,
                     max: 25000,
                     interval: 5000
                 },
                 {
-                    name: '元',
-                    min: 500000,
-                    max: 2500000,
-                    interval: 400000
+                    name: '%',
+                    min: -100,
+                    max: 400,
+                    interval: 100
                 }
             ],
             series: [
                 {
-                    name:'2017年销量',
+                    name:'销量',
                     type:'bar',
                     data:data1
                 },
                 {
-                    name:'2018年销量',
+                    name:'金额（百元）',
                     type:'bar',
                     data:data2
                 },
                 {
-                    name:'2017年营业额',
+                    name:'销量环比',
                     type:'line',
                     yAxisIndex: 1,
                     data:data3
                 },
                 {
-                    name:'2018年营业额',
+                    name:'金额同比',
                     type:'line',
                     yAxisIndex: 1,
                     data:data4
@@ -85,21 +91,45 @@
         myChart.setOption(option, true);  
     }
 
+    function split_arr(arr,len){
+        var newArr = [];
+        for (var i =0;i<arr.length;i+=len){
+            newArr.push(arr.slice(i,i+len));
+        }
+        return newArr
+    }
+
+
     $.getJSON("/tss/data/json/75", {}, function(result) {
-        var label = [], data1 = [], data2 = [], data3 = [], data4 = [];
-        for(var i = 0; i < result.length; i++) {
-            var item = result[i];
-            if( label.indexOf(item.month) < 0){
-                label.push(item.month + '月');
-            }
-            if( item.year == '2017'){
-                data1.push(item.num);
-                data3.push(item.money);
-            }
-            if( item.year == '2018'){
-                data2.push(item.num);
-                data4.push(item.money);
-            }  
+        var label =[],data1 = [], data2 = [], data3 = [], data4 = [],totaldata =[];
+
+        var data = split_arr(result,result.length/2);
+
+        for(var j=0; j< data[1].length; j++){
+            var item = data[1][j],item1 = data[1][j-1] || data[1][j],item2 = data[0][j];
+            label.push(item.month);
+            data1.push(item.num);
+            data2.push(Math.round(item.money)/100);
+            data3.push( Math.round( (item.num - item1.num)/item1.num * 10000)/100 );
+            data3[0] = null ;
+            data4.push( Math.round( (item.num - item2.num)/item2.num * 10000)/100 );
+
+            totaldata.push({'label':label[j],'data1':data1[j],'data2':data2[j],'data3':(data3[j]||'--')+'%','data4':data4[j] + '%'});
+
+            dg = $('#t1').datagrid({
+                data: totaldata,
+                fit: true,
+                fitColumns: true,
+                checkOnSelect: true,
+                selectOnCheck: true,
+                columns:[[
+                    {title:'月份', field:'label', width: 90, align:'center'},
+                    {title:'销量', field:'data1', width: 120, align:'center'},
+                    {title:'金额（百元）', field:'data2', width: 150, align:'center'},
+                    {title:'销量环比', field:'data3', width: 95, align:'center'},
+                    {title:'金额同比', field:'data4', width: 95, align:'center'}
+                ]]
+            });
         }
         show(label, data1,data2,data3,data4);
     });
