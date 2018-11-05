@@ -203,7 +203,7 @@ public class _Recorder extends BaseActionSupport {
 			wfService.fixWFStatus(_db, ex.result);
 		}
 
-		if (pointedFileds || requestMap.containsKey("id") ) {
+		if (pointedFileds  ) {
 			return ex;
 		}
 
