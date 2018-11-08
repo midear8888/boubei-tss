@@ -54,7 +54,7 @@ public class Task extends ARecordTable {
 	private Integer priority; // 优先级，按从大到小排序
 	
 	@Column(nullable = false)
-	private String type; // daily/byID
+	private String type; // byDay/byID
 	
 	@Column(nullable = false)
 	private String sourceDS;

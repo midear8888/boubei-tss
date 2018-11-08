@@ -21,6 +21,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import com.boubei.tss.framework.persistence.IEntity;
 import com.boubei.tss.framework.persistence.entityaop.IOperatable;
 import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.util.EasyUtils;
 
 /**
  * 数据用录入模块来维护，但也配以实体类。
@@ -43,7 +44,7 @@ public abstract class ARecordTable implements IEntity, IOperatable {
 	}
 	
 	public int hashCode() {
-		return this.getPK().hashCode() + this.getClass().hashCode()*17;
+		return EasyUtils.obj2Long(this.getPK()).hashCode() + this.getClass().hashCode()*17;
 	}
 	
 	public boolean equals(Object other) {

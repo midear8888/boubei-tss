@@ -189,7 +189,7 @@ public class GroupDao extends TreeSupportDao<Group> implements IGroupDao {
 		        PermissionHelper.ORDER_BY;
 		
 		return getEntities(hql, 
-				new Object[]{"operatorId", "operationId", "groupIds"}, 
+				new String[]{"operatorId", "operationId", "groupIds"}, 
 				new Object[]{operatorId, operationId, groupIds} );
 	}
 
@@ -209,7 +209,7 @@ public class GroupDao extends TreeSupportDao<Group> implements IGroupDao {
 	    }
 	    
         String hql = " select distinct u from User u, GroupUser gu where u.id = gu.userId  and gu.groupId in (:groupIds) ";
-        return getEntities(hql, new Object[] {"groupIds"}, new Object[]{ groupIds });
+        return getEntities(hql, new String[] {"groupIds"}, new Object[]{ groupIds });
 	}
 
 	public List<User> getUsersByGroupIdDeeply(Long groupId){
@@ -229,7 +229,7 @@ public class GroupDao extends TreeSupportDao<Group> implements IGroupDao {
         		" from User u, GroupUser gu, Group g " + 
         		" where u.id = gu.userId and gu.groupId = g.id and g.id in (:groupIds) ";
 
-        List<?> list = getEntities(hql, new Object[]{"groupIds"}, new Object[]{groupIds});
+        List<?> list = getEntities(hql, new String[]{"groupIds"}, new Object[]{groupIds});
 		return fillGroupInfo2User(list);
 	}
 
@@ -275,7 +275,7 @@ public class GroupDao extends TreeSupportDao<Group> implements IGroupDao {
         if( EasyUtils.isNullOrEmpty(groupIds) ) return false;
         
         String hql = "select distinct gu.id from GroupUser gu where gu.groupId in (:groupIds) and gu.userId = :userId";
-        List<?> list = getEntities(hql, new Object[]{"groupIds", "userId"}, new Object[]{groupIds, operatorId});
+        List<?> list = getEntities(hql, new String[]{"groupIds", "userId"}, new Object[]{groupIds, operatorId});
         return !list.isEmpty();
     }
     

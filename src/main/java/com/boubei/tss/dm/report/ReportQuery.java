@@ -53,8 +53,8 @@ public class ReportQuery {
       	Map<String, Object> fmDataMap = DMUtil.getFreemarkerDataMap();
       	
 		/* 先预解析，以判断request参数是否用做了宏代码。后续还将有一次解析，以支持宏嵌套。 
-		 * eg： ${GetWHListByLogonUser} --> param里的script宏（... user_id = ${fromUserId}) ... ）
-		 * 这里先把  ${GetWHListByLogonUser} 解析出来，下面会接着解析${fromUserId} */
+		 * eg： ${GetXXXByLogonUser} --> param里的script宏（... creator = ${userCode}) ... ）
+		 * 这里先把  ${GetXXXByLogonUser} 解析出来，下面会接着解析${userCode} */
       	reportScript = MacrocodeCompiler.runLoop(reportScript, fmDataMap, true); 
       	
       	// 加入所有request请求带的参数
@@ -62,6 +62,14 @@ public class ReportQuery {
       	
       	// 过滤掉用于宏解析（ ${paramX} ）后的request参数
      	Map<Integer, Object> paramsMap = new HashMap<Integer, Object>();
+     	
+     	if( EasyUtils.isNullOrEmpty(paramsConfig) && requestMap.size() > 0 ) {
+     		StringBuffer sb = new StringBuffer("[");
+     		for(String key : requestMap.keySet()) {
+     			sb.append("{'code': '" + key + "'},");
+     		}
+     		paramsConfig = sb.append("]").toString().replace(",]", "]");
+     	}
 		
 		if( !EasyUtils.isNullOrEmpty(paramsConfig) ) {
       		List<LinkedHashMap<Object, Object>> list;

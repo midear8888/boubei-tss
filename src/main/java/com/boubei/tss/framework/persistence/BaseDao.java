@@ -153,12 +153,12 @@ public abstract class BaseDao<T extends IEntity> implements IDao<T>{
      * @param hql
      * @return
      */
-    public List<?> getEntities(String hql, Object...conditionValues) {
+    public List<?> getEntities(String hql, Object...params) {
         Query query = em.createQuery(hql);
-        conditionValues = (Object[]) EasyUtils.checkNull(conditionValues, new Object[]{});
+        params = (Object[]) EasyUtils.checkNull(params, new Object[]{});
 
-        for (int i = 0; i < conditionValues.length; i++) {
-            Object param = conditionValues[i];
+        for (int i = 0; i < params.length; i++) {
+            Object param = params[i];
             if (param == null) {
                 throw new BusinessException( EX.parse(EX.F_01, hql, (i + 1)) );
             }
@@ -176,22 +176,22 @@ public abstract class BaseDao<T extends IEntity> implements IDao<T>{
      * @param hql
      * @return
      */
-    public List<?> getEntities(String hql, Object[] conditionNames, Object[] conditionValues) {
+    public List<?> getEntities(String hql, String[] keys, Object[] vals) {
         Query query = em.createQuery(hql);
         
-        conditionNames = (Object[]) EasyUtils.checkNull(conditionNames, new Object[]{});
-        conditionValues = (Object[]) EasyUtils.checkNull(conditionValues, new Object[]{});
+        keys = (String[]) EasyUtils.checkNull(keys, new String[]{});
+        vals = (Object[]) EasyUtils.checkNull(vals, new Object[]{});
 
-        for (int i = 0; i < conditionValues.length; i++) {
-            Object param = conditionValues[i];
+        for (int i = 0; i < vals.length; i++) {
+            Object param = vals[i];
             if (param == null) {
                 throw new BusinessException( EX.parse(EX.F_01, hql, (i + 1)) );
             }
             
             if (param instanceof Object[])
-                query.setParameter((String) conditionNames[i], Arrays.asList((Object[]) param)); // in查询，接收List类型，不支持数组
+                query.setParameter(keys[i], Arrays.asList((Object[]) param)); // in查询，接收List类型，不支持数组
             else
-                query.setParameter((String) conditionNames[i], param);
+                query.setParameter(keys[i], param);
         }
         
         List<?> results = query.getResultList();
@@ -231,6 +231,21 @@ public abstract class BaseDao<T extends IEntity> implements IDao<T>{
                 throw new BusinessException( EX.parse(EX.F_01, nativeSql, (i + 1)) );
             }
             query.setParameter(i + 1, param);  // 从1开始，非0
+        }
+        
+        return query.getResultList();
+    }
+    
+    public List<?> getEntitiesByNativeSql(String nativeSql, String[] keys, Object[] vals) {
+        Query query = em.createNativeQuery(nativeSql);
+        
+        for (int i = 0; i < vals.length; i++) {
+            Object param = vals[i];
+            
+            if (param instanceof Object[])
+                query.setParameter(keys[i], Arrays.asList((Object[]) param)); // in查询，接收List类型，不支持数组
+            else
+                query.setParameter(keys[i], param);
         }
         
         return query.getResultList();

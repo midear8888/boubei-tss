@@ -46,7 +46,10 @@ public class JobServiceImpl implements JobService {
 		String jobClass = jobDef.getJobClassName();
 		
 		Object job = BeanUtil.newInstanceByName(jobClass);
-		if( job instanceof AbstractETLJob ) {
+		String simpleName = job.getClass().getSimpleName();
+		
+		// byID、byDay必须严格匹配自己的定时器，不能串
+		if( job instanceof AbstractETLJob && simpleName.toLowerCase().startsWith(task.getType().toLowerCase()) ) {
 			TaskLog log = ((AbstractETLJob)job).excuteTask(task);
 			if( log == null ) {
 				return EX.DM_30;
@@ -57,7 +60,7 @@ public class JobServiceImpl implements JobService {
 			return "Success! result: " + log.getDetail() +", maxID="+ log.getMaxID() +", lastday="+ log.getDataDay();
 		}
 		else {
-			throw new BusinessException( EX.parse(EX.DM_28, task.getJobId(), task.getJobName()) );
+			throw new BusinessException( EX.parse(EX.DM_28, task.getJobName(), task.getType(), simpleName) );
 		}
 	}
 

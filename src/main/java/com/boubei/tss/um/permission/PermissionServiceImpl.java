@@ -425,12 +425,12 @@ public class PermissionServiceImpl implements PermissionService {
             	+ " and o.id = r.id and r.isGroup = 0 "
                 + pHelper.genRankCondition4SelectPermission(permissionRank) + " order by o.decode";
 
-            List<?> list = pHelper.getEntities(hql, new Object[]{"ids"}, new Object[]{setableRoleIds});
+            List<?> list = pHelper.getEntities(hql, new String[]{"ids"}, new Object[]{setableRoleIds});
             setableRoleTree = ResourceTreeNode.genResourceTreeNodeList(list);  // 角色作为资源的树
             
             hql = "from " + permissionTable + " p where p.roleId in (:roleIds) and p.resourceId = :resourceId ";
             setableRolesPermissionsOnSelectedResource = pHelper.getEntities(hql,  
-                    new Object[]{"roleIds", "resourceId"}, new Object[]{setableRoleIds, resourceId});
+                    new String[]{"roleIds", "resourceId"}, new Object[]{setableRoleIds, resourceId});
         }
 		
         /* 取出当前用户拥有的对【当前资源】的权限信息，将登录用户拥有的资源（仅指resourceId）权限列表和授权级别进行映射。

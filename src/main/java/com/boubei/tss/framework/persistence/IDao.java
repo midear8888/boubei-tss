@@ -87,8 +87,8 @@ public interface IDao<T extends IEntity> {
      * @param hql
      * @return List,never return null
      */
-    List<?> getEntities(String hql, Object...conditionValues);
-    List<?> getEntities(String hql, Object[] conditionNames, Object[] conditionValues);
+    List<?> getEntities(String hql, Object...params);
+    List<?> getEntities(String hql, String[] keys, Object[] vals);
     
     /**
      * 根据原生SQL查询
@@ -100,6 +100,7 @@ public interface IDao<T extends IEntity> {
      */
     List<?> getEntitiesByNativeSql(String nativeSql, Class<?> entityClazz, Object...params);
     List<?> getEntitiesByNativeSql(String nativeSql, Object...params);
+    List<?> getEntitiesByNativeSql(String nativeSql, String[] keys, Object[] vals);
  
     /**
      * 执行HQL语句，一般为delete、update类型

@@ -145,7 +145,7 @@ public class TreeSupportDao<T extends IDecodable> extends BaseDao<T> implements 
         Integer max = sourceOrder.compareTo(targetOrder) > 0 ? sourceOrder : targetOrder;
         Integer min = sourceOrder.compareTo(targetOrder) > 0 ? targetOrder : sourceOrder;
         String hql = " from " + entityName + " o where o.seqNo < ? and o.seqNo > ? and o.parentId = ?";
-        return (List<T>) getEntities(hql, new Object[]{max, min, parentId});
+        return (List<T>) getEntities(hql, max, min, parentId);
     }
     
     /**

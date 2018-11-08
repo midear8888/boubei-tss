@@ -103,7 +103,7 @@ public class EX {
 	public static String DM_25 = "字段编码【${x1}】重复了，检查修改后在保存";
 	public static String DM_26 = "字段名称【${x1}】重复了，检查修改后在保存";
 	public static String DM_27 = "本行数据为空";
-	public static String DM_28 = "任务所属的定时器【${x1}, ${x2}】不是一个ETL类型定时器";
+	public static String DM_28 = "任务所属的定时器【${x1}】不匹配，任务类型：${x2}，Job：${x3}";
 	public static String DM_29 = "其中有${x1}行数据校验出异常，请点<a href=\"/tss/data/download?filename=${x2}\" target=\"_blank\">【异常记录】</a>下载查看。";
 	public static String DM_30 = "没有数据，所有满足条件的日期（或明细）都已经执行过了";
 	public static String DM_31 = "找到${x1}个${x2}=${x3}的Report节点，需要保证唯一";
