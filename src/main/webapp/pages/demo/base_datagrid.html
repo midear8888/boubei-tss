@@ -47,7 +47,7 @@
         if($('#year').combobox('getValue') != '全部'){
             params.param1 = $('#year').combobox('getValue');
         }
-        $.getJSON("/tss/data/json/75", params, function(result) {
+        $.getJSON("/tss/data/json/line_bar", params, function(result) {
             dg = $('#t1').datagrid({
                 data: result,
                 pageList:[100,300,500,1000],
