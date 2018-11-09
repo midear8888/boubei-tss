@@ -465,6 +465,8 @@ public class WxAPI {
 	/**
      * 查询订单
      * out_trade_no 商户订单号//, method = RequestMethod.POST 
+     * appid
+     * mchid
      */
 	@RequestMapping(value = "/orderquery")
 	@ResponseBody
