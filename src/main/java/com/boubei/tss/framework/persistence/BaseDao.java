@@ -171,7 +171,7 @@ public abstract class BaseDao<T extends IEntity> implements IDao<T>{
 
     /**
      * 根据HQL语句、参数名、参数值获取对象列表.
-     * 支持in查询,  in ( :names ), 参数要求位数组
+     * 支持in查询,  in ( :names ), 参数要求位数组 或 List
      * 
      * @param hql
      * @return

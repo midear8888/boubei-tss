@@ -66,7 +66,9 @@ public class ReportQuery {
      	if( EasyUtils.isNullOrEmpty(paramsConfig) && requestMap.size() > 0 ) {
      		StringBuffer sb = new StringBuffer("[");
      		for(String key : requestMap.keySet()) {
-     			sb.append("{'code': '" + key + "'},");
+     			if( reportScript.indexOf( MacrocodeCompiler.createMacroCode(key) ) >= 0 ) {
+     				sb.append("{'code': '" + key + "'},");
+     			}
      		}
      		paramsConfig = sb.append("]").toString().replace(",]", "]");
      	}
