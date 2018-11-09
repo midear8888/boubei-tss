@@ -33,5 +33,4 @@ public class AlipayConfig {
 		String domain = ParamConfig.getAttribute("notify_Url", "www.boudata.com");
 		return "https://"+ domain + "/tss/alinotify.in";
 	}
-
 }

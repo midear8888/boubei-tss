@@ -51,7 +51,6 @@ public class AlipayAPI {
 	    aRequest.setBizContent(bizcontent); // 填充业务参数
  
 	    String form = aClient.pageExecute(aRequest).getBody(); // 调用SDK生成表单
-	    System.out.println(form);
 	    
 	    response.setContentType("text/html;charset=" + AlipayConfig.Char_Set);
 	    response.getWriter().write(form); // 直接将完整的表单html输出到页面
@@ -61,7 +60,6 @@ public class AlipayAPI {
 	
 	/**
 	 * 下单查询
-	 * 
 	 * appid 应用编号
 	 * out_trade_no 商户订单号
 	 * @throws IOException
@@ -91,17 +89,16 @@ public class AlipayAPI {
 			Map<Object, Object> trade_map = (Map<Object, Object>) map.get("alipay_trade_query_response");
 			
 			if("10000".equals(trade_map.get("code")) && "TRADE_SUCCESS".equals(trade_map.get("trade_status"))){
-				response.getWriter().println("{\"code\": \"success\", \"error\": \"支付成功\"}");
+				response.getWriter().println("{\"code\": \"success\", \"data\": \"支付成功\"}");
 			}
 			else{
-				response.getWriter().println("{\"code\": \"fail\", \"error\": \"" + trade_map.get("msg") + "\"}");
+				response.getWriter().println("{\"code\": \"fail\", \"errorMsg\": \"" + trade_map.get("msg") + "\"}");
 			}
 			
 		} catch (AlipayApiException e) {
 			throw new BusinessException(e.getMessage(), e);
 		}
 	}
-
 }
 
 /*{
