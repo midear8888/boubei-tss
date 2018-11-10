@@ -12,10 +12,10 @@ package com.boubei.tss.dm.record.workflow;
 
 
 /**
- * 流程自定义监事件
+ * 流程自定义监听事件
  */
 public interface WFEvent {
 	
-	public void after( WFStatus wfStatus );
+	void after( WFStatus wfStatus );
 
 }
