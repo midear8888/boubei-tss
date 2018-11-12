@@ -247,8 +247,8 @@ function batchImport(recordId) {
     tssJS(importDiv).show();
 }
 
-/* 创建导入Div */
-function createImportDiv(remark, checkFileWrong, importUrl) {
+/* 创建导入Div: createImportDiv("点击图标选择Excel文件导入", checkFileWrong, url, startProgress) */
+function createImportDiv(remark, checkFileWrong, importUrl, callback) {
     var importDiv = $1("importDiv");
     if( importDiv == null ) {
         importDiv = tssJS.createElement("div", null, "importDiv");    
@@ -285,8 +285,35 @@ function createImportDiv(remark, checkFileWrong, importUrl) {
         form.action = importUrl;
         form.submit();
 
+        callback && callback();
+
         tssJS(importDiv).hide();
     } );
 
     return importDiv;
+}
+
+var callCount = 0;
+function startProgress(progressCode) {
+    progressCode =  progressCode || userCode;
+
+    tssJS.ajax({
+        url: URL_IMP_PROGRESS + progressCode, 
+        params: {}, 
+        method: "GET",
+        onresult: function() {
+            var data = this.getNodeValue("ProgressInfo");
+            if( data == 'not found') {
+                return callCount++ > 10 ? null : setTimeout(function() { 
+                    startProgress();
+                }, 10*1000);
+            }
+
+            var progress = new tssJS.Progress(URL_IMP_PROGRESS, data, URL_CANCEL_IMP);
+            progress.oncomplete = function() {
+                this.hide();
+            }
+            progress.start();
+        }
+    });
 }

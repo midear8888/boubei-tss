@@ -11,7 +11,6 @@
 package com.boubei.tss.modules.progress;
 
 import java.util.Map;
-import java.util.Random;
 
 import com.boubei.tss.framework.sso.context.ContextSupportThread;
 
@@ -33,7 +32,7 @@ public class ProgressManager {
 
 	public String execute() {
 		final Progress progress = new Progress(total);
-		final String code = new Random().nextInt() + "_" + System.currentTimeMillis();
+		final String code =  "PG-" + System.currentTimeMillis();
 		ProgressPool.putSchedule(code, progress);
 
 		ProgressThreadGroup group = new ProgressThreadGroup("threadGroup_" + code, progress);

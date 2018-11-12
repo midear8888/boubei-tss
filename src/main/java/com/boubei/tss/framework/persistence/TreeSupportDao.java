@@ -18,6 +18,7 @@ import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.entityaop.DecodeUtil;
 import com.boubei.tss.framework.persistence.entityaop.IDecodable;
 import com.boubei.tss.util.BeanUtil;
+import com.boubei.tss.util.EasyUtils;
 
 /**
  * 支持树形结构的实体操作的DAO。
@@ -186,7 +187,7 @@ public class TreeSupportDao<T extends IDecodable> extends BaseDao<T> implements 
 		List<T> sibling = (List<T>) getEntities("from " + entityName + " o where o.parentId = ? order by o.seqNo", parentId);
         int currentSeqNo = 1;
         for (T temp : sibling) {
-        	if(currentSeqNo != temp.getSeqNo()) {
+        	if(currentSeqNo != EasyUtils.obj2Int(temp.getSeqNo())) {
         		temp.setSeqNo(currentSeqNo);
                 saveItem4Sort(temp, returnList);
         	}

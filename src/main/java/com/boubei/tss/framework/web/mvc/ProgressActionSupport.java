@@ -49,6 +49,11 @@ public class ProgressActionSupport extends BaseActionSupport {
 	protected void printScheduleMessage(String code) {
 		Progress progress = (Progress) ProgressPool.getSchedule(code);
 		
+		if( progress == null ) {
+			 print("ProgressInfo", "not found");
+			 return;
+		}
+		
 		// 检查进度执行过程中是否有异常
 		if (!progress.isNormal()) {
 			ProgressPool.removeSchedule(code);

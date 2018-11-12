@@ -10,6 +10,7 @@
 
 package com.boubei.tss.framework.web.mvc;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +19,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 
 import com.boubei.tss.EX;
-import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.web.display.SuccessMessageEncoder;
 import com.boubei.tss.framework.web.display.XmlPrintWriter;
@@ -47,11 +47,13 @@ public abstract class BaseActionSupport {
         /* 初始化数据输出流  */
         HttpServletResponse response = Context.getResponse();
         response.setContentType("text/html;charset=UTF-8");
+        
+        PrintWriter writer = null;
         try {
-            return new XmlPrintWriter(response.getWriter());
+        	writer = response.getWriter();
         } catch (Exception e) {
-            throw new BusinessException("response.getWriter() error", e);
         }
+        return new XmlPrintWriter(writer);
     }
     
     /**

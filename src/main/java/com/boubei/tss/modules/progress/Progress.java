@@ -27,9 +27,9 @@ public class Progress {
     public static final long DEFAULT_LOAD_SCHEDULE_TIME = 2;
     
     /**
-     * 取进度信息的最长时间 60s
+     * 取进度信息的最长时间 10s
      */
-    public static final long MAX_LOAD_SCHEDULE_TIME = 60;
+    public static final long MAX_LOAD_SCHEDULE_TIME = 10;
     
     /**
      * 默认取进度次数

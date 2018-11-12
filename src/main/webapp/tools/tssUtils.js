@@ -293,7 +293,7 @@ function fileManage(params, title) {
 }
 
 /* 创建导入Div */
-function createImportDiv(remark, checkFileWrong, importUrl) {
+function createImportDiv(remark, checkFileWrong, importUrl, callback) {
 	var importDiv = $1("importDiv");
 	if( importDiv == null ) {
 		importDiv = $.createElement("div", null, "importDiv");    
@@ -329,6 +329,8 @@ function createImportDiv(remark, checkFileWrong, importUrl) {
 		var form = $1("importForm");
 		form.action = importUrl;
 		form.submit();
+
+		callback && callback();
 
 		$(importDiv).hide();
 	} );

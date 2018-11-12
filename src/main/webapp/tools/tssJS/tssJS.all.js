@@ -1857,6 +1857,10 @@
     Progress.prototype = {
         /* 更新数据 */
         refreshData: function(data) {
+            if( data == 'not found') {
+                this.percent = "100";
+                return this.hide();
+            }
             this.percent      = $.XML.getText(data.querySelector("percent"));
             this.delay        = $.XML.getText(data.querySelector("delay"));
             this.estimateTime = $.XML.getText(data.querySelector("estimateTime"));
@@ -1870,6 +1874,8 @@
 
         /* 开始执行  */
         start: function() {
+            if( parseInt(this.percent) >= 100 ) return;  // 已完成
+
             this.show();
             this.next();
         },

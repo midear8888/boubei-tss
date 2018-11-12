@@ -36,6 +36,8 @@ import com.boubei.tss.framework.web.servlet.AfterUpload;
 import com.boubei.tss.modules.log.IBusinessLogger;
 import com.boubei.tss.modules.log.Log;
 import com.boubei.tss.modules.param.ParamConstants;
+import com.boubei.tss.modules.progress.Progress;
+import com.boubei.tss.modules.progress.ProgressPool;
 import com.boubei.tss.modules.sn.SerialNOer;
 import com.boubei.tss.modules.timer.JobService;
 import com.boubei.tss.util.BeanUtil;
@@ -304,8 +306,14 @@ public class ImportCSV implements AfterUpload {
 		List<Map<String, String>> valuesMaps = new ArrayList<Map<String, String>>();
 		
 		List<String> snList = null; // 自动取号
+		int total = rows.size();
 		
-		for(int index = 1; index < rows.size(); index++) { // 第一行为表头，不要
+		// 生成进度信息
+		Progress progress = new Progress(total);
+		String pgCode = _db.recordId + "-" + Environment.getUserCode();
+		ProgressPool.putSchedule(pgCode, progress);
+		
+		for(int index = 1; index < total; index++) { // 第一行为表头，不要
 			
 			if( errLineIndexs.contains(index) ) continue;
 			
@@ -323,7 +331,7 @@ public class ImportCSV implements AfterUpload {
     				// 检查值为空的字段，是否配置自动取号规则，是的话先批量取出一串连号
         			if( _Field.isAutoSN(defaultVal) ) {
         				if(snList == null) {
-        					int snNum = rows.size() - 1 - errLineSize;
+        					int snNum = total - 1 - errLineSize;
 							snList = new SerialNOer().create(defaultVal, snNum);
         				}
         				value = snList.get(insertCount);
@@ -377,13 +385,18 @@ public class ImportCSV implements AfterUpload {
 				_db.insertBatch(valuesMaps);
 				valuesMaps.clear();
 			}
+			
+			if (index % 10 == 0) {
+				progress.add(10); // 进度加10
+			}
 		}
     	_db.insertBatch(valuesMaps);
+    	progress.add(total);
 		
 		// 向前台返回成功信息
     	String noInserts = ignoreExist ? ("忽略了第【" +EasyUtils.list2Str(ignoreLines)+ "】行，") : ("覆盖" +updateCount+ "行，");
     	String errMsg = errLineSize == 0 ? "请刷新查看。" : EX.parse(EX.DM_29, errLineSize, fileName);
-		return "parent.alert('导入完成：共新增" +insertCount+ "行，" + noInserts + errMsg + "');";
+		return "parent.alert('导入完成：共新增" +insertCount+ "行，" + noInserts + errMsg + "');parent.$('.progressBar').hide();";
 	}
 	
 }

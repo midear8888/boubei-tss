@@ -65,7 +65,7 @@ import com.boubei.tss.framework.web.display.tree.DefaultTreeNode;
 import com.boubei.tss.framework.web.display.tree.ITreeNode;
 import com.boubei.tss.framework.web.display.tree.TreeEncoder;
 import com.boubei.tss.framework.web.filter.Filter8APITokenCheck;
-import com.boubei.tss.framework.web.mvc.BaseActionSupport;
+import com.boubei.tss.framework.web.mvc.ProgressActionSupport;
 import com.boubei.tss.modules.HitRateManager;
 import com.boubei.tss.modules.log.IBusinessLogger;
 import com.boubei.tss.modules.log.Log;
@@ -76,7 +76,7 @@ import com.boubei.tss.util.FileHelper;
 
 @Controller
 @RequestMapping({ "/auth/xdata", "/xdata/api", "/xdata" })
-public class _Recorder extends BaseActionSupport {
+public class _Recorder extends ProgressActionSupport {
 
 	public static final int PAGE_SIZE = 50;
 
