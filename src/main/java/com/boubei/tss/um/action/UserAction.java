@@ -397,7 +397,7 @@ public class UserAction extends BaseActionSupport {
 		userHas[10]= Environment.getUserInfo("employeeNo");
 		userHas[11]= Environment.getOwnRoleNames();
 		userHas[12]= Environment.getDomainOrign();
-		userHas[13]= Environment.getInSession(SSOConstants.USER_MODULE_I);
+		userHas[13]= Environment.getInSession(SSOConstants.USER_MODULE_C);
 		userHas[14]= Environment.getInSession(SSOConstants.USER_MODULE_N);
 		
 		return userHas;

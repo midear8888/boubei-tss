@@ -121,10 +121,10 @@ public class FetchPermissionAfterLogin implements ILoginCustomizer {
 		List<Object> modules = new ArrayList<Object>();
 		List<Object> moduleNames = new ArrayList<Object>();
 		for(Map<String,Object> map : list){
-			modules.add(map.get("id"));
+			modules.add(map.get("code"));
 			moduleNames.add(map.get("module"));
 		}
-		session.setAttribute(SSOConstants.USER_MODULE_I, modules);
+		session.setAttribute(SSOConstants.USER_MODULE_C, modules);
 	    session.setAttribute(SSOConstants.USER_MODULE_N, moduleNames);
 	}
 

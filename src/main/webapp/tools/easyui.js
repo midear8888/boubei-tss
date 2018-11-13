@@ -293,6 +293,8 @@ function createImportDiv(remark, checkFileWrong, importUrl, callback) {
     return importDiv;
 }
 
+URL_IMP_PROGRESS = "/tss/auth/xdata/progress/";  // {code} GET
+URL_CANCEL_IMP   = "/tss/auth/xdata/progress/";  // {code} DELETE
 var callCount = 0;
 function startProgress(progressCode) {
     progressCode =  progressCode || userCode;
@@ -312,6 +314,7 @@ function startProgress(progressCode) {
             var progress = new tssJS.Progress(URL_IMP_PROGRESS, data, URL_CANCEL_IMP);
             progress.oncomplete = function() {
                 this.hide();
+                callCount = 0;
             }
             progress.start();
         }

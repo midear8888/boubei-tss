@@ -32,7 +32,7 @@ public interface SSOConstants {
     public static final String USER_RIGHTS_L = "userRoles";   // List<Long id>
     public static final String USER_RIGHTS_S = "_userRoles";  // 逗号分隔字符串
     
-    public static final String USER_MODULE_I = "userModules";   // List<>
+    public static final String USER_MODULE_C = "userModules";   // List<>
     public static final String USER_MODULE_N = "_userModuleNames";  // List<>
     
     public static final String USER_ROLES_L = "userRoleNames";    // List<String name>

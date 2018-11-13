@@ -39,6 +39,8 @@ public class ModuleDef extends ARecordTable {
 	@Column(nullable = false)
 	private String module;
 	
+	private String code;
+	
 	private String kind;
 	
 	@Column(nullable = false)
@@ -54,6 +56,13 @@ public class ModuleDef extends ARecordTable {
 	private String resource; // 资源目录，多个用逗号分隔
 	
 	private String status; // creating|opened|closed
+	
+//	private Double price1;
+//	private Double price3;  // month * 12 * 0.9
+//	private Double price6;  // month * 12 * 0.85
+//	private Double price12; // month * 12 * 0.8
+//	private Double price24; // month * 24 * 0.7
+// 	private Double price36; // month * 36 * 0.5
 	
 	@Column(length = 2000)
 	private String description;
@@ -190,5 +199,13 @@ public class ModuleDef extends ARecordTable {
 
 	public void setInit_url(String init_url) {
 		this.init_url = init_url;
+	}
+
+	public String getCode() {
+		return code;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
 	}
 }

@@ -1131,6 +1131,7 @@ function batchImport() {
         url += otherConfig;
     }
     
+    callCount = 0;
     var importDiv = createImportDiv("点击图标选择Excel文件导入", checkFileWrong, url, startProgress);
     tssJS(importDiv).show();
 }
