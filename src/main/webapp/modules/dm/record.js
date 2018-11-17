@@ -95,6 +95,14 @@ function initMenus() {
 		},
 		visible:function() { return isRecord() && getOperation("2"); }
 	}
+	var item25 = {
+		label:"测试数据表接口",
+		icon: ICON + "icon_service.gif",
+		callback: function() {
+			window.open( "/tss/more/api.html?id=" + getTreeNodeId() );
+		},
+		visible:function() { return isRecord() && getOperation("2"); }
+	}
 	var item31 = {
 		label:"新增数据表",
 		callback: function() {
@@ -178,7 +186,6 @@ function initMenus() {
 	menu.addItem(item21);
 	menu.addItem(item22);
 	menu.addItem(item23);
-	menu.addItem(item24);
 	menu.addItem(item6);
 	menu.addItem(item9);
 	menu.addItem(item13);
@@ -186,6 +193,9 @@ function initMenus() {
 	menu.addItem(item15);
 	menu.addItem(item10);
 	menu.addItem(item5);
+	menu.addSeparator();
+	menu.addItem(item24);
+	menu.addItem(item25);
 	menu.addSeparator();
 	menu.addItem(createPermissionMenuItem("D2"));
 	

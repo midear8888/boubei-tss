@@ -22,6 +22,7 @@ import com.boubei.tss.dm.report.Report;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.web.servlet.AfterUpload;
+import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
 
 public class CreateAttach implements AfterUpload {
@@ -52,6 +53,7 @@ public class CreateAttach implements AfterUpload {
 			String filepath, String orignFileName) throws Exception {
 
 		String record = request.getParameter("recordId");
+		record = (String)EasyUtils.checkNull(record, request.getParameter("record"));
 		Long recordId = null;
     	try { // 先假定是数据表ID（Long型）
     		recordId = Long.valueOf(record.toString());

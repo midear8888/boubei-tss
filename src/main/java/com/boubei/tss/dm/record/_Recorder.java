@@ -139,7 +139,8 @@ public class _Recorder extends ProgressActionSupport {
 				_record.getCustomizePage(),
 				_db.getVisiableFields(false), 
 				WFUtil.checkWorkFlow(_record.getWorkflow()),
-				_db.isLogicDelete()
+				_db.isLogicDelete(),
+				_record.getTable()
 			};
 	}
 
@@ -241,9 +242,12 @@ public class _Recorder extends ProgressActionSupport {
 
 			Object itemId = item.get("id").toString();
 			Object fileCount = itemAttach.get(itemId);
-			Object attachTag = EasyUtils.checkNull(fileCount, isWFQuery ? "0" : "上传");
-			String onclick = isTssGrid ? "manageAttach(" +itemId+ ")" : "manageAttach(" +itemId+ ", " +_db.recordId+ ")";
-			item.put("fileNum", "<a href='javascript:void(0)' onclick='" +onclick+ "'>" + attachTag + "</a>");
+			
+			if( isTssGrid || requestMap.containsKey("showAttach") ) {
+				String onclick = "manageAttach(" +itemId+ ", " +_db.recordId+ ")";
+				Object attachTag = EasyUtils.checkNull(fileCount, isWFQuery ? "0" : "上传");
+				item.put("fileNum", "<a href='javascript:void(0)' onclick='" +onclick+ "'>" + attachTag + "</a>");
+			}
 			item.put("_fileNum", EasyUtils.obj2Int(fileCount));
 		}
 
@@ -357,7 +361,7 @@ public class _Recorder extends ProgressActionSupport {
 
 		Map<String, Object> result = _db.get(id);
 		if (result == null) {
-			throw new BusinessException(EX.parse(EX.DM_13_2, id));
+			throw new BusinessException(EX.parse(EX.DM_13B, id));
 		}
 
 		/* 添加附件信息 */

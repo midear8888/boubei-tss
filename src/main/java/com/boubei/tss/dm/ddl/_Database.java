@@ -575,6 +575,9 @@ public abstract class _Database {
 		
 		Map<Integer, Object> paramsMap = new HashMap<Integer, Object>();
 		int index = 0, fieldIndex = this.fieldCodes.indexOf(field);
+		if( fieldIndex == -1) {
+			throw new BusinessException(EX.parse(EX.DM_32, field));
+		}
 		
 		paramsMap.put(++index, DMUtil.preTreatValue( value, fieldTypes.get(fieldIndex) ));
 		paramsMap.put(++index, new Timestamp(new Date().getTime()));

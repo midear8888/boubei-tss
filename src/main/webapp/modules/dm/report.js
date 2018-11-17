@@ -378,9 +378,11 @@ function recordAsReport() {
     });
 }
  
+var cur_api, cur_params;
 function testRestfulReportService() {
 	var treeNode = getActiveTreeNode();
-	var treeID = treeNode.id;
+	var treeID   = treeNode.id;
+	var nodeName = treeNode.name;
 	var paramConfig = (treeNode.getAttribute("param") || "").trim(); 
 	var displayUri  = (treeNode.getAttribute("displayUri") || "").trim().replace('|', '&'); 
 	var url = getServiceUrl(treeID, displayUri);
@@ -393,6 +395,18 @@ function testRestfulReportService() {
 	}
 
 	function sendAjax(params) {
+		cur_api = {};
+        cur_api.url  = url;
+        cur_api._url = url;
+        cur_api.method = "POST";
+        cur_api._href = "p2_1";
+
+        params.rows = 10;
+        params.page = 1;
+        cur_params = JSON.stringify(params||{}),
+
+        $.openIframePanel("testServicePanel", "调试数据服务接口：" + nodeName, 1000, 600, "../../more/api_test.html");
+/*
 		$.getJSON(url, params, function(data) { 
 				var result = "执行接口调用脚本:<br>";
 				result += "$.getJSON('" + url + "', " + JSON.stringify(params||{});
@@ -403,6 +417,7 @@ function testRestfulReportService() {
 				alert(result, "调试数据服务接口：" + url);
 			}
 		);
+*/
 	}
 }
 

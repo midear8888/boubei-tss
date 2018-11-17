@@ -79,7 +79,7 @@ public class EX {
 	public static String DM_05 = "您对此数据记录【${x1}】没有维护权限，无法修改或删除。";
 	public static String DM_06 = "该附件不存在，可能已被删除!";
 	public static String DM_07 = "您对此附件没有查看权限";
-	public static String DM_08 = "您对此记录没有浏览权限";
+	public static String DM_08 = "您对此记录没有浏览权限，记录可能不存在";
 	public static String DM_09 = "对数据表【${x1}】的权限不足，${x2}。";
 	public static String DM_10 = "该数据表已被停用，无法再录入数据！";
 	public static String DM_11 = "令牌验证未获通过，调用接口失败。";
@@ -88,7 +88,7 @@ public class EX {
 	public static String DM_11C= "签名为空";
 	public static String DM_12 = "您对此数据表没有维护权限";
 	public static String DM_13 = "ID=${x1} 的数据表不存在。";
-	public static String DM_13_2 = "ID=${x1} 的数据记录不存在。";
+	public static String DM_13B= "ID=${x1} 的数据记录不存在。";
 	public static String DM_14 = "标记为【${x1}】的数据表(服务)，其不存在或账号权限不够";
 	public static String DM_15 = "【${x1}】的参数配置有误，JSON格式存在错误，请检查修正后再保存。具体原因：${x2}";
 	public static String DM_16 = "修改出错，该记录不存在，可能已经被删除。";
@@ -107,6 +107,7 @@ public class EX {
 	public static String DM_29 = "其中有${x1}行数据校验出异常，请点<a href=\"/tss/data/download?filename=${x2}\" target=\"_blank\">【异常记录】</a>下载查看。";
 	public static String DM_30 = "没有数据，所有满足条件的日期（或明细）都已经执行过了";
 	public static String DM_31 = "找到${x1}个${x2}=${x3}的Report节点，需要保证唯一";
+	public static String DM_32 = "字段【${x1}】在数据表中不存在";
 	
 	public static String F_01 = "【${x1}】参数有误，第 ${x2} 个参数值为Null！";
 	public static String F_02 = "排序节点和目标节点不属于同一层的节点（父节点不一致），不能排序。";
