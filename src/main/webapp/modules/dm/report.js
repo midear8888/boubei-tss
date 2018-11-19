@@ -403,9 +403,9 @@ function testRestfulReportService() {
 
         params.rows = 10;
         params.page = 1;
-        cur_params = JSON.stringify(params||{}),
+        cur_params = JSON.stringify( params||{} ),
 
-        $.openIframePanel("testServicePanel", "调试数据服务接口：" + nodeName, 1000, 600, "../../more/api_test.html");
+        $.openIframePanel("testServicePanel", "调试数据服务接口：" +nodeName, 1000, 600, "../../more/api_test.html");
 /*
 		$.getJSON(url, params, function(data) { 
 				var result = "执行接口调用脚本:<br>";

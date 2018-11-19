@@ -275,8 +275,8 @@ function createImportDiv(remark, checkFileWrong, importUrl, callback) {
              return tssJS("#importDiv h2").notice("请选择导入文件!");               
         }
 
-        var length = fileValue.length;
-        var subfix = fileValue.substring(length - 4, length);
+        var index  = fileValue.lastIndexOf(".");
+        var subfix = fileValue.substring(index).toLowerCase();
         if( checkFileWrong && checkFileWrong(subfix) ) {
            return tssJS("#importDiv h2").notice(remark);
         }
@@ -307,7 +307,7 @@ function startProgress(progressCode) {
             var data = this.getNodeValue("ProgressInfo");
             if( data == 'not found') {
                 return callCount++ > 10 ? null : setTimeout(function() { 
-                    startProgress();
+                    startProgress(progressCode);
                 }, 10*1000);
             }
 

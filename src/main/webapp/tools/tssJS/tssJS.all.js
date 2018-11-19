@@ -1910,7 +1910,7 @@
                 $(bar).css("backgroundColor", "#e0f6c8");  
 
                 var passBar = $.createElement("div", "passBar");
-                $(passBar).css("backgroundColor", "#009966").html("1212").css("textAlign", "center");    
+                $(passBar).css("backgroundColor", "#009966").html("1212").css("textAlign", "center").css("line-height", "25px");    
                 
                 graph.appendChild(bar);
                 bar.appendChild(passBar);  

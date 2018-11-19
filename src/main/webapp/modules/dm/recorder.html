@@ -852,7 +852,8 @@ function removeBatch() {
         tssJS.ajax({
             url : URL_BATCH_OPERATE + recordId,
             params: {"ids": ids},
-            method : "DELETE",
+            method: "DELETE",
+            waiting: true,
             onsuccess : function() { 
                 loadGridData( $1("GridPageList").value || 1 ); // 更新Grid 
             }

@@ -94,12 +94,12 @@ public class _Reporter extends BaseActionSupport {
     	Filter8APITokenCheck.checkAPIToken(request, report);
     	
     	/* 如果传入的参数要求不取缓存的数据，则返回当前时间戳作为userID，以触发缓存更新。*/
-    	boolean reportCache = Config.TRUE.equalsIgnoreCase(ParamManager.getValue(PX.REPORT_CACHE, "true"));
+    	boolean reportCache = Config.TRUE.equalsIgnoreCase(ParamManager.getValue(PX.REPORT_CACHE, Config.TRUE));
     	Object cacheFlag;
-    	if( !reportCache || "true".equals(request.getParameter("noCache")) ) {
+    	if( !reportCache || Config.TRUE.equals(request.getParameter("noCache")) ) {
     		cacheFlag = System.currentTimeMillis(); // 按时间戳缓存，白存了，永远无法再次命中
     	}
-    	else if( "true".equals(request.getParameter("uCache")) 
+    	else if( Config.TRUE.equals(request.getParameter("uCache")) 
     			|| Pattern.compile("from[\\s]*\\$\\{").matcher(script).find() ) { // 面向数据表查询
     		cacheFlag = Environment.getUserId();  // 按【用户 + 参数】缓存
     	}

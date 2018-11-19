@@ -92,27 +92,26 @@ public class ThreadPool extends ReusablePool implements IThreadPool{
                 
                 // 执行任务队列中的任务，由ThreadPool中的一个Worker来执行
                 try {
-                    if (taskWrapper != null) {
-                        Task task = (Task) taskWrapper.getValue();
-                        log.debug( this + "start excute: [" + task + "]");
-                        task.excute(); // 执行任务
-                        
-                        Object key = taskWrapper.getKey();
-						if(taskpool != null && taskpool.listKeys().contains(key) ) {
-                            taskpool.checkIn(taskWrapper);  // 只有LogTask能回收成功，其它类型Task都是直接new出来的
-                        }
-                        
-                        // 设置线程池、缓存项的命中率
-                        ThreadPool.this.addRequests(); // 如此可以引用到外围类的实例
-                        ThreadPool.this.addHits();
-                        
-                        Cacheable worker = ThreadPool.this.getObjectOnly(getName());
-                        if(worker != null) {
-                        	worker.addHit();
-                        	worker.updateAccessed();
-                        }
+                    Task task = (Task) taskWrapper.getValue();
+                    log.debug( this + "start excute: [" + task + "]");
+                    task.excute(); // 执行任务
+                    
+                    Object key = taskWrapper.getKey();
+					if(taskpool != null && taskpool.listKeys().contains(key) ) {
+                        taskpool.checkIn(taskWrapper);  // 只有LogTask能回收成功，其它类型Task都是直接new出来的
                     }
-                } catch (RuntimeException e) {
+                    
+                    // 设置线程池、缓存项的命中率
+                    ThreadPool.this.addRequests(); // 如此可以引用到外围类的实例
+                    ThreadPool.this.addHits();
+                    
+                    Cacheable worker = ThreadPool.this.getObjectOnly(getName());
+                    if(worker != null) {
+                    	worker.addHit();
+                    	worker.updateAccessed();
+                    }
+                } 
+                catch (Exception e) {
                     log.error("ThreadPoolWorker excute error", e);
                 } 
             }

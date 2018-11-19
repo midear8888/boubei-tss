@@ -54,13 +54,16 @@ textarea { border: 1px solid #95B8E7; margin-bottom: 2px; padding: 3px; height: 
 
         var request = '\n wx.request( {' + 
             '\n   url: "https://demo.boubei.com/tss/data/json/5",' + 
-            '\n   data: { param1: "xxx", param2: "yyy"},' + 
+            '\n   method: "POST",' + 
+            '\n   data: { param1: "xxx", param2: "yyy", "uName": "13588888888", "uSign": "7fa59411844a5db3970b8ae81b3532cc" },' +
             '\n   header: {' + 
             '\n       "Content-Type": "application/json"' + 
             '\n   },' + 
-            '\n   success: function(res) {' + 
+            '\n   success: res => {' + 
             '\n       console.log(res.data)' + 
-            '\n   }' + 
+            '\n   },' + 
+            '\n   fail: res => { },' + 
+            '\n   complete: res => { }' + 
             '\n } )';
         $("#request").text( request );
     }
@@ -85,6 +88,20 @@ textarea { border: 1px solid #95B8E7; margin-bottom: 2px; padding: 3px; height: 
         $("#request").text( request );
     }
 
+    function jsonpDemo() {
+        $("#tabmenu li").removeClass("selected");
+        $("#l4").addClass("selected");
+        $(".tssbutton").hide();
+
+        var request = '\n tssJS.JSONP.getJSON(' + 
+        '\n     "http://www.boubei.com/tss/data/jsonp/5", ' + 
+        '\n     postMethod.setParameter("uName ", "XXX");' + 
+        '\n     {"param1": "hello jsonp", "uName": "13588888888", "uSign": "7fa59411844a5db3970b8ae81b3532cc"}, ' + 
+        '\n     function(result) { console.log(result.length); }' + 
+        '\n);';
+        $("#request").text( request );
+    }
+
 </script>
 
 </head>
@@ -101,6 +118,7 @@ textarea { border: 1px solid #95B8E7; margin-bottom: 2px; padding: 3px; height: 
         <li id="l1" onclick="jQueryDemo();" class="selected">jQuery</li>
         <li id="l2"  onclick="wxDemo();">小程序</li>
         <li id="l3"  onclick="javaDemo();">JAVA</li>
+        <li id="l4"  onclick="jsonpDemo();">JSONP</li>
     </ul>
     <textarea id="request"></textarea>
     

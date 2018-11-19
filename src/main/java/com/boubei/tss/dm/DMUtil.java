@@ -76,10 +76,9 @@ public class DMUtil {
 					_dsItems.add(ds);
         		} 
         	}
-        	
             xformEncoder.fixCombo("datasource", _dsItems);	
-        } catch (Exception e) {
-        }
+        } 
+		catch (Exception e) {}
 	}
 	
 	/*

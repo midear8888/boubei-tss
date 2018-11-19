@@ -174,10 +174,10 @@ body { font-family: "Microsoft Yahei"; }
     	},
     	{
     		name: "取号器",
-    		url: "/tss/sn/{precode}/{count}",
+    		url: "/tss/sn/{coderule}/{count}",
     		_url: "/tss/sn/JYYMMDDxxxx/10",
     		method: "POST、GET",
-    		param: "{precode}{count}",
+    		param: "{coderule}{count}",
     		result: "List< String >",
     		permission: "对附件所属记录有录入权限",
     		_href: "p8",
@@ -193,7 +193,7 @@ body { font-family: "Microsoft Yahei"; }
         { title: '返回结果', field: 'result', width: 100 },
         { title: '权限控制', field: 'permission', width: 108 },
         { title: '详细说明', field: 'href_', width: 40, align: "center" },
-        { title: '调试接口', field: 'test', width: 30, align: "right" }
+        { title: '调试接口', field: 'test', width: 30, align: "center" }
     ];
     $.each(FIELDS, function(i, field){
         field.align = field.align||"left";

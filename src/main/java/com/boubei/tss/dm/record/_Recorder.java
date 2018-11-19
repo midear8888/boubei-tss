@@ -70,6 +70,7 @@ import com.boubei.tss.modules.HitRateManager;
 import com.boubei.tss.modules.log.IBusinessLogger;
 import com.boubei.tss.modules.log.Log;
 import com.boubei.tss.um.permission.PermissionHelper;
+import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
@@ -82,6 +83,7 @@ public class _Recorder extends ProgressActionSupport {
 
 	@Autowired RecordService recordService;
 	@Autowired WFService wfService;
+	@Autowired ILoginService loginSerivce;
 
 	_Database getDB(Long recordId, String... permitOptions) {
 		// 检测当前用户对当前录入表是否有指定的操作权限
@@ -207,6 +209,8 @@ public class _Recorder extends ProgressActionSupport {
 		if (pointedFileds) {
 			return ex;
 		}
+		
+		Map<String, String> usersMap = loginSerivce.getUsersMap();
 
 		/* 读取记录的附件信息 */
 		Map<Object, Object> itemAttach = new HashMap<Object, Object>();
@@ -247,6 +251,9 @@ public class _Recorder extends ProgressActionSupport {
 				String onclick = "manageAttach(" +itemId+ ", " +_db.recordId+ ")";
 				Object attachTag = EasyUtils.checkNull(fileCount, isWFQuery ? "0" : "上传");
 				item.put("fileNum", "<a href='javascript:void(0)' onclick='" +onclick+ "'>" + attachTag + "</a>");
+				
+				Object account = item.get("creator");
+				item.put( "creator", EasyUtils.checkNull(usersMap.get( account ), account) );
 			}
 			item.put("_fileNum", EasyUtils.obj2Int(fileCount));
 		}
