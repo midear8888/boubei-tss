@@ -1013,8 +1013,10 @@ public abstract class _Database {
         // 判断是否显示创建人和创建时间, customizeTJ: 1=1<#if 1=0>showCUV< /#if>
         if( showCreator || (this.customizeTJ+"").indexOf("showCUV") >= 0 ) {
         	sb.append("<column name=\"createtime\"  caption=\"创建时间\" sortable=\"true\" width=\"60px\"/>").append("\n");
-            sb.append("<column name=\"creator\"  caption=\"创建人\" sortable=\"true\" width=\"40px\"/>").append("\n");
+            sb.append("<column name=\"creatorName\"  caption=\"创建人\" sortable=\"true\" width=\"40px\"/>").append("\n");
+            sb.append("<column name=\"creator\"  display=\"none\"/>").append("\n");
         } else {
+        	sb.append("<column name=\"createtime\" display=\"none\"/>").append("\n");
         	sb.append("<column name=\"creator\" display=\"none\"/>").append("\n");
         }
         sb.append("<column name=\"updatetime\" display=\"none\"/>").append("\n");

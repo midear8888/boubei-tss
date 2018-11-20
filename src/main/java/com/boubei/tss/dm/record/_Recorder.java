@@ -253,7 +253,7 @@ public class _Recorder extends ProgressActionSupport {
 				item.put("fileNum", "<a href='javascript:void(0)' onclick='" +onclick+ "'>" + attachTag + "</a>");
 				
 				Object account = item.get("creator");
-				item.put( "creator", EasyUtils.checkNull(usersMap.get( account ), account) );
+				item.put( "creatorName", EasyUtils.checkNull(usersMap.get( account ), account) );
 			}
 			item.put("_fileNum", EasyUtils.obj2Int(fileCount));
 		}

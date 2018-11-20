@@ -21,6 +21,7 @@ import javax.servlet.ServletResponse;
 import org.apache.log4j.Logger;
 
 import com.boubei.tss.PX;
+import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.exception.convert.ExceptionConvertorFactory;
 import com.boubei.tss.framework.exception.convert.IExceptionConvertor;
@@ -69,7 +70,7 @@ public class ExceptionEncoder {
             	String userName = Environment.getUserName();
             	log.warn( userName + ", thread=" +  Environment.threadID()
 						+ ", request url: " + rc.getRequest().getServletPath() 
-						+ ", request params:" + rc.getRequest().getParameterMap()
+						+ ", request params:" + DMUtil.getRequestMap(rc.getRequest(), false)
 						+ ", errMsg = " + beMsg);
             }
             
@@ -97,8 +98,9 @@ public class ExceptionEncoder {
                 encoder.print( new XmlPrintWriter(out) );
             } 
             else { // HTTP JSON: 默认用json格式往response写入异常信息
-            	beMsg = EasyUtils.obj2String(beMsg).replaceAll("\"", "`");
-            	out.println("{\"code\": \"500\", \"errorMsg\": \"" + beMsg + "\"}");
+            	beMsg = EasyUtils.obj2String(beMsg);
+            	beMsg = (String) EasyUtils.checkNull(beMsg, be.getMessage());
+            	out.println("{\"code\": \"500\", \"errorMsg\": \"" + beMsg.replaceAll("\"", "`") + ".\"}");
             }
         } 
     	catch (Exception e) {
