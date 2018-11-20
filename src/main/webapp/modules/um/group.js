@@ -178,24 +178,21 @@
             visible:function() {return editable();}
         }
 
-        var item12 = {
-            label:"辅助功能",
-            callback:null,
-            visible:function() { return isMainGroup() && editable(true) || getTreeNodeId() == -8 || getTreeNodeId() == -9; }
-        }
         var subitem12_1 = {
             label:"初始化密码...",
             callback:resetPassword,
-            icon:ICON + "init_password.gif"
+            icon:ICON + "init_password.gif",
+            visible:function() { return isMainGroup() && editable(true) || getTreeNodeId() == -8 || getTreeNodeId() == -9; }
         }
         var subitem12_2 = {
             label:"用户同步",
             callback:function() { syncGroup(); },
-            visible:function() { return !!getTreeAttribute("fromApp"); }
+            visible:function() { return isMainGroup() && editable(true) || getTreeNodeId() == -8 || getTreeNodeId() == -9 && !!getTreeAttribute("fromApp"); }
         }
         var subitem12_4 = {
             label:"综合查询",
-            icon:ICON + "search.gif"
+            icon:ICON + "search.gif",
+            visible:function() { return isMainGroup() && editable(true) || getTreeNodeId() == -8 || getTreeNodeId() == -9; }
         }
         var subitem12_4_1 = {
             label:"用户角色",
@@ -210,12 +207,6 @@
         submenu12_4.addItem(subitem12_4_1);
         submenu12_4.addItem(subitem12_4_2);
         subitem12_4.submenu = submenu12_4;
-
-        var submenu12 = new $.Menu();
-        submenu12.addItem(subitem12_1);
-        submenu12.addItem(subitem12_2);
-        submenu12.addItem(subitem12_4);
-        item12.submenu = submenu12;
  
         var menu1 = new $.Menu();
         menu1.addItem(item3);
@@ -229,7 +220,9 @@
         menu1.addItem(item8);
         menu1.addItem(item9);
         menu1.addSeparator();
-        menu1.addItem(item12);
+        menu1.addItem(subitem12_1);
+        menu1.addItem(subitem12_2);
+        menu1.addItem(subitem12_4);
 
         menu1.addItem(createPermissionMenuItem("1"));
 
@@ -302,6 +295,31 @@
                     }
                 }); 
             }
+        });
+    }
+
+    function removeBatch() {
+        var grid = tssJS.G("grid");
+        var ids  = grid.getCheckedRowsValue("id");
+        var groupIds = grid.getCheckedRowsValue("groupId");
+        if(!ids || ids.length == 0) {
+            return alert("您没有选中任何用户记录，请勾选后再进行批量删除。");
+        }
+        tssJS.confirm("您确定要批量删除选中用户吗？", "批量删除确认", function(){
+            ids.each(function(i, userID){
+                var groupId = groupIds[i];
+                $.ajax({
+                    url : URL_DEL_USER + groupId + "/" + userID,
+                    method : "DELETE",
+                    headers : { "noAlert": true },
+                    waiting: true, 
+                    onsuccess : function() { 
+                        if( i == ids.length - 1 ) {
+                            showUserList(groupId);
+                        }
+                    }
+                }); 
+            });
         });
     }
  
@@ -601,6 +619,9 @@
     /* 显示用户列表 */
     function showUserList(groupId) {
         groupId = groupId || getTreeNodeId();
+        var groupName = $.T("tree").getTreeNodeById( groupId ).name;
+        $("#x1").text(groupName);
+
         $.showGrid(URL_USER_GRID + groupId, XML_USER_LIST, editUserInfo);
     }
  
@@ -875,6 +896,7 @@
             if ( $.isNullOrEmpty(value) ) return alert("条件不能为空。");
             
             var params = {"groupId": treeID, "searchStr": value};
+            $("#x1").text( treeName + " / " + value );
             $.showGrid(URL_SEARCH_USER, XML_USER_LIST, editUserInfo, "grid", 1, params);
         });
     }

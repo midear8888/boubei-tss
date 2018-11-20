@@ -185,13 +185,15 @@ public class EasyUtils {
     	}
         return temp;
     }
-    public static List<Object> objAttr2List(List<?> list,String key){
-    	List<Object> newList = new ArrayList<>();
+
+    public static List<Object> objAttr2List(Collection<?> list, String key){
+    	List<Object> result = new ArrayList<>();
     	for (Object o : list) {
-    		newList.add(BeanUtil.getPropertyValue(o, key));
+    		result.add(BeanUtil.getPropertyValue(o, key));
 		}
-		return newList;
+		return result;
     }
+    
     /**
      * 生成下拉所需要的value和 text
      * 用法如： EasyUtils.list2Combo(list, "year", "name", "|")

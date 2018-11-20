@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <grid>
-	<declare sequence="true">
+	<declare sequence="true" header="checkbox">
 		<column caption="头像" name="icon" mode="image" width="50px"/>
         <column caption="用户ID" name="id" display="none"/>
 		<column caption="账号" name="loginName" width="80px" sortable="true" highlightCol="true"/>

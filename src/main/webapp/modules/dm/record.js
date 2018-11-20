@@ -679,13 +679,15 @@ function editFieldConfig() {
 
     		if(field === 'options') {
     			if( newValue ) {
-	    			newValue = newValue.replace(/，/ig, ',') // 替换中文逗号
+	    			newValue = newValue.replace(/，/ig, ','); // 替换中文逗号
 	    			if( newValue.indexOf('|') < 0 ) { // 必须要两个或以上选项，否则当做jsonUrl
 	    				delete valuesMap['options'];
 	    				valuesMap['jsonUrl'] = newValue;
 	    			}
 	    			else {
 		    			delete valuesMap['jsonUrl'];
+
+		    			newValue = newValue.replace(/&/ig, ' '); // 替换&等符号
 						var tmpArray = newValue.split(",");
 						valuesMap['options'] = {"codes": tmpArray[0]};
 

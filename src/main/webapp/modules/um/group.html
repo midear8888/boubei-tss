@@ -7,6 +7,7 @@
 
 <link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
 <link href="../../css/css.css" rel="stylesheet">
+<link href="../dm/dm.css" rel="stylesheet">
 
 <script src="../../tools/tssJS/tssJS.all.js"></script>
 <script src="../../tools/tssUtils.js"></script>
@@ -50,7 +51,9 @@
       <td class="groove">
         <table>
           <td id="gridTitle">
-            <span class="icon"></span>用户列表<span class="buttonBox" id="gridToolBar"></span>
+            <span class="icon"></span>【<span id="x1"></span>】用户列表&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="button" class="tssbutton small white" value="删 除" id="btn_batch_del" onclick="removeBatch()"/>
+            <span class="buttonBox" id="gridToolBar"></span>
           </td>
           <tr>
             <td id="gridContainer"><Grid id="grid"></Grid></td>

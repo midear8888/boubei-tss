@@ -740,6 +740,8 @@ function editParamConfig() {
     			}
     			else {
 	    			delete valuesMap['jsonUrl'];
+
+	    			newValue = newValue.replace(/&/ig, ' '); // 替换&等符号
 					var tmpArray = newValue.split(",");
 					var names = (tmpArray.length > 1 ? tmpArray[1] : tmpArray[0]);
 	    			valuesMap['options'] = {"codes": tmpArray[0], "names": names};
