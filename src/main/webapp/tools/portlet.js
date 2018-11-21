@@ -131,7 +131,7 @@ function openMsgPage() {
 }
 
 function changePasswd() {
-    $.openIframePanel("p2", "修改密码", 440, 300, "modules/um/_password.htm", true);
+    $.openIframePanel("p2", "", 440, 360, "modules/um/_password.htm", true);
 }
 
 // ----------------------------------------- 顶部跑马灯公告栏 ----------------------------------------------------

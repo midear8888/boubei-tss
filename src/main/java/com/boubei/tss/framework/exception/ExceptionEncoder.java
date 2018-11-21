@@ -100,7 +100,7 @@ public class ExceptionEncoder {
             else { // HTTP JSON: 默认用json格式往response写入异常信息
             	beMsg = EasyUtils.obj2String(beMsg);
             	beMsg = (String) EasyUtils.checkNull(beMsg, be.getMessage());
-            	out.println("{\"code\": \"500\", \"errorMsg\": \"" + beMsg.replaceAll("\"", "`") + ".\"}");
+            	out.println("{\"code\": \"TSS-500\", \"errorMsg\": \"" + beMsg.replaceAll("\"", "`") + ".\"}");
             }
         } 
     	catch (Exception e) {

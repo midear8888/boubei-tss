@@ -15,22 +15,24 @@
 <style>
 
 html, body { height: 100%; overflow: hidden; }
-.tssIFrame { position: absolute; top: 33px; width: 100%; border-top: 1px solid rgb(35,60,99); }
+body { background: url(images/loading_f.gif) no-repeat center; }
+.tssIFrame { position: absolute; top: 32px; width: 100%; }
 .hidden { display: none; }
 
-.top { height: 33px; background-color: rgb(35,60,99); box-sizing: border-box; border-bottom: 1px solid #fff; }
+.top { height: 32px; background: url(images/top-bg.png); box-sizing: border-box; }
 .top .logo { 
     display: inline-block; position: absolute; left: 0; top: 0;
     width: 346px; height: 32px; 
-    background: url(images/logo.png) no-repeat center;
+    background: url(images/logo-bg.png) no-repeat center;
 }
+.top .logo img { height: 22px; margin-top: 5px; margin-left: 20px; }
 
-.menu { position: absolute; top:1px; right: 0; font-size: 1.1em;  z-index: 10001; } 
-.menu a { background-color: rgb(35,60,99); color: #b7bac1; }
-.menu a:hover { background-color: #444; color: #fff; text-decoration: none; }
+.menu { position: absolute; top:1px; right: 0; font-size: 1.15em;  z-index: 10001; } 
+.menu a { background-color: rgb(38,112,141); color: #b7bac1; }
+.menu a:hover { background-color: #60bae3; color: #fff; text-decoration: none; }
 
 .menu ul { list-style-type: none; } 
-.menu ul li { float:left; position:relative; width: 90px; text-align:center;  } 
+.menu ul li { float:left; position:relative; width: 88px; text-align:center;  } 
 .menu>ul>li { border-right: 1px solid rgba(204,204,204,0.2); }
 .menu ul li a, 
 .menu ul li a:visited { display: block; height: 30px; line-height: 30px; 
@@ -59,6 +61,8 @@ li.r9,li.r8,li.ra,li.ru { display: none; }
 #notice .container>div>a:active { color: #ff7f24; }
 #noticePanel .title { background-color: rgb(35,60,99); }
 span.max, span.min { display: none; }
+
+#userInfo:before { content: url(images/login-user.png); margin-right: 6px; margin-top: -3px; height: 20px; display: inline-block; vertical-align: middle; }
 
 </style>
 
@@ -90,7 +94,7 @@ $(function(){
     getBIMenu();
 
     getParam("index_logo", function(result) {
-        result && $(".top .logo").css("background", "url(" +result+ ") no-repeat center");
+        result && $(".top .logo img").attr("src", result);
     });
     getParam("sysTitle", function(result) {
         document.title = result;
@@ -100,7 +104,7 @@ $(function(){
 
 window.onresize = resizeIFrame;
 var resizeIFrame = function resizeIFrame() {
-    $(".tssIFrame").css("height", (document.body.offsetHeight - 33) + "px"); 
+    $(".tssIFrame").css("height", (document.body.offsetHeight - 32) + "px"); 
 }
 
 // ----------------------------------- 获取BI报表、数据表一级菜单 -----------------------------------
@@ -169,7 +173,7 @@ function buildMenu(reports, records, p) {
         if( Math.abs(pid) == rootId ) { // 一级目录
             var li = tssJS.createElement("li");
             $(li).html("<a onclick='openLevelOne(" +id+ ")'>" +name+ "</a>");
-            $(li).find("a").css("color", "orange");
+            // $(li).find("a").css("color", "orange");
 
             if( level1Num <= 2 ) {  // 直接放顶级目录里
                 // $(".menu>ul").appendChild(li); 
@@ -238,7 +242,7 @@ function openLevelOne(group, firstTime) {
 <body>
  
 <div class="top">
-    <div class="logo"></div>
+    <div class="logo"><img src="images/logo.png"/></div>
     <div class="menu"> 
         <ul> 
             <li id="_bi">
@@ -266,7 +270,7 @@ function openLevelOne(group, firstTime) {
                     <li class="ra"><a onclick="openUrl('modules/um/online.html')">在线用户</a></li>
                 </ul>
             </li>  
-            <li style="width: 100px;">
+            <li style="width: 105px;">
                 <a onclick='fixUserInfo()' id="userInfo">个人信息</a>
                 <ul>
                     <li><a onclick="logout()">注销登陆</a></li>
