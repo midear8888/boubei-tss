@@ -57,6 +57,8 @@ public class ModuleDef extends ARecordTable {
 	
 	private String status; // creating|opened|closed
 	
+	private Integer seqno = 0; // 
+	
 //	private Double price1;
 //	private Double price3;  // month * 12 * 0.9
 //	private Double price6;  // month * 12 * 0.85
@@ -208,4 +210,13 @@ public class ModuleDef extends ARecordTable {
 	public void setCode(String code) {
 		this.code = code;
 	}
+
+	public Integer getSeqno() {
+		return seqno;
+	}
+
+	public void setSeqno(Integer seqno) {
+		this.seqno = seqno;
+	}
+
 }

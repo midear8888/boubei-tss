@@ -427,6 +427,7 @@ public class PermissionHelper extends TreeSupportDao<IDecodable> {
      */
     @SuppressWarnings("unchecked")
     public List<Long> getResourceIdsByOperation(String permissionTable, String operation, Long operatorId){
+    	operatorId = (Long) EasyUtils.checkNull(operatorId, Anonymous.one.getId());
         String hql = "select distinct p.id.resourceId from RoleUserMapping ur, " + permissionTable + " p" +
               " where p.operationId = ? and p.roleId = ur.id.roleId and ur.id.userId = ? ";
         return (List<Long>) getEntities( hql, operation, operatorId );
@@ -437,8 +438,7 @@ public class PermissionHelper extends TreeSupportDao<IDecodable> {
     }
     
     public List<Long> getResourceIdsByOperation(String appId, String resourceTypeId, String operationId){
-		Long userId = (Long) EasyUtils.checkNull(Environment.getUserId(), Anonymous.one.getId());
-		return getResourceIdsByOperation(appId, resourceTypeId, operationId, userId);
+		return getResourceIdsByOperation(appId, resourceTypeId, operationId, Environment.getUserId());
     }
     
     public List<Long> getResourceIdsByOperation(String appId, String resourceTypeId, String operationId, Long operatorId){

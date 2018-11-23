@@ -12,6 +12,7 @@ package com.boubei.tss.modules.cloud;
 
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,11 +41,17 @@ public class ModuleAction {
 	@ResponseBody
 	public Object listResource(@PathVariable String resource) {
 		String permissionTable = resource.replace("_", "_permission_");
-		String sql = "select distinct t.id as value, t.name as text, t.decode " +
+		String sql = "select distinct t.id as value, t.name as text, t.decode, t.type " +
 				" from " + resource + " t, " + permissionTable + " p, um_roleusermapping ru  " +
 				" where t.id = p.resourceId and p.roleId = ru.roleId and ru.userId = ? " +
 				"  and disabled = 0 and name not like '$%' and t.id >= 8 order by t.decode";
-		return SQLExcutor.queryL(sql, Environment.getUserId());
+		
+		List<Map<String, Object>> list = SQLExcutor.queryL(sql, Environment.getUserId());
+		for( Map<String, Object> row : list ) {
+			String text = row.get("text") + "（" +row.get("type")+ "）"; 
+			row.put("text", text.replace("（0）", "（组）").replace("（1）", ""));
+		}
+		return list;
 	}
 	
 	/**

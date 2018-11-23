@@ -100,7 +100,7 @@ public class ModuleServiceImpl implements ModuleService {
 	}
 
 	public List<?> listAvaliableModules() {
-		String hql = "select o from ModuleDef o where o.status in ('opened') order by o.id desc ";
+		String hql = "select o from ModuleDef o where o.status in ('opened') order by o.seqno asc, o.id desc ";
 		return commonDao.getEntities(hql);
 	}
 }
