@@ -70,7 +70,6 @@
     }
 
     function initMenus() {
-    	ICON = "images/"
         var item1 = {
             label:"新建角色组",
             callback:addNewRoleGroup,           
@@ -79,46 +78,47 @@
         var item2 = {
             label:"删除",
             callback: function() { delTreeNode(URL_DELETE_NODE); },
-            icon:ICON + "icon_del.gif",
+            icon:"icon icon-x",
             visible:function() {return !isRootNode() && !isSysRole() && getOperation("2");}
         }
         var item3 = {
             label:"编辑",
             callback:function() { editTreeNode(true); },
-            icon:ICON + "edit.gif",           
+            icon:"icon icon-pencil",          
             visible:function() {return !isRootNode() && !isSysRole() && getOperation("2");}
         }
         var item7 = {
             label:"停用",
             callback:function() { stopOrStartTreeNode("1"); },
-            icon:ICON + "stop.gif",           
+            icon:"icon icon-triangle-down",           
             visible:function() {return !isRootNode() && !isSysRole() && !isTreeNodeDisabled() && getOperation("2");}
         }
         var item8 = {
             label:"启用",
             callback:function() { stopOrStartTreeNode("0"); },
-            icon:ICON + "start.gif",           
+            icon:"icon icon-triangle-up",        
             visible:function() {return !isRootNode() && !isSysRole() && isTreeNodeDisabled() && getOperation("2");}
         }
         var item9 = {
             label:"新建角色",
-            callback:addNewRole,           
+            callback:addNewRole,  
+            icon:"icon icon-plus",         
             visible:function() {return (isRoleGroup() || isRootNode()) && getOperation("2");}
         }
         var item11 = {
             label:"移动到...",
             callback:moveNodeTo,
-            icon:ICON + "move.gif",            
+            icon:"icon icon-arrow-left",            
             visible:function() {return !isRootNode() && !isSysRole() && getOperation("2");}
         }
         var item10 = {
             label:"给角色授权",
-            icon:ICON + "role_permission.gif",
             callback:setRolePermission,           
             visible:function() {return isRole() && getOperation("2");}
         }
         var item12 = {
             label:"授予角色",
+            icon:"icon icon-organization",
             callback:function() { 
                 setRole2Permission("2"); 
             },        

@@ -95,8 +95,8 @@ window.onresize = function() {
 /* 事件绑定初始化 */
 function initEvents() {
 	/* 树节点查找 和 刷新 */
-	$(".refreshTreeBT").title("刷新").click( function() { loadInitData(); } );
-	$("#palette .search input[type=button]").addClass("tssbutton small blue").click(searchTree);
+	$(".refreshTreeBT").addClass("icon-sync").title("刷新").click( function() { loadInitData(); } );
+	$("#palette .icon-search").title("查找").click(searchTree);
 
 	var searchKey = $1("searchKey");
 	if( searchKey ) { searchKey.oninput = searchTree; }	
@@ -266,7 +266,7 @@ function setRole2Permission(resourceType, rootId) {
 function createPermissionMenuItem(resourceType, operation) {
 	return {
         label:"授予角色",
-        icon:"../um/images/role_permission.gif",
+        icon:"icon icon-organization",
         callback:function() { 
             setRole2Permission(resourceType); 
         },   

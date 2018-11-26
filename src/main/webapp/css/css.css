@@ -46,6 +46,10 @@ table {
   vertical-align: top;
   height: 100%;
 }
+#gridTitle button.tssbutton > span {
+  font-size: 14px;
+  vertical-align: middle;
+}
 /* 左栏 */
 #palette {
   box-sizing: border-box;
@@ -74,10 +78,20 @@ table {
   width: 80px;
   height: 1.4em;
   text-indent: 2px;
-  margin-right: 3px;
+  margin-left: 8px;
 }
-#palette > div .bar .search .tssbutton {
-  padding: .12em .5em .1em;
+#palette > div .bar .search .icon-search {
+  font-size: 14px;
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  margin-left: 4px;
+  cursor: pointer;
+  vertical-align: middle;
+}
+#palette > div .bar .search .icon-search:hover {
+  color: blue;
+  font-size: 15px;
 }
 #palette > div .bar .icon {
   display: inline-block;
@@ -90,10 +104,14 @@ table {
   position: absolute;
   top: 4px;
   right: 2px;
+  font-size: 16px;
   width: 16px;
   height: 15px;
   cursor: pointer;
-  background: url(../images/icon_refresh.gif) no-repeat center;
+}
+#palette > div .bar .refreshTreeBT:hover {
+  color: blue;
+  font-size: 18px;
 }
 #palette #tree {
   height: auto;

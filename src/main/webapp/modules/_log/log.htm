@@ -6,6 +6,7 @@
 <title>日志查询</title>
 
 <link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link href="../../tools/tssJS/fonts/icons.css" rel="stylesheet" >
 <link href="../../css/css.css" rel="stylesheet">
 
 <script src="../../tools/tssJS/tssJS.all.js"></script>
@@ -59,13 +60,13 @@
 		var item1 = {
 			label:"浏览日志",
 			callback:showLogList,
-			icon:"images/view_list.gif",
+			icon:"icon icon-list-ordered",
 			visible:function() {return !isTreeRoot();}
 		}
 		var item2 = {
 			label:"搜索日志",
 			callback:searchLog,
-			icon:"images/search.gif"
+			icon:"icon icon-search"
 		}
 
 		var menu = new $.Menu();
@@ -79,7 +80,7 @@
 			callback: function() {
 				showLogInfo(false);
 			},
-			icon:"images/view.gif"
+			icon:"icon icon-search"
 		}
 
 		var menu2 = new $.Menu();
@@ -170,7 +171,7 @@
 	  <div>
 	  	<div class="bar">
 			<span class="icon"></span>操作对象
-			<span class="search"><input id="searchKey"/><input type="button" value="查 找"/></span>
+			<span class="search"><input id="searchKey"/><span class="icon-search"/></span>
 			<span class="refreshTreeBT"></span>
 		</div>
 		<Tree id="tree"><div class="loading"></div></Tree>

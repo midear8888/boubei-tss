@@ -43,28 +43,28 @@ function init() {
 }
 
 function initMenus() {
-    ICON = "images/";
     var item1 = {
         label:"新建菜单",
+        icon:"icon icon-plus",
         callback: function() { addNewMenu("1", "菜单"); },
         visible: function() {return "1"==getTreeNodeType() && getOperation("2");}
     }
     var item2 = {
         label:"删除",
         callback: function() { delTreeNode() },
-        icon:ICON + "icon_del.gif",
+        icon:"icon icon-x",
         visible: function() {return getOperation("2");}
     }
     var item3 = {
         label:"编辑",
         callback:editTreeNode,
-        icon:ICON + "icon_edit.gif",
+        icon:"icon icon-pencil",
         visible: function() {return getOperation("2");}
     }
     var item4 = {
         label:"移动到...",
         callback:moveTo,
-        icon:ICON + "icon_move.gif",
+        icon:"icon icon-arrow-right",
         visible: function() {return "1" != getTreeNodeType() && getOperation("2");}
     }
 	var item6 = {
@@ -75,13 +75,13 @@ function initMenus() {
 	var item7 = {
         label:"启用",
         callback: function() { stopOrStartTreeNode("0"); },
-        icon:ICON + "icon_start.gif",
+        icon:"icon icon-triangle-up",
         visible:function() {return isTreeNodeDisabled();}
     }
     var item8 = {
         label:"停用",
         callback: function() { stopOrStartTreeNode("1"); },
-        icon:ICON + "icon_stop.gif",
+        icon:"icon icon-triangle-down",
         visible:function() {return !isTreeNodeDisabled();}
     }
 

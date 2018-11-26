@@ -6,6 +6,7 @@
 <title>数据录入表</title>
 
 <link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link href="../../tools/tssJS/fonts/icons.css" rel="stylesheet" >
 <link href="../../css/css.css" rel="stylesheet">
 <link href="dm.css" rel="stylesheet">
 
@@ -41,7 +42,7 @@
     #listBT1 { }
     #listBT2, #listBT3 { color: blue; }
     #listBT4 { color: #666; }
-    #listBT2, #listBT3, #listBT4 { margin: 0 5px; }
+    #listBT2, #listBT3, #listBT4 { margin: 0 3px; }
     #listBT2>span { color: red; font-size: 13px; }
     .bt_selected { color: blue; box-shadow: 0px 1px blue; }
     .bt_unselected { color: #666; box-shadow: none; }
@@ -285,11 +286,11 @@ function refreshTable() {
     loadGridData(1);
 
     ws.closeAllTabs();
-    tssJS("#gridTitle>button").hide();
+    tssJS("#gridTitle>button.w").hide();
     tssJS(".listBT").removeClass("bt_selected").removeClass("bt_unselected");
     !isLogicDelete && tssJS("#listBT4").hide();
 
-    tssJS("#gridTitle>input").show();
+    tssJS("#gridTitle>button.r").show();
     tssJS("#btn_batch_apply").hide();
     filterTopMenu();
 } 
@@ -307,8 +308,8 @@ function listWorkflow(type) {
     loadGridData(1);
     ws.closeAllTabs();
 
-    tssJS("#gridTitle>input").hide();
-    tssJS("#gridTitle>button").show();
+    tssJS("#gridTitle>button.r").hide();
+    tssJS("#gridTitle>button.w").show();
     tssJS("#btn_ex, #btn_search, #btn_tj").show();
 }
 // 申请提交模式
@@ -321,8 +322,8 @@ function listApply() {
     loadGridData(1);
     ws.closeAllTabs();
 
-    tssJS("#gridTitle>input").show();
-    tssJS("#gridTitle>button").hide();
+    tssJS("#gridTitle>button.r").show();
+    tssJS("#gridTitle>button.w").hide();
     filterTopMenu();
 }
 // 回收站模式
@@ -376,19 +377,19 @@ function initMenus() {
     var item1 = {
         label:"编辑",
         callback:  function() { showDetail() },
-        icon: "images/icon_edit.gif",
+        icon:"icon icon-pencil",
         visible:function() {return canEditRow() && !isRecycled();}
     }
     var item2 = {
         label:"复制",
         callback: function() { showDetail("_copy") },
-        icon: "images/icon_copy.gif",
+        icon:"icon icon-diff",
         visible:function() {return  _operation.contains("1") && tssJS.G("grid").getColumnValue("id") && !isRecycled();}
     }
     var item3 = {
         label:"删除",
         callback: remove,
-        icon: "images/icon_del.gif",
+        icon:"icon icon-x",
         visible:function() {return canEditRow();}
     }
     var item32 = {
@@ -399,12 +400,13 @@ function initMenus() {
     }
     var item4 = {
         label:"管理附件",
+        icon:"icon icon-file-submodule",
         callback: function() { manageAttach(null, "row"); },
         visible:function() {return canEditRow() && needFile && !isRecycled();}
     }
     var item5 = {
         label:"查看修改记录",
-        icon: "images/icon_view.gif",
+        icon:"icon icon-search",
         callback: function() { showEditLog(); },
         visible:function() { return canEditRow(); }
     }
@@ -1270,20 +1272,20 @@ function delAttach() {
         <tr>
           <td id="gridTitle">
 <span class="icon"></span><span id="rcTitle">资源列表</span>
-<button class="tssbutton small white" onclick="batchApprove()" id="btn_batch_approve">批量审批通过</button>
-<button class="tssbutton small white" onclick="listWorkflow('wfing')" id="btn_wfing">待处理</button>
-<button class="tssbutton small white" onclick="listWorkflow('wfdone')" id="btn_wfdone">已处理</button>
-<button class="tssbutton small white" onclick="listWorkflow('wfcc')" id="btn_cc">抄送我</button>
+<button class="w tssbutton small white" onclick="batchApprove()" id="btn_batch_approve"><span class="icon-check"></span>审批通过</button>
+<button class="w tssbutton small white" onclick="listWorkflow('wfing')" id="btn_wfing">待处理</button>
+<button class="w tssbutton small white" onclick="listWorkflow('wfdone')" id="btn_wfdone">已处理</button>
+<button class="w tssbutton small white" onclick="listWorkflow('wfcc')" id="btn_cc">抄送我</button>
 
-<input type="button" class="tssbutton small white" value="新 增" id="btn_create" onclick="showDetail('_new')"/>
-<input type="button" class="tssbutton small white" value="修 改" id="btn_update" onclick="showDetail('_update')"/>
-<input type="button" class="tssbutton small white" value="删 除" id="btn_batch_del" onclick="removeBatch()"/>
-<input type="button" class="tssbutton small white" value="查 询" id="btn_search" onclick="showQueryForm()"/>
-<input type="button" class="tssbutton small white" value="统 计" id="btn_tj" onclick="showQueryForm(true)"/>
-<input type="button" class="tssbutton small white" value="导 出" id="btn_ex" onclick="backup(params)"/>
-<input type="button" class="tssbutton small white" value="Excel模板" id="btn_tl" onclick="getImportTL()"/>
-<input type="button" class="tssbutton small white" value="Excel导入" id="btn_imp" onclick="batchImport()"/>
-<input type="button" class="tssbutton small white" value="批量提交" id="btn_batch_apply" onclick="applyBatch()"/>
+<button class="r tssbutton small white" id="btn_create" onclick="showDetail('_new')"><span class="icon-plus"></span>新增</button>
+<button class="r tssbutton small white" id="btn_update" onclick="showDetail('_update')"><span class="icon-pencil"></span>修改</button>
+<button class="r tssbutton small white" id="btn_batch_del" onclick="removeBatch()"><span class="icon-x"></span>删除</button>
+<button class="r tssbutton small white" id="btn_search" onclick="showQueryForm()"><span class="icon-search"></span>查询</button>
+<button class="r tssbutton small white" id="btn_tj" onclick="showQueryForm(true)">统 计</button>
+<button class="r tssbutton small white" id="btn_ex" onclick="backup(params)"><span class="icon-arrow-down"></span>导出</button>
+<button class="r tssbutton small white" id="btn_tl" onclick="getImportTL()">Excel模板</button>
+<button class="r tssbutton small white" id="btn_imp" onclick="batchImport()">Excel导入</button>
+<button class="r tssbutton small white" id="btn_batch_apply" onclick="applyBatch()">批量提交</button>
 
 <span id="customizeBox"></span>
 <span class="buttonBox" id="gridToolBar"></span>

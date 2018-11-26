@@ -50,32 +50,32 @@ function loadInitData() {
 }
 
 function initMenus() {
-	ICON = "images/";
     var item1 = {
         label:"新建组件",
         callback:addNewComponent,
+        icon:"icon icon-plus",
         visible:function() {return isGroup();}
     }
     var item2 = {
         label:"删除",
         callback: function() { delTreeNode() },
-        icon:ICON + "icon_del.gif"
+        icon:"icon icon-x"
     }
     var item3 = {
         label:"编辑",
         callback:editTreeNode,
-        icon:ICON + "icon_edit.gif"
+        icon:"icon icon-pencil"
     }
     var item4 = {
         label:"启用",
         callback: function() { stopOrStartTreeNode("0"); },
-        icon:ICON + "icon_start.gif",
+        icon:"icon icon-triangle-up",
         visible:function() {return !isGroup() && isTreeNodeDisabled();}
     }
     var item5 = {
         label:"停用",
         callback: function() { stopOrStartTreeNode("1"); },
-        icon:ICON + "icon_stop.gif",
+        icon:"icon icon-triangle-down",
         visible:function() {return !isGroup() && !isTreeNodeDisabled();}
     }
     var item6 = {
@@ -88,13 +88,13 @@ function initMenus() {
     var item7 = {
         label:"导出",
         callback:exportComponent,
-        icon:ICON + "export.gif",
+        icon:"icon icon-chevron-left",
         visible:function() {return !isGroup();}
     }
     var item8 = {
         label:"导入",
         callback:importComponent,
-        icon:ICON + "import.gif",
+        icon:"icon icon-chevron-right",
         visible:function() {return isGroup();}
     }
     var item9 = {
@@ -105,13 +105,13 @@ function initMenus() {
 	var item10 = {
         label:"预览",
         callback:function() {previewElement();},
-        icon:ICON + "preview.gif",
+        icon:"icon icon-search",
         visible:function() {return !isGroup();}
     }
     var item11 = {
         label:"移动到...",
         callback:moveTo,
-        icon:ICON + "icon_move.gif",
+        icon:"icon icon-arrow-right",
         visible: function() {return !isGroup();}
     }
 

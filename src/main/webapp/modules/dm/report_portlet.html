@@ -22,6 +22,10 @@ html, body { height: 100%; }
 body { width:100%; overflow: hidden; }
 #t1 { height: 100%; width: 100%; }
 #gridContainer { vertical-align: top; }
+#gridTitle button.tssbutton > span {
+  font-size: 14px;
+  vertical-align: middle;
+}
 
 #subscribeV { display:none; width: 600px; min-height: 200px;
     background-color: #fff; font-size: 13px; color: #555; 
@@ -98,7 +102,7 @@ body { width:100%; overflow: hidden; }
   <tr>
     <td id="gridTitle">
       <span class="icon"></span><span class="title">查询结果</span>
-<input type="button" class="tssbutton small white btDownload" value="导出数据"  style="margin-left: 15px;" />
+<button class="tssbutton small white btDownload" style="margin-left: 15px;"><span class="icon-arrow-down"></span>导出数据</button>
       <span class="buttonBox" id="gridToolBar"></span>
     </td>
   </tr>

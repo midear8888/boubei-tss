@@ -45,7 +45,7 @@ public class LogAction extends BaseActionSupport {
         for(Iterator<?> it = data.iterator(); it.hasNext();){
             String operateObject = (String) it.next();
             operateObject = operateObject.replaceAll("&", "");
-            sb.append("<treeNode id=\"" + operateObject + "\" name=\"" + operateObject + "\" icon=\"images/folder.gif\"/>");
+            sb.append("<treeNode id=\"" + operateObject + "\" name=\"" + operateObject + "\" icon=\"../../tools/tssJS/img/tree/folder.gif\"/>");
         }
         print("ObjectTree", sb.append("</treeNode></actionSet>"));
     }

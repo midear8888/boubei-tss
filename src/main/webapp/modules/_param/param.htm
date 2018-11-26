@@ -6,6 +6,7 @@
 <title>参数管理</title>
 
 <link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link href="../../tools/tssJS/fonts/icons.css" rel="stylesheet" >
 <link href="../../css/css.css" rel="stylesheet">
 
 <script src="../../tools/tssJS/tssJS.all.js"></script>
@@ -54,12 +55,13 @@
     function initMenus() {
         var item1 = {
             label:"新建参数",
+            icon:"icon icon-plus",
             visible:function() {return "0" == getTreeNodeType();}
         }
         var item2 = {
             label:"删除",
             callback:delParam,
-            icon:ICON + "del.gif",
+            icon:"icon icon-x",
             visible:function() {return !isTreeRoot();}
         }
         var item3 = {
@@ -67,19 +69,19 @@
             callback:function() {
                 editParamInfo(true);
             },
-            icon:ICON + "edit.gif",
+            icon:"icon icon-pencil",
             visible:function() {return !isTreeRoot();}
         }
         var item4 = {
             label:"启用",
             callback:enableParam,
-            icon:ICON + "start.gif",
+            icon:"icon icon-triangle-up",
             visible:function() {return !isTreeRoot() && isTreeNodeDisabled();}
         }
         var item5 = {
             label:"停用",
             callback:disableParam,
-            icon:ICON + "stop.gif",
+            icon:"icon icon-triangle-down",
             visible:function() {return !isTreeRoot() && !isTreeNodeDisabled();}
         }
         var item7 = {
@@ -92,19 +94,18 @@
         var item9 = {
             label:"复制",
             callback:copyParam,
-            icon:ICON + "copy.gif",
+            icon:"icon icon-diff",
             visible:function() {return "1" == getTreeNodeType();}
         }
         var item11 = {
             label:"复制到...",
             callback:copyParamTo,
-            icon:ICON + "copy_to.gif",
             visible:function() {return "1" == getTreeNodeType();}
         }
         var item12 = {
             label:"移动到...",
             callback:moveParamTo,
-            icon:ICON + "move.gif",
+            icon:"icon icon-arrow-right",
             visible:function() {return "1" == getTreeNodeType() || "0" == getTreeNodeType();}
         }
         var item13 = {
@@ -112,7 +113,7 @@
             callback:function() {
                 editParamInfo(false);
             },
-            icon:ICON + "view.gif",
+            icon:"icon icon-search",
             visible:function() {return !isTreeRoot();}
         }
         var item14 = {
@@ -426,7 +427,7 @@
             <div>
                 <div class="bar">
                     <span class="icon"></span>参数列表
-                    <span class="search"><input id="searchKey"/><input type="button" value="查 找"/></span>
+                    <span class="search"><input id="searchKey"/><span class="icon-search"/></span>
                     <span class="refreshTreeBT"></span>
                 </div>
                 <Tree id="tree" moveable="true"><div class="loading"></div></Tree>

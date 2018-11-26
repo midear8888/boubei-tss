@@ -43,7 +43,7 @@ import com.boubei.tss.util.BeanUtil;
 })
 @SequenceGenerator(name = "group_sequence", sequenceName = "group_sequence", initialValue = 1000, allocationSize = 10)
 @JsonIgnoreProperties(value={"pk", "attributes4XForm", "attributes", "parentClass", "creatorId", "createTime", "creatorName", 
-		"updatorId", "updateTime", "updatorName", "lockVersion", "decode", "seqNo", "levelNo", "resourceType", "fromGroupId"})
+		"updatorId", "updateTime", "updatorName", "lockVersion", "decode", "seqNo", "levelNo", "resourceType", "fromGroupId", "syncDefine"})
 public class Group extends OperateInfo implements IDecodable, IXForm, IResource {
 
 	public static final Integer MAIN_GROUP_TYPE      = 1; // 主组类型
@@ -71,6 +71,9 @@ public class Group extends OperateInfo implements IDecodable, IXForm, IResource 
 	// 和其他用户管理系统的同步时的对应信息
 	private String  fromApp;
 	private String  fromGroupId;   // 外部应用用户组id:要同步的系统中对应的节点的编号，针对db数据源、ldap数据源的同步中使用
+	
+	@Column(length = 2000)
+	private String  syncConfig;    // 同步定义参数描述，xml格式
 	
 	/**
 	 * 组域：用以隔离不同组织（企业）的数据。企业注册时生成，其所有子组/用户/数据都记录domain
@@ -208,5 +211,13 @@ public class Group extends OperateInfo implements IDecodable, IXForm, IResource 
     
 	public Serializable getPK() {
 		return this.id;
+	}
+
+	public String getSyncConfig() {
+		return syncConfig;
+	}
+
+	public void setSyncConfig(String syncConfig) {
+		this.syncConfig = syncConfig;
 	}
 }

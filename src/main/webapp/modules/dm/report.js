@@ -53,7 +53,7 @@ function initMenus() {
 	var item1 = {
 		label:"报表查询",
 		callback:showReport,
-		icon: ICON + "icon_search.gif",
+		icon:"icon icon-search",
 		visible:function() {return isReport() && getOperation("1");}
 	}
 	var item10 = {
@@ -61,7 +61,7 @@ function initMenus() {
 		callback: function() {
 			openReportDefine(false, true);
 		},
-		icon: ICON + "icon_view.gif",
+		icon:"icon icon-file-text",
 		visible:function() { return isReport() && getOperation("1") && !getOperation("2"); }
 	}
 	var item2 = {
@@ -69,7 +69,7 @@ function initMenus() {
 		callback: function() {
 			openReportDefine(false, false);
 		},
-		icon: ICON + "icon_edit.gif",
+		icon:"icon icon-pencil",
 		visible:function() { return !isTreeRoot() && getOperation("2"); }
 	}
 	var item3 = {
@@ -97,55 +97,53 @@ function initMenus() {
 	var item5 = {
 		label:"删除",
 		callback:deleteReport,
-		icon: ICON + "icon_del.gif",
+		icon:"icon icon-x",
 		visible:function() {return !isTreeRoot() && getOperation("3");}
 	}
 	var item6 = {
 		label:"复制到",
 		callback:copyReportTo,
-		icon: ICON + "icon_copy.gif",
+		icon:"icon icon-file-symlink-file",
 		visible:function() {return isReport() && getOperation("2");}
 	}
 	var item7 = {
 		label:"移动到",
 		callback:moveReport,
-		icon: ICON + "icon_move.gif",
+		icon:"icon icon-arrow-right",
 		visible:function() {return !isTreeRoot() && getOperation("2");}
 	}
 	var item8 = {
 		label:"停用",
 		callback:disableReport,
-		icon: ICON + "icon_stop.gif",
+		icon:"icon icon-triangle-down",
 		visible:function() {return !isTreeRoot() && !isTreeNodeDisabled() && getOperation("4");}
 	}
 	var item9 = {
 		label:"启用",
 		callback:enableReport,
-		icon: ICON + "icon_start.gif",
+		icon:"icon icon-triangle-up",
 		visible:function() {return !isTreeRoot() && isTreeNodeDisabled() && getOperation("4");}
 	}
 	var item11 = {
 		label:"测试数据服务",
 		callback:testRestfulReportService,
-		icon: ICON + "icon_service.gif",
+		icon:"icon icon-tools",
 		visible:function() {return isReport() && getOperation("2");}
 	}
 	var item12 = {
 		label:"定时邮件推送",
 		callback:scheduleReport,
-		icon: ICON + "schedule.gif",
+		icon:"icon icon-clock",
 		visible:function() {return isReport() && getOperation("2");}
 	}
 	var item13 = {
         label:"导出报表定义",
         callback:exportReportDef,
-        icon:ICON + "export.gif",
         visible:function() {return !isTreeRoot() && getOperation("2");}
     }
     var item14 = {
         label:"导入报表定义",
         callback:importReportDef,
-        icon:ICON + "import.gif",
         visible:function() {return !isReport() && getOperation("2");}
     }
     var item15 = {
@@ -578,7 +576,7 @@ function configParams() {
 function initParamTreeMenus() {
     var item1 = {
         label:"删除",
-        icon: ICON + "icon_del.gif",
+        icon:"icon icon-x",
         callback: function() { paramTree.removeActiveNode(); },
         visible: function() { 
         	return paramTree.getActiveTreeNodeId() !== '_root';
@@ -586,6 +584,7 @@ function initParamTreeMenus() {
     }
     var item2 = {
         label:"新建参数",
+        icon:"icon icon-plus",
         callback: createNewParam,
         visible: function() { 
         	return paramTree.getActiveTreeNodeId() === '_root'; 

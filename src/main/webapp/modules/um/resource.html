@@ -5,6 +5,7 @@
 <meta charset="UTF-8">
 <title> 应用资源信息 </title>
 <link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link href="../../tools/tssJS/fonts/icons.css" rel="stylesheet" >
 <link href="../../css/css.css" rel="stylesheet">
 
 <script src="../../tools/tssJS/tssJS.all.js"></script>
@@ -43,14 +44,13 @@
         loadInitData();
     }
 
-    ICON = "images/"
     function initMenus() {
         var item1 = {
             label: "查看",
             callback: function() {
                 editTreeNode(false);
             },
-            icon: ICON + "view.gif",
+            icon:"icon icon-search",
             visible: function() {
                 return "2" == getNodeType();
             }
@@ -58,13 +58,14 @@
         var item2 = {
             label: "编辑",
             callback: editTreeNode,
-            icon: ICON + "edit.gif",
+            icon:"icon icon-pencil",
             visible: function() {
                 return checkTreeNodeEditable();
             }
         }
         var item3 = {
             label: "新建应用",
+            icon:"icon icon-plus",
             callback: function() {
                 getOtherApplication(true);
             },
@@ -75,7 +76,7 @@
         var item4 = {
             label: "导入",
             callback: importApplication,
-            icon: ICON + "import.gif",
+            icon:"icon icon-file-symlink-file",
             visible: function() {
                 return "1" == getNodeType() && "tssApp-1" == getTreeNodeId();
             }

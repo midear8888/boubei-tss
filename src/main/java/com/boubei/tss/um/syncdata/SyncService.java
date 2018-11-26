@@ -21,14 +21,11 @@ import org.dom4j.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.modules.progress.Progress;
 import com.boubei.tss.modules.progress.Progressable;
 import com.boubei.tss.um.UMConstants;
-import com.boubei.tss.um.dao.IApplicationDao;
 import com.boubei.tss.um.dao.IGroupDao;
 import com.boubei.tss.um.dao.IUserDao;
-import com.boubei.tss.um.entity.Application;
 import com.boubei.tss.um.entity.Group;
 import com.boubei.tss.um.entity.GroupUser;
 import com.boubei.tss.um.entity.User;
@@ -48,7 +45,6 @@ public class SyncService implements ISyncService, Progressable {
 	
 	@Autowired private IUserDao  userDao;
     @Autowired private IGroupDao  groupDao;
-    @Autowired private IApplicationDao  applicationDao;
     @Autowired private ResourcePermission resourcePermission;
 
     private Map<String, String> initParam(String paramDescXML){
@@ -61,45 +57,45 @@ public class SyncService implements ISyncService, Progressable {
         return param;
     }
     
-    public Map<String, Object> getCompleteSyncGroupData(Long mainGroupId, String applicationId, String fromGroupId) {
-        Application application = applicationDao.getApplication(applicationId);
-        if(application == null) {
-            throw new BusinessException("did not find other system(" + applicationId + ")'s config.");
-        }
-        
+    public Map<String, Object> getCompleteSyncGroupData(Long mainGroupId) {
         // 保存UM用户组对其它应用用户组 的 ID对应的关系 key:fromGroupId -- value:mainGgroupId
         Map<String, Long> idMapping = new HashMap<String, Long>();
         
-        // 取已经同步的用户组. 设置父子节点关系时用到（其实只需”同步节点“的父节点 ＋ 子枝）
+        // 取已经同步的用户组. 设置父子节点关系时用到（其实只需'同步节点'的父节点 ＋ 子枝）
         List<?> allGroups = groupDao.getEntitiesByNativeSql("select t.* from um_group t where t.fromGroupId is not null ", Group.class); 
         for(Iterator<?> it = allGroups.iterator();it.hasNext();){
             Group group = (Group)it.next();
             idMapping.put(group.getFromGroupId(), group.getId());
         }
 
-        Map<String, String> appParams = initParam(application.getParamDesc());
-        Integer dataSourceType = application.getDataSourceType();
-        List<?> groups = getGroups(dataSourceType, appParams, fromGroupId); //从其它系统获取需要同步的所有用户组
-        List<?> users  = getUsers (dataSourceType, appParams, fromGroupId); //从其它系统获取需要同步的所有用户
+        Group mainGroup = groupDao.getEntity(mainGroupId);
+        Map<String, String> syncConfig = initParam(mainGroup.getSyncConfig());
+        String dsType = syncConfig.get("dsType");
+        String fromApp = syncConfig.get("fromApp");
+        String fromGroupId = syncConfig.get("fromGroupId");
+        fromGroupId = (String) EasyUtils.checkNull(fromGroupId, mainGroup.getFromGroupId());
+        
+        List<?> groups = getGroups(dsType, syncConfig, fromGroupId); //从其它系统获取需要同步的所有用户组
+        List<?> users  = getUsers (dsType, syncConfig, fromGroupId); //从其它系统获取需要同步的所有用户
         
         Map<String, Object> paramsMap = new HashMap<String, Object>();
         paramsMap.put("groupId", mainGroupId);
         paramsMap.put("groups", groups);
         paramsMap.put("users", users);
         paramsMap.put("idMapping", idMapping);
-        paramsMap.put("fromApp", applicationId);
+        paramsMap.put("fromApp", EasyUtils.checkNull(fromApp, "G" + mainGroupId));
 
         return paramsMap;
     }
     
-    private List<?> getGroups(Integer dataSourceType, Map<String, String> appParams, String groupId){
+    private List<?> getGroups(String dsType, Map<String, String> appParams, String groupId){
         String sql = appParams.get(SyncDataHelper.QUERY_GROUP_SQL_NAME);
-        return SyncDataHelper.getOutDataDao(dataSourceType).getOtherGroups(appParams, sql, groupId);
+        return SyncDataHelper.getOutDataDao(dsType).getOtherGroups(appParams, sql, groupId);
     }
 
-    private List<?> getUsers(Integer dataSourceType, Map<String, String> appParams, String groupId){
+    private List<?> getUsers(String dsType, Map<String, String> appParams, String groupId){
         String sql = appParams.get(SyncDataHelper.QUERY_USER_SQL_NAME);
-        return SyncDataHelper.getOutDataDao(dataSourceType).getOtherUsers( appParams, sql, groupId );
+        return SyncDataHelper.getOutDataDao(dsType).getOtherUsers( appParams, sql, groupId );
     }
     
     @SuppressWarnings("unchecked")

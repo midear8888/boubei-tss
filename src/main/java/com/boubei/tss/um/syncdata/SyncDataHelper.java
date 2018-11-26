@@ -10,7 +10,6 @@
 
 package com.boubei.tss.um.syncdata;
 
-import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.helper.dto.UserDTO;
@@ -67,16 +66,12 @@ public class SyncDataHelper {
         user.setFromUserId(userDTO.getId());
     }
     
-    public static IOutDataDao getOutDataDao(Integer dataSourceType) {
+    public static IOutDataDao getOutDataDao(String dataSourceType) {
         if (UMConstants.DATA_SOURCE_TYPE_LDAP.equals(dataSourceType)) {
             return new LDAPDataDao();
         }
         
-        if (UMConstants.DATA_SOURCE_TYPE_DB.equals(dataSourceType)) {
-            return new DBDataDao();
-        }
-        
-        throw new BusinessException("dataSource type should be one of db,ldap." + dataSourceType);
+        return new DBDataDao();
     }
 }
 

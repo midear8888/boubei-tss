@@ -35,8 +35,8 @@ public final class UMConstants {
 	/**
 	 * 同步功能相关常量定义
 	 */	
-	public static final Integer DATA_SOURCE_TYPE_LDAP = 1;
-	public static final Integer DATA_SOURCE_TYPE_DB   = 2;
+	public static final String DATA_SOURCE_TYPE_LDAP = "ldap";
+	public static final String DATA_SOURCE_TYPE_DB   = "db";
 	
 	
 	// ===========================================================================

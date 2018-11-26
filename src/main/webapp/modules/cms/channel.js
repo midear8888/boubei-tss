@@ -61,7 +61,6 @@ if(IS_TEST) {
 }
 
 function init() { 
-    ICON = "images/";
     initMenus();
     initEvents();
 
@@ -78,16 +77,19 @@ function isChannel() {
 function initMenus() { 
     var item1 = {
         label:"新建站点",
+        icon:"icon icon-plus",
         callback:addNewSite,
         visible:function() { return isTreeRoot() && getOperation("1");}
     }
     var item2 = {
         label:"新建栏目",
+        icon:"icon icon-plus",
         callback:addNewChannel,
         visible:function() { return !isTreeRoot() && getOperation("2");}
     }
     var item3 = {
         label:"新建文章",
+        icon:"icon icon-file-text",
         callback:function() { addNewArticle(); },
         visible:function() { return isChannel() && getOperation("3");}
     }
@@ -95,18 +97,20 @@ function initMenus() {
     var submenu4 = new $.Menu(); // 发布
     var item4 = {
         label:"发布",
-        icon:ICON + "publish_source.gif",
+        icon:"icon icon-sign-out",
         visible:function() { return !isTreeRoot() && getOperation("4");},
         submenu:submenu4
     }
     var subitem4a = {
         label:"增量发布",
+        icon:"icon icon-plus",
         callback:function() { 
             publishArticle(1);
         }
     }
     var subitem4b = {
         label:"完全发布",
+        icon:"icon icon-sync",
         callback:function() { 
             $.confirm("你确定要执行【完全发布】吗？完全发布后栏目下所有文章的发布日期将都被更新成最新日期，建议优先使用【增量发布】", "确认发布", 
                 function() { publishArticle(2); },
@@ -120,61 +124,63 @@ function initMenus() {
     var item5 = {
         label:"编辑",
         callback:editTreeNode,
-        icon:ICON + "icon_edit.gif",
+        icon:"icon icon-pencil",
         visible:function() { return !isTreeRoot() && getOperation("5");}
     }
     var item6 = {
         label:"删除",
         callback: function() { delTreeNode(URL_DEL_NODE) },
-        icon:ICON + "icon_del.gif",
+        icon:"icon icon-x",
         visible:function() { return !isTreeRoot() && getOperation("6");}
     }
     var item7 = { 
         label:"启用",
         callback: function() { stopOrStartTreeNode("0"); },
-        icon:ICON + "icon_start.gif",
+        icon:"icon icon-triangle-up",
         visible:function() { return isTreeNodeDisabled() && !isTreeRoot() && getOperation("7");}
     }
     var item8 = {
         label:"停用",
         callback: function() { stopOrStartTreeNode("1"); },
-        icon:ICON + "icon_stop.gif",
+        icon:"icon icon-triangle-down",
         visible:function() { return !isTreeNodeDisabled() && !isTreeRoot() && getOperation("7");}
     }
     var item9 = {
         label:"移动到...",
         callback:moveChannelTo,
-        icon:ICON + "icon_move.gif",
+        icon:"icon icon-arrow-right",
         visible:function() { return isChannel() && getOperation("6");}
     }
     var item10 = {
         label:"浏览文章",
         callback: function() { showArticleList(); },
-        icon:ICON + "icon_view_list.gif",
+        icon:"icon icon-list-unordered",
         visible:function() { return isChannel() && getOperation("1");}
     }        
     var item12 = {
         label:"搜索文章",
         callback: searchArticles,
-        icon:"images/search.gif",
+        icon:"icon icon-search",
         visible:function() { return getOperation("1"); }
     } 
 
     var submenu5 = new $.Menu(); // 即时建立索引
     var item11 = {
         label:"即时建索引",
-        icon:ICON + "time_tactic.gif",
+        icon:"icon icon-clock",
         visible:function() { return isSite() && getOperation("4");},
         submenu:submenu5
     }
     var subitem5a = {
         label:"增量索引",
+        icon:"icon icon-plus",
         callback:function() { 
             createLuceneIndex(1);
         }
     }
     var subitem5b = {
         label:"重建索引",
+        icon:"icon icon-sync",
         callback:function() { 
             createLuceneIndex(0);
         }
@@ -495,19 +501,19 @@ function initGridMenu() {
     var item1 = {
         label:"编辑",
         callback:editArticleInfo,
-        icon:ICON + "icon_edit.gif",
+        icon:"icon icon-pencil",
         visible:function() { return getGridOperation("5");}
     }
     var item2 = {
         label:"删除",
         callback:delArticle,
-        icon:ICON + "icon_del.gif",
+        icon:"icon icon-x",
         visible:function() { return getGridOperation("5");}
     }
     var item3 = {
         label:"移动到...",
         callback:moveArticleTo,
-        icon:ICON + "icon_move.gif",
+        icon:"icon icon-arrow-right",
         visible:function() { return getGridOperation("5");}
     }
     var item4 = {
@@ -515,7 +521,7 @@ function initGridMenu() {
         callback:function() { 
             setTopArticle("1");
         },
-        icon:ICON + "stick.gif",
+        icon:"icon icon-cloud-upload",
         visible:function() { return "1" != getArticleAttribute("isTop") && getGridOperation("5");}
     }
     var item5 = {
@@ -523,7 +529,7 @@ function initGridMenu() {
         callback:function() { 
             setTopArticle("0");
         },
-        icon:ICON + "unstick.gif",
+        icon:"icon icon-cloud-download",
         visible:function() { return "1" == getArticleAttribute("isTop") && getGridOperation("5");}
     }
 

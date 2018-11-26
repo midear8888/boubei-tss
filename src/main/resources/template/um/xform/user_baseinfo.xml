@@ -8,7 +8,7 @@
 		<column name="passwordQuestion" caption="提示问题" empty="true" maxLength="100"/>
 		<column name="passwordAnswer"   caption="提示答案" empty="true" maxLength="100"/>
 		<column name="sex" caption="性别" mode="combo" values="1|0" texts="男|女"/>
-		<column name="birthday" caption="出生年月" mode="date" pattern="yyyy-MM-dd" maxLength="32"/>
+		<column name="birthday" caption="入职日期" mode="date" pattern="yyyy-MM-dd" maxLength="32"/>
 		<column name="employeeNo" caption="员工编号" maxLength="100"/>
 		<column name="email" caption="电子邮件" maxLength="100" inputReg="\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*"/>
 		<column name="telephone" caption="手机" maxLength="30"/>
@@ -40,30 +40,16 @@
 			<TD><input binding="telephone"/></TD>
 		</TR>
 		<TR>
-			<TD><label binding="email"/></TD>
-			<TD><input binding="email" style="width:250px;"/></TD>
-
-			<TD><label binding="address"/></TD>
-			<TD><input binding="address" style="width:250px;"/></TD>
-		</TR>
-		<TR>
-			<TD><label binding="passwordQuestion"/></TD>
-			<TD><input binding="passwordQuestion" style="width:250px;"/></TD>
-
-			<TD><label binding="passwordAnswer"/></TD>
-			<TD><input binding="passwordAnswer" style="width:250px;"/></TD>
-		</TR>
-		<TR>
 			<TD><label binding="employeeNo"/></TD>
 			<TD><input binding="employeeNo"/></TD>
 			
-			<TD><label binding="certificateNo"/></TD>
-			<TD><input binding="certificateNo" style="width:250px;"/></TD>
+			<TD><label binding="email"/></TD>
+			<TD><input binding="email" style="width:250px;"/></TD>
 		</TR>
-		<TR>	
+		<TR>
 			<TD><label binding="birthday"/></TD>
 			<TD><input binding="birthday"/></TD>
-			
+ 
 			<TD><label binding="authToken"/></TD>
 			<TD><input binding="authToken" style="width:250px;"/></TD>
 		</TR>

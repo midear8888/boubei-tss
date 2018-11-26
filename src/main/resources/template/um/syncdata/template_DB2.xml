@@ -18,10 +18,6 @@
 同步员工基础信息表（自动同步各个域下员工到对应的域组下）: JobConfig : -8,STAFF，【$企业域】上触发手动同步
 <?xml version="1.0" encoding="UTF-8"?>
 <params>
-	<url>jdbc:mysql://localhost:3306/tms</url>
-	<driver>com.mysql.jdbc.Driver</driver>
-	<user>root</user>
-	<password>boubei@com</password>
 	<groupSql>
 select distinct id, parentId, name, null description, 0 disabled  from um_group where parentId = -8 and 999 > :groupId
 	</groupSql>

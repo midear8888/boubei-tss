@@ -19,13 +19,9 @@ public interface ISyncService {
      * 
      * @param mainGroupId   
      *              选中进行同步的组ID
-     * @param applicationId  
-     *              应用ID
-     * @param fromGroupId 
-     *              选中进行同步的组对应外部应用的ID
      * @return
      */
-    Map<String, Object> getCompleteSyncGroupData(Long mainGroupId, String applicationId, String fromGroupId);
+    Map<String, Object> getCompleteSyncGroupData(Long mainGroupId);
  
 
 }

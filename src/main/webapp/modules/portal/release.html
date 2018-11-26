@@ -6,6 +6,7 @@
 <title>门户发布管理</title>
 
 <link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link href="../../tools/tssJS/fonts/icons.css" rel="stylesheet" >
 <link href="../../css/css.css" rel="stylesheet">
 
 <script src="../../tools/tssJS/tssJS.all.js"></script>
@@ -24,7 +25,7 @@
 	URL_INIT            = AUTH_PATH + "portal/release/list";
     URL_NODE_DETAIL     = AUTH_PATH + "portal/release/";
     URL_SAVE_NODE       = AUTH_PATH + "portal/release";
-    URL_DELETE_NODE     = AUTH_PATH + "portal/release";
+    URL_DELETE_NODE     = AUTH_PATH + "portal/release/";
     URL_GET_THEME_LIST  = AUTH_PATH + "portal/theme4release/";
 	URL_GET_PORTAL_LIST = AUTH_PATH + "portal/activePortals";
 	URL_GET_PAGE_LIST   = AUTH_PATH + "portal/activePages/";
@@ -50,22 +51,22 @@
     }
   
     function initMenus() {
-        ICON = "images/";
         var item1 = {
             label:"新建访问地址",
+            icon:"icon icon-plus",
             callback:addReleaseConfig,            
             visible:function() {return "_root" == getTreeNodeId();}
         }
         var item2 = {
             label:"删除",
             callback:function() { delTreeNode() },
-            icon:ICON + "icon_del.gif",
+            icon:"icon icon-x",
             visible:function() {return "_root" != getTreeNodeId();}
         }
         var item3 = {
             label:"编辑",
             callback:editReleaseConfig,
-            icon:ICON + "icon_edit.gif",
+            icon:"icon icon-pencil",
             visible:function() {return "_root" != getTreeNodeId();}
         }
 

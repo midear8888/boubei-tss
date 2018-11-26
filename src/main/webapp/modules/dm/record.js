@@ -62,7 +62,7 @@ function initMenus() {
 	var item1 = {
 		label:"录入数据",
 		callback:showRecord,
-		icon: ICON + "icon_edit.gif",
+		icon:"icon icon-pencil",
 		visible:function() {return isRecord() && !isTreeNodeDisabled() && getOperation("1");}
 	}
 	var item21 = {
@@ -77,7 +77,7 @@ function initMenus() {
 		callback: function() {
 			loadRecordDetail(false, "1");
 		},
-		icon: ICON + "icon_define.gif",
+		icon:"icon icon-file-text",
 		visible:function() { return isRecord() && getOperation("2"); }
 	}
 	var item23 = {
@@ -85,7 +85,7 @@ function initMenus() {
 		callback: function() {
 			loadRecordDetail(false, "1", true);
 		},
-		icon: ICON + "icon_view.gif",
+		icon:"icon icon-file-text",
 		visible:function() { return isRecord() && getOperation("1") && !getOperation("2"); }
 	}
 	var item24 = {
@@ -97,7 +97,7 @@ function initMenus() {
 	}
 	var item25 = {
 		label:"测试数据表接口",
-		icon: ICON + "icon_service.gif",
+		icon:"icon icon-tools",
 		callback: function() {
 			window.open( "/tss/more/api.html?id=" + getTreeNodeId() );
 		},
@@ -130,56 +130,53 @@ function initMenus() {
 	var item10 = {
 		label:"停用",
 		callback:disableRecord,
-		icon: ICON + "icon_stop.gif",
+		icon:"icon icon-triangle-down",
 		visible:function() {return !isTreeRoot() && !isTreeNodeDisabled() && getOperation("2");}
 	}
 	var item9 = {
 		label:"启用",
 		callback:enableRecord,
-		icon: ICON + "icon_start.gif",
+		icon:"icon icon-triangle-up",
 		visible:function() {return !isTreeRoot() && isTreeNodeDisabled() && getOperation("2");}
 	}
 	var item5 = {
 		label:"删除",
 		callback: deleteRecord,
-		icon: ICON + "icon_del.gif",
+		icon:"icon icon-x",
 		visible:function() {return !isTreeRoot() && getOperation("3");}
 	}
 	var item6 = {
 		label:"移动到",
 		callback: moveRecord,
-		icon: ICON + "icon_move.gif",
+		icon:"icon icon-arrow-right",
 		visible:function() {return !isTreeRoot() && getOperation("2");}
 	}
 	var item7 = {
 		label:"下载导入模板",
 		callback: getImportTL,
-		icon: ICON + "icon_down.gif",
+		icon:"icon icon-cloud-download",
 		visible:function() { return isRecord() && getOperation("1") && canBatchImp(); }
 	}
 	var item13 = {
         label:"导出数据表定义",
         callback:exportRecordDef,
-        icon:ICON + "export.gif",
         visible:function() {return !isTreeRoot() && getOperation("2");}
     }
     var item14 = {
         label:"导入数据表定义",
         callback:importRecordDef,
-        icon:ICON + "import.gif",
         visible:function() {return !isRecord() && getOperation("2");}
     }
     var item15 = {
         label:"导入Excel文件",
         callback:importExcel2Record,
-        icon:ICON + "import.gif",
+        icon:"icon icon-file-symlink-file",
         visible:function() {return !isRecord() && getOperation("2");}
     }
 
 	var menu = new $.Menu();
 	menu.addItem(item1);
 	menu.addItem(item7);
-	menu.addSeparator();
 	menu.addItem(item31);
 	menu.addItem(item32);
 	menu.addItem(item4);
@@ -196,7 +193,6 @@ function initMenus() {
 	menu.addSeparator();
 	menu.addItem(item24);
 	menu.addItem(item25);
-	menu.addSeparator();
 	menu.addItem(createPermissionMenuItem("D2"));
 	
 	$1("tree").contextmenu = menu;
@@ -514,7 +510,7 @@ function configDefine() {
 function initFieldTreeMenus() {
     var item1 = {
         label:"删除字段",
-        icon: ICON + "icon_del.gif",
+        icon:"icon icon-x",
         callback: function() { fieldTree.removeActiveNode(); },
         visible: function() { 
         	return fieldTree.getActiveTreeNodeId() !== '_root';
@@ -522,6 +518,7 @@ function initFieldTreeMenus() {
     }
     var item2 = {
         label:"新建字段",
+        icon:"icon icon-plus",
         callback: createNewField,
         visible: function() { 
         	return fieldTree.getActiveTreeNodeId() === '_root'; 

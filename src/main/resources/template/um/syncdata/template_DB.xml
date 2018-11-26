@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <params>
-	<!--
-	<url>jdbc:mysql://localhost:3306/tss</url>
-	<driver>com.mysql.jdbc.Driver</driver>
-	-->
-	<url>jdbc:h2:mem:h2db;DB_CLOSE_DELAY=-1;LOCK_MODE=0</url>
-	<driver>org.h2.Driver</driver>
-	<user>sa</user>
-	<password>123</password>
+	<ds>connectionpool</ds>
 	<groupSql>
 		select distinct g.id, g.parentId, g.name as name, g.description, g.disabled
 		from xxx_group g 

@@ -41,6 +41,8 @@ function record_id(nameOrTable, callback) {
     });
 }
 
+window.onbeforeunload = function() { return "检查当前是否有修改未保存，您确定要离开吗？"; }
+
 // ["A","B","C"].contains("A,D")  ==> true
 Array.prototype.containsPart = function(obj) {
     var i = this.length, result = false;
@@ -58,27 +60,34 @@ Array.prototype.containsPart = function(obj) {
 
 // 用户权限信息
 var userCode, 
-    userName, 
-    userDomain,
-    userGroups = [], 
-    userRoles = [],
-    userRoleNames = [], 
-    userHas;
+userName, 
+userDomain,
+userGroups = [], 
+userRoles = [],
+userRoleNames = [], 
+userHas,
+userPartner = {};
 
-$.getJSON("/tss/auth/user/has", {}, function(result) {
-        userGroups = result[0];
-        userRoles  = result[1];
-        userRoleNames = result[11];
-        userCode   = result[3];
-        userName   = result[4];
-        userHas    = result;
-        userDomain = result[12];
-
-        userRoleNames.each(function(i, item){
-            userRoles.push(item);
-        });
-
+if(tssJS){
+    userHas = tssJS.Cookie.decode("userHas");
+    userGroups = userHas[0];
+    userRoles  = userHas[1];
+    userRoleNames = userHas[11];
+    userCode   = userHas[3];
+    userName   = userHas[4];
+    userDomain = userHas[12];
+    userRoleNames.each(function(i, item){
+        userRoles.push(item);
     });
+}
+
+jQuery && jQuery.getJSON(TOMCAT_URL+"/wx/api/users", {}, function(result) {
+    userPartner = result;
+});
+
+function getLoginInfo(callback) {
+    callback(tssJS.Cookie.decode("userHas"))
+}
 
 function initCombobox(id, code, init) {
     var url = '/tss/param/json/combo/' + code + '?KV=true';
@@ -124,13 +133,12 @@ function save(recordId) {
 }
 
 function checkException(result, callback) {
-    result = result ? eval('(' + result + ')') : "";
-    if (result.errorMsg){
-        $.messager.show({
-            title: '异常信息提示',
-            msg: result.errorMsg
-        });
+    if(result && result.errorMsg) {
+        $.messager.show({ title: '异常信息提示', msg: result.errorMsg });
     } 
+    else if(result && (typeof result == 'string') && (result = eval('(' + result + ')') ).errorMsg){
+        $.messager.show({ title: '异常信息提示', msg: result.errorMsg });
+    }
     else {
         callback();
     }

@@ -6,6 +6,7 @@
 <title>用户组织管理</title>
 
 <link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link href="../../tools/tssJS/fonts/icons.css" rel="stylesheet" >
 <link href="../../css/css.css" rel="stylesheet">
 <link href="../dm/dm.css" rel="stylesheet">
 
@@ -42,7 +43,7 @@
         <div>
           <div class="bar">
             <span class="icon"></span>用户组织
-            <span class="search"><input id="searchKey"/><input type="button" value="查 找"/></span>
+            <span class="search"><input id="searchKey"/><span class="icon-search"/></span>
             <span class="refreshTreeBT"></span>
           </div>
           <Tree id="tree" moveable="true"><div class="loading"></div></Tree>
@@ -52,7 +53,8 @@
         <table>
           <td id="gridTitle">
             <span class="icon"></span>【<span id="x1"></span>】用户列表&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<input type="button" class="tssbutton small white" value="删 除" id="btn_batch_del" onclick="removeBatch()"/>
+<button class="tssbutton small white" id="btn_add" onclick="addNewUser(true)"><span class="icon-plus"></span>新增用户</button>
+<button class="tssbutton small white" id="btn_del" onclick="removeBatch()"><span class="icon-x"></span>删 除</button>
             <span class="buttonBox" id="gridToolBar"></span>
           </td>
           <tr>

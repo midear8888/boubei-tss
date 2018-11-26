@@ -6,6 +6,7 @@
 <title>站内消息/待办事项</title>
 
 <link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link href="../../tools/tssJS/fonts/icons.css" rel="stylesheet" >
 <link href="../../css/css.css" rel="stylesheet">
 
 <script src="../../tools/tssJS/tssJS.all.js"></script>
@@ -13,14 +14,27 @@
 
 <style type="text/css">
 
-	.unread { color: red; cursor: pointer; }
-	#gridContainer td[title="未读"] { color: red; }
-	#alert_box .message { max-height: 500px; }
+.unread { color: red; cursor: pointer; }
+#gridContainer td[title="未读"] { color: red; }
+#alert_box .message { max-height: 500px; }
 
 .white { color: #333; height: 16px; border: 1px solid #999; text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1); }
 .white:hover { background-color: inherit; border-left: 1px solid #000; border-right: 1px solid #000; background-color: #eee;  }
 #gridTitle .small { background: inherit; margin: 0px 1px; border-top: 0px; border-bottom: 0px; }
 #gridTitle .small:hover { background-color: #eee; }
+
+.icon-search {
+  font-size: 14px;
+  width: 16px;
+  display: inline-block;
+  margin: 0 20px 0 5px;
+  cursor: pointer;
+  vertical-align: middle;
+}
+.icon-search:hover {
+  color: blue;
+  font-size: 15px;
+}
 
 </style>
 
@@ -46,21 +60,21 @@
 			callback: function() {
 				showMsgInfo(false);
 			},
-			icon:"images/view.gif"
+			icon:"icon icon-search"
 		};
 		var item2 = {
 			label:"删除",
 			callback: function() {
 				deleteMsg();
 			},
-			icon:"images/icon_del.gif"
+			icon:"icon icon-x"
 		}
 		var item3 = {
 			label:"回复",
 			callback: function() {
 				replyMsg();
 			},
-			icon:"images/draftbox.gif"
+			icon:"icon icon-comment"
 		}
 
 		var menu = new $.Menu();
@@ -192,14 +206,13 @@
 			  		<option value="sender">发送人</option>
 			  		<option value="content">内容</option>
 			  	</select>
-			  	<input type="button" class="tssbutton small white" value="搜 索" onclick="search()"/>
+			  	<span class="icon-search" onclick="search()" title="搜 索"></span>
 			  </span>
-			  <span>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-			  	<input type="button" class="tssbutton small white" value="批量删除" onclick="batchDelete()"/>
-			  	<input type="button" class="tssbutton small white" value="批量已阅" onclick="batchView()"/>
-			  	<input type="button" class="tssbutton small white" value="全部已阅" onclick="batchView('view_all')"/>
-			  	<input type="button" class="tssbutton small white" value="清空站内信" onclick="batchDelete('del_all')"/>
-			  	<input type="button" class="tssbutton small white" value="发送消息" onclick="sendNewMsg()"/>
+			  	<button class="tssbutton small white" onclick="batchDelete()"><span class="icon-x"></span>批量删除</button>
+			  	<button class="tssbutton small white" onclick="batchView()">批量已阅</button>
+			  	<button class="tssbutton small white" onclick="batchView('view_all')">全部已阅</button>
+			  	<button class="tssbutton small white" onclick="batchDelete('del_all')"><span class="icon-trashcan"></span>清空站内信</button>
+			  	<button class="tssbutton small white" onclick="sendNewMsg()"><span class="icon-comment-discussion"></span>发送消息</button>
 			  </span>
 			</td>
 		</tr>

@@ -6,6 +6,7 @@
 <title>数据报表维护</title>
 
 <link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link href="../../tools/tssJS/fonts/icons.css" rel="stylesheet" >
 <link href="../../css/css.css" rel="stylesheet">
 <link href="dm.css" rel="stylesheet">
 
@@ -83,7 +84,7 @@ hr { height: 4px; border: none; border-top: 1px dashed #95B8E7; }
 	  <div>
 	  	<div class="bar">
 			<span class="icon"></span>服务&报表
-			<span class="search"><input id="searchKey"/><input type="button" value="查 找"/></span>
+			<span class="search"><input id="searchKey"/><span class="icon-search"/></span>
 			<span class="refreshTreeBT"></span>
 		</div>
 		<Tree id="tree" moveable="true"><div class="loading"></div></Tree>
@@ -94,8 +95,8 @@ hr { height: 4px; border: none; border-top: 1px dashed #95B8E7; }
 		  <tr>
 			<td id="gridTitle">
 			  <span class="icon"></span><span class="title">查询结果</span>
-<input type="button" class="tssbutton small white btDownload" value="导出数据" style="margin-left: 15px;" />
-<input type="button" class="tssbutton small white" value="查 询" onclick="openQueryForm()"/>
+<button class="tssbutton small white btDownload" style="margin-left: 15px;"><span class="icon-arrow-down"></span>导出数据</button>
+<button class="tssbutton small white" onclick="openQueryForm()"><span class="icon-search"></span>查 询</button>
 			  <span class="buttonBox" id="gridToolBar"></span>
 			</td>
 		  </tr>

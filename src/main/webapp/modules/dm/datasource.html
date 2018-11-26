@@ -6,10 +6,19 @@
 <title>数据源管理</title>
 
 <link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link href="../../tools/tssJS/fonts/icons.css" rel="stylesheet" >
 <link href="../../css/css.css" rel="stylesheet">
+<link href="dm.css" rel="stylesheet" >
 
 <script src="../../tools/tssJS/tssJS.all.js"></script>
 <script src="../../tools/tssUtils.js"></script>
+
+<style type="text/css">
+.white { color: #333; height: 16px; border: 1px solid #999; text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1); }
+.white:hover { background-color: inherit; border-left: 1px solid #000; border-right: 1px solid #000; background-color: #eee;  }
+#palette .small { background: inherit; margin: 0px 1px; border-top: 0px; border-bottom: 0px; }
+#palette .small:hover { background-color: #eee; }
+</style>
 
 <SCRIPT type="text/javascript">
 
@@ -61,7 +70,7 @@
         var item1 = {
             label: "删除数据源",
             callback: delDS,
-            icon: "images/icon_del.gif",
+            icon:"icon icon-x",
             visible:function() { return checkPermission(); }
         }
         var item2 = {
@@ -69,7 +78,7 @@
             callback: function() {
                 editDSInfo();
             },
-            icon: "images/icon_edit.gif",
+            icon:"icon icon-pencil",
             visible:function() { return checkPermission(); }
         }   
 
@@ -329,7 +338,7 @@
             <div>
                 <div class="bar">
                     <span class="icon"></span>数据源列表&nbsp;&nbsp;&nbsp;&nbsp;
-                    <button class='tssbutton small blue' onclick="addNewDS();">创建一个</button>
+                    <button class='tssbutton small white' onclick="addNewDS();"><span class="icon-plus"></span>创建一个</button>
                     <span class="refreshTreeBT"></span>
                 </div>
                 <Tree id="tree"><div class="loading"></div></Tree>

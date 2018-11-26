@@ -16,8 +16,8 @@
 	</declare>
 	<layout>
 		<TR>
-			<TD width="70"><label binding="name"/></TD>
-			<TD width="180"><input binding="name" style="width:150px;"/></TD>
+			<TD width="80"><label binding="name"/></TD>
+			<TD width="160"><input binding="name" style="width:130px;"/></TD>
 			<TD width="50"><label binding="datasource"/></TD>
 			<TD width="250">
 				<input binding="datasource" style="width:130px;margin-right:10px;"/>
@@ -26,14 +26,14 @@
 			<TD width="60"><label binding="id"/></TD>
 			<TD width="70"><input binding="id" style="width:50px;"/></TD>
 			<TD width="55"><label binding="code"/></TD>
-			<TD width="180"><input binding="code" style="width:160px;"/></TD>
+			<TD width="140"><input binding="code" style="width:120px;"/></TD>
 			<TD width="80"></TD>
 			<TD></TD>
 		</TR>
 		<TR>
 			<TD valign="top"><label binding="script"/></TD>
 			<TD colspan="9">
-				<textarea binding="script" style="width:97%;height:200px" class="fullscreenable"/>
+				<textarea binding="script" style="width:95%;height:200px" class="fullscreenable"/>
 				<p>
 					注：可以在各类数据库的客户端里（PLSQL等）编写并调试好SQL，直接复制到此处，再针对查询条件进行相应配置，即可成为一个正式的数据服务。
 					<a href="http://www.boubei.com/doc/tss/manual/tss-report.html?id=#rp1_2" target="_blank">详细说明</a>
@@ -45,20 +45,18 @@
 				<label binding="param"/><br/><br/>
 				<a href="#" onclick="configParams()" class="tssbutton small blue">配置</a>
 			</TD>
-			<TD colspan="9"><textarea binding="param" style="width:97%;height:100px" class="fullscreenable"/></TD>
+			<TD colspan="9"><textarea binding="param" style="width:95%;height:100px" class="fullscreenable"/></TD>
 		</TR>
 		<TR>
 			<TD><label binding="displayUri"/></TD>
 			<TD colspan="3">
-				<input binding="displayUri" style="width:300px;margin-right:10px;"/>
+				<input binding="displayUri" style="width:270px;margin-right:10px;"/>
 				<a href="#" onclick="selectTL()" class="tssbutton small blue" style="margin-right:10px;">选择页面</a>
 				<a href="#" onclick="uploadTL()" class="tssbutton small blue">上传页面</a>
 			</TD>
 			<TD><label binding="icon"/></TD>
 			<TD colspan="5">
-				<input binding="icon" style="width:220px;margin-right:10px;" placeholder="示例: icon icon-key 或 /tss/.../xxx.png "/>
-				<label binding="paramUri"/>
-				<input binding="paramUri" style="width:220px;margin-left:5px;"/>
+				<input binding="icon" style="width:240px;margin-left:5px;" placeholder="示例:icon icon-key 或 /tss/.../xxx.png"/>
 			</TD>
 		</TR>
 		<TR>
@@ -66,16 +64,14 @@
 			<TD><input binding="mobilable"/></TD>
 			<TD><label binding="needLog"/></TD>
 			<TD><input binding="needLog"/></TD>
-			<TD></TD>
-			<TD></TD>
-			<TD></TD>
-			<TD></TD>
-			<TD></TD>
-			<TD></TD>
+			<TD><label binding="paramUri"/></TD>
+			<TD colspan="5">
+				<input binding="paramUri" style="width:240px;margin-left:5px;"/>
+			</TD>
 		</TR>
 		<TR>
 			<TD valign="top"><label binding="remark"/></TD>
-			<TD colspan="9"><textarea binding="remark" style="width:97%;height:40px" class="fullscreenable"/></TD>
+			<TD colspan="9"><textarea binding="remark" style="width:95%;height:40px" class="fullscreenable"/></TD>
 		</TR>
 	</layout>
 	<data/>

@@ -24,8 +24,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.boubei.tss.EX;
-import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.web.display.tree.ITreeTranslator;
 import com.boubei.tss.framework.web.display.tree.LevelTreeParser;
 import com.boubei.tss.framework.web.display.tree.TreeEncoder;
@@ -229,22 +227,15 @@ public class GroupAction extends ProgressActionSupport {
     
     @RequestMapping("/sync/{groupId}")
     public void syncData(HttpServletResponse response, @PathVariable("groupId") Long groupId) {
-    	
-        Group group = service.getGroupById(groupId);
-        String fromApp = group.getFromApp();
-        String fromGroupId = group.getFromGroupId();
-        if ( EasyUtils.isNullOrEmpty(fromGroupId) ) {
-            throw new BusinessException(EX.U_05);
-        }
         
-        Map<String, Object> datasMap = syncService.getCompleteSyncGroupData(groupId, fromApp, fromGroupId);
+        Map<String, Object> datasMap = syncService.getCompleteSyncGroupData(groupId);
         
         List<?> groups = (List<?>)datasMap.get("groups");
         List<?> users  = (List<?>)datasMap.get("users");
-        int totalCount = users.size() + groups.size();
+        int total = users.size() + groups.size();
         
         // 因为同步数据会启用进度条中的线程进行，所以需要在action中启动，而不是在service，在service的话会导致事务提交不了
-        ProgressManager manager = new ProgressManager((Progressable) syncService, totalCount, datasMap);
+        ProgressManager manager = new ProgressManager((Progressable) syncService, total, datasMap);
         String code = manager.execute(); 
         
         printScheduleMessage(code);

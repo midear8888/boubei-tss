@@ -6,6 +6,7 @@
 <title>缓存管理</title>
 
 <link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link href="../../tools/tssJS/fonts/icons.css" rel="stylesheet" >
 <link href="../../css/css.css" rel="stylesheet">
 
 <script src="../../tools/tssJS/tssJS.all.js"></script>
@@ -17,9 +18,10 @@
 #poolHitRate:hover { cursor: pointer; }
 #poolsGrid td>b { color: blue; font-size: 16px; }
 #poolsGrid td[title="停用"] { color: red; font-weight: bold; }
-#btbox { margin-left: 20px; display: inline-block; }
-#btbox>input { margin-left: 3px; }
-.refreshTreeBT { right: 10px; }
+#btbox { margin-left: 60px; display: inline-block; }
+#btbox>span { font-size: 16px; vertical-align: middle; cursor: pointer; color: blue; }
+.refreshTreeBT { font-size: 14px; width: 16px; height: 16px; cursor: pointer; vertical-align: middle; }
+.refreshTreeBT:hover { color: blue; font-size: 15px; }
   
 </style>
 
@@ -99,17 +101,17 @@
 		var item1 = {
 			label:"查看缓存池明细",
 			callback: function() { showCachePools(); },
-			icon:"images/view.gif"
+			icon:"icon icon-list-ordered"
 		}
 		var item2 = {
 			label:"重置缓存池",
 			callback: function() { resetCache(); },
-			icon:"images/init.gif"
+			icon:"icon icon-sync"
 		}
 		var item3 = {
 			label:"维护缓存策略",
 			callback: function() { showCachePools(1, true); },
-			icon:"images/edit.gif"
+			icon:"icon icon-pencil"
 		}
 
 		var menu = new $.Menu();
@@ -211,12 +213,12 @@
 		var item1 = {
 			label:"查看缓存项信息",
 			callback:showItemInfo,
-			icon:"images/view.gif"
+			icon:"icon icon-search"
 		}
 		var item2 = {
 			label:"清除缓存项",
 			callback:removeCacheItem,
-			icon:"images/clear.gif"
+			icon:"icon icon-x"
 		}
 
 		var menu = new $.Menu();
@@ -299,8 +301,8 @@
 					<span id="poolHitRate"></span>
 					<span class="buttonBox" id="gridToolBar"></span>
 					<span id="btbox">
-					  	<input type="button" class="tssbutton small blue" value="返 回" onclick="loadInitGrid()"/>
-					  	<input type="button" class="tssbutton small blue" value="重 置" onclick="resetCache(currCode)"/>
+					  	<span class="icon-arrow-left" title="返 回" onclick="loadInitGrid()"/>&nbsp;&nbsp;&nbsp;&nbsp;
+					  	<span class="icon-trashcan" title="重 置" onclick="resetCache(currCode)"/>
 					</span>
 				</td> 
 			</tr>

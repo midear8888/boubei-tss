@@ -26,7 +26,7 @@ import com.boubei.tss.util.EasyUtils;
 /**
  * 自动同步用户
  * 
- * com.boubei.tss.um.syncdata.SyncUserJob | 0 06 * * * ? | 4,V5
+ * com.boubei.tss.um.syncdata.SyncUserJob | 0 06 * * * ? | 4
  * 
  */
 public class SyncUserJob extends AbstractJob {
@@ -47,7 +47,7 @@ public class SyncUserJob extends AbstractJob {
 		
 		for(int i = 0; i < jobConfigs.length; i++) {
 			String info[] = EasyUtils.split(jobConfigs[i], ",");
-			if(info.length < 2) continue;
+			if(info.length < 1) continue;
 			 
 			Long groupId = EasyUtils.obj2Long(info[0]);
 			Group group = groupService.getGroupById(groupId);
@@ -55,17 +55,10 @@ public class SyncUserJob extends AbstractJob {
 	            throw new BusinessException( "用户同步配置异常，找不到组，jobConfig=" + jobConfig );
 	        }
 			
-	        String fromGroupId = group.getFromGroupId();
-	        if ( EasyUtils.isNullOrEmpty(fromGroupId) ) {
-	            log.error("自动同步用户时，组【" + group.getName() + "】的对应外部应用组的ID（fromGroupId）为空。");
-	            continue;
-	        }
-	        
-	        String fromApp = (String) EasyUtils.checkNull(group.getFromApp(), info[1]);
-	        Map<String, Object> datasMap = syncService.getCompleteSyncGroupData(groupId, fromApp, fromGroupId);
+	        Map<String, Object> datasMap = syncService.getCompleteSyncGroupData(groupId);
 	        String result = ((Progressable) syncService).execute(datasMap, new Progress(10000));
 	        
-	        msgList.add( "【" + fromApp + ", " + fromGroupId + "】" + result);
+	        msgList.add( "【" + jobConfig + "】" + result);
 		}
 		
 		log.info("------------------- 用户信息自动同步 Done");

@@ -124,29 +124,28 @@
     }
 
     function initTreeMenu(){
-        ICON = "images/"
         var item1 = {
             label:"停用",
             callback:function() { stopOrStartTreeNode("1", URL_STOP_GROUP); },
-            icon:ICON + "stop.gif",
+            icon:"icon icon-triangle-down",
             visible:function(){return editable() && !isTreeNodeDisabled();}
         }
         var item2 = {
             label:"启用",
             callback:function() { stopOrStartTreeNode("0", URL_STOP_GROUP); },
-            icon:ICON + "start.gif",
+            icon:"icon icon-triangle-up",
             visible:function(){return editable() && isTreeNodeDisabled();}
         }
         var item3 = {
             label:"编辑",
             callback:editGroupInfo,
-            icon:ICON + "edit.gif",
+            icon:"icon icon-pencil",
             visible:function() { return editable(true) || getTreeNodeId() == -8;}
         }
         var item4 = {
             label:"删除",
             callback:function() { delTreeNode(URL_DELETE_GROUP); },
-            icon:ICON + "icon_del.gif",
+            icon:"icon icon-x",
             visible:function() { return editable(); }
         }
         var item6 = {
@@ -157,41 +156,42 @@
         var item7 = {
             label:"新建用户",
             callback:addNewUser,
+            icon:"icon icon-plus",
             visible:function(){ return !isTreeRoot() && isMainGroup() && editable(true); }
         }
         var item8 = {
             label:"浏览用户",
             callback:function() { showUserList(); },
-            icon:ICON + "view_list.gif",
+            icon:"icon icon-list-ordered",
             visible:function(){ return !isTreeRoot() && getTreeNodeId() != -2 && getTreeNodeId() != -3 && getOperation("1"); }
         }
         var item9 = {
             label:"搜索用户...",
             callback:searchUser,
-            icon:ICON + "search.gif",
+            icon:"icon icon-search",
             visible:function() { return !isTreeRoot() && isMainGroup() && getOperation("1"); }
         }
         var item11 = {
             label:"移动到...",
             callback:moveNodeTo,
-            icon:ICON + "move.gif",            
+            icon:"icon icon-arrow-right",          
             visible:function() {return editable();}
         }
 
         var subitem12_1 = {
             label:"初始化密码...",
             callback:resetPassword,
-            icon:ICON + "init_password.gif",
+            icon:"icon icon-lock",
             visible:function() { return isMainGroup() && editable(true) || getTreeNodeId() == -8 || getTreeNodeId() == -9; }
         }
         var subitem12_2 = {
             label:"用户同步",
+            icon:"icon icon-sync",
             callback:function() { syncGroup(); },
-            visible:function() { return isMainGroup() && editable(true) || getTreeNodeId() == -8 || getTreeNodeId() == -9 && !!getTreeAttribute("fromApp"); }
+            visible:function() { return (isMainGroup() && editable(true) || getTreeNodeId() == -8 || getTreeNodeId() == -9) && !!getTreeAttribute("fromApp"); }
         }
         var subitem12_4 = {
             label:"综合查询",
-            icon:ICON + "search.gif",
             visible:function() { return isMainGroup() && editable(true) || getTreeNodeId() == -8 || getTreeNodeId() == -9; }
         }
         var subitem12_4_1 = {
@@ -233,31 +233,31 @@
         var item1 = {
             label:"停用",
             callback:function() { stopOrStartUser("1"); },
-            icon:ICON + "stop.gif",
+            icon:"icon icon-triangle-down", 
             visible:function() { return getUserOperation("2") && "0" == getUserState(); }
         }
         var item2 = {
             label:"启用",
             callback:function() { stopOrStartUser("0"); },
-            icon:ICON + "start.gif",
+            icon:"icon icon-triangle-up", 
             visible:function() { return getUserOperation("2") && "1" == getUserState(); }
         }
         var item3 = {
             label:"编辑",
             callback:editUserInfo,
-            icon:ICON + "edit.gif",
+            icon:"icon icon-pencil", 
             visible:function() { return getUserOperation("2") || getGroupOperation(); }
         }
         var item5 = {
             label:"移动到其它组",
             callback:move2otherGroup,
-            icon:ICON + "move.gif",
+            icon:"icon icon-arrow-right", 
             visible:function() { return getUserOperation("2"); }
         }
         var item4 = {
             label:"删除",
             callback: function() { delelteUser(); },
-            icon:ICON + "del.gif",
+            icon:"icon icon-x", 
             visible:function() { return getUserOperation("2"); }
         }
         /* 登录过的用户不能被删除，只能被停用。
@@ -323,7 +323,7 @@
         });
     }
  
-    function loadInitData(defaultOpenId) {
+    function loadInitData(defaultOpenGroup) {
         var onresult = function(){
             var groupTreeNode = this.getNodeValue(XML_MAIN_TREE);
             $.cache.XmlDatas[CACHE_MAIN_TREE] = groupTreeNode;
@@ -335,10 +335,10 @@
                     rootId = -7;
                 }
 
-                defaultOpenId = defaultOpenId || rootId;
-                showUserList(defaultOpenId);
+                defaultOpenGroup = defaultOpenGroup || rootId;
+                showUserList(defaultOpenGroup);
 
-                var defaultOpenNode = tree.getTreeNodeById( defaultOpenId );
+                var defaultOpenNode = tree.getTreeNodeById( defaultOpenGroup );
                 defaultOpenNode && getTreeOperation(defaultOpenNode); // 获取对此节点的权限信息
             }
 
@@ -619,14 +619,29 @@
     /* 显示用户列表 */
     function showUserList(groupId) {
         groupId = groupId || getTreeNodeId();
-        var groupName = $.T("tree").getTreeNodeById( groupId ).name;
+
+        var groupNode = $.T("tree").getTreeNodeById( groupId );
+        var groupName = groupNode.name;
+        var groupType = groupNode.getAttribute("groupType");
+        if( groupType == "1" ) {
+            $("#x1").attr("data-group", groupId);
+            $("#gridTitle .tssbutton").show();
+        } else {
+            $("#gridTitle .tssbutton").hide();
+        }
         $("#x1").text(groupName);
 
         $.showGrid(URL_USER_GRID + groupId, XML_USER_LIST, editUserInfo);
     }
  
-    function addNewUser() {
-        var groupId = getActiveTreeNode().id;
+    function addNewUser(topBtn) {
+        var groupId;
+        if( topBtn ) {
+            groupId = $("#x1").attr("data-group");
+            if( !groupId ) return;
+        } else {
+            groupId = getActiveTreeNode().id;
+        }
         loadUserInfo(OPERATION_ADD, DEFAULT_NEW_ID, "用户", groupId);        
     }
  
@@ -896,7 +911,9 @@
             if ( $.isNullOrEmpty(value) ) return alert("条件不能为空。");
             
             var params = {"groupId": treeID, "searchStr": value};
-            $("#x1").text( treeName + " / " + value );
+            $("#x1").text( treeName + " / " + value ).attr("data-group", null);
+            $("#gridTitle .tssbutton").hide();
+
             $.showGrid(URL_SEARCH_USER, XML_USER_LIST, editUserInfo, "grid", 1, params);
         });
     }

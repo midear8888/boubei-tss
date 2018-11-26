@@ -50,35 +50,35 @@
     }
   
     function initMenus() {  
-    	ICON = "images/"     
         var item1 = {
             label:"停用",
             callback: function() { stopOrStartTreeNode("1", URL_STOP_RULE); },
-            icon:ICON + "stop.gif",
+            icon:"icon icon-triangle-down",
             visible:function(){return !isTreeRoot() && !isTreeNodeDisabled();}
         }
         var item2 = {
             label:"启用",
             callback: function() { stopOrStartTreeNode("0", URL_STOP_RULE); },
-            icon:ICON + "start.gif",
+            icon:"icon icon-triangle-up",
             visible:function(){return !isTreeRoot() && isTreeNodeDisabled();}
         }
         var item3 = {
             label:"新建转授策略",
             callback:addNewRule,
+            icon:"icon icon-plus",
             enable:function(){return true;},
             visible:function(){return isTreeRoot();}
         }
         var item4 = {
             label:"删除",
             callback: function() {  delTreeNode(URL_DEL_RULE); },
-            icon:ICON + "icon_del.gif",
+            icon:"icon icon-x",
             visible:function(){return !isTreeRoot();}
         }
         var item5 = {
             label:"编辑",
             callback:editRuleInfo,
-            icon:ICON + "edit.gif",
+            icon:"icon icon-pencil",
             visible:function(){return !isTreeRoot();}
         }
 

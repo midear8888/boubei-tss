@@ -11,7 +11,7 @@
         <!--
         <column caption="性别" name="sex" values="0|1" texts="女|男" width="50px"/>
         -->
-        <column caption="出生年月" name="birthday" mode="date" width="80px"/>
+        <column caption="入职日期" name="birthday" mode="date" width="80px"/>
 		<column caption="所属组织" name="groupName" width="100px"/>
 		<column caption="组域" name="domain" width="100px"/>
 		<column caption="所属组织ID" name="groupId" display="none"/>
