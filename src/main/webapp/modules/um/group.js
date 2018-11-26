@@ -188,7 +188,7 @@
             label:"用户同步",
             icon:"icon icon-sync",
             callback:function() { syncGroup(); },
-            visible:function() { return (isMainGroup() && editable(true) || getTreeNodeId() == -8 || getTreeNodeId() == -9) && !!getTreeAttribute("fromApp"); }
+            visible:function() { return (isMainGroup() && editable(true) || getTreeNodeId() == -8 ) && !!getTreeAttribute("fromGroupId"); }
         }
         var subitem12_4 = {
             label:"综合查询",
@@ -568,14 +568,7 @@
     /* 同步用户组 */
     function syncGroup() {
         var treeNode = $.T("tree").getActiveTreeNode();
-        var treeNodeID    = treeNode.id;
-        
-        var applicationId = treeNode.getAttribute("fromApp");
-        var fromGroupId   = treeNode.getAttribute("fromGroupId");
-        if(applicationId == null || fromGroupId == null) {
-            alert("该组没有配置对应的外部系统及外部系统的组织。");
-            return;
-        }
+        var treeNodeID = treeNode.id;
 
         var onresult = function() {
             var data = this.getNodeValue("ProgressInfo");

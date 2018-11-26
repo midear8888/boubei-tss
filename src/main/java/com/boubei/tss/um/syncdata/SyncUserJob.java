@@ -36,8 +36,8 @@ public class SyncUserJob extends AbstractJob {
  
 	/* 
 	 * jobConfig的格式为 : 
-	 * 		mainGroupId1,fromApp1
-	 * 		mainGroupId2,fromApp2
+	 * 		mainGroupId1
+	 * 		mainGroupId2
 	 */
 	protected String excuteJob(String jobConfig, Long jobID) {
 		log.info("------------------- 用户信息自动同步......");
@@ -46,9 +46,9 @@ public class SyncUserJob extends AbstractJob {
 		List<String> msgList = new ArrayList<String>();
 		
 		for(int i = 0; i < jobConfigs.length; i++) {
-			String info[] = EasyUtils.split(jobConfigs[i], ",");
-			if(info.length < 1) continue;
+			if( EasyUtils.isNullOrEmpty(jobConfigs[i]) ) continue;
 			 
+			String info[] = EasyUtils.split(jobConfigs[i], ",");
 			Long groupId = EasyUtils.obj2Long(info[0]);
 			Group group = groupService.getGroupById(groupId);
 			if ( group == null) {

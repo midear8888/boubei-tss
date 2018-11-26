@@ -5,8 +5,8 @@
 		<column name="name" caption="名称"  empty="false" maxLength="50"/>
 		<column name="domain" caption="组域"  editable="false"/>
 		<column name="description" caption="描述"  maxLength="255"/>
-		<column name="fromApp" caption="来自应用"   maxLength="50"/>
-		<column name="fromGroupId" caption="来自组"  maxLength="50"/>
+		<column name="syncConfig" caption="同步配置"  maxLength="2000"/>
+		<column name="fromGroupId" caption="同步自组"  maxLength="50"/>
 	</declare>
 	<layout>
 		<TR>
@@ -22,16 +22,22 @@
 			<TD><input binding="domain"/></TD>
 		</TR>
 		<TR>
-			<TD><label binding="fromApp"/></TD>
-			<TD><input binding="fromApp"/></TD>
+			<TD><label binding="description"/></TD>
+			<TD><textarea binding="description" style="width:400px;height:40px;"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="syncConfig"/></TD>
+			<TD>
+				<textarea binding="syncConfig" style="width:600px;height:100px;"/>
+				<p>
+					注：此处配置同步信息，从指定的数据源里同步业已存在的用户及组织结构。
+					<a href="http://www.boubei.com/doc/tss/manual/tss-admin.html#p3_3" target="_blank">详细说明</a>
+				</p>
+			</TD>
 		</TR>
 		<TR>
 			<TD><label binding="fromGroupId"/></TD>
 			<TD><input binding="fromGroupId"/></TD>
-		</TR>
-		<TR>
-			<TD><label binding="description"/></TD>
-			<TD><textarea binding="description" style="width:400px;height:100px;"/><br/>注：最多255字 </TD>
 		</TR>
 	</layout>
 </xform>

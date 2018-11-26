@@ -71,9 +71,8 @@ public class SyncService implements ISyncService, Progressable {
         Group mainGroup = groupDao.getEntity(mainGroupId);
         Map<String, String> syncConfig = initParam(mainGroup.getSyncConfig());
         String dsType = syncConfig.get("dsType");
-        String fromApp = syncConfig.get("fromApp");
         String fromGroupId = syncConfig.get("fromGroupId");
-        fromGroupId = (String) EasyUtils.checkNull(fromGroupId, mainGroup.getFromGroupId());
+        fromGroupId = EasyUtils.obj2String( EasyUtils.checkNull(fromGroupId, mainGroup.getFromGroupId()) );
         
         List<?> groups = getGroups(dsType, syncConfig, fromGroupId); //从其它系统获取需要同步的所有用户组
         List<?> users  = getUsers (dsType, syncConfig, fromGroupId); //从其它系统获取需要同步的所有用户
@@ -83,7 +82,6 @@ public class SyncService implements ISyncService, Progressable {
         paramsMap.put("groups", groups);
         paramsMap.put("users", users);
         paramsMap.put("idMapping", idMapping);
-        paramsMap.put("fromApp", EasyUtils.checkNull(fromApp, "G" + mainGroupId));
 
         return paramsMap;
     }
@@ -101,31 +99,30 @@ public class SyncService implements ISyncService, Progressable {
     @SuppressWarnings("unchecked")
 	public String execute(Map<String, Object> paramsMap, Progress progress) {
     	Long mainGroupId = (Long) paramsMap.get("groupId");
-    	String fromApp = (String) paramsMap.get("fromApp");
         List<?> groups = (List<?>)paramsMap.get("groups");
         List<?> users  = (List<?>)paramsMap.get("users");
         Map<String, Long> idMapping = (Map<String, Long>)paramsMap.get("idMapping");
         
         String domain = groupDao.getEntity(mainGroupId).getDomain();
         
-        syncGroups(groups, idMapping, progress, fromApp, domain);
+        syncGroups(groups, idMapping, progress, domain);
         syncUsers (users, idMapping, progress);
         
         return "group num = " + groups.size() + ", user num = " + users.size();
     }
 
-    private void syncGroups(List<?> otherGroups, Map<String, Long> idMapping, Progress progress, String fromApp, String domain) {
-        for (int i = 0; i < otherGroups.size(); i++) {
-            GroupDTO groupDto = (GroupDTO) otherGroups.get(i);
-            String fromGroupId = groupDto.getId();
-            String name = groupDto.getName();
+    private void syncGroups(List<?> outGroups, Map<String, Long> idMapping, Progress progress, String domain) {
+        for (int i = 0; i < outGroups.size(); i++) {
+            GroupDTO outGroup = (GroupDTO) outGroups.get(i);
+            String fromGroupId = outGroup.getId();
+            String name = outGroup.getName();
             
             Group group;
-            Long parentId = idMapping.get(groupDto.getParentId()); // 获取其它应用组的父组对应UM中组的ID
+            Long parentId = idMapping.get(outGroup.getParentId()); // 获取其它应用组的父组对应UM中组的ID
             parentId = (Long) EasyUtils.checkNull(parentId, UMConstants.MAIN_GROUP_ID);
             
             // 检查组（和该fromApp下的组对应的组）是否已经存在
-            List<?> temp = groupDao.getEntities("from Group t where t.fromGroupId=? and t.fromApp=?", fromGroupId, fromApp);
+            List<?> temp = groupDao.getEntities("from Group t where t.fromGroupId=? ", fromGroupId);
             if( EasyUtils.isNullOrEmpty(temp) ) {
         		/* 
         		 * 有可能管理员已经在tss里手动创建了同名的分组，这样情况下同步组过来会违反组名唯一性约束 
@@ -137,9 +134,9 @@ public class SyncService implements ISyncService, Progressable {
         		} 
         		else {
 					group = new Group();
-					group.setName(  (String) EasyUtils.checkNull(groupDto.getName(), group.getName()) );
-					group.setDisabled(groupDto.getDisabled());
-					group.setDescription(groupDto.getDescription());
+					group.setName(  (String) EasyUtils.checkNull(outGroup.getName(), group.getName()) );
+					group.setDisabled(outGroup.getDisabled());
+					group.setDescription(outGroup.getDescription());
 					group.setParentId( parentId );
 					group.setSeqNo(groupDao.getNextSeqNo(parentId));
 					group.setGroupType(Group.MAIN_GROUP_TYPE);
@@ -152,7 +149,6 @@ public class SyncService implements ISyncService, Progressable {
 		            resourcePermission.addResource(group.getId(), group.getResourceType());
         		}
         		
-        		group.setFromApp(fromApp);
     			group.setFromGroupId(fromGroupId);
             } 
             else {
@@ -166,7 +162,7 @@ public class SyncService implements ISyncService, Progressable {
             groupDao.refreshEntity(group);
             idMapping.put(fromGroupId, group.getId()); // 保存对应结果
             
-            updateProgressInfo(progress, otherGroups.size(), i);
+            progress.add(1);  /* 更新进度信息 */
         }
     }
     
@@ -218,25 +214,12 @@ public class SyncService implements ISyncService, Progressable {
             
             loginNames.add(userDto.getLoginName());
                 
-            updateProgressInfo(progress, users.size(), i);
+            progress.add(1);  /* 更新进度信息 */
         }
         
         // 如果循环结束了进度还没有完成，则取消进度（不取消会导致页面一直在请求进度信息）
         if( !progress.isCompleted() ) {
             progress.add(8888888); // 通过设置一个大数（远大于总数）来使进度完成
-        }
-    }
-    
-    /** 更新进度信息 */
-    private void updateProgressInfo(Progress progress, long total, int index){
-    	groupDao.flush();
-        
-        index = index + 1; // index 从0开始计数
-        if(index % 20 == 0) {
-            progress.add(20); // 每同步20个更新一次进度信息
-        } 
-        else if(index == total) {
-            progress.add(index % 20); // 如果已经同步完，则将总数除以20取余数做为本次完成个数来更新进度信息
         }
     }
 }

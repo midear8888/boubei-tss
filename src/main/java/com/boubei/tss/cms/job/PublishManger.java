@@ -47,8 +47,9 @@ public class PublishManger implements Progressable {
 	    String resourceType = CMSConstants.RESOURCE_TYPE_CHANNEL;
 	    String operation = CMSConstants.OPERATION_PUBLISH;
 	    List<Long> permitedList = PermissionHelper.getInstance().getResourceIdsByOperation(appId, resourceType, operation);
-        if ( !permitedList.contains(channelId) ) {
-        	Channel channel = channelService.getChannelById(channelId);
+	    
+	    Channel channel = channelService.getChannelById(channelId);
+	    if ( !permitedList.contains(channelId) ) {
             throw new BusinessException( EX.parse(EX.CMS_4, channelId, channel.getName()));
         }
 	}
@@ -90,10 +91,9 @@ public class PublishManger implements Progressable {
             channelService.publishArticle(pageArticleList);
             progress.add(pageArticleList.size());
         }
+        
         // 如果循环结束了进度还没有完成，则取消进度（不取消会导致页面一直在请求进度信息）
-        if( !progress.isCompleted() ) {
-            progress.add(8888888); // 通过设置一个大数（远大于总数）来使进度完成
-        }
+        progress.add(99999); // 通过设置一个大数（远大于总数）来使进度完成
         
         return totalRows + " articles published.";
     }

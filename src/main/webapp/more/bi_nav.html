@@ -26,10 +26,6 @@ html, body { height: 100%; }
 a { color:black; text-decoration:none; }
 a:hover { text-decoration:underline; }
 
-.top-icon {
-  width: 50px; padding: 0 10px 0 6px; font-size: 13px; color: #222 !important;
-}
-
 #north {
   overflow:hidden; height:30px; line-height:20px; color:#fff; 
   background: #4d5b76;
@@ -62,7 +58,7 @@ a:hover { text-decoration:underline; }
 .navlist li img { display: inline-block; height: 13px; width: 13px; padding-left: 2px; margin-top: -2px; vertical-align: middle; }
 .panel-title > img { height: 16px; width: 13px; margin-top: -2px; padding-right: 8px; vertical-align: middle; }
 
-.tssicon { display: inline-block; font-size: 13px; width: 13px; padding-right: 8px; }
+.tssicon { display: inline-block; font-size: 16px; width: 13px; padding-right: 8px; }
 .tssicon:before { vertical-align: middle; }
 
 .navlist li .tssicon { padding-left: 2px; padding-right: 0; }
@@ -125,7 +121,7 @@ function initMenu() {
 
 	var selectedPanelname = '', index = 0;
 	$.each(_menus, function(i, menu1) {
-		var menu1Name =  (fixICON(menu1[5])||"&nbsp;&nbsp;") +  menu1[1];
+		var menu1Name =  fixICON(menu1[5] ||'icon icon-triangle-right' ) +  menu1[1];
 		// 没有任何报表的二级目录将被过滤掉
 		if( !menu1.children || menu1.children.length == 0 ) {
 			return true;
@@ -134,7 +130,7 @@ function initMenu() {
 		var menuHTML = [];
 		menuHTML.push('<ul class="navlist">');
 	    menu1.children && $.each(menu1.children, function(j, menu2) {
-	    	var icon = fixICON(menu2[5]);  // 自定义图标
+	    	var icon = fixICON(menu2[5] || 'icon icon-file-text');  // 自定义图标
 	    	var wfCount = menu2[6] ? '(' +menu2[6]+ ')' : '';
 
 	    	menuHTML.push('<li>');
@@ -275,7 +271,7 @@ function showSearchDialog() {
 
 <body class="easyui-layout" style="overflow-y: hidden" fit="true" scroll="no" id="main">
   	
-  	<div region="west" id="west" split="true" title="<span class='icon icon-device-desktop top-icon'></span><b>功能导航</b>">
+  	<div region="west" id="west" split="true" title="<span class='icon icon-list-unordered tssicon'></span><b>功能导航</b>">
 		<div id="nav"></div>
   	</div>
   

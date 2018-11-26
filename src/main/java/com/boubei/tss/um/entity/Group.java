@@ -69,7 +69,6 @@ public class Group extends OperateInfo implements IDecodable, IXForm, IResource 
 	private Integer disabled = ParamConstants.FALSE; // 停用/启用标记
 
 	// 和其他用户管理系统的同步时的对应信息
-	private String  fromApp;
 	private String  fromGroupId;   // 外部应用用户组id:要同步的系统中对应的节点的编号，针对db数据源、ldap数据源的同步中使用
 	
 	@Column(length = 2000)
@@ -87,15 +86,7 @@ public class Group extends OperateInfo implements IDecodable, IXForm, IResource 
 	public void setId(Long id) {
 		this.id = id;
 	}
-	
-	public String getFromApp() {
-		return fromApp;
-	}
 
-	public void setFromApp(String fromApp) {
-		this.fromApp = fromApp;
-	}
- 
 	public String getFromGroupId() {
 		return fromGroupId;
 	}
@@ -188,7 +179,6 @@ public class Group extends OperateInfo implements IDecodable, IXForm, IResource 
 		TreeAttributesMap map = new TreeAttributesMap(id, name);
 		map.put("parentId", parentId);
 		map.put("disabled", disabled);
-		map.put("fromApp", fromApp);
 		map.put("fromGroupId", fromGroupId);
 		map.put("groupType", groupType);
 		map.put("domain", domain);

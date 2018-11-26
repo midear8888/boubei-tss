@@ -5,11 +5,13 @@
 		select distinct g.id, g.parentId, g.name as name, g.description, g.disabled
 		from xxx_group g 
 		where g.id >= :groupId 
+		order by id
 	</groupSql>
 	<userSql>
 		select distinct u.id, u.groupId, u.loginName, '111111' as password, u.userName, 
 			u.email, u.sex, u.telephone, u.employeeNo, null authMethod, u.disabled
 		from xxx_user u 
-		where u.groupId >= :groupId
+		where u.groupId >= :groupId 
+		order by id
 	</userSql>
 </params>

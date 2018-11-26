@@ -44,13 +44,7 @@ public class GroupDao extends TreeSupportDao<Group> implements IGroupDao {
 	}
 
     public Group saveGroup(Group group) {
-    	if( group.getId() == null ) {
-    		create(group);
-    	} 
-    	else {
-    		// 因Decode拦截器里保存了一次了，此时group已经是PO状态，再merge会报乐观锁
-    	}
-    	
+    	// 因 DecodeInterceptor 里保存了一次了，此时group已经是PO状态，再merge会报乐观锁
 		return group;
 	}
  
@@ -149,10 +143,10 @@ public class GroupDao extends TreeSupportDao<Group> implements IGroupDao {
         	}
 			
 			String userDomain = Environment.getDomainOrign();
-			if( userDomain != null && !userDomain.equals(group.getDomain()) && !UMConstants.ASSISTANT_GROUP_ID.equals(group.getId())) {
-				continue;
+			if( userDomain == null || userDomain.equals(group.getDomain()) 
+					|| UMConstants.ASSISTANT_GROUP_ID.equals(group.getId())) {
+				result.add(group);
 			}
-			result.add(group);
         }
         
         return result;

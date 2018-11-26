@@ -7,7 +7,8 @@
 <link rel="shortcut icon" href="images/tss.ico">
 <link rel="Bookmark" href="images/tss.ico">
 
-<link href="tools/tssJS/css/boubei.css" rel="stylesheet">
+<link rel="stylesheet" href="../tools/tssJS/fonts/icons.css">
+<link rel="stylesheet" href="tools/tssJS/css/boubei.css">
 
 <script src="tools/tssJS/tssJS.all.js"></script>
 <script src="tools/portlet.js"></script>
@@ -27,7 +28,7 @@ body { background: url(images/loading_f.gif) no-repeat center; }
 }
 .top .logo img { height: 22px; margin-top: 5px; margin-left: 20px; }
 
-.menu { position: absolute; top:1px; right: 0; font-size: 1.15em;  z-index: 10001; } 
+.menu { position: absolute; top:1px; right: 0; font-size: 1.1em;  z-index: 10001; } 
 .menu a { background-color: rgb(38,112,141); color: #b7bac1; }
 .menu a:hover { background-color: #60bae3; color: #fff; text-decoration: none; }
 
@@ -62,7 +63,7 @@ li.r9,li.r8,li.ra,li.ru { display: none; }
 #noticePanel .title { background-color: rgb(35,60,99); }
 span.max, span.min { display: none; }
 
-#userInfo:before { content: url(images/login-user.png); margin-right: 6px; margin-top: -3px; height: 20px; display: inline-block; vertical-align: middle; }
+#userInfo>img { margin-right: 6px; margin-top: -2px; display: inline-block; vertical-align: middle; width: 16px; height: 16px;}
 
 </style>
 
@@ -87,7 +88,7 @@ $(function(){
             $("li.ru").show(true);
         }
 
-        $("#userInfo").html(userHas[4] || '个人信息');
+        $("#userInfo").html("<img src='images/login-user.png'></img>" + userHas[4] || '个人信息');
     }
 
     dbsx();
