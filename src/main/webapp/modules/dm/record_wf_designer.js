@@ -1,7 +1,0 @@
-function configWorkflow() {
-	
-}
-
-function previewWorkflow() {
-	
-}

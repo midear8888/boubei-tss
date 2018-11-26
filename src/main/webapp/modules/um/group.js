@@ -188,7 +188,7 @@
             label:"用户同步",
             icon:"icon icon-sync",
             callback:function() { syncGroup(); },
-            visible:function() { return (isMainGroup() && editable(true) || getTreeNodeId() == -8 ) && !!getTreeAttribute("fromGroupId"); }
+            visible:function() { return (isMainGroup() && editable(true) || getTreeNodeId() == -8 ) && getTreeAttribute("syncable") == "true"; }
         }
         var subitem12_4 = {
             label:"综合查询",

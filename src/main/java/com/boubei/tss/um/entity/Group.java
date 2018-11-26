@@ -33,6 +33,7 @@ import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.permission.IResource;
 import com.boubei.tss.util.BeanUtil;
+import com.boubei.tss.util.EasyUtils;
 
 /**
  * 用户组域对象
@@ -179,7 +180,7 @@ public class Group extends OperateInfo implements IDecodable, IXForm, IResource 
 		TreeAttributesMap map = new TreeAttributesMap(id, name);
 		map.put("parentId", parentId);
 		map.put("disabled", disabled);
-		map.put("fromGroupId", fromGroupId);
+		map.put("syncable", EasyUtils.obj2String(this.syncConfig).indexOf("userSql") > 0);
 		map.put("groupType", groupType);
 		map.put("domain", domain);
 		map.put("icon", UMConstants.GROUP_TREENODE_ICON + disabled + ".gif");
