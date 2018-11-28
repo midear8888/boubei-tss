@@ -1,6 +1,7 @@
 package com.boubei.tssx.sms;
 
 import java.io.IOException;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -8,6 +9,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.util.EasyUtils;
 
 @WebServlet(urlPatterns="/sms.in")
@@ -29,10 +31,11 @@ public class CallSMS extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
     		throws ServletException, IOException {
     	
-    	String phone = request.getParameter("phone");
+    	Map<String, String> params = DMUtil.parseRequestParams(request, true);
     	
-    	String smsMsg = request.getParameter("smsMsg");
-    	String tlCode = request.getParameter("tlCode");
+    	String phone = params.get("phone");
+    	String smsMsg = params.get("smsMsg");
+    	String tlCode = params.get("tlCode");
     	//String tlParam = "{\"code\":\"" +smsMsg+ "\"}";
     	String tlParam = smsMsg;
     	
