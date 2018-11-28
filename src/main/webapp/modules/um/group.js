@@ -151,7 +151,7 @@
         var item6 = {
             label:"新建用户组",
             callback:addNewGroup,
-            visible:function(){ return !isSelfRegisterGroup() && getOperation("2"); }
+            visible:function(){ return !isSelfRegisterGroup() && getTreeNodeId() != -9 && getOperation("2"); }
         }
         var item7 = {
             label:"新建用户",
@@ -614,9 +614,13 @@
         groupId = groupId || getTreeNodeId();
 
         var groupNode = $.T("tree").getTreeNodeById( groupId );
+        var _operation = groupNode.getAttribute("_operation");
+        var opts = (_operation||'').split(",");
+
         var groupName = groupNode.name;
         var groupType = groupNode.getAttribute("groupType");
-        if( groupType == "1" ) {
+        
+        if( groupId > 0 && groupType == "1" && opts.contains("2") ) {
             $("#x1").attr("data-group", groupId);
             $("#gridTitle .tssbutton").show();
         } else {

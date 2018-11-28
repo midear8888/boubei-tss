@@ -78,8 +78,7 @@ a[id] { font-size: 13px; color: #ccc; position: absolute; padding-top: 5px; }
 #a2, #a4 { right: 24px; }
 .bz { margin-top: 12px; color: #ccc; }
 
-#switch, #rswitch 
-{ width: 50px; height: 40px; position: absolute; right: 0px; margin: 10px 20px; opacity: .3;  } 
+#switch, #rswitch { width: 50px; height: 40px; position: absolute; right: 0px; margin: 10px 20px; opacity: .3;  } 
 h2.tip { padding: 10px 10px 0 10px; color: red; font-size: 13px; }
 
   </style>
@@ -107,14 +106,14 @@ h2.tip { padding: 10px 10px 0 10px; color: red; font-size: 13px; }
         <div class="bottonBox">
           <button id="bt_login">登陆系统</button>
         </div>
-        <h3 class="bz">*推荐使用【 <a href="https://www.baidu.com/s?wd=chrome%20%E4%B8%8B%E8%BD%BD" target="_blank">Chrome浏览器</a>】访问本系统，以获得更流畅体验</h3>
+        <h3 class="bz">*推荐使用【 <a href="https://www.baidu.com/s?wd=chrome%E6%B5%8F%E8%A7%88%E5%99%A8%E4%B8%8B%E8%BD%BD" target="_blank">Chrome浏览器</a>】访问本系统，以获得更流畅体验</h3>
         <h2 class="tip"></h2>
     </div>
 
     <div id="reg_box">
         <div class="header">
           <h1 class="sysTitle">它山石-BI</h1>
-          <h2 class="subTitle">有效管理您的数据，让数据价值彰显</h2>
+          <h2 class="subTitle">一个用来快速开发业务及BI系统的平台</h2>
         </div>
         <div class="input-wrapper">
           <input type="text" id="rloginName" placeholder="账号：请输入手机号、邮箱等"> 
@@ -144,7 +143,6 @@ h2.tip { padding: 10px 10px 0 10px; color: red; font-size: 13px; }
 <script src="tools/tssJS/tssJS.js"></script>
 <script src="tools/tssJS/tssJS.ajax.js"></script>
 <script src="tools/common/md5.js"></script>
-<script src="login.js"></script>
 
 <script type="text/javascript">
 
@@ -263,6 +261,159 @@ h2.tip { padding: 10px 10px 0 10px; color: red; font-size: 13px; }
   $.alert = function(msg) {
     $(".tip").text(msg);
   }
+
+  setTimeout( function() {
+    if(window.parent && window.parent != window.self) {
+        window.parent.location.href = "login.html";
+    }
+}, 300 );
+
+var indexPage = "bi.html";    /* 登录成功后跳转到的页面 */
+
+function gotoIndex(loginName) {
+    if(window.parent && window.parent != window.self) {
+        window.parent.location.href = indexPage;
+    } else {
+        window.location.href = indexPage;
+    }
+}
+
+// 获取系统参数模块的配置信息
+function getParam(key, callback) {
+    $.getJSON("/tss/param/json/simple/" + key, {}, 
+        function(result) {
+            var val;
+            if( result && result.length  && result[0] ) {
+                val = result[0];
+            }
+            callback && callback(val);
+        }, "GET", false);
+}
+
+$(function() {     
+     init();
+});
+
+var timer;
+function init() {
+    getParam("sysTitle", function(result) {
+        if(result) {
+            $(".sysTitle").html(result);
+            document.title = result;
+        }
+    });
+    getParam("subTitle", function(result) {
+        result && $(".subTitle").html(result);
+    });
+    
+    getParam("regable", function(result) {
+        if( result == "false" ) {
+            $("#b1_reg, #b2_reg, #b3_reg, #a2").hide();
+        } 
+        else if( result == "REG_BDEV" ) {
+            $("#b1_reg, #b3_reg").hide();
+            $(" #b2_reg").width("352px").text("注 册");
+        }
+        else {
+            getParam("regableDev", function(result) {
+                if(result == "false") {
+                    $("#b3_reg").hide();
+                    $("#b1_reg, #b2_reg").width("45%");
+                }
+            });
+        }
+    });
+
+    var accountEl = $1("loginName"), passwdEl  = $1("password");
+    accountEl.onfocus = function() {  passwdEl.disabled = true; }
+    accountEl.value = $.Cookie.getValue("iUser") || "";
+    if(_user) {
+        accountEl.value = _user.split("@")[0];
+        passwdEl.value = _user.split("@")[1]||"";
+    }
+    accountEl.focus();
+
+    $("#bt_login").click ( function() {
+        doLogin(accountEl, passwdEl);
+    } );
+
+    $.Event.addEvent(document, "keydown", function(ev) {
+        if(13 == ev.keyCode) { // enter
+            $.Event.cancel(ev);
+            $("#bt_login").focus();
+
+            setTimeout(function() {
+                doLogin(accountEl, passwdEl);
+            }, 10);
+        }
+    });
+
+    accountEl.onblur = function() { 
+        timer = setTimeout(function(){
+            var value = $(accountEl).value();
+            if( !value )  return $(accountEl).focus();
+            
+            $.ajax({
+                url: "/tss/getLoginInfo.in",
+                params: {"loginName": value},
+                waiting: true,
+                onexcption: function() {
+                    accountEl.focus();
+                },
+                onresult: function(){
+                    accountEl.identifier = this.getNodeValue("identifier");
+                    accountEl.randomKey  = this.getNodeValue("randomKey");
+                    
+                    passwdEl.disabled = false;
+                    passwdEl.focus();
+                    $(".tip").text("");
+                }
+            });
+
+        }, 200);
+    }
+}
+
+var doLogin = function(accountEl, passwdEl) {
+    var identifier = accountEl.identifier;
+    var randomKey  = accountEl.randomKey;   
+    var loginName  = accountEl.value;
+    var password   = passwdEl.value;
+    
+    if( !loginName ) {
+        return $(accountEl).focus();
+    } 
+    else if( !password ) {
+        return $(passwdEl).focus();
+    }
+    else if( !identifier ) {
+        return $.alert("系统无法登录，服务器异常，请刷新或稍后再尝试。");
+    }
+
+    $.ajax({
+        url: "/tss/auth/login.do",
+        waiting: true,
+        headers : {
+            "loginName": $.encode(loginName, randomKey), 
+            "password":  $.encode(password, randomKey), 
+            "identifier": identifier
+        },
+        params: { 
+          "_password": hex_md5(password)
+        },
+        onexception: function(errorMsg) {
+            if( (errorMsg.msg||"").indexOf("账号或密码错误") >= 0 && (errorMsg.msg||"").indexOf(loginName) < 0 ) {
+                location.href = 'login.html'; // 登录页面长期未刷新，验证随机数失效
+            } else {
+                passwdEl.focus();
+            }
+        },
+        onsuccess: function() {
+            $.Cookie.setValue("iUser", loginName);
+            gotoIndex(loginName);   
+        }
+    });
+}
 
 </script>
 

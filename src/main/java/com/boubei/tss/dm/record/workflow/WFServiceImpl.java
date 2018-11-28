@@ -182,7 +182,7 @@ public class WFServiceImpl implements WFService {
 				users.add( user );
 			}
 			
-			String role = m.get("roleId"); // 或签名，优先使用和申请人同组的主管
+			String role = m.get("roleId"); // 或角色，优先使用和申请人同组的主管
 			if( !EasyUtils.isNullOrEmpty(role) ) {
 				Long roleId = EasyUtils.obj2Long(role);
 				List<Object[]> roleUsers = getSameGroupUserByRole(roleId, justOne);
