@@ -17,9 +17,13 @@ import java.util.Map;
 import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.Global;
+import com.boubei.tss.modules.progress.Progress;
+import com.boubei.tss.modules.progress.Progressable;
 import com.boubei.tss.modules.timer.AbstractJob;
+import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.service.IUserService;
+import com.boubei.tss.um.syncdata.ISyncService;
 import com.boubei.tss.util.EasyUtils;
 
 /**
@@ -37,7 +41,8 @@ public class SyncStaffRoleJob extends AbstractJob {
 	private String insertSQL = "insert into um_roleuser (userId, roleId) values(?, ?)";
 	private String deleteSQL = "delete from um_roleuser where userId=? and roleId=? and strategyId is null";
 	
-	IUserService loginService = (IUserService) Global.getBean("UserService");
+	IUserService userService = (IUserService) Global.getBean("UserService");
+	ISyncService syncService = (ISyncService) Global.getBean("SyncService");
 	
 	protected boolean needSuccessLog() {
 		return true;
@@ -54,6 +59,10 @@ public class SyncStaffRoleJob extends AbstractJob {
 			log.info(msg);
 			return msg;
 		}
+		
+		// 先同步用户和用户组 @see SyncUserJob
+		Map<String, Object> datasMap = syncService.getCompleteSyncGroupData(UMConstants.DOMAIN_ROOT_ID); // 域用户组
+        String result = ((Progressable) syncService).execute(datasMap, new Progress(10000));
 		 
 		String sql = jobConfig;
 		String dataSource = DMConstants.LOCAL_CONN_POOL;
@@ -65,7 +74,7 @@ public class SyncStaffRoleJob extends AbstractJob {
 		// 没有员工管理数据，则本JOB执行后不会有任何角色变动
 		for(Map<String, Object> item : list) {
 			String account = (String) item.get("user");
-			User user = loginService.getUserByLoginName(account);
+			User user = userService.getUserByLoginName(account);
 			if(user == null) continue;
 			
 			Long userId = user.getId();
@@ -101,7 +110,7 @@ public class SyncStaffRoleJob extends AbstractJob {
 			SQLExcutor.excuteBatchII(deleteSQL, delList, DMConstants.LOCAL_CONN_POOL);
 		}
 		
-		String returnMsg = "完成开始同步员工角色信息，新增用户角色关系" + addList.size() + "条， 删除" + delList.size() + "";
+		String returnMsg = result + "；新增用户角色关系" + addList.size() + "条， 删除" + delList.size() + "";
 		log.info(returnMsg);
 		return returnMsg;
 	}
