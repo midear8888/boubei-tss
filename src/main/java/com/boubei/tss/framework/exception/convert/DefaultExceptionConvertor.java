@@ -10,8 +10,6 @@
 
 package com.boubei.tss.framework.exception.convert;
 
-import org.apache.log4j.Logger;
-
 import com.boubei.tss.EX;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.exception.ExceptionEncoder;
@@ -25,38 +23,36 @@ import com.boubei.tss.util.EasyUtils;
  */
 public class DefaultExceptionConvertor implements IExceptionConvertor {
 
-	private Logger log = Logger.getLogger(this.getClass());
-	
     public Exception convert(Exception e) {
     	if( e != null && e.getMessage() != null) {
-    		Throwable firstCause = ExceptionEncoder.getFirstCause(e);
-			String msg = e.getMessage() + firstCause.getClass() + firstCause.getMessage();
-			log.error(msg);
-			
-    		if(msg.indexOf("ConstraintViolationException") >= 0) {
-    			if(msg.indexOf("cannot be null") >= 0) {
-    				return new BusinessException( EX.ERR_NOT_NULL + firstCause.getMessage() );
-    			}
-    			if(msg.indexOf("insert") >= 0) {
-    				return new BusinessException( EX.ERR_UNIQUE );
-    			}
-    			else if(msg.indexOf("delete") >= 0) {
-    				return new BusinessException( EX.ERR_HAS_FKEY );
-    			}
-    			else {
-    				return new BusinessException( firstCause.getMessage() );
-    			}
-    		}
-    		
-    		if(msg.indexOf("Row was updated or deleted by another transaction") >= 0) {
-				return new BusinessException( EX.ERR_LOCK_VERSION );
-			}
-    		
-    		boolean needPrint = false, needRelogin = false;;
+    		boolean needPrint = true, needRelogin = false;;
     		if( e instanceof IBusinessException ) {
     			needPrint = ((IBusinessException) e).needPrint();
     			needRelogin = ((IBusinessException) e).needRelogin();
     		}
+			
+    		Throwable firstCause = ExceptionEncoder.getFirstCause(e);
+			String msg = e.getMessage() + firstCause.getClass() + firstCause.getMessage();
+			
+    		if(msg.indexOf("ConstraintViolationException") >= 0) {
+    			if(msg.indexOf("cannot be null") >= 0) {
+    				return new BusinessException( EX.ERR_NOT_NULL + firstCause.getMessage(), needPrint );
+    			}
+    			if(msg.indexOf("insert") >= 0) {
+    				return new BusinessException( EX.ERR_UNIQUE, needPrint);
+    			}
+    			else if(msg.indexOf("delete") >= 0) {
+    				return new BusinessException( EX.ERR_HAS_FKEY, needPrint );
+    			}
+    			else {
+    				return new BusinessException( firstCause.getMessage(), needPrint );
+    			}
+    		}
+    		
+    		if(msg.indexOf("Row was updated or deleted by another transaction") >= 0) {
+				return new BusinessException( EX.ERR_LOCK_VERSION, needPrint );
+			}
+
     		msg = firstCause.getMessage();
     		if( !needRelogin && !EasyUtils.isNullOrEmpty(msg) ) {
     			

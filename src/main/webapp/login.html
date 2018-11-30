@@ -197,6 +197,7 @@ h2.tip { padding: 10px 10px 0 10px; color: red; font-size: 13px; }
     }  
   }  
 
+  URL_CHECK_USER = "/tss/getLoginInfo.in";
   function register(role) {
     $(".tip").text("");
 
@@ -354,7 +355,7 @@ function init() {
             if( !value )  return $(accountEl).focus();
             
             $.ajax({
-                url: "/tss/getLoginInfo.in",
+                url: URL_CHECK_USER,
                 params: {"loginName": value},
                 waiting: true,
                 onexcption: function() {
@@ -394,8 +395,8 @@ var doLogin = function(accountEl, passwdEl) {
         url: "/tss/auth/login.do",
         waiting: true,
         headers : {
-            "loginName": $.encode(loginName, randomKey), 
-            "password":  $.encode(password, randomKey), 
+            "loginName": $.encode(loginName.trim(), randomKey), 
+            "password":  $.encode(password.trim(), randomKey), 
             "identifier": identifier
         },
         params: { 

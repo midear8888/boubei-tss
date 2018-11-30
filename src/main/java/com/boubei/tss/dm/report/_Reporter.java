@@ -161,9 +161,13 @@ public class _Reporter extends BaseActionSupport {
         String exportPath;
         
         // 如果导出数据超过了pageSize（前台为导出设置的pageSize为10万），则不予导出并给与提示
-		if(pagesize > 0 && excutor.count > pagesize) {
+		if( (pagesize > 0 && excutor.count > pagesize) || excutor.count == 0) {
 			List<Object[]> result = new ArrayList<Object[]>();
-			result.add(new Object[] {"您当前查询导出的数据有" +excutor.count+ "行, 超过了系统单次导出上限【" +pagesize+ "行】，请缩短查询范围，分批导出。"});
+			if(excutor.count == 0) {
+				result.add(new Object[] {"没有查询到数据，请修改查询条件再重新查询导出"});
+			} else {
+				result.add(new Object[] {"您当前查询导出的数据有" +excutor.count+ "行, 超过了系统单次导出上限【" +pagesize+ "行】，请缩短查询范围，分批导出。"});
+			}
 			
 			exportPath = DataExport.getExportPath() + "/" + fileName;
 			DataExport.exportCSV(exportPath, result, Arrays.asList("result"));
