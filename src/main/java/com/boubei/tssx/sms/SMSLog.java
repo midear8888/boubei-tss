@@ -32,6 +32,8 @@ public class SMSLog extends ARecordTable {
 	private String sendDay;  // 日期，用以统计
 	
 	private String tlcode;
+	
+	@Column(length = 4000)
 	private String params;
 
 
