@@ -395,7 +395,7 @@ function initMenus() {
     var item32 = {
         label:"还原",
         callback: restore,
-        icon: "images/export.gif",
+        icon:"icon icon-sync",
         visible:function() { return isRecycled(); }
     }
     var item4 = {
@@ -446,7 +446,7 @@ function canEditRow(rowID, _wfStatus) {
             return false;
         }
 
-        return (_operation.contains("1") && userCode == creator) || _operation.contains("5");
+        return (_operation.contains("1") && userCode == creator) || ( !wfstatus && _operation.contains("5") );
     }
 }
 

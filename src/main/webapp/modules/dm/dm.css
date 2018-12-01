@@ -1,5 +1,5 @@
-#searchFormDiv { min-width: 300px; max-width: 600px; max-height: 450px; top: 100px; left: 230px; }
-#searchFormDiv .content { padding: 12px; overflow: auto; }
+#searchFormDiv { min-width: 300px; max-width: 600px; max-height: 480px; top: 100px; left: 230px; }
+#searchFormDiv .content { padding: 12px; overflow: auto; max-height: 450px; }
 #searchFormDiv .buttonBox { margin: 0 auto; text-align: center; }
 #searchFormDiv .buttonBox input { margin-left: 12px;  }
 #searchFormDiv .max, #searchFormDiv .min { display: none; }

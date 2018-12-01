@@ -475,6 +475,10 @@
                 
             var page1Form = $.F("page1Form", groupInfoNode);
             attachReminder(page1Form.box.id, page1Form);
+            if( treeID != -8) {
+                $($1("syncConfig").parentNode.parentNode).hide();
+                $($1("fromGroupId").parentNode.parentNode).hide()
+            }
  
             var page3Tree  = $.T("page3Tree",  group2RoleTreeNode);
             var page3Tree2 = $.T("page3Tree2", group2RoleGridNode);

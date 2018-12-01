@@ -25,7 +25,7 @@
 			<TD><label binding="description"/></TD>
 			<TD><textarea binding="description" style="width:400px;height:40px;"/></TD>
 		</TR>
-		<TR class="c1">
+		<TR>
 			<TD><label binding="syncConfig"/></TD>
 			<TD>
 				<textarea binding="syncConfig" style="width:600px;height:100px;"/>

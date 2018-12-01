@@ -35,14 +35,7 @@ import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.EasyUtils;
 
 /**
- * <p> 微信小程序用户登录Servlet </p>
- * <p>
- * 因普通的Action会被要求登录用户才能访问，所以这里采用Servlet来实现注册功能。
- * 
- * 新建小程序项目注意以下步骤：
- * 1、添加 servicewechat.com 到TSS的IP白名单【系统参数】，否则访问TSS服务时会报404.html(refer= https://servicewechat.com/.....)
- * 2、添加 appId 和 appSecret 到系统参数
- * </p>
+ * <p> 微信小程序用户登录Servlet for 审核测试 </p>
  */
 @WebServlet(urlPatterns="/wxlogin_test.in")
 public class WxLogin2 extends HttpServlet {
