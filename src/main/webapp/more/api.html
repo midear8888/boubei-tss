@@ -134,6 +134,16 @@ body { font-family: "Microsoft Yahei"; }
     		test: true,
     		manual: true
     	},
+        {
+            name: "自定义读写数据表接口",
+            url: "/tss/api/dml/multi",
+            method: "POST",
+            param: '数据源、自定义SQL集',
+            result: '{“result”: "Success", 每一条SQL的执行结果}',
+            permission: "自定义的SQL语句不受数据表权限限制，需要注意安全",
+            _href: "p3_10",
+            manual: true
+        },
     	{
     		name: "为记录添加附件",
     		url: "/tss/remote/upload?afterUploadClass=<br/>com.boubei.tss.dm.record.file.CreateAttach<br/>&record={record}&itemId={itemId}",
@@ -225,7 +235,7 @@ body { font-family: "Microsoft Yahei"; }
 	    	api.url = api.url.replace("{record}", "<b style='color:blue;'>" + rctable + "</b>");
 	    	api.url = api.url.replace("{id}", "<b style='color:red;'>{id}</b>");
 	    	api.url = api.url.replace("{itemId}", "<b style='color:red;'>{itemId}</b>");
-	    	api.href_ = api._href ? "<a href='http://www.boubei.com/doc/tss/manual/api-tss.html?id=#" +api._href+ "' target='_blank'>说明</a>" : ""; 
+	    	api.href_ = api._href ? "<a href='http://www.boubei.com/doc/tss/manual/api-tss.html?id=#" +api._href+ "' target='_blank'>示例</a>" : ""; 
 
 	    	if(api.test) {
 	    		api.test = "<a href='javascript:void(0)' target='_blank' onclick='test(" +i+ ");'>调试</a>";  // ifram内嵌页，url、method、params

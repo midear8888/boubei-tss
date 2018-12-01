@@ -45,11 +45,13 @@ import com.boubei.tss.util.EasyUtils;
 
 /**
  * 
-	insert into tbl_jx(name,score,day,createtime,creator,version) values ('${name}', ${score}, '${day}', '${day}', 'Admin', 0)
-	select IFNULL(max(id), 1) as maxid from tbl_jx
-	update tbl_jx t set t.score = ${score} where t.id = ${maxid}
-	delete from tbl_jx  where id = ${maxid} - 1
+ * 1、在SQL自定义表（SQLDef，dm_sql_def）里定义以下四个SQL语句：
+	s1: insert into tbl_jx(name,score,day,createtime,creator,version) values ('${name}', ${score}, '${day}', '${day}', 'Admin', 0)
+	s2: select IFNULL(max(id), 1) as maxid from tbl_jx
+	s3: update tbl_jx t set t.score = ${score} where t.id = ${maxid}
+	s4: delete from tbl_jx  where id = ${maxid} - 1
 	
+   2、在页面通过AJAX发起以下请求：
 	var json = [];
 	json.push({ "sqlCode": "s1", data: {"name": "JK", "score": 59, "day": "2017-01-01"} });
 	json.push({ "sqlCode": "s1", data: {"name": "Jon", "score": 58, "day": "2017-01-02"} });
@@ -60,9 +62,9 @@ import com.boubei.tss.util.EasyUtils;
 	var params = {};
 	params.ds = "connectionpool";
 	params.json = JSON.stringify(json);
-	tssJS.post("/tss/auth/dml/multi", params, function(result) { console.log(result); } );
+	tssJS.post("/tss/api/dml/multi", params, function(result) { console.log(result); } );
 	
-	Object {result: maxid: 2, "Success", step1: 1, step2: 1, step4: 1, step5: 0}
+	返回结果： {result: "Success", maxid: 2, step1: 1, step2: 1, step4: 1, step5: 0}
  */
 @Controller
 @RequestMapping( {"/auth/dml/", "/api/dml/"})
@@ -81,8 +83,12 @@ public class MultiSQLExcutor {
      */
 	@RequestMapping(value = "/multi", method = RequestMethod.POST)
     @ResponseBody
-    public Object exeMultiSQLs(HttpServletRequest request, String ds) throws Exception {
-		String json = DMUtil.parseRequestParams(request, true).get("json");
+    public Object exeMultiSQLs(HttpServletRequest request, String ds, String json) throws Exception {
+		String queryString = request.getQueryString();
+		if( queryString != null && queryString.indexOf("json") >= 0 ) {
+			 json = DMUtil.parseRequestParams(request, true).get("json");
+		}
+		
     	return _exeMultiSQLs(json, ds, new HashMap<String, Object>());
     }
     	
