@@ -462,7 +462,7 @@ public class _Recorder extends ProgressActionSupport {
 		String errorMsg = op + " error: " + firstCause;
 		errorMsg = errorMsg.replaceAll("com.boubei.tss.framework.exception.BusinessException: ", "");
 
-		log.error(errorMsg, e);
+		log.error(errorMsg);
 		throw new BusinessException(errorMsg);
 	}
 

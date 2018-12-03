@@ -74,7 +74,7 @@ public class MatrixUtil {
 		catch(Exception e) {
 			rtMsg = e.getMessage();
 		} 
-		log.info("remote record result: " + statusCode + ", " + rtMsg);
+		log.debug("remote record result: " + statusCode + ", " + rtMsg);
 	}
 
 	public static String getIpAddress() {

@@ -127,11 +127,12 @@ public interface ILoginService {
     List<GroupDTO> getGroupTreeByGroupId(Long groupId);
     
     /**
-     * 取组（不包含子组）下的用户列表，转换为OperatorDTO对象列表。
+     * 取组下的用户列表，转换为OperatorDTO对象列表。
      * @param groupId
+     * @param deeply true 包含子组 false 不包含
      * @return
      */
-    List<OperatorDTO> getUsersByGroupId(Long groupId);
+    List<OperatorDTO> getUsersByGroupId(Long groupId, boolean deeply);
  
     /**
      * 根据角色的ID 获取拥有此角色的用户（只取相同域的账号）

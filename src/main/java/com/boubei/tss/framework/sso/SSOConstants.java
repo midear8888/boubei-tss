@@ -43,13 +43,17 @@ public interface SSOConstants {
     public static final String USER_CODE    = "userCode";
     public static final String USER_NAME    = "userName";
     public static final String USER_ID      = "userId";
-    public static final String USER_PASSWORD= "password";
+    public static final String USER_PASSWD  = "password";
     public static final String USER_GROUP   = "userGroup";
     public static final String USER_GROUP_ID= "userGroupId";
     
-    public static final String USER_DOMAIN  = "DOMAIN";
-    public static final String USERS_OF_DOMAIN  = "USERS_OF_DOMAIN";
-    public static final String USERIDS_OF_DOMAIN  = "USERIDS_OF_DOMAIN";
+    public static final String USER_DOMAIN       = "DOMAIN";
+    public static final String USERS_OF_DOMAIN   = "USERS_OF_DOMAIN";
+    public static final String USERIDS_OF_DOMAIN = "USERIDS_OF_DOMAIN";
+    public static final String USERS_OF_GROUP   = "USERS_OF_GROUP";
+    public static final String USERIDS_OF_GROUP = "USERIDS_OF_GROUP";
+    public static final String USERS_OF_GROUP_DEEP   = "USERS_OF_GROUP_DEEP";
+    public static final String USERIDS_OF_GROUP_DEEP = "USERIDS_OF_GROUP_DEEP";
     
     public static final String RANDOM_KEY  = "randomKey";
     

@@ -243,6 +243,8 @@ public class DMUtil {
 		
 		// 加入域账号过滤数据表条件的标准片段
 		fmDataMap.put(DMConstants.FILTER_BY_DOMAIN, DMConstants.DOMAIN_CONDITION);
+		fmDataMap.put(DMConstants.FILTER_BY_GROUP, DMConstants.GROUP_CONDITION);
+		fmDataMap.put(DMConstants.FILTER_BY_GROUP_DEEP, DMConstants.GROUP_DEEP_CONDITION);
 		
 		/* 往dataMap里放入Session里的用户权限、角色、组织等信息，作为宏代码解析。 */
     	try {

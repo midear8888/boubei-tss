@@ -241,8 +241,13 @@ public class LoginService implements ILoginService {
         return returnList;
     }
     
-    public List<OperatorDTO> getUsersByGroupId(Long groupId) {
-        List<User> users = groupDao.getUsersByGroupId(groupId);
+    public List<OperatorDTO> getUsersByGroupId(Long groupId, boolean deeply) {
+        List<User> users;
+        if(deeply) {
+        	users = groupDao.getUsersByGroupIdDeeply(groupId);
+        } else {
+        	users = groupDao.getUsersByGroupId(groupId);
+        }
         return translateUserList2DTO(users);
     }
  
@@ -324,11 +329,17 @@ public class LoginService implements ILoginService {
 				}
 			} 
 			else if(temp.endsWith("@tssGroup")) { // 用户组
-				List<OperatorDTO> list = getUsersByGroupId(parseID(temp));
+				List<OperatorDTO> list = getUsersByGroupId(parseID(temp), false);
 				for(OperatorDTO user : list) {
 					addUserEmail2List(user, emails, ids);
 				}
 			} 
+			else if(temp.endsWith("@tssGroupDeep")) { // 用户组（含子组）
+				List<OperatorDTO> list = getUsersByGroupId(parseID(temp), true);
+				for(OperatorDTO user : list) {
+					addUserEmail2List(user, emails, ids);
+				}
+			}
 			else if(temp.indexOf("@") < 0) { // LoginName
 				try {
 					OperatorDTO user = getOperatorDTOByLoginName(temp);

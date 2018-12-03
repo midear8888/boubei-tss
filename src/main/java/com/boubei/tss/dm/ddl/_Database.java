@@ -85,18 +85,18 @@ public abstract class _Database {
 	public List<String> fieldRole2s;
 	public List<String> fieldValues;
 	
-	public Map<String, String> cnm = new HashMap<String, String>(); // code -- label
-	public Map<String, String> ncm = new HashMap<String, String>(); // label -- code
-	public Map<String, String> ctype = new HashMap<String, String>(); // code -- type
-	public Map<String, String> crole = new HashMap<String, String>(); // code -- role2
+	public Map<String, String> cnm = new HashMap<String, String>();      // code -- label
+	public Map<String, String> ncm = new HashMap<String, String>();      // label -- code
+	public Map<String, String> ctype = new HashMap<String, String>();    // code -- type
+	public Map<String, String> crole = new HashMap<String, String>();    // code -- role2
 	public Map<String, String> cpattern = new HashMap<String, String>(); // code -- pattern
-	public Map<String, String> cval = new HashMap<String, String>(); // code -- defaultValue
-	public Map<String, String> cerr = new HashMap<String, String>(); // code -- errorMsg
-	public Map<String, String> cuni = new HashMap<String, String>(); // code -- unique
-	public Map<String, String> cnull = new HashMap<String, String>(); // code -- nullable
-	public Map<String, String> creg = new HashMap<String, String>(); // code -- checkReg
-	public Map<String, String> csql = new HashMap<String, String>(); // code -- valSQL
-	public Map<String, String> cmatch = new HashMap<String, String>(); // code -- Match partter 严格匹配，不允许模糊查询
+	public Map<String, String> cval = new HashMap<String, String>();     // code -- defaultValue
+	public Map<String, String> cerr = new HashMap<String, String>();     // code -- errorMsg
+	public Map<String, String> cuni = new HashMap<String, String>();     // code -- unique
+	public Map<String, String> cnull = new HashMap<String, String>();    // code -- nullable
+	public Map<String, String> creg = new HashMap<String, String>();     // code -- checkReg
+	public Map<String, String> csql = new HashMap<String, String>();     // code -- valSQL
+	public Map<String, String> cmatch = new HashMap<String, String>();   // code -- Match partter 严格匹配，不允许模糊查询
 	
 	public String toString() {
 		return "【" + this.datasource + "." + this.recordName + "】";
@@ -392,7 +392,9 @@ public abstract class _Database {
         			String isparam1 = (String) fDefs1.get("isparam");
         			String isparam0 = (String) fDefs0.get("isparam");
         			if( "true".equals(isparam1) && !"true".equals(isparam0) ) {
-        				SQLExcutor.excute(ddlSQLs[2], newDS);
+        				try { 
+        					SQLExcutor.excute(ddlSQLs[2], newDS); 
+        				} catch(Exception e) { }
         			} 
         			else if( "true".equals(isparam0) && !"true".equals(isparam1) ) {
         				try {

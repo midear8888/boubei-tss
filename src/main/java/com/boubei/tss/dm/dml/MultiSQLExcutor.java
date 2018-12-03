@@ -85,7 +85,7 @@ public class MultiSQLExcutor {
     @ResponseBody
     public Object exeMultiSQLs(HttpServletRequest request, String ds, String json) throws Exception {
 		String queryString = request.getQueryString();
-		if( queryString != null && queryString.indexOf("json") >= 0 ) {
+		if( queryString != null && queryString.indexOf("json") >= 0 ) { // wx call
 			 json = DMUtil.parseRequestParams(request, true).get("json");
 		}
 		

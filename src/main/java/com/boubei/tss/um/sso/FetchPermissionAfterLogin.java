@@ -26,6 +26,7 @@ import com.boubei.tss.framework.sso.SSOConstants;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.modules.log.IBusinessLogger;
 import com.boubei.tss.modules.log.Log;
+import com.boubei.tss.um.helper.dto.OperatorDTO;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.um.sso.online.DBOnlineUser;
 import com.boubei.tss.util.EasyUtils;
@@ -87,6 +88,19 @@ public class FetchPermissionAfterLogin implements ILoginCustomizer {
         	index++;
         	
         	lastGroup = temp;
+        }
+        
+        if( !"noGroup".equals(lastGroup[1]) ) {
+        	Long inGroup = (Long) lastGroup[0];
+			List<OperatorDTO> users = loginService.getUsersByGroupId(inGroup, false);
+        	String list = EasyUtils.list2Str(EasyUtils.objAttr2List(users, "loginName"));
+			session.setAttribute(SSOConstants.USERS_OF_GROUP, DMUtil.insertSingleQuotes(list));
+        	session.setAttribute(SSOConstants.USERIDS_OF_GROUP, EasyUtils.list2Str(EasyUtils.objAttr2List(users, "id")));
+        	
+        	users = loginService.getUsersByGroupId(inGroup, true);
+        	list = EasyUtils.list2Str(EasyUtils.objAttr2List(users, "loginName"));
+			session.setAttribute(SSOConstants.USERS_OF_GROUP_DEEP, DMUtil.insertSingleQuotes(list));
+        	session.setAttribute(SSOConstants.USERIDS_OF_GROUP_DEEP, EasyUtils.list2Str(EasyUtils.objAttr2List(users, "id")));
         }
         
         session.setAttribute(SSOConstants.USER_DOMAIN, domain); // 用户所属域

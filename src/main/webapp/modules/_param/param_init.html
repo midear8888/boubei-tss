@@ -18,6 +18,13 @@
 
 <script src="../../tools/util_date.js"></script>
 
+<STYLE type="text/css">
+    html, body { height: 100%; }
+    iframe { width:100%; height: 99.5%; padding-top: 1px;}
+    #if2 { padding-top: 0; }
+
+</STYLE>
+
 <script type="text/javascript">
 var FIELDS = [
             {title:'id',field:'id',hidden:true},
@@ -125,8 +132,8 @@ function init(enableCellEditing){
             	return value;
             },
 	        toolbar: [ 
-	            { text: '保存', iconCls: 'icon-save', handler: saveData},
-	            { text: '更多参数设置', iconCls: 'icon-redo', handler: function() { parent.openUrl('modules/_param/param.htm'); }}
+	            { text: '保存参数', iconCls: 'icon-save', handler: saveData},
+	            { text: '更多参数设置', iconCls: 'icon-redo', handler: function() { $("#tabs").tabs("select", 1); }}
 	        ],
 	        columns: [FIELDS],
 	        data: result
@@ -192,8 +199,63 @@ function saveData(){
 
 </head>
 <body>
-<div class="easyui-layout" fit="true" >
-    <table id="table" border="false" style="height:100%" title="系统参数设置"></table>
-</div>
+
+   <div class="easyui-tabs" data-options="fit:true" border="false" id="tabs">
+        <div border="false" title="常用系统配置">
+            <table id="table" border="false" style="height:100%"></table>
+        </div>
+        <div border="false" title="更多参数配置">
+            <iframe scrolling="auto" frameborder="0" id="if2"></iframe>
+        </div>
+        <div border="false" title="菜单配置">
+            <iframe scrolling="auto" frameborder="0" id="if3"></iframe>
+        </div>
+        <div border="false" title="定时Job配置">
+            <iframe scrolling="auto" frameborder="0" id="if4"></iframe>
+        </div>
+        <div border="false" title="ETL任务配置">
+            <iframe scrolling="auto" frameborder="0" id="if5"></iframe>
+        </div>
+        <div border="false" title="功能模块配置">
+            <iframe scrolling="auto" frameborder="0" id="if6"></iframe>
+        </div>
+        <div border="false" title="令牌配置">
+            <iframe scrolling="auto" frameborder="0" id="if7"></iframe>
+        </div>
+    </div>
 </body>
+
+<script type="text/javascript">
+    // 使得 easyui-tabs 高度自适应
+　　$("#tabs").tabs({ 
+　　　　width:  $("#tabs").parent().width(), 
+　　　　height: $("#tabs").parent().height() 
+　　}); 
+
+    var urls = [
+        null, 
+        'param.htm',
+        '../portal/navigator.html',
+        encodeURI('../dm/recorder.html?rcname=系统定时器'), 
+        encodeURI('../dm/recorder.html?rcname=ETL任务'),
+        encodeURI('../dm/recorder.html?rcname=功能模块发布'),
+        encodeURI('../dm/recorder.html?rcname=对外用户令牌发放')
+    ];
+
+    for(var i=6; i >= 1; i--) {
+        $("#tabs").tabs("select", i); 
+        $("#if" + (i+1)).attr("src", urls[i]);
+    }
+    $("#tabs").tabs("select", 0); 
+    
+    var isAdmin = tssJS.Cookie.decode("userHas")[1].contains(-1);
+    if( !isAdmin ) {
+        $("#tabs").tabs("disableTab", 0); 
+        $("#tabs").tabs("close", 1); 
+        $("#tabs").tabs("close", 1); 
+        $("#tabs").tabs("close", 4); 
+    }
+
+</script>
+
 </html>
