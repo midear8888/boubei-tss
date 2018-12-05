@@ -160,6 +160,7 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
     public TreeAttributesMap getAttributes() {
         TreeAttributesMap map = new TreeAttributesMap(id, name);;
        
+        map.put("code", this.table);
         map.put("parentId", parentId);
         map.put("type", type);
         String icon;

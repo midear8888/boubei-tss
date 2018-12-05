@@ -205,6 +205,14 @@ public class ImportCSV implements AfterUpload {
 			log.debug("readData second end");
 		}
 		
+		// 生成进度信息
+		int total = rowList.size() - 1;
+		int x = Math.max(total/8, 1);
+		Progress progress = new Progress(x + x + total + x);  // 3个x默认作为upload、valid 和 after的进度控制
+		String pgCode = _db.recordId + "-" + Environment.getUserCode();
+		ProgressPool.putSchedule(pgCode, progress);
+		progress.add(x);
+		
 		// 校验数据
 		List<String> errLines = new ArrayList<String>(); // errorLine = lineIndex + errorMsg + row
 		List<Integer> errLineIndexs = new ArrayList<Integer>();
@@ -222,6 +230,7 @@ public class ImportCSV implements AfterUpload {
 			}
 		}
 		vailder.vaild(_db, rowList, headers, valSQLFields, errLines, errLineIndexs);
+		progress.add(x); // 进度更新
 		log.debug("vaild end");
 		
 		String fileName = null;
@@ -271,13 +280,14 @@ public class ImportCSV implements AfterUpload {
 				logMsg.append("\nexecute Job[" +key+ "] atfer import: " + rt);
 			}
 		}
+		progress.add(9999999); // 进度
 		
 		logMsg.append( "\nrequest params: " + requestMap.toString() );
 		log.info(logMsg);
 		
 		Log impLog = new Log(_db.recordName, logMsg.toString());
 		impLog.setOperateTable("导入Excel");
-		impLog.setUdf1( String.valueOf(rowList.size()) );
+		impLog.setUdf1( String.valueOf(total) );
 		impLog.setMethodExcuteTime( (int) (System.currentTimeMillis() - start) );
 		((IBusinessLogger) Global.getBean("BusinessLogger")).output(impLog);
 		
@@ -307,13 +317,13 @@ public class ImportCSV implements AfterUpload {
 		
 		List<String> snList = null; // 自动取号
 		int total = rows.size();
-		
-		// 生成进度信息
-		Progress progress = new Progress(total);
-		String pgCode = _db.recordId + "-" + Environment.getUserCode();
-		ProgressPool.putSchedule(pgCode, progress);
+		Progress progress = ProgressPool.getSchedule(_db.recordId + "-" + Environment.getUserCode());
 		
 		for(int index = 1; index < total; index++) { // 第一行为表头，不要
+			
+			if (index % 10 == 0 || index == total - 1) {
+				progress.add(10); // 进度加10
+			}
 			
 			if( errLineIndexs.contains(index) ) continue;
 			
@@ -385,13 +395,8 @@ public class ImportCSV implements AfterUpload {
 				_db.insertBatch(valuesMaps);
 				valuesMaps.clear();
 			}
-			
-			if (index % 10 == 0) {
-				progress.add(10); // 进度加10
-			}
 		}
     	_db.insertBatch(valuesMaps);
-    	progress.add(total);
 		
 		// 向前台返回成功信息
     	String noInserts = ignoreExist ? ("忽略了第【" +EasyUtils.list2Str(ignoreLines)+ "】行，") : ("覆盖" +updateCount+ "行，");

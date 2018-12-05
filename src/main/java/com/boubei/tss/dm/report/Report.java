@@ -189,7 +189,8 @@ public class Report extends OperateInfo implements IXForm, IDecodable, IResource
 
     public TreeAttributesMap getAttributes() {
         TreeAttributesMap map = new TreeAttributesMap(id, name);
-       
+        map.put("code", this.code);
+        
         String icon_path;
         if ( isGroup() ) {
             icon_path = "images/reportGroup.gif";
