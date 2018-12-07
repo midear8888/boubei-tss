@@ -244,7 +244,7 @@ function saveData(){
 
     for(var i=6; i >= 1; i--) {
         $("#tabs").tabs("select", i); 
-        $("#if" + (i+1)).attr("src", urls[i]);
+        $("#if" + (i+1)).height(document.body.clientHeight-33).attr("src", urls[i]);
     }
     $("#tabs").tabs("select", 0); 
     

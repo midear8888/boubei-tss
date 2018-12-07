@@ -45,6 +45,7 @@ import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.Anonymous;
 import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.framework.web.display.grid.GridTemplet;
 import com.boubei.tss.modules.log.IBusinessLogger;
 import com.boubei.tss.modules.log.Log;
 import com.boubei.tss.modules.param.ParamConstants;
@@ -975,25 +976,10 @@ public abstract class _Database {
             if( _Field.TYPE_FILE.equalsIgnoreCase(fieldType) ) {
             	hasFileField = true;
             }
-            
-            if(EasyUtils.isNullOrEmpty(fieldWidth)) {
-            	fieldWidth = "";
-            }
-            else if( fieldWidth.startsWith("0") ) {
-            	fieldWidth = " display=\"none\" ";
-            } 
-            else {
-            	try {
-            		Integer.parseInt(fieldWidth);
-            		fieldWidth = fieldWidth + "px";
-            	} catch(Exception e) { }
-            	
-            	fieldWidth = " width=\"" + fieldWidth + "\" ";
-            }
+            fieldWidth = GridTemplet.transColWidth(fieldWidth);
             
             boolean isHidden = "hidden".equals( fieldTypes.get(index) );
             if( PermissionHelper.checkRole(fieldRole2) && !isHidden ) {
-            	
             	sb.append("<column name=\"" + fieldCode + "\" mode=\"" + fieldType + "\" pattern=\"" + fieldPattern 
             			+ "\" caption=\"" + fieldName + "\" align=\"" + fieldAlign + "\" " + fieldWidth + " />").append("\n");
             }

@@ -10,6 +10,7 @@
 		<column name="displayUri"  caption="展示页面" mode="string" maxLength="200"/>
 		<column name="paramUri"    caption="查询器" mode="string" maxLength="200"/>
 		<column name="icon"    caption="自定义图标" mode="string" maxLength="200"/>
+		<column name="colDefs" caption="列宽定义" mode="string" maxLength="500"/>
 		<column name="remark"  caption="报表简介" mode="string" maxLength="2000"/>
 		<column name="needLog" caption="访问日志" mode="combo" values="1|0" texts="记录|不记录"/>
 		<column name="mobilable" caption="移动端浏览" mode="combo" values="1|0" texts="支持|不支持"/>
@@ -68,6 +69,10 @@
 			<TD colspan="5">
 				<input binding="paramUri" style="width:240px;margin-left:5px;"/>
 			</TD>
+		</TR>
+		<TR>
+			<TD valign="top"><label binding="colDefs"/></TD>
+			<TD colspan="9"><input binding="colDefs" style="width:450px;" placeholder="示例:50,80,100,80 或 10%,20%,15%,30%,20%"/></TD>
 		</TR>
 		<TR>
 			<TD valign="top"><label binding="remark"/></TD>

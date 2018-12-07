@@ -178,7 +178,17 @@ public class ReportServiceImpl implements ReportService {
   			int page, int pagesize, Object cacheFlag) {
     	
     	Report report = this.getReport(reportId);
-    	return ReportQuery.excute(report, requestMap, page, pagesize);
+    	SQLExcutor ex = ReportQuery.excute(report, requestMap, page, pagesize);
+    	String colDefs = report.getColDefs();
+    	if(colDefs != null && ex.count > 0) {
+    		String[] arr = colDefs.replaceAll("，", ",").split(",");
+    		int size = Math.min(ex.fieldWidths.size(), arr.length);
+    		for(int i = 0; i < size; i++) {
+    			ex.fieldWidths.set(i, arr[i]);
+    		}
+    	}
+		
+		return ex;
     }
    
 }

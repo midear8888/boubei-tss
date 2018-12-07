@@ -268,6 +268,7 @@ public class WxAPI {
     		item.put("wxurl", DMUtil.getExtendAttr(report.getRemark(), "wxurl"));
     		String wxicon = DMUtil.getExtendAttr(report.getRemark(), "wxicon");
 			item.put("wxicon", EasyUtils.checkNull(wxicon, "/tss/images/report.png"));
+			item.put("colDefs", report.getColDefs());
     		
 			result.add( item );
     	}

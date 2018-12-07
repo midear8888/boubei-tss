@@ -40,6 +40,7 @@ import com.boubei.tss.dm.ddl._Field;
 import com.boubei.tss.dm.ext.query.AbstractSO;
 import com.boubei.tss.dm.ext.query.SOUtil;
 import com.boubei.tss.framework.exception.BusinessException;
+import com.boubei.tss.framework.web.display.grid.GridTemplet;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.XMLDocUtil;
 
@@ -48,7 +49,8 @@ public class SQLExcutor {
     static Logger log = Logger.getLogger(SQLExcutor.class);
     
     public List<String> selectFields = new ArrayList<String>();
-    public List<Integer> fieldTypes = new ArrayList<Integer>(); // java.sql.Types
+    public List<Integer> fieldTypes  = new ArrayList<Integer>(); // java.sql.Types
+    public List<String> fieldWidths  = new ArrayList<String>(); 
     
     public int count;
     public List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
@@ -66,12 +68,15 @@ public class SQLExcutor {
     	StringBuffer sb = new StringBuffer();
         sb.append("<grid><declare sequence=\"true\">");
         if(selectFields.size() > 0) {
+        	int index = 0;
             for(String field : selectFields) {
             	Object caption = EasyUtils.checkNull( cnm.get(field), field);
                 String type = ctm.get(field);
                 String align = _Field.TYPE_NUMBER.equals(type) ? "right" : "";
+                String width = GridTemplet.transColWidth( fieldWidths.get(index++) );
+                
 				sb.append("<column name=\"" + field + "\" mode=\"" + type + "\" pattern=\"" + cpm.get(field) 
-            			+ "\" caption=\"" + caption + "\" align=\"" + align + "\" />").append("\n");
+            			+ "\" caption=\"" + caption + "\" align=\"" + align + "\" " +width+ " />").append("\n");
             }
         }
         else {
@@ -227,6 +232,7 @@ public class SQLExcutor {
                 	if( result.isEmpty() && !selectFields.contains(columnName) ) {
 						selectFields.add(columnName);
 						fieldTypes.add( rsMetaData.getColumnType(index) );
+						fieldWidths.add( 100/fieldNum - 1 + "%" );
 					}
 	                
 	                Object value = rs.getObject(index);

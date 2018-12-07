@@ -85,6 +85,7 @@ public class Report extends OperateInfo implements IXForm, IDecodable, IResource
     private String  displayUri; // 用来展示当前报表的模板页面的路径
     private String  paramUri;   // 用来展示当前报表的查询页面的自定义路径, eg: more/bi_condition.html, 如果为空，则隐藏
     private String  icon;       // 自定义图标
+    private String  colDefs;    // 列宽定义
     
     @Column(nullable = false)
     private Integer type;  // 种类  0：报表分组 1: 业务报表
@@ -297,5 +298,13 @@ public class Report extends OperateInfo implements IXForm, IDecodable, IResource
 
 	public void setMobilable(Integer mobilable) {
 		this.mobilable = mobilable;
+	}
+
+	public String getColDefs() {
+		return colDefs;
+	}
+
+	public void setColDefs(String colDefs) {
+		this.colDefs = colDefs;
 	}
 }

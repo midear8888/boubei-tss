@@ -637,7 +637,7 @@
  
     function addNewUser(topBtn) {
         var groupId;
-        if( topBtn ) {
+        if( topBtn === true ) {
             groupId = $("#x1").attr("data-group");
             if( !groupId ) return;
         } else {

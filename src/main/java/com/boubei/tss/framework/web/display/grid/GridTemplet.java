@@ -121,4 +121,23 @@ public class GridTemplet {
         Element column = (Element) doc.selectSingleNode(GIRD_DECLARE_COLUMN_XPATH + "[@name='" + columnName + "']");
         column.addAttribute(name, value);
     }
+    
+    public static String transColWidth(String colWidth) {
+		if(EasyUtils.isNullOrEmpty(colWidth)) {
+        	colWidth = "";
+        }
+        else if( colWidth.startsWith("0") ) {
+        	colWidth = " display=\"none\" ";
+        } 
+        else {
+        	try {
+        		Integer.parseInt(colWidth);
+        		colWidth = colWidth + "px";
+        	} catch(Exception e) { }
+        	
+        	colWidth = " width=\"" + colWidth + "\" ";
+        }
+		
+		return colWidth;
+	}
 }
