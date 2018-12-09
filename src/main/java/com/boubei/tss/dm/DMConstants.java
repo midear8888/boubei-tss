@@ -26,11 +26,11 @@ public final class DMConstants {
 	public final static String RECORD_TABLE_LIST = "_TABLE_LIST";
 	public final static String RECORD_EMPTY_TABLE = "dm_empty";
 	
-	// 常用宏
+	// 常用宏: 数据表过滤条件里 加 1=1 <#if 部门经理??>${filterByGroup}</#if>
 	public final static String FILTER_BY_GROUP = "filterByGroup";
 	public final static String FILTER_BY_GROUP_DEEP = "filterByGroupDeep";
-	public final static String GROUP_CONDITION = "<#if USERIDS_OF_GROUP??> and creator in (${USERIDS_OF_GROUP}) </#if>";
-	public final static String GROUP_DEEP_CONDITION = "<#if USERIDS_OF_GROUP_DEEP??> and creator in (${USERIDS_OF_GROUP_DEEP}) </#if>";
+	public final static String GROUP_CONDITION = "<#if USERS_OF_GROUP??> and creator in (${USERS_OF_GROUP}) </#if>";
+	public final static String GROUP_DEEP_CONDITION = "<#if USERS_OF_GROUP_DEEP??> and creator in (${USERS_OF_GROUP_DEEP}) </#if>";
 	
 	public final static String FILTER_BY_DOMAIN = "filterByDomain";
 	public final static String DOMAIN_CONDITION_0 = "<#if USERS_OF_DOMAIN??> and creator in (${USERS_OF_DOMAIN}) </#if>";
