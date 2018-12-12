@@ -31,7 +31,7 @@
 #recordDefinesDiv Tree { width:202px; height:90%; overflow-y: auto; }
 #recordDefinesDiv .bts { margin-left: 10px; padding-top: 5px; position:absolute; bottom: 2px; left:0; }
 
-#defineForm { width:473px; height:90.5%; padding:15px 5px; position:absolute; top:5px; left:222px; }
+#defineForm { width:473px; height:95.5%; padding: 5px 5px; position: absolute; top:5px; left:222px; }
 #defineForm .required { color: red; width: 10px; display: inline-block; text-align: right; }
 #defineForm td:nth-child(odd) { 
 	color: #999; width: 60px; display: inline-block; text-align: right; line-height: 32px; 
@@ -183,7 +183,10 @@ textarea.halfscreenable {  width:45%; height:300px; margin-left: 2%; padding-lef
 		<tr class="nohidden" id="regpattern">
 			<td>校验正则：</td> <td> <input type="text" id="_checkReg"/> </td>
 			<td>出错提示：</td> <td> <input type="text" id="_errorMsg"/> </td>
+		</tr>
+		<tr class="nohidden">
 			<td>格式化：</td> <td> <input type="text" id="_pattern" placeholder="例: ##,###.00"/> </td>
+			<td>列表展示：</td> <td><input name="show" id="_show" type="checkbox" value="false"></td>
 		</tr>
 		<tr class="nohidden">
 			<td>谁能编辑：</td> <td> <select id="_role1" style="width: 140px;"></select> </td>
@@ -203,7 +206,6 @@ textarea.halfscreenable {  width:45%; height:300px; margin-left: 2%; padding-lef
 				<input type="text" id="_cwidth" placeholder="例:70px或10%"/> 
 			</td>
 		</tr>
-
 		<tr class="optionCfg">
 			<td>输入框宽：</td> 
 			<td> 

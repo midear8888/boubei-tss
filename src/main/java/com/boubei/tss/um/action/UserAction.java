@@ -94,7 +94,7 @@ public class UserAction extends BaseActionSupport {
             data =  userService.getInfo4CreateNewUser(groupId);
         }
         
-        // 所有该用户自己建立的角色
+        // 用户对角色
         TreeEncoder roleTree = new TreeEncoder(data.get("User2RoleTree"), new LevelTreeParser());
         roleTree.setNeedRootNode(false);
         
@@ -374,6 +374,7 @@ public class UserAction extends BaseActionSupport {
 		if( Config.TRUE.equals(refreshFlag) ) {
 			// 刷新用户的缓存信息
 	        CacheHelper.flushCache(CacheLife.SHORT.toString(), "ByUserId(" +Environment.getUserId()+ ")");
+	        CacheHelper.flushCache(CacheLife.SHORT.toString(), Environment.getUserId() + "");  // ByUserId、NavigatorDao.getMenuItems 等
             
             // 刷新Session里的角色、组织等信息
 	        LoginCustomizerFactory.instance().getCustomizer().execute();

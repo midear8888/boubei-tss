@@ -545,14 +545,11 @@ function closeDefine() {
 }
 
 var RECORD_PARAM_FIELDS = ['label', 'code', 'type', 'nullable', 'unique', 'defaultValue', 'isparam', 'readonly', 'role1', 'role2',
-	'calign', 'cwidth', 'checkReg', 'errorMsg', 'pattern', 'width', 'height', 'options', 'multiple', 'onchange'];
+	'calign', 'cwidth', 'checkReg', 'errorMsg', 'pattern', 'show', 'width', 'height', 'options', 'multiple', 'onchange'];
 
 function editFieldConfig() {
 	var activeNode = fieldTree.getActiveTreeNode();
 	if( !activeNode ) return;
-
-	$("#regpattern>td:nth-child(3), #regpattern>td:nth-child(4)").hide();
-    $("#regpattern>td:nth-child(5), #regpattern>td:nth-child(6)").show();
 
     var valuesMap = $.parseJSON(fieldTree.getActiveTreeNodeAttr("value")) || {};
     RECORD_PARAM_FIELDS.each(function(i, field){
@@ -660,9 +657,10 @@ function editFieldConfig() {
 					newValue = newValue.replace(/\&|\|/g, ""); // 过滤名称里的特殊字符:|、&
 				}
 				if(field === 'code') {
-					newValue = newValue.trim().toLowerCase(); // code 不能有空格
+					newValue = newValue.toLowerCase(); // code 默认为小写
 				}
-				valuesMap[field] = newValue;
+				newValue = newValue.trim();  // code、正则等配置头尾不能有空格
+				valuesMap[field] = newValue;   
 			}			
 
     		if(field === 'label') {
@@ -697,11 +695,6 @@ function editFieldConfig() {
 		    		delete valuesMap['jsonUrl'];
 		    	}
     		} 
-
-    		if(field === 'checkReg' && newValue) {
-    			$("#regpattern>td:nth-child(3), #regpattern>td:nth-child(4)").show();
-    			$("#regpattern>td:nth-child(5), #regpattern>td:nth-child(6)").hide();
-    		}
 
     		if(field === 'type') {
     			var tip = "";

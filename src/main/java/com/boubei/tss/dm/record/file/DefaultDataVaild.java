@@ -53,7 +53,7 @@ public class DefaultDataVaild implements IDataVaild {
     			String filedLabel = labels.get(j);
     			String fieldCode = _db.ncm.get(filedLabel);
     			if(fieldCode == null) {
-    				errors.add("列【" + filedLabel + "】名称在数据表【" +_db.recordName+ "】定义里不存在。");
+    				errors.add("列【" + filedLabel + "】在【" +_db.recordName+ "】定义里不存在;");
     			}
     			
     			String value = (j >= fieldVals.size()) ? "" : fieldVals.get(j);

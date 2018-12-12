@@ -14,6 +14,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -338,6 +339,29 @@ public class EasyUtils {
         }
 
         return as;
+    }
+    
+    /**
+     * 对重复表头进行处理，自动加2
+     */
+    public static void fixRepeat(List<String> l) {
+    	if(l == null) return;
+    	
+    	Map<String, Integer> m = new HashMap<>();
+		int index = 0;
+		for(String s : l) {
+			Integer count = m.get(s);
+			if( count == null ) {
+				count = 1;
+			} else {
+				count ++;
+				String s2 = s + "_" + count;
+				l.set(index, s2);
+				m.put(s2, 1);
+			}
+			m.put(s, count);
+			index++;
+		}
     }
     
     /**

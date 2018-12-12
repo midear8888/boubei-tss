@@ -71,7 +71,7 @@ public abstract class _Database {
 	
 	private boolean needLog;
 	private boolean needQLog;
-	private boolean showCreator;
+	public  boolean showCreator;
     private boolean ignoreDomain;
 	
 	public String remark;
@@ -133,6 +133,11 @@ public abstract class _Database {
 		this.fieldWidths = new ArrayList<String>();
 		this.fieldRole2s = new ArrayList<String>();
 		this.fieldValues = new ArrayList<String>();
+		
+		ncm.put("创建人", "creator");
+		ncm.put("创建时间", "createtime");
+		cnm.put("creator", "创建人");
+		cnm.put("createtime", "创建时间");
 		
 		for(Map<Object, Object> fDefs : this.fields) {
 			String code = (String) fDefs.get("code");
@@ -427,7 +432,7 @@ public abstract class _Database {
     		}
     		if( !exsited ) {
     			try {
-    				// 先查询该字段是否有值，没有值才删除该列
+    				// 先查询该字段是否有值，没有值才删除该列；有值需要去除非空约束
     				String checkSQL = "select count(*) num from " +this.table+ " where " +oldCode+ " is not null";
     				SQLExcutor ex = new SQLExcutor();
     				ex.excuteQuery(checkSQL, newDS);
@@ -435,7 +440,7 @@ public abstract class _Database {
     				if(count == 0) {
     					SQLExcutor.excute("alter table " +this.table+ " drop column " + oldCode, newDS);
     				} else {
-    					SQLExcutor.excute("alter table " +this.table+ " modify " +oldCode+ " null", newDS);
+    					SQLExcutor.excute("alter table " +this.table+ " modify " +oldCode+ " null", newDS); // 去除非空约束
     				}
     			} catch(Exception e) { }
         	}
@@ -608,11 +613,9 @@ public abstract class _Database {
 		return list.get(0);
 	}
 	
-	// 判断是逻辑删除还是物理删除（系统级、单个表级）, 所有审批表都默认打开？
+	// 判断是逻辑删除还是物理删除（系统级、单个表级）。流程表默认不再启用回收站，需自行启用
 	public boolean isLogicDelete() {
-		return "true".equals(ParamManager.getValue(PX.LOGIC_DEL, "false")) 
-			|| this.logicDel
-			|| WFUtil.checkWorkFlow(wfDefine);
+		return "true".equals(ParamManager.getValue(PX.LOGIC_DEL, "false")) || this.logicDel;
 	}
 
 	// 物理删除

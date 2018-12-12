@@ -124,6 +124,8 @@ public class DataExport {
     public static String exportCSV(String fileName, List<Map<String, Object>> data, List<String> fields) {
     	return exportCSV(fileName, data, fields, CSV_GBK);
     }
+    
+    // data 里的Map key可能是code，而fields[x] 可能是name，调用本本方法前需要保证顺序及个数一致
     public static String exportCSV(String fileName, List<Map<String, Object>> data, List<String> fields, String charSet) {
     	List<Object[]> list = new ArrayList<Object[]>();
         for (Map<String, Object> row : data) {

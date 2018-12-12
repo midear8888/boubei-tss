@@ -338,13 +338,25 @@ public class _Recorder extends ProgressActionSupport {
 			
 		String fileName = DateUtil.format(new Date()) + "_" + recordId + Environment.getUserId() + ".csv";
 		for (Map<String, Object> row : result) { // 剔除
-			row.remove("domain"); row.remove("version"); row.remove("id");
-			row.remove("createtime"); row.remove("creator");
-			row.remove("updatetime"); row.remove("updator");
+			row.remove("domain"); 
+			row.remove("version"); 
+			row.remove("id");
+			row.remove("updatetime"); 
+			row.remove("updator");
+			
+			if( !_db.showCreator ) {
+				row.remove("createtime"); 
+				row.remove("creator");
+			}
+			row.remove("lastProcessor");
 		}
 
 		// 过滤出用户可见的表头列
 		List<String> visiableFieldNames = _db.getVisiableFields(true, pointed ? ex.selectFields : _db.fieldCodes);
+		if( _db.showCreator && !pointed ) {
+			visiableFieldNames.add("创建时间");
+			visiableFieldNames.add("创建人");
+		}
 		if( WFUtil.checkWorkFlow(_db.wfDefine) && !pointed ) {
 			visiableFieldNames.add("流程状态");
 			visiableFieldNames.add("发起人");

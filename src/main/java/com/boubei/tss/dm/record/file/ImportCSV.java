@@ -84,6 +84,7 @@ public class ImportCSV implements AfterUpload {
 		}
 		
 		List<String> headers = new ArrayList<String>( rowList.get(0) );
+		EasyUtils.fixRepeat(headers); // 对重复表头进行处理，自动加2
 		
 		// 检查是否有表头转换模板（比如将一个三方系统导出数据导入到数据表），格式headerTL=订单号:订单编码|订单编号,货品:sku,数量:qty,类型:{良品},买家:${userCode}
 		if( headerTL != null ) {
