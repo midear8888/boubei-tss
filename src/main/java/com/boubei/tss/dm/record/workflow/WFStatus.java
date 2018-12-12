@@ -51,6 +51,8 @@ public class WFStatus implements IEntity {
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "workflow_status_sequence")
 	private Long id;
 	
+	private String domain;
+	
 	@Column(nullable = false)
 	private Long tableId;  // 流程对应数据表
 	private String tableName;
@@ -231,5 +233,13 @@ public class WFStatus implements IEntity {
 
 	public void setApplyTime(Date applyTime) {
 		this.applyTime = applyTime;
+	}
+
+	public String getDomain() {
+		return domain;
+	}
+
+	public void setDomain(String domain) {
+		this.domain = domain;
 	} 
 }

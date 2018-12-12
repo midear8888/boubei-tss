@@ -105,6 +105,7 @@ public class WFServiceImpl implements WFService {
 			wfStatus.setApplier( Environment.getUserCode() );
 			wfStatus.setApplierName( Environment.getUserName() );
 			wfStatus.setApplyTime( new Date() );
+			wfStatus.setDomain( Environment.getDomainOrign() );
 			commonDao.createObject(wfStatus);
 			isCreate = true;
 			

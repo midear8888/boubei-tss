@@ -649,6 +649,7 @@ function loadDetailData(rowID) {
             tssJS("#saveBt").attr("value", "保存修改");
 
             showExtension(_item);
+            try { ImageBrowser.showOnClick($("ul.ext")[0]); } catch(e) { }
 
             // 控制流程按钮
             _wfStatus = _item.wfstatus;
