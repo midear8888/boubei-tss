@@ -220,6 +220,7 @@ public class ImportCSV implements AfterUpload {
 		
 		// vailderClass = com.boubei.tss.dm.record.file.EmptyDataVaild 可忽略校验
 		String vailderClass = request.getParameter("vailderClass");
+		String uniqueCodes  = request.getParameter("uniqueCodes");
 		vailderClass = (String) EasyUtils.checkNull(vailderClass, DefaultDataVaild.class.getName());
 		IDataVaild vailder = (IDataVaild) BeanUtil.newInstanceByName(vailderClass);
 
@@ -230,7 +231,7 @@ public class ImportCSV implements AfterUpload {
 				valSQLFields.add(name);
 			}
 		}
-		vailder.vaild(_db, rowList, headers, valSQLFields, errLines, errLineIndexs);
+		vailder.vaild(_db, rowList, headers, uniqueCodes, valSQLFields, errLines, errLineIndexs);
 		progress.add(x); // 进度更新
 		log.debug("vaild end");
 		

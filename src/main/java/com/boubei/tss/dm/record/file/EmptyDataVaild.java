@@ -9,8 +9,9 @@ import com.boubei.tss.dm.ddl._Database;
  */
 public class EmptyDataVaild implements IDataVaild {
 
-	public void vaild(_Database _db, List<List<String>> rows, List<String> headers, List<String> valSQLFields,
-			List<String> errLines, List<Integer> errLineIndexs) {
+
+	public void vaild(_Database _db, List<List<String>> rows, List<String> headers, String uniqueCodes, List<String> valSQLFields,
+			List<String> errorLines, List<Integer> errLineIndexs) {
 		
 	}
 	

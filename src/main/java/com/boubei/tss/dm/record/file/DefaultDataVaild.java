@@ -19,7 +19,7 @@ import com.boubei.tss.util.EasyUtils;
  */
 public class DefaultDataVaild implements IDataVaild {
 
-	public void vaild(_Database _db, List<List<String>> rows, List<String> headers, List<String> valSQLFields,
+	public void vaild(_Database _db, List<List<String>> rows, List<String> headers, String uniqueCodes, List<String> valSQLFields,
 			List<String> errLines, List<Integer> errLineIndexs) {
 		
 		Map<String, List<Object>> colValues = new HashMap<String, List<Object>>();
@@ -75,8 +75,8 @@ public class DefaultDataVaild implements IDataVaild {
     			}
     			
     			// 1、nullable、unique、type 校验
-    			String nullable = _db.cnull.get(fieldCode);
-    			String unique 	= _db.cuni.get(fieldCode);
+    			boolean nullable = "false".equals(_db.cnull.get(fieldCode));
+    			boolean unique 	= "true".equals(_db.cuni.get(fieldCode));
     			String type	= _db.ctype.get(fieldCode);
     			
     			if( type != null) {
@@ -88,10 +88,10 @@ public class DefaultDataVaild implements IDataVaild {
     			}
     			
     			String defaultVal = _db.cval.get(fieldCode);
-    			if("false".equals(nullable) && EasyUtils.isNullOrEmpty(value) && !_Field.isAutoSN(defaultVal)) {
+    			if(nullable && EasyUtils.isNullOrEmpty(value) && !_Field.isAutoSN(defaultVal)) {
     				errors.add(filedLabel + "值不能为空");
     			}
-    			if("true".equals(unique) && !EasyUtils.isNullOrEmpty(value)) {
+    			if(unique && !EasyUtils.isNullOrEmpty(value)) {
     				List<Object> colList = colValues.get(fieldCode + "_csv");
     				if(colList == null) {
     					colValues.put(fieldCode + "_csv", colList = new ArrayList<Object>());
@@ -102,12 +102,14 @@ public class DefaultDataVaild implements IDataVaild {
     				} else {
     					colList.add(value);
     					
-    					// 检查是否和数据库里既有数据重复
-    					Map<String, String> params = new HashMap<String, String>();
-    					params.put(fieldCode, value);
-						if( _db.select(1, 1, params).count > 0) {
-							errors.add(filedLabel + "值不唯一，在数据库里已存在");
-						}
+    					// 检查是否和数据库里既有数据重复（如果uniqueCodes 为配置了uinique限制的字段，不做数据库数据检查，会自动按uniqueCodes覆盖）
+    					if( !fieldCode.equalsIgnoreCase(uniqueCodes) ) {
+    						Map<String, String> params = new HashMap<String, String>();
+        					params.put(fieldCode, value);
+    						if( _db.select(1, 1, params).count > 0) {
+    							errors.add(filedLabel + "值不唯一，在数据库里已存在");
+    						}
+    					}
     				}
     			}
     			
