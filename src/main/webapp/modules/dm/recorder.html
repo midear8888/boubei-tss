@@ -1113,6 +1113,7 @@ function batchImport() {
     var url = URL_UPLOAD_FILE + "?afterUploadClass=" + afterUploadClass;
     url += "&recordId=" + recordId;
     url += "&charSet=" + charSet;
+    url += "&pgCode=" + progressCode;
 
     if(uniqueCodes) {
         url += "&uniqueCodes=" + uniqueCodes; // 定义在页面全局变量里：uniqueCodes="oto,sjphone";
@@ -1142,8 +1143,9 @@ function batchImport() {
 }
 
 var callCount = 0;
+var progressCode =  "PG" + $.now(); //recordId + "-" + userCode;
+
 function startProgress() {
-    var progressCode =  recordId + "-" + userCode;
     tssJS.ajax({
         url: URL_IMP_PROGRESS + progressCode, 
         params: {}, 

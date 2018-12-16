@@ -210,7 +210,8 @@ public class ImportCSV implements AfterUpload {
 		int total = rowList.size() - 1;
 		int x = Math.max(total/8, 1);
 		Progress progress = new Progress(x + x + total + x);  // 3个x默认作为upload、valid 和 after的进度控制
-		String pgCode = _db.recordId + "-" + Environment.getUserCode();
+		String pgCode = requestMap.get("pgCode");
+		pgCode = (String) EasyUtils.checkNull( pgCode, _db.recordId + "-" + Environment.getUserCode() );
 		ProgressPool.putSchedule(pgCode, progress);
 		progress.add(x);
 		

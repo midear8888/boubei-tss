@@ -106,7 +106,8 @@ h2.tip { padding: 10px 10px 0 10px; color: red; font-size: 13px; }
         <div class="bottonBox">
           <button id="bt_login">登陆系统</button>
         </div>
-        <h3 class="bz">*推荐使用【 <a href="https://www.baidu.com/s?wd=chrome%E6%B5%8F%E8%A7%88%E5%99%A8%E4%B8%8B%E8%BD%BD" target="_blank">Chrome浏览器</a>】访问本系统，以获得更流畅体验</h3>
+        <h3 class="bz">*推荐使用【 <a href="
+http://boubei-file.oss-cn-hangzhou.aliyuncs.com/chrome71_win64.exe" target="_blank">Chrome浏览器</a>】访问本系统，以获得更流畅体验</h3>
         <h2 class="tip"></h2>
     </div>
 
@@ -147,11 +148,11 @@ h2.tip { padding: 10px 10px 0 10px; color: red; font-size: 13px; }
 <script type="text/javascript">
 
   window.history.forward(1);  // 产生一个“前进”的动作，以抵消浏览器后退功能
-
-  if( $.isMobile ) {  // document.body.offsetWidth < 768 
+/*
+  if( $.isMobile ) {
     location.href = "mobile/login.html";
   }
-
+*/
   var reg = $.Query.get("reg"), _user = $.Query.get("user");
   setTimeout(reg ? preRegister : goLogin, 300);
 

@@ -92,9 +92,10 @@ public class DefaultDataVaild implements IDataVaild {
     				errors.add(filedLabel + "值不能为空");
     			}
     			if(unique && !EasyUtils.isNullOrEmpty(value)) {
-    				List<Object> colList = colValues.get(fieldCode + "_csv");
+    				String _key = fieldCode + "_csv";
+					List<Object> colList = colValues.get(_key);
     				if(colList == null) {
-    					colValues.put(fieldCode + "_csv", colList = new ArrayList<Object>());
+    					colValues.put(_key, colList = new ArrayList<Object>());
     				}
     				int rowIndex = colList.indexOf(value);
 					if( rowIndex >= 0) {
