@@ -110,6 +110,10 @@ public class BeanUtil {
      * @param attrsMap
      */
     public static void setDataToBean(Object bean, Map<String, ?> attrsMap) {
+    	setDataToBean(bean, attrsMap, true);
+    }
+    
+    public static void setDataToBean(Object bean, Map<String, ?> attrsMap, boolean ignoreNull) {
         PropertyDescriptor[] descriptors = PropertyUtils.getPropertyDescriptors(bean);
         for (PropertyDescriptor d : descriptors ) {
             if (d.getWriteMethod() == null) continue;
@@ -119,14 +123,17 @@ public class BeanUtil {
             String propertyName = d.getName();
             Object value = attrsMap.get(propertyName); // value一般为前台传入，类型多为String型
             
-            if (value == null || (!String.class.equals(clazz) && "".equals(value))) {
-                continue;
-            }
-            if (clazz.equals(Date.class) && (value instanceof String)) {
-                value = DateUtil.parse((String) value);
-            }
-            
             try {
+            	if (value == null || (!String.class.equals(clazz) && "".equals(value))) {
+                	if( !ignoreNull ) {
+                		PropertyUtils.setProperty(bean, propertyName, null);
+                	}
+                    continue;
+                }
+                if (clazz.equals(Date.class) && (value instanceof String)) {
+                    value = DateUtil.parse((String) value);
+                }
+                
             	if (value.getClass().equals(clazz) || clazz.isAssignableFrom(value.getClass())) { 
                     PropertyUtils.setProperty(bean, propertyName, value);
                 } 
