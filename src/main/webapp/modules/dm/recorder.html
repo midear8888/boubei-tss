@@ -438,7 +438,7 @@ function canEditRow(rowID, _wfStatus) {
 
         var creator = tssJS.G("grid").getColumnValue("creator");   
         var id = tssJS.G("grid").getColumnValue("id");
-        if( !id )  {
+        if( !id && !openItemId )  {
             return false; // 透析模式
         }
 
@@ -552,9 +552,8 @@ function loadDetailData(rowID) {
                 // 选择框后面，增加一个上传按钮
                 var $el = tssJS("#" + f.code);
                 var tdNode = $el[0].parentNode;
-                var uploadBtn = tssJS.createElement('img');
-                uploadBtn.src = "images/icon_up.gif";
-                uploadBtn.title = "上传附件";
+                var uploadBtn = tssJS.createElement('span', 'icon-arrow-up'); // <span class="icon-arrow-up"></span>
+                $(uploadBtn).text("上传附件");
                 tssJS(uploadBtn).css("margin-left", "4px").css("cursor", "pointer").click( function() {      
                     manageAttach( _tempID, "form", isCreateRow);
                 } );  
@@ -582,10 +581,9 @@ function loadDetailData(rowID) {
                 }
                 loadList();
 
-                var refreshBT = tssJS.createElement('img');
-                refreshBT.src = "images/icon_refresh.gif";
+                var refreshBT = tssJS.createElement('span', 'icon-sync');
                 refreshBT.title = "刷新附件下拉列表";
-                tssJS(refreshBT).css("margin-left", "6px").css("cursor", "pointer").click( function() {      
+                tssJS(refreshBT).css("margin-left", "6px").css("font-size", '14px').css("cursor", "pointer").click( function() {      
                     loadList();
                 } );  
                 tdNode.appendChild(refreshBT);

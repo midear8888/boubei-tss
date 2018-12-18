@@ -210,8 +210,7 @@ public class ImportCSV implements AfterUpload {
 		int total = rowList.size() - 1;
 		int x = Math.max(total/8, 1);
 		Progress progress = new Progress(x + x + total + x);  // 3个x默认作为upload、valid 和 after的进度控制
-		String pgCode = requestMap.get("pgCode");
-		pgCode = (String) EasyUtils.checkNull( pgCode, _db.recordId + "-" + Environment.getUserCode() );
+		String pgCode = getPgCode(request, _db);
 		ProgressPool.putSchedule(pgCode, progress);
 		progress.add(x);
 		
@@ -297,6 +296,12 @@ public class ImportCSV implements AfterUpload {
 		return result;
 	}
 
+	protected String getPgCode(HttpServletRequest request, _Database _db) {
+		String pgCode = request.getParameter("pgCode");
+		pgCode = (String) EasyUtils.checkNull( pgCode, _db.recordId + "-" + Environment.getUserCode() );
+		return pgCode;
+	}
+
 	/**
 	 * 对于有特殊需求的数据导入，可继承本Class，然后在录入表的全局JS里重新定义afterUploadClass的值为自定义的Class
 	 * @param _db
@@ -320,7 +325,7 @@ public class ImportCSV implements AfterUpload {
 		
 		List<String> snList = null; // 自动取号
 		int total = rows.size();
-		Progress progress = ProgressPool.getSchedule(_db.recordId + "-" + Environment.getUserCode());
+		Progress progress = ProgressPool.getSchedule( getPgCode(request, _db) );
 		
 		for(int index = 1; index < total; index++) { // 第一行为表头，不要
 			

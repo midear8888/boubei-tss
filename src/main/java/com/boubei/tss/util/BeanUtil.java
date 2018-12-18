@@ -123,7 +123,7 @@ public class BeanUtil {
             String propertyName = d.getName();
             Object value = attrsMap.get(propertyName); // value一般为前台传入，类型多为String型
             
-            if(!attrsMap.containsKey(propertyName) && !ignoreNull) {
+            if( !attrsMap.containsKey(propertyName) && !ignoreNull ) {
             	continue;
             }
             
