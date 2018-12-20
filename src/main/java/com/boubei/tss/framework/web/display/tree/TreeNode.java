@@ -47,7 +47,7 @@ public class TreeNode {
 	}
 
 	public Object getId() {
-		return attributes.get(TREENODE_ATTR_ID);
+		return this.getValue(TREENODE_ATTR_ID);
 	}
 
 	/**
@@ -110,7 +110,7 @@ public class TreeNode {
 	 * @param treeNode
 	 */
 	public void addChild(TreeNode treeNode) {
-		children.add(treeNode);
+		getChildren().add(treeNode);
 	}
 
 	/**

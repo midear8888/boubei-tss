@@ -36,7 +36,7 @@ html, body { height: 100%; }
 .fb-summay, .fb-result { font-size: 15px; }
 .fb-summay { height: 120px; }
 .fb-result { padding: 10px 0 0 0; color: #999; }
-.fb-summay pre { overflow: auto; }
+.fb-summay textarea { border: 0; width: 100%; min-height: 50px; padding: 0; }
 .fb-summay p, .fb-result p { text-indent: 0px; }
 .fb-author, .fb-processor { 
     font-size:14px; margin-bottom:5px;  text-align: right;
@@ -55,21 +55,20 @@ body>li.template {
 
 <script type="text/javascript">
 
-var service = tssJS.Query.get("id") || "queryFeedback";
-function query(page) {
-    var url = '/tss/data/json/' + service;
-    $.ajax({
-      url: url,
-      params: { "pagesize": 200, "page": page||1},
-      type: 'json',
-      waiting: true,
-      ondata: function() {
-        var data = this.getResponseJSON();
+function query(page, status) {
+    var url = '/tss/xdata/json/x_feedback';
+    var params = { "rows": 200, "page": page||1};
+    params.state = status || '新建,正在解决,未解决';
+    params.showAttach = "true";
+
+    $.getJSON( url, params, function(data) {
+
+        $(".data-list-ul").html("");
         data.rows.each(function(i, item) {
           var li = $("body>li.template")[0].cloneNode(true);
           li.id = "l" + item.id;
-          $(".fb-summay>pre", li).html( "【" + item.module + "，" + item.type + "】：" + item.content);
-          $(".fb-summay .fb-author .author", li).html( (item.commiter||"") + "【" + item.username + "】");
+          $(".fb-summay>textarea", li).value( "【" +item.id+ "，" + item.module + "】：" + item.content);
+          $(".fb-summay .fb-author .author", li).html( (item.commiter||"") + "【" + item.creatorName + "】");
           $(".fb-summay .fb-author time", li).html( item.createtime.split(" ")[0] );
 
           $(".fb-result>p", li).html( "状态:【" + item.state  + "】" + (item.processing || "") );
@@ -103,8 +102,7 @@ function query(page) {
           }, 'GET');
 
         });
-      }
-    })
+      });
 }
 
 $(function(){
@@ -116,14 +114,22 @@ $(function(){
 </head>
 
 <body>
- 
+
+<div style="padding: 6px 12px;">
+  <button class="tssbutton white medium" onclick="query(1, '新建,未解决,又出现了')">待处理</button>
+  <button class="tssbutton white medium" onclick="query(1, '正在解决')">正在解决</button>
+  <button class="tssbutton white medium" onclick="query(1, '已解决')">已解决</button>
+  <button class="tssbutton white medium" onclick="query(1, '关闭')">已关闭</button>
+  <button class="tssbutton white medium" onclick="query(1, '没能重现,非异常')">没能重现</button>
+</div>
+
 <div class="data-list container">
  <ul class="data-list-ul"></ul>
 </div>
 
 <li class='template'>
   <div class="fb-summay">
-      <pre></pre>
+      <textarea readonly="true"></textarea>
       <div class="picDiv" style="padding-top: 8px;"></div>
       <br>
       <div class="fb-author">
@@ -137,7 +143,7 @@ $(function(){
         <span data-icon="E" class="icon"></span>
         <span class="author"></span>
         <time></time>
-        <button class="tssbutton blue small">开始处理</button>
+        <button class="tssbutton white small">处 理</button>
       </div>
   </div>
 </li>

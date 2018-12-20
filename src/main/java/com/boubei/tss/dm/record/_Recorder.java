@@ -251,11 +251,11 @@ public class _Recorder extends ProgressActionSupport {
 				String onclick = "manageAttach(" +itemId+ ", " +_db.recordId+ ")";
 				Object attachTag = EasyUtils.checkNull(fileCount, isWFQuery ? "0" : "上传");
 				item.put("fileNum", "<a href='javascript:void(0)' onclick='" +onclick+ "'>" + attachTag + "</a>");
-				
-				Object account = item.get("creator");
-				item.put( "creatorName", EasyUtils.checkNull(usersMap.get( account ), account) );
 			}
 			item.put("_fileNum", EasyUtils.obj2Int(fileCount));
+			
+			Object account = item.get("creator");
+			item.put( "creatorName", EasyUtils.checkNull(usersMap.get( account ), account) );
 		}
 
 		return ex;

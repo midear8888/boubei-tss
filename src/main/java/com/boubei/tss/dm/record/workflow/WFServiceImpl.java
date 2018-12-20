@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.boubei.tss.EX;
+import com.boubei.tss.cache.extension.CacheHelper;
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.ddl._Database;
 import com.boubei.tss.dm.dml.SQLExcutor;
@@ -487,11 +488,13 @@ public class WFServiceImpl implements WFService {
 		}
 
 		WFStatus wfStatus = setWFStatus(recordId, id, false, false);
-  
     	wfStatus.setCurrentStatus(WFStatus.TRANS);
     	wfStatus.setNextProcessor(target);
-    	wfStatus.setTo( wfStatus.getTo().replaceAll(Environment.getUserCode(), Environment.getUserCode() + "," + target) );
     	wfStatus.setStepCount( wfStatus.getStepCount() + 1 );
+    	
+    	String userCode = Environment.getUserCode();
+		wfStatus.setTo( wfStatus.getTo().replaceAll(userCode, userCode + "," + target) );
+		
     	updateWFStatus(wfStatus);
     	
 		WFLog wfLog = new WFLog(wfStatus, opinion);
@@ -526,10 +529,12 @@ public class WFServiceImpl implements WFService {
 		
 		// 触发审批流程操作自定义事件（审批通过、驳回、撤销等都可以自定义相应事件）
 		Record record = (Record) commonDao.getEntity(Record.class, tableId);
+		_Database db = (_Database) CacheHelper.getLongCache().getObject("_db_record_" + tableId).getValue();
+		
 		String wfEventClazz = DMUtil.getExtendAttr(record.getRemark(), "wfEventClass");
 		wfEventClazz = (String) EasyUtils.checkNull(wfEventClazz, WFEventN.class.getName());
 		WFEvent we = (WFEvent) BeanUtil.newInstanceByName(wfEventClazz);
-		we.after(wfStatus);
+		we.after(wfStatus, db);
 		
 		// 发送站内信请求
 		String url = "javascript:void(0)"; // "'/tss/modules/dm/recorder.html?id=" +tableId+ "&itemId=" +itemId+ "' target='_blank'";

@@ -97,17 +97,6 @@ $(function(){
 
 	initMenu();
 	_default && $("#if1").attr("src", _default);
-
-	$('#tabs').tabs({
-	    onSelect:function(title,index){
-	    	if(index === 0){
-	    		if(typeof $('#if1')[0].contentWindow.appendMenu_ === "function"){
-		    		$("#if1")[0].contentWindow.appendMenu_(true);
-			    	setTimeout(function(){$("#if1")[0].contentWindow.appendMenu_()},100)
-	    		}
-	    	}
-	    }
-	});
 });
 
 function fixICON(icon) {

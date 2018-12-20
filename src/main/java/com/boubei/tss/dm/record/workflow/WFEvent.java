@@ -10,12 +10,13 @@
 
 package com.boubei.tss.dm.record.workflow;
 
+import com.boubei.tss.dm.ddl._Database;
 
 /**
  * 流程自定义监听事件
  */
 public interface WFEvent {
 	
-	void after( WFStatus wfStatus );
+	void after( WFStatus wfStatus, _Database db );
 
 }

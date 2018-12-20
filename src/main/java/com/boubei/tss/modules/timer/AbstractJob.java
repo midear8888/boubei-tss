@@ -27,6 +27,7 @@ import com.boubei.tss.modules.log.IBusinessLogger;
 import com.boubei.tss.modules.log.Log;
 import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.helper.dto.OperatorDTO;
+import com.boubei.tss.util.EasyUtils;
 
 public abstract class AbstractJob implements Job {
 	
@@ -85,7 +86,8 @@ public abstract class AbstractJob implements Job {
         	
         	log.info(resultMsg);
         	
-        	if( needSuccessLog() ) {
+        	String jcf = EasyUtils.obj2String(jobConfig);
+			if( (needSuccessLog() && jcf.indexOf("noLog") < 0) || jcf.indexOf("needLog") >= 0) {
         		excuteLog = new Log(jobName + " - success", resultMsg);
             	excuteLog.setMethodExcuteTime(methodExcuteTime);
         	}
