@@ -1,7 +1,6 @@
 package com.boubei.tssx.sms;
 
 import java.io.IOException;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -31,12 +30,16 @@ public class CallSMS extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
     		throws ServletException, IOException {
     	
-    	Map<String, String> params = DMUtil.parseRequestParams(request, true);
+    	String smsMsg;
+    	String queryString = request.getQueryString();
+		if( queryString != null && queryString.indexOf("smsMsg") >= 0 ) { // wx call
+			smsMsg = DMUtil.parseRequestParams(request, true).get("smsMsg");
+		} else {
+			smsMsg = request.getParameter("smsMsg");
+		}
     	
-    	String phone = params.get("phone");
-    	String smsMsg = params.get("smsMsg");
-    	String tlCode = params.get("tlCode");
-    	//String tlParam = "{\"code\":\"" +smsMsg+ "\"}";
+    	String phone  = request.getParameter("phone");
+    	String tlCode = request.getParameter("tlCode");
     	String tlParam = smsMsg;
     	
 		if( !EasyUtils.isNullOrEmpty(smsMsg) && !EasyUtils.isNullOrEmpty(tlCode)  ) {
