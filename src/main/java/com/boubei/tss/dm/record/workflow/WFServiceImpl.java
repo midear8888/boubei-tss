@@ -114,6 +114,10 @@ public class WFServiceImpl implements WFService {
 			wfLog.setProcessResult(WFStatus.APPLIED);
 			commonDao.createObject(wfLog);
 		} else {
+			if( WFStatus.AUTO_PASSED.equals(wfStatus.getCurrentStatus()) ) {
+				wfStatus.setCurrentStatus(WFStatus.NEW); // 自动通过的需要重新设置流程状态为 待审批
+			}
+			
 			WFLog wfLog = new WFLog(wfStatus, null);
 			wfLog.setProcessResult(WFStatus.MODIFIED);
 			commonDao.update(wfLog);

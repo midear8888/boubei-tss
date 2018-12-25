@@ -261,7 +261,7 @@ if(IS_TEST) {
 } 
 else {
     report_info_url = '/tss/data/' +reportId+ '/define';
-    $.getJSON("/tss/si/user", {}, function(data) {
+    $.getJSON("/tss/si/ui/userCode", {}, function(data) {
         if( data[0] && data[0] != 'ANONYMOUS' ) {  // 检查是否已经登录
 
             tssJS.getJSON("/tss/auth/user/has", {}, 

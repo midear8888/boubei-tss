@@ -75,7 +75,7 @@ public class DefaultDataVaild implements IDataVaild {
     			}
     			
     			// 1、nullable、unique、type 校验
-    			boolean nullable = "false".equals(_db.cnull.get(fieldCode));
+    			boolean notnull = "false".equals(_db.cnull.get(fieldCode));
     			boolean unique 	= "true".equals(_db.cuni.get(fieldCode));
     			String type	= _db.ctype.get(fieldCode);
     			
@@ -88,7 +88,7 @@ public class DefaultDataVaild implements IDataVaild {
     			}
     			
     			String defaultVal = _db.cval.get(fieldCode);
-    			if(nullable && EasyUtils.isNullOrEmpty(value) && !_Field.isAutoSN(defaultVal)) {
+    			if(notnull && EasyUtils.isNullOrEmpty(value) && !_Field.isAutoSN(defaultVal)) {
     				errors.add(filedLabel + "值不能为空");
     			}
     			if(unique && !EasyUtils.isNullOrEmpty(value)) {

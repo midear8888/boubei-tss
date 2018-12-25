@@ -7,7 +7,9 @@
 <link rel="shortcut icon" href="images/tss.ico">
 <link rel="Bookmark" href="images/tss.ico">
 
-<link rel="stylesheet" href="tools/tssJS/css/reset.css">
+<link  href="tools/tssJS/css/reset.css" rel="stylesheet">
+<script src="tools/tssJS/tssJS.js"></script>
+<script src="tools/tssJS/tssJS.ajax.js"></script>
 
 <style type="text/css">
 html { height: 100%; }
@@ -81,7 +83,40 @@ a[id] { font-size: 13px; color: #ccc; position: absolute; padding-top: 5px; }
 #switch, #rswitch { width: 50px; height: 40px; position: absolute; right: 0px; margin: 10px 20px; opacity: .3;  } 
 h2.tip { padding: 10px 10px 0 10px; color: red; font-size: 13px; }
 
-  </style>
+</style>
+
+<script type="text/javascript">
+
+// 获取系统参数模块的配置信息
+function getParam(key, callback) {
+    $.getJSON("/tss/param/json/simple/" + key, {}, 
+        function(result) {
+            var val;
+            if( result && result.length  && result[0] ) {
+                val = result[0];
+            }
+            callback && callback(val);
+        }, "GET", false);
+}
+
+var href = location.hostname;
+var reg = $.Query.get("reg"), 
+  _user = $.Query.get("user");
+
+!reg && getParam("customize_login", function(result) {
+    if(result) { 
+        if(result.indexOf('{') >= 0) {
+          result = $.parseJSON(result);
+          result = result[href];
+        } 
+        if( result ) {
+          window.location.href = result;
+        }
+    }
+});
+
+</script>
+
 </head>
 <body>
 
@@ -141,8 +176,6 @@ http://boubei-file.oss-cn-hangzhou.aliyuncs.com/chrome71_win64.exe" target="_bla
   </div>
 </div>
 
-<script src="tools/tssJS/tssJS.js"></script>
-<script src="tools/tssJS/tssJS.ajax.js"></script>
 <script src="tools/common/md5.js"></script>
 
 <script type="text/javascript">
@@ -153,7 +186,6 @@ http://boubei-file.oss-cn-hangzhou.aliyuncs.com/chrome71_win64.exe" target="_bla
     location.href = "mobile/login.html";
   }
 */
-  var reg = $.Query.get("reg"), _user = $.Query.get("user");
   setTimeout(reg ? preRegister : goLogin, 300);
 
   function goLogin() {
@@ -278,18 +310,6 @@ function gotoIndex(loginName) {
     } else {
         window.location.href = indexPage;
     }
-}
-
-// 获取系统参数模块的配置信息
-function getParam(key, callback) {
-    $.getJSON("/tss/param/json/simple/" + key, {}, 
-        function(result) {
-            var val;
-            if( result && result.length  && result[0] ) {
-                val = result[0];
-            }
-            callback && callback(val);
-        }, "GET", false);
 }
 
 $(function() {     

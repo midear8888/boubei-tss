@@ -150,6 +150,15 @@ public class ImportCSV implements AfterUpload {
 				index ++;
 			}
 		}
+		else { // 如果没有自定义hearderTL，则替换里里面默认的必填项
+			int index = 0;
+			for(String column : headers) {
+				if( column.startsWith("*") && column.endsWith("*") ) {
+					rowList.get(0).set(index, column.substring(1, column.length() - 1 ));
+				}
+				index ++;
+			}
+		}
 		
 		return rowList;
 	}
