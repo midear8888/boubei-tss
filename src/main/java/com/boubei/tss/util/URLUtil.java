@@ -128,11 +128,13 @@ public class URLUtil {
 		return paramsMap;
     }
     
-    static String[] browsers = {"qqbrowser", "metasr", "2345explorer", "ubrowser", "360"};
+    static String[] browsers = {"micromessenger", "qqbrowser", "metasr", "2345explorer", "ubrowser", "360"};
+    public final static String QQ_WX = "微信";
+    
     public static String parseBrowser(String useragent) {
     	useragent = (useragent + "").toLowerCase();
-    	if(useragent.indexOf("micromessenger") >= 0 && useragent.indexOf("qqbrowser") < 0) { // 微信客户端，注意区分QQ浏览器
-    		return "微信";
+    	if(useragent.indexOf(browsers[0]) >= 0 && useragent.indexOf(browsers[1]) < 0) { // 微信客户端，注意区分QQ浏览器
+    		return QQ_WX;
     	} 
     	
     	String origin = useragent;

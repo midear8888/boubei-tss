@@ -10,6 +10,7 @@
 
 package com.boubei.tss.um.sso.online;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -18,8 +19,10 @@ import org.springframework.stereotype.Service;
 
 import com.boubei.tss.framework.persistence.ICommonDao;
 import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.sso.online.IOnlineUserManager;
 import com.boubei.tss.util.EasyUtils;
+import com.boubei.tss.util.URLUtil;
 
 /**
  * 在线用户库（数据库）
@@ -42,6 +45,14 @@ public class DBOnlineUserService implements IOnlineUserManager {
         	dao.create(ou);
         } else {
         	DBOnlineUser ou = (DBOnlineUser) list.get(0);
+        	
+        	// 移动端登录不干扰PC端
+        	String origin = Environment.getOrigin();
+        	if( !URLUtil.QQ_WX.equals(origin) ) {
+        		// 销毁当前用户已经登录的session
+        		Context.sessionMap.get(ou.getSessionId()).invalidate();
+        	}
+        	
         	ou.setSessionId(sessionId);
         	ou.setLoginCount( EasyUtils.obj2Int(ou.getLoginCount()) + 1 );
         	dao.update(ou);
@@ -49,16 +60,27 @@ public class DBOnlineUserService implements IOnlineUserManager {
     }
     
     private List<?> queryExists(Long userId) {
-    	String clientIp = Environment.getClientIp(); // 如要控制同一人只能登录一个IP，则此处查询忽略IP
-    	String origin = Environment.getOrigin();
+    	// 对系统级账号不做限制
+    	if( userId < 0 ) {
+            return new ArrayList<Object>(); 
+    	}
     	
-    	String hql = " from DBOnlineUser o where o.userId = ? and o.clientIp = ? and o.origin = ? ";
-        return dao.getEntities(hql, userId, clientIp, origin);
+    	// 移动端登录不干扰PC端
+    	String origin = Environment.getOrigin();
+    	if( URLUtil.QQ_WX.equals(origin) ) {
+    		String hql = " from DBOnlineUser o where o.userId = ? and o.origin = ? ";
+            return dao.getEntities(hql, userId, URLUtil.QQ_WX);
+    	}
+    	
+    	// TODO 检查域信息配置，限制用户账号个数的域限制登录
+    	
+    	String hql = " from DBOnlineUser o where o.userId = ? ";
+        return dao.getEntities(hql, userId);
     }
 
 	public void logout(Long userId) {
-		List<?> list = queryExists(userId);
-		dao.deleteAll(list); // 只删除同一ip的登录信息
+		List<?> list = queryExists(userId);		
+		dao.deleteAll(list);
 	}
  
     /*

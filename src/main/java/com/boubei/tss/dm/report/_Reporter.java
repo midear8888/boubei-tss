@@ -77,7 +77,7 @@ public class _Reporter extends BaseActionSupport {
 		String remark = EasyUtils.obj2String( report.getRemark() );
 		String queryUri = report.getParamUri();
 		
-		return new Object[] {name, param, displayUri, hasScript, mailable, remark, queryUri, reportId};
+		return new Object[] {name, param, displayUri, hasScript, mailable, remark, queryUri, reportId, report.getColDefs()};
     }
 	
     /**
