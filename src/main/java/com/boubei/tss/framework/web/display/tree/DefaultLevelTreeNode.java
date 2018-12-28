@@ -18,6 +18,7 @@ public class DefaultLevelTreeNode implements ILevelTreeNode {
     private Long id;
     private Long parentId;
     private String name;
+    private String parentName;
     
     public DefaultLevelTreeNode(Long id, String name){
         this(id, new Long(0), name);
@@ -27,6 +28,13 @@ public class DefaultLevelTreeNode implements ILevelTreeNode {
         this.id = id;
         this.name = name;
         this.parentId = parentId;
+    }
+    
+    public DefaultLevelTreeNode(Long id, Long parentId, String name,String parentName) {
+        this.id = id;
+        this.name = name;
+        this.parentId = parentId;
+        this.parentName = parentName;
     }
 
     public Long getParentId() {
@@ -39,6 +47,8 @@ public class DefaultLevelTreeNode implements ILevelTreeNode {
 
     public TreeAttributesMap getAttributes() {
         TreeAttributesMap map = new TreeAttributesMap(id, name);
+        map.put("parentId", parentId);
+        map.put("parentName", parentName);
         return map;
     }
     
