@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.boubei.tss.framework.persistence.ICommonDao;
-import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.sso.online.IOnlineUserManager;
 import com.boubei.tss.util.EasyUtils;
@@ -43,14 +42,13 @@ public class DBOnlineUserService implements IOnlineUserManager {
         if( list.isEmpty() ) {
         	DBOnlineUser ou = new DBOnlineUser(userId, sessionId, appCode, token, userName);
         	dao.create(ou);
-        } else {
+        } 
+        else {
         	DBOnlineUser ou = (DBOnlineUser) list.get(0);
         	
         	// 移动端登录不干扰PC端
-        	String origin = Environment.getOrigin();
-        	if( !URLUtil.QQ_WX.equals(origin) ) {
-        		// 销毁当前用户已经登录的session
-        		Context.sessionMap.get(ou.getSessionId()).invalidate();
+        	if( !URLUtil.isWeixin()  ) {
+        		Context.sessionMap.get(ou.getSessionId()).invalidate(); // 销毁当前用户已经登录的session
         	}
         	
         	ou.setSessionId(sessionId);
@@ -66,8 +64,7 @@ public class DBOnlineUserService implements IOnlineUserManager {
     	}
     	
     	// 移动端登录不干扰PC端
-    	String origin = Environment.getOrigin();
-    	if( URLUtil.QQ_WX.equals(origin) ) {
+    	if( URLUtil.isWeixin() ) {
     		String hql = " from DBOnlineUser o where o.userId = ? and o.origin = ? ";
             return dao.getEntities(hql, userId, URLUtil.QQ_WX);
     	}

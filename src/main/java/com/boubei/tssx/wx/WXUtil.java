@@ -24,6 +24,7 @@ import com.boubei.tss.util.EasyUtils;
 /**
  * for 微信
  */
+@SuppressWarnings("unchecked")
 @Controller
 @RequestMapping("/wx")
 public class WXUtil {
@@ -63,19 +64,15 @@ public class WXUtil {
 	}
 	
 	/**
-	 * getOpenId 需要在后台实现
+	 * 获取小程序的openId
+	 * 
 	 * return  {"session_key":"VJGXtUJUG0RYuF6s+Jv2qg==","openid":"oLM2J5TpvHvoZFWjPjPaho9qhXw4"}
-	 * @throws IOException 
-	 * @throws HttpException 
 	 */
 	@RequestMapping(value = "/openid")
 	@ResponseBody
 	public String getOpenId(String jsCode, String appId) throws HttpException, IOException {
 		
-		String secret = ParamManager.getValue(appId, null);
-		if(secret == null) {
-			throw new BusinessException("系统参数里没有维护当前小程序的secret.");
-		}
+		String secret = getSecret(appId);
 		
 		String url = "https://api.weixin.qq.com/sns/jscode2session?" +
 				"appid=" + appId +
@@ -92,10 +89,59 @@ public class WXUtil {
 		return ret;
 	}
 	
+	/**
+	 * 获取公众号的openId，
+	 * 
+	 * @param code
+	 * @param appId
+	 * @return { "access_token":"ACCESS_TOKEN","expires_in":7200,"refresh_token":"REFRESH_TOKEN","openid":"OPENID","scope":"SCOPE" }
+	 */
+	public static String getOpenId4GZH(String code, String appId) throws HttpException, IOException {
+		
+		String secret = getSecret(appId);
+		
+		String url = "https://api.weixin.qq.com/sns/oauth2/access_token?" +
+				"appid=" + appId +
+				"&secret=" + secret +
+				"&code=" + code + 
+				"&grant_type=authorization_code";
+		
+		HttpMethod httpMethod = new GetMethod(url);
+		HttpClient httpClient = new HttpClient();
+		
+		httpClient.executeMethod(httpMethod);
+		String responseBody = httpMethod.getResponseBodyAsString();
+		String ret = new String(responseBody.getBytes("UTF-8"));
+		return ret;
+	}
+	
+	public static String getUserInfo4GZH(String access_token, String openId) throws HttpException, IOException {
+		
+		String url = "https://api.weixin.qq.com/sns/userinfo?" +
+				"access_token=" + access_token +
+				"&openId=" + openId +
+				"&lang=zh_CN";
+		
+		HttpMethod httpMethod = new GetMethod(url);
+		HttpClient httpClient = new HttpClient();
+		
+		httpClient.executeMethod(httpMethod);
+		String responseBody = httpMethod.getResponseBodyAsString();
+		String ret = new String(responseBody.getBytes("ISO-8859-1"), "UTF-8");
+		return ret;
+	}
+
+	static String getSecret(String appId) {
+		String secret = ParamManager.getValue(appId, null);
+		if(secret == null) {
+			throw new BusinessException("系统参数里没有维护当前小程序的secret.");
+		}
+		return secret;
+	}
+	
 	public String getSessionKey (String jscode, String appId) throws IOException {
 		String result = getOpenId(jscode, appId);
 		
-		@SuppressWarnings("unchecked")
 		Map<String, String> map = (new ObjectMapper()).readValue(result, Map.class);
 		
 		String sessionKey = map.get("session_key");
@@ -131,7 +177,6 @@ public class WXUtil {
 	public String getToken(String appId) throws HttpException, IOException {
 		String ret = getAccessToken(appId);
 		
-		@SuppressWarnings("unchecked")
 		Map<String, String> map = (new ObjectMapper()).readValue(ret, Map.class);
 		
 		return map.get("access_token");

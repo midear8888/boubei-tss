@@ -19,6 +19,8 @@ import java.util.Map;
 
 import org.apache.log4j.helpers.Loader;
 
+import com.boubei.tss.framework.sso.Environment;
+
 import eu.bitwalker.useragentutils.Browser;
 import eu.bitwalker.useragentutils.OperatingSystem;
 import eu.bitwalker.useragentutils.UserAgent;
@@ -156,5 +158,9 @@ public class URLUtil {
     		}
     	}
         return origin.toLowerCase();
+    }
+    
+    public static boolean isWeixin() {
+    	return URLUtil.QQ_WX.equals( Environment.getOrigin() );
     }
 }
