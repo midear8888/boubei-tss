@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -47,8 +49,9 @@ public class DBOnlineUserService implements IOnlineUserManager {
         	DBOnlineUser ou = (DBOnlineUser) list.get(0);
         	
         	// 移动端登录不干扰PC端
-        	if( !URLUtil.isWeixin()  ) {
-        		Context.sessionMap.get(ou.getSessionId()).invalidate(); // 销毁当前用户已经登录的session
+        	HttpSession session = Context.sessionMap.get(ou.getSessionId());
+        	if( !URLUtil.isWeixin() && session != null ) {
+        		session.invalidate(); // 销毁当前用户已经登录的session
         	}
         	
         	ou.setSessionId(sessionId);

@@ -31,9 +31,7 @@ public class DefaultLevelTreeNode implements ILevelTreeNode {
     }
     
     public DefaultLevelTreeNode(Long id, Long parentId, String name,String parentName) {
-        this.id = id;
-        this.name = name;
-        this.parentId = parentId;
+        this(id, parentId, name);
         this.parentName = parentName;
     }
 
@@ -57,4 +55,5 @@ public class DefaultLevelTreeNode implements ILevelTreeNode {
         return this.id.equals(object.getId());
     }
 }
+
 
