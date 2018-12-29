@@ -63,6 +63,8 @@ public class DomainInfo extends ARecordTable {
 	
 	private Boolean kd100;
 	
+	private String cw_dl;
+	
 	public Long getId() {
 		return id;
 	}
@@ -155,5 +157,11 @@ public class DomainInfo extends ARecordTable {
 	}
 	public void setKd100(Boolean kd100) {
 		this.kd100 = kd100;
+	}
+	public String getCw_dl() {
+		return cw_dl;
+	}
+	public void setCw_dl(String cw_dl) {
+		this.cw_dl = cw_dl;
 	}
 }
