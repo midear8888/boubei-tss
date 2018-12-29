@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import com.boubei.tss.framework.persistence.ICommonDao;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.sso.online.IOnlineUserManager;
+import com.boubei.tss.um.entity.Group;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.URLUtil;
 
@@ -43,6 +44,11 @@ public class DBOnlineUserService implements IOnlineUserManager {
         List<?> list = queryExists(userId);
         if( list.isEmpty() ) {
         	DBOnlineUser ou = new DBOnlineUser(userId, sessionId, appCode, token, userName);
+        	
+        	String hql = "from Group where id in (select groupId from GroupUser where userId = ?) and groupType = " + Group.MAIN_GROUP_TYPE;
+        	Group group = (Group) dao.getEntities(hql, userId).get(0);
+        	ou.setDomain(group.getDomain());
+        	
         	dao.create(ou);
         } 
         else {

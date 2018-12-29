@@ -28,7 +28,6 @@ import com.boubei.tss.modules.log.IBusinessLogger;
 import com.boubei.tss.modules.log.Log;
 import com.boubei.tss.um.helper.dto.OperatorDTO;
 import com.boubei.tss.um.service.ILoginService;
-import com.boubei.tss.um.sso.online.DBOnlineUser;
 import com.boubei.tss.util.EasyUtils;
 
 /**
@@ -109,14 +108,6 @@ public class FetchPermissionAfterLogin implements ILoginCustomizer {
         	session.setAttribute(SSOConstants.USERS_OF_DOMAIN, DMUtil.insertSingleQuotes(EasyUtils.list2Str(users)));
         	users = loginService.getUsersByDomain(domain, "id", logonUserId);
         	session.setAttribute(SSOConstants.USERIDS_OF_DOMAIN, EasyUtils.list2Str(users));
-        	
-        	// 修改在线用户中的domain值
-        	List<?> ouList = commonService.getList("from DBOnlineUser where userId = ?", logonUserId);
-        	for( Object t : ouList ) {
-        		DBOnlineUser ou = (DBOnlineUser) t;
-				ou.setDomain(domain);
-				commonService.update(ou);
-        	}
         }
         
         session.setAttribute("GROUP_LAST_ID", lastGroup[0]);
