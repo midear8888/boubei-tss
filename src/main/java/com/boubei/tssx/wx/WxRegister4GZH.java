@@ -65,14 +65,15 @@ public class WxRegister4GZH extends HttpServlet {
     	String access_token = map.get("access_token");
     	String openId = map.get("openid");
     	
+    	WxGZHBindPhone bindPhone = new WxGZHBindPhone();
+    	bindPhone.setMobile(mobile);
+    	bindPhone.setOpenid(openId);
+    	bindPhone.setAppid(appId);
+    	log.info(bindPhone);
+    	commService.create(bindPhone);
+    	
     	ret = WXUtil.getUserInfo4GZH(access_token, openId);
     	log.info(ret);
-    	
-    	WxGZHBindPhone GZHBindPhone = new WxGZHBindPhone();
-    	GZHBindPhone.setMobile(mobile);
-    	GZHBindPhone.setOpenid(openId);
-    	GZHBindPhone.setAppid(appId);
-    	commService.create(GZHBindPhone);
     }
 
 }
