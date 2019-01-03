@@ -10,5 +10,6 @@
 	<entity class="com.boubei.tssx.snapshot.Snapshot"/>
 	<entity class="com.boubei.tssx.wx.WxLog"/>
 	<entity class="com.boubei.tssx.wx.WxPayLog"/>
+	<entity class="com.boubei.tssx.wx.WxGZHBindPhone"/>
 
 </entity-mappings>
