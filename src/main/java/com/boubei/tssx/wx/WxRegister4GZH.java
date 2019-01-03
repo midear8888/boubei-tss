@@ -21,23 +21,25 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.boubei.tss.dm.DMUtil;
-import com.boubei.tss.framework.persistence.ICommonDao;
+import com.boubei.tss.framework.Global;
+import com.boubei.tss.framework.persistence.ICommonService;
 
 /**
  * 公众号注册登记
  */
 @WebServlet(urlPatterns="/gzh_reg.in")
 public class WxRegister4GZH extends HttpServlet {
-	@Autowired
-	private ICommonDao commonDao;
     private static final long serialVersionUID = -740569423483772472L;
     
     Logger log = Logger.getLogger(this.getClass());
     
-	public void init() {}
+    private ICommonService commService;
+    
+	public void init() {
+		commService = (ICommonService) Global.getBean("CommonService");
+	}
 	
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
     		throws ServletException, IOException {
@@ -70,7 +72,7 @@ public class WxRegister4GZH extends HttpServlet {
     	GZHBindPhone.setMobile(mobile);
     	GZHBindPhone.setOpenid(openId);
     	GZHBindPhone.setAppid(appId);
-    	commonDao.create(GZHBindPhone);
+    	commService.create(GZHBindPhone);
     }
 
 }
