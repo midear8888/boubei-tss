@@ -1,7 +1,8 @@
-package com.boubei.tssx.wx;
+package com.boubei.tssx.wx.gzh;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -20,8 +21,13 @@ public class WxGZHBindPhone implements IEntity {
 	@GeneratedValue(strategy = GenerationType.AUTO, generator = "wx_gzh_bind_sequence")
 	private Long id;
 
+	@Column(nullable = false)
 	private String mobile;
+
+	@Column(nullable = false)
 	private String openid;
+
+	@Column(nullable = false)
 	private String appid;
 
 	public Long getId() {

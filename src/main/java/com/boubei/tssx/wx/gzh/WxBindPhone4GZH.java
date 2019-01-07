@@ -8,11 +8,9 @@
  * ================================================================== 
  */
 
-package com.boubei.tssx.wx;
+package com.boubei.tssx.wx.gzh;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -21,17 +19,19 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.map.ObjectMapper;
 
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.persistence.ICommonService;
+import com.boubei.tss.util.EasyUtils;
+import com.boubei.tssx.sms.AliyunSMS;
+import com.boubei.tssx.wx.WXUtil;
 
 /**
  * 公众号注册登记
  */
-@WebServlet(urlPatterns = "/gzh_reg.in")
-public class WxRegister4GZH extends HttpServlet {
+@WebServlet(urlPatterns = "/gzh_bind.in")
+public class WxBindPhone4GZH extends HttpServlet {
 	private static final long serialVersionUID = -740569423483772472L;
 
 	Logger log = Logger.getLogger(this.getClass());
@@ -53,32 +53,22 @@ public class WxRegister4GZH extends HttpServlet {
 		log.info(DMUtil.parseRequestParams(request, false));
 
 		String mobile = request.getParameter("mobile");
-		String code = request.getParameter("code");
+		String smsCode = request.getParameter("smsCode");
 		String appId = request.getParameter("appId");
-		String ret = WXUtil.getOpenId4GZH(code, appId);
-		log.info(ret);
+		String openId = request.getParameter("openId");
 
-		@SuppressWarnings("unchecked")
-		Map<String, String> map = (new ObjectMapper()).readValue(ret, Map.class);
-
-		String access_token = map.get("access_token");
-		String openId = map.get("openid");
-
-		@SuppressWarnings("unchecked")
-		List<WxGZHBindPhone> bindPhones = (List<WxGZHBindPhone>) commService.getList("from WxGZHBindPhone where openid=? and appid=?", openId, appId);
-		
-		if (bindPhones.size() == 0) {
-			WxGZHBindPhone bindPhone = new WxGZHBindPhone();
-			bindPhone.setMobile(mobile);
-			bindPhone.setOpenid(openId);
-			bindPhone.setAppid(appId);
-			commService.create(bindPhone);
-		} else {
-			log.info(bindPhones.get(0));
+		if (!EasyUtils.isNullOrEmpty(mobile) && (EasyUtils.isNullOrEmpty(smsCode) || !AliyunSMS.instance().checkCode(mobile, smsCode))) {
+			response.getWriter().println(WXUtil.returnCode(406));
+			return;
 		}
 
-		ret = WXUtil.getUserInfo4GZH(access_token, openId);
-		log.info(ret);
+		WxGZHBindPhone bindPhone = new WxGZHBindPhone();
+		bindPhone.setMobile(mobile);
+		bindPhone.setOpenid(openId);
+		bindPhone.setAppid(appId);
+		commService.create(bindPhone);
+
+		response.getWriter().println(WXUtil._returnCode(200, ", \"error\": \"" + "\""));
 	}
 
 }
