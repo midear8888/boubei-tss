@@ -92,8 +92,19 @@ public class WxAPI {
 	 */
 	@RequestMapping(value = "/users")
 	@ResponseBody
-	public Map<String, String> getUsers() throws Exception {
+	public Map<String, String> getUsers() {
 		return loginService.getUsersMap();
+	}
+	
+	/**
+	 * http://localhost:9000/tss/wx/api/myroles
+	 * 获取用户个人所有用的角色
+	 */
+	@RequestMapping(value = "/myroles")
+	@ResponseBody
+	public List<String> getMyRoles() {
+		List<Long> roleID = loginService.getRoleIdsByUserId(Environment.getUserId());
+		return loginService.getRoleNames(roleID);
 	}
 	
 	/**
