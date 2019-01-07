@@ -13,6 +13,7 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
@@ -40,6 +41,8 @@ import com.boubei.tss.dm.record.workflow.WFUtil;
 import com.boubei.tss.dm.report.Report;
 import com.boubei.tss.dm.report.ReportService;
 import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.framework.sso.SSOConstants;
+import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.modules.param.ParamConfig;
 import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.modules.timer.JobService;
@@ -102,9 +105,10 @@ public class WxAPI {
 	 */
 	@RequestMapping(value = "/myroles")
 	@ResponseBody
-	public List<String> getMyRoles() {
-		List<Long> roleID = loginService.getRoleIdsByUserId(Environment.getUserId());
-		return loginService.getRoleNames(roleID);
+	public Object getMyRoles() {
+		HttpSession session = Context.getRequestContext().getSession();
+		Object roles = session.getAttribute(SSOConstants.USER_ROLES_S);
+		return roles;
 	}
 	
 	/**
