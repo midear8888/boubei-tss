@@ -30,6 +30,8 @@ public class WxGZHBindPhone implements IEntity {
 	@Column(nullable = false)
 	private String appid;
 
+	private String unionid;
+
 	public Long getId() {
 		return id;
 	}
@@ -64,6 +66,14 @@ public class WxGZHBindPhone implements IEntity {
 
 	public void setAppid(String appid) {
 		this.appid = appid;
+	}
+
+	public String getUnionid() {
+		return unionid;
+	}
+
+	public void setUnionid(String unionid) {
+		this.unionid = unionid;
 	}
 
 }

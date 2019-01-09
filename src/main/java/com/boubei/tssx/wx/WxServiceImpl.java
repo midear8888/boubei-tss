@@ -1,11 +1,24 @@
 package com.boubei.tssx.wx;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.log4j.Logger;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.boubei.tss.framework.persistence.ICommonDao;
 import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.dao.IGroupDao;
 import com.boubei.tss.um.dao.IUserDao;
@@ -15,6 +28,7 @@ import com.boubei.tss.um.entity.RoleUser;
 import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.service.IGroupService;
 import com.boubei.tss.util.EasyUtils;
+import com.boubei.tssx.wx.gzh.WxGZHBindPhone;
 
 @Service("WxService")
 public class WxServiceImpl implements WxService {
@@ -24,6 +38,7 @@ public class WxServiceImpl implements WxService {
 	@Autowired IUserDao userDao;
 	@Autowired IGroupDao groupDao;
 	@Autowired IGroupService groupService;
+	@Autowired ICommonDao commonDao;
 
 	public User getUserByAuthToken(String authToken) {
 		String sql = "from User where authToken = ? order by id desc";
@@ -117,6 +132,79 @@ public class WxServiceImpl implements WxService {
         	return user;
         }
         return null;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public String sendWxGZHMsg(Map<String, String> requestMap, HttpServletResponse response) throws IOException {
+		response.setContentType("text/plain;charset=UTF-8");
+		String accessToken = null;
+		
+		try {
+			accessToken = new WXUtil().getToken( requestMap.get("appid"));
+    	} catch (Exception e) {
+    		return "{\"code\": \"fail\", \"errorMsg\": \"获取accessToken接口失败 " + e.getMessage() + "\"}";
+    	}
+		
+		String url = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=" + accessToken;
+		PostMethod postMethod = new PostMethod(url);
+		postMethod.setRequestHeader("Content-Type", "application/json");
+		
+		Map<String, Object> da = new ObjectMapper().readValue( requestMap.get("data"), Map.class); 
+		JSONObject data = new JSONObject();
+		
+		for (String in : da.keySet()) {
+			Map<String, String> va = (Map<String, String>) da.get(in);
+			JSONObject keyvalue = new JSONObject();
+			for (String k : va.keySet()) {
+				String str = va.get(k);
+				keyvalue.put(k, str);
+			}
+			data.put(in, keyvalue);
+		}
+		
+		Map<String, Object> mp = new ObjectMapper().readValue( requestMap.get("miniprogram"), Map.class); 
+		JSONObject miniprogram = new JSONObject();
+		
+		for (String in : mp.keySet()) {
+			String keyvalue = (String) mp.get(in);
+			miniprogram.put(in, keyvalue);
+		}
+		
+		String mobile = requestMap.get("phone");
+		List<WxGZHBindPhone> bindPhones = (List<WxGZHBindPhone>) commonDao.getEntities("from WxGZHBindPhone where mobile = " + mobile);
+		
+		JSONObject json = new JSONObject();
+		if(bindPhones.size() == 0) {
+			json.put("touser", requestMap.get("unionid")); // 适用于小程序与公众号拥有共同unionid的情况
+		} else {
+			json.put("touser", bindPhones.get(0).getOpenid());
+		}
+		json.put("template_id", requestMap.get("template_id"));
+		json.put("url", requestMap.get("url"));
+		json.put("miniprogram", miniprogram);
+		json.put("data", data);
+		
+		String requestData = json.toString();
+		byte[] b = requestData.getBytes("UTF-8");
+        InputStream is = new ByteArrayInputStream(b, 0, b.length);
+        RequestEntity re = new InputStreamRequestEntity(is, b.length, "application/json; charset=UTF-8");
+		postMethod.setRequestEntity(re);
+		
+		HttpClient httpClient = new HttpClient();
+		int statusCode = httpClient.executeMethod(postMethod);
+		if (statusCode != 200) {
+			return  "{\"code\": \"fail\", \"errorMsg\": \"发送post请求失败\"}";
+		}
+		
+		String responseBody = postMethod.getResponseBodyAsString();
+		Map<String, String> result = new ObjectMapper().readValue(responseBody, Map.class);
+		
+		if(result.get("errmsg").equals("ok")){
+			return "{\"code\": \"success\", \"data\": \"OK\"}";
+		}
+		else{
+			return "{\"code\": \"fail\", \"errorMsg\": \"" + result.get("errmsg") + "\"}";
+		}
 	}
 
 }

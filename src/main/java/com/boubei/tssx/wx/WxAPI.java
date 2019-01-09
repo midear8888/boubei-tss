@@ -40,7 +40,6 @@ import com.boubei.tss.dm.record.workflow.WFService;
 import com.boubei.tss.dm.record.workflow.WFUtil;
 import com.boubei.tss.dm.report.Report;
 import com.boubei.tss.dm.report.ReportService;
-import com.boubei.tss.framework.persistence.ICommonDao;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.sso.SSOConstants;
 import com.boubei.tss.framework.sso.context.Context;
@@ -52,7 +51,6 @@ import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
 import com.boubei.tssx.ImageCodeAPI;
-import com.boubei.tssx.wx.gzh.WxGZHBindPhone;
 import com.github.wxpay.sdk.WXPay;
 import com.github.wxpay.sdk.WXPayUtil;
 
@@ -67,7 +65,7 @@ public class WxAPI {
 	@Autowired WFService wfService;
 	@Autowired ILoginService loginService; 
 	@Autowired JobService jobService;
-	@Autowired ICommonDao commonDao;
+	@Autowired WxService wxService;
 	
 	/**
 	 * http://localhost:9000/tss/wx/api/roles
@@ -614,161 +612,17 @@ public class WxAPI {
 	}
 	
 	/**
-     * 公众号发送模板消息
-     * appid 公众号ID 用于获取 access_token
-     * phone 接收者（已关注公众号且绑定手机号）的phone 关联获取 openid ，13735547815
-     * touser 接收者（用户）的 openid ，oNi3W5XOKp6GoFtHoX3iKa5gxyRg
-     * template_id 所需下发的模板消息的id ，K1uGpcq0oLh3tdYPle5Ciemjlg3KCDMu9YG51jW9_S4
-     * url 模板跳转链接（海外帐号没有跳转能力），https://www.boudata.com/tss/pages/gzh.html
-     * miniprogram 跳小程序所需数据，不需跳小程序可不用传该数据 ，{\"appid\": \"wx5255074da90a4dca\",\"pagepath\": \"pages/homepage/index\"}
-     * data 模板内容 ，{\"first\":{\"color\":\"#173177\",\"value\":\"您的订单已提交成功\"},\"keyword1\":{\"value\":\"CX31806300002\"},...}
-     * http://127.0.0.1:9000/tss/wx/api/sendgzhmsg?上述参数
-     * 
-     * 小程序端调用方式
-     * tss.sendGZHMsg({
-	      params: {
-	        appid: 公众号ID （卜数科技：'wx784c62545bddf62b'）, // 必填
-	        phone: 接收者（已关注公众号且绑定手机号）的phone, // 必填
-	        template_id: 模版ID 前往公众平台获取, // 必填
-	        data: 模板内容, // 必填
-	        url: 模板跳转链接, // 选填
-	        miniprogram: { appid: 小程序ID, pagepath: 小程序对应页面 } 跳小程序所需数据 // 选填
-	      },
-	      completion: res => {
-	        console.log(res)
-	      }
-	    })
-     * 实例：
-     * data = {
-	      first: { value: '您的订单已提交成功', color: '#173177'},
-	      keyword1: { value: 'CX31806300002' },
-	      keyword2: { value: '2019-01-08 11:40:00' },
-	      keyword3: { value: '16吨书籍' },
-	      keyword4: { value: '姓名：张三 电话：13800138000' },
-	      keyword5: { value: '车牌：粤B88888 车型：厢式车' },
-	      remark: { value: '点击查看详情。客服电话：400-888-8888' }
-	    }, 
-    * miniprogram = {
-	      appid: 'wx5255074da90a4dca',
-	      pagepath: 'pages/homepage/index'
-	    }
-    * tss.sendGZHMsg({
-	      params: {
-	        appid: 'wx784c62545bddf62b',
-	        phone: '13735547815',
-	        template_id: 'K1uGpcq0oLh3tdYPle5Ciemjlg3KCDMu9YG51jW9_S4',
-	        miniprogram: miniprogram,
-	        data: data
-	      },
-	      completion: res => {
-	        console.log(res)
-	      }
-	    })
-	 * @throws IOException 
-     */
-	@SuppressWarnings("unchecked")
+	 * 公众号发送模板消息
+	 * 
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
 	@RequestMapping(value = "/sendgzhmsg")
 	@ResponseBody
 	public void sendGZHMessage(HttpServletRequest request, HttpServletResponse response) throws IOException{
-		
-		Logger logger = Logger.getLogger(this.getClass());
-		
 		Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
-		response.setContentType("text/plain;charset=UTF-8");
-		String ret = null;
-		
-		try {
-    		ret = new WXUtil().getAccessToken( requestMap.get("appid"));
-    	} catch (Exception e) {
-    		logger.error("WXUtil.getAccessToken failed: " + e.getMessage());
-    		response.getWriter().println( "{\"code\": \"fail\", \"errorMsg\": \"获取accessToken接口失败\"}" );
-    		return;
-    	}
-		
-		Map<String, String> m = new ObjectMapper().readValue(ret, Map.class); 
-		String accessToken = m.get("access_token");
-		
-		response.getWriter().println( accessToken );
-		
-		if(accessToken == null){
-			response.getWriter().println( "{\"code\": \"fail\", \"errorMsg\": \"获取accessToken失败\"}" );
-			return;
-		}
-		
-		String url = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=" + accessToken;
-		
-		PostMethod postMethod = new PostMethod(url);
-		postMethod.setRequestHeader("Content-Type", "application/json");
-		
-		Map<String, Object> da = new HashMap<String, Object>();
-		da = new ObjectMapper().readValue( requestMap.get("data"), Map.class); 
-		
-		JSONObject data = new JSONObject();
-		
-		for (String in : da.keySet()) {
-			Map<String, String> va = (Map<String, String>) da.get(in);
-			JSONObject keyvalue = new JSONObject();
-			for (String k : va.keySet()) {
-				String str = va.get(k);
-				keyvalue.put(k, str);
-			}
-			data.put(in, keyvalue);
-		}
-		
-		Map<String, Object> mp = new HashMap<String, Object>();
-		mp = new ObjectMapper().readValue( requestMap.get("miniprogram"), Map.class); 
-		
-		response.getWriter().println( mp );
-		
-		JSONObject miniprogram = new JSONObject();
-		
-		for (String in : mp.keySet()) {
-			response.getWriter().println( in );
-			String keyvalue = (String) mp.get(in);
-			miniprogram.put(in, keyvalue);
-		}
-		
-		String mobile = EasyUtils.checkNull(requestMap.get("phone"), -99999).toString();
-		List<WxGZHBindPhone> bindPhones = (List<WxGZHBindPhone>) commonDao.getEntities("from WxGZHBindPhone where mobile = " + mobile);
-		
-		JSONObject json = new JSONObject();
-		if(bindPhones.size() == 0) {
-			json.put("touser", requestMap.get("touser"));
-		} else {
-			json.put("touser", bindPhones.get(0).getOpenid());
-		}
-		json.put("template_id", requestMap.get("template_id"));
-		json.put("url", requestMap.get("url"));
-		json.put("miniprogram", miniprogram);
-		json.put("data", data);
-		
-		
-		String requestData = json.toString();
-		
-		response.getWriter().println( requestData );
-		
-		HttpClient httpClient = new HttpClient();
-
-		byte[] b = requestData.getBytes("UTF-8");
-        InputStream is = new ByteArrayInputStream(b, 0, b.length);
-        RequestEntity re = new InputStreamRequestEntity(is, b.length, "application/json; charset=UTF-8");
-		postMethod.setRequestEntity(re);
-		
-		int statusCode = httpClient.executeMethod(postMethod);
-		if (statusCode != 200) {
-			response.getWriter().println( "{\"code\": \"fail\", \"errorMsg\": \"发送post请求失败\"}" );
-		}
-		
-		String responseBody = postMethod.getResponseBodyAsString();
-		
-		Map<String, String> result = new ObjectMapper().readValue(responseBody, Map.class);
-		
-		if(result.get("errmsg").equals("ok")){
-			response.getWriter().println( "{\"code\": \"success\", \"data\": \"OK\"}" );
-		}
-		else{
-			response.getWriter().println( "{\"code\": \"fail\", \"errorMsg\": \"" + result.get("errmsg") + "\"}" );
-		}
+		response.getWriter().println( wxService.sendWxGZHMsg(requestMap, response) );
 	}
 
 }
