@@ -314,7 +314,6 @@ public class WxAPI {
 	 * body 商品描述
 	 * out_trade_no 商户订单号
 	 * total_fee 标价金额
-	 * spbill_create_ip 终端IP
 	 * product_id 商品ID
 	 * appid 小程序app ID
 	 * mchid 商户ID
@@ -326,11 +325,13 @@ public class WxAPI {
 	public void scanPay(HttpServletRequest request, HttpServletResponse response) throws Exception{
 		Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
 		
+		String ip = request.getRemoteAddr(); 
+		
 		HashMap<String, String> data = new HashMap<String, String>();
         data.put("body", requestMap.get("body"));
         data.put("out_trade_no", requestMap.get("out_trade_no"));
         data.put("total_fee", requestMap.get("total_fee"));
-        data.put("spbill_create_ip", requestMap.get("spbill_create_ip"));
+        data.put("spbill_create_ip", ip);
         data.put("trade_type", "NATIVE");
         data.put("product_id", requestMap.get("product_id"));
         
@@ -355,7 +356,6 @@ public class WxAPI {
 	 * body 商品描述
 	 * out_trade_no 商户订单号
 	 * total_fee 标价金额
-	 * spbill_create_ip 终端IP
 	 * openid 小程序账号唯一标识
 	 * appid 小程序app ID
 	 * mchid 商户ID
@@ -370,11 +370,13 @@ public class WxAPI {
 		String appid = requestMap.get("appid");
 		String mchid = requestMap.get("mchid");
 		
+		String ip = request.getRemoteAddr();  
+		
 		HashMap<String, String> data = new HashMap<String, String>();
         data.put("body", requestMap.get("body"));
         data.put("out_trade_no", requestMap.get("out_trade_no"));
         data.put("total_fee", requestMap.get("total_fee"));
-        data.put("spbill_create_ip", requestMap.get("spbill_create_ip"));
+        data.put("spbill_create_ip", ip);
         data.put("trade_type", "JSAPI");
         data.put("openid", requestMap.get("openid"));
         
@@ -437,6 +439,9 @@ public class WxAPI {
     		result.put("code", "fail");
     		if ("SUCCESS".equals(r.get("return_code")) && "FAIL".equals(r.get("result_code"))){
     			result.put("errorMsg", r.get("err_code_des"));
+    		}
+    		else if("FAIL".equals(r.get("result_code"))){
+    			result.put("errorMsg", r.get("return_msg"));
     		}
     		else{
     			result.put("errorMsg", "支付下单失败!");
