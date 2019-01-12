@@ -53,7 +53,7 @@ public class CallSMS extends HttpServlet {
 		}
 		
 		if(ssr == null){
-			response.getWriter().println("{\"code\": \"fail\", \"errerMsg\": \"发送失败\"}");
+			response.getWriter().println("{\"code\": \"fail\", \"errorMsg\": \"发送失败\"}");
 			return;
 		}
 		
