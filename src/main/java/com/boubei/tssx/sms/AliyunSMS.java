@@ -138,7 +138,6 @@ public class AliyunSMS {
         	logException(e);
 		}
         
-        ssr.setCode( outId + "" );
         return ssr;
     }
     

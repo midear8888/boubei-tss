@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.aliyuncs.dysmsapi.model.v20170525.SendSmsResponse;
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.util.EasyUtils;
 
@@ -42,11 +43,25 @@ public class CallSMS extends HttpServlet {
     	String tlCode = request.getParameter("tlCode");
     	String tlParam = smsMsg;
     	
+    	SendSmsResponse ssr = null;
+    	
 		if( !EasyUtils.isNullOrEmpty(smsMsg) && !EasyUtils.isNullOrEmpty(tlCode)  ) {
-			AliyunSMS.instance().send(phone, tlCode, tlParam, -1);
+			ssr = AliyunSMS.instance().send(phone, tlCode, tlParam, -1);
 		}
 		else { // 默认发送验证码
-			AliyunSMS.instance().sendRandomNum( phone );
+			ssr = AliyunSMS.instance().sendRandomNum( phone );
+		}
+		
+		if(ssr == null){
+			response.getWriter().println("{\"code\": \"fail\", \"errerMsg\": \"发送失败\"}");
+			return;
+		}
+		
+		if(ssr.getCode().equals("OK")){
+			response.getWriter().println("{\"code\": \"success\", \"msg\": \"发送成功\"}");
+		}
+		else{
+			response.getWriter().println("{\"code\": \"fail\", \"errorMsg\": \"" + ssr.getMessage() + "\"}");
 		}
     }
 
