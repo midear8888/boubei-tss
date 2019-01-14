@@ -106,6 +106,15 @@ public class EasyUtils {
     }
     
     public static Object checkNull(Object...objs) {
+    	for(Object obj: objs) {
+    		if( !isNullOrEmpty(obj) ) {
+    			return obj;
+    		}
+    	}
+    	return null;
+    }
+    
+    public static Object checkNullI(Object...objs) {
     	Object ret = null;
     	for(Object obj: objs) {
     		if( !isNullOrEmpty(obj) ) {
