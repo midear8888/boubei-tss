@@ -64,6 +64,10 @@ public class DomainInfo extends ARecordTable {
 	
 	private Boolean kd100;
 	
+	private String udf1;
+	private String udf2;
+	private String udf3;
+	
 	public Long getId() {
 		return id;
 	}
@@ -162,5 +166,23 @@ public class DomainInfo extends ARecordTable {
 	}
 	public void setMultiLogin(Integer multiLogin) {
 		this.multiLogin = multiLogin;
+	}
+	public String getUdf1() {
+		return udf1;
+	}
+	public void setUdf1(String udf1) {
+		this.udf1 = udf1;
+	}
+	public String getUdf2() {
+		return udf2;
+	}
+	public void setUdf2(String udf2) {
+		this.udf2 = udf2;
+	}
+	public String getUdf3() {
+		return udf3;
+	}
+	public void setUdf3(String udf3) {
+		this.udf3 = udf3;
 	}
 }
