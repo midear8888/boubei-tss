@@ -24,7 +24,7 @@ import com.boubei.tss.dm.report.permission.ReportResource;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.ICommonDao;
 import com.boubei.tss.framework.sso.Environment;
-import com.boubei.tss.modules.cloud.ModuleDef;
+import com.boubei.tss.modules.cloud.entity.ModuleDef;
 import com.boubei.tss.modules.param.Param;
 import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.modules.param.ParamManager;

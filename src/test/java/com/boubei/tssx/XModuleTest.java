@@ -34,7 +34,7 @@ import com.boubei.tss.dm.report.ReportService;
 import com.boubei.tss.dm.report._Reporter;
 import com.boubei.tss.framework.sso.Anonymous;
 import com.boubei.tss.framework.web.servlet.AfterUpload;
-import com.boubei.tss.modules.cloud.ModuleDef;
+import com.boubei.tss.modules.cloud.entity.ModuleDef;
 import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.entity.Role;
 import com.boubei.tss.um.entity.User;

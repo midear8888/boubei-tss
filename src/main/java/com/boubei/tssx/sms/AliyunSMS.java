@@ -52,7 +52,7 @@ public class AliyunSMS {
     }
     
     private String getConfig(String code, String defaultVal) {
-    	String val 	= Environment.getDomainInfo("domain_" + code); 
+    	String val 	= (String) Environment.getDomainInfo("domain_" + code); 
         val = (String) EasyUtils.checkNull(val, ParamConfig.getAttribute(code, defaultVal) ); 
         return val;
     }
