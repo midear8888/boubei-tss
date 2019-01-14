@@ -26,6 +26,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 
+import com.boubei.tss.PX;
+import com.boubei.tss.framework.Config;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.exception.BusinessServletException;
 import com.boubei.tss.framework.exception.IBusinessException;
@@ -74,7 +76,7 @@ public class Filter4AutoLogin implements Filter {
 		paths = (String) EasyUtils.checkNull( paths, "login.in,logout.in" );
 		ignorePaths.addAll( Arrays.asList(paths.split(",")) );
 		
-		log.info("Filter4AutoLogin init in " + Context.getApplicationContext().getCurrentAppCode());
+		log.info("Filter4AutoLogin init in " + Config.getAttribute(PX.ENVIRONMENT));
 	}
  
 	public void destroy() {

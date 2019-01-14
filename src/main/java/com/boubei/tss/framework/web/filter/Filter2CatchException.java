@@ -56,7 +56,7 @@ public class Filter2CatchException implements Filter {
     }
  
     public void init(FilterConfig filterConfig) throws ServletException {
-        log.info("Filter2CatchException init in " + Config.getAttribute(PX.APPLICATION_CODE));
+        log.info("Filter2CatchException init in " + Config.getAttribute(PX.ENVIRONMENT));
     }
     
     public void destroy() {

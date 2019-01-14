@@ -38,7 +38,7 @@ import com.boubei.tss.framework.persistence.pagequery.PageInfo;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.modules.api.APIService;
-import com.boubei.tss.modules.cloud.DomainInfo;
+import com.boubei.tss.modules.cloud.entity.DomainInfo;
 import com.boubei.tss.modules.param.Param;
 import com.boubei.tss.modules.param.ParamConfig;
 import com.boubei.tss.modules.param.ParamConstants;

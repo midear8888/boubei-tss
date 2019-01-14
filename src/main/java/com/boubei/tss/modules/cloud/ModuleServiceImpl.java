@@ -11,6 +11,7 @@
 package com.boubei.tss.modules.cloud;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -21,7 +22,10 @@ import com.boubei.tss.EX;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.ICommonDao;
 import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.modules.cloud.entity.ModuleDef;
+import com.boubei.tss.modules.cloud.entity.ModuleUser;
 import com.boubei.tss.um.entity.RoleUser;
+import com.boubei.tss.um.entity.SubAuthorize;
 import com.boubei.tss.util.EasyUtils;
 
 @Service("ModuleService")
@@ -31,21 +35,31 @@ public class ModuleServiceImpl implements ModuleService {
 	
 	public void selectModule(Long user, Long module) {
 		checkIsDomainAdmin();
+		ModuleDef def = (ModuleDef) commonDao.getEntity(ModuleDef.class, module);
 		
+		// 创建 ModuleUser映射关系
 		ModuleUser mu = new ModuleUser(user, module);
 		mu.setDomain( Environment.getDomainOrign() );
 		
-		Calendar calendar = new GregorianCalendar();
-        calendar.add(Calendar.DAY_OF_YEAR, 31);
-		mu.setExpireDate(calendar.getTime());
-		
 		commonDao.create(mu);
 		
-		ModuleDef def = (ModuleDef) commonDao.getEntity(ModuleDef.class, module);
+		// 生成一个转授策略
+		SubAuthorize sa = new SubAuthorize();
+		sa.setName(def.getModule() + "_" + user);
+		sa.setStartDate(new Date());
+		sa.setOwnerId( Environment.getUserId() );
+		
+		Calendar calendar = new GregorianCalendar();
+        calendar.add(Calendar.DAY_OF_YEAR, def.getTry_days());
+		sa.setEndDate(calendar.getTime());
+		commonDao.create(sa);
+		
+		// 设置转授权限给当前域管理员
 		for(Long roleId : def.roles()) {
 			RoleUser ru  = new RoleUser();
 			ru.setRoleId( roleId );
 			ru.setUserId(user);
+			ru.setStrategyId(sa.getId());
 			ru.setModuleId(module);
 			commonDao.create(ru);
 		}

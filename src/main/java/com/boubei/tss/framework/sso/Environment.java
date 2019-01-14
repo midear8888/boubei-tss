@@ -132,8 +132,8 @@ public class Environment {
     	return (String) EasyUtils.checkNull(getDomainOrign(), UMConstants.DEFAULT_DOMAIN);
     }
     
-    public static String getDomainInfo(String attr) {
-    	return (String) getInSession(attr);
+    public static Object getDomainInfo(String attr) {
+    	return getInSession("domain_" + attr);
     }
     
     public static Object getInSession(String attrName) {

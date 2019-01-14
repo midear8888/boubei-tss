@@ -16,6 +16,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.boubei.tss.EX;
+import com.boubei.tss.PX;
+import com.boubei.tss.framework.Config;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.SecurityUtil;
 import com.boubei.tss.framework.exception.BusinessException;
@@ -55,7 +57,7 @@ public class Filter8APITokenCheck implements Filter {
     static Log log = LogFactory.getLog(Filter8APITokenCheck.class);
 
     public void init(FilterConfig filterConfig) throws ServletException {
-        log.info("Filter8APITokenCheck init in " + Context.getApplicationContext().getCurrentAppCode());
+        log.info("Filter8APITokenCheck init in " + Config.getAttribute(PX.ENVIRONMENT));
     }
  
     public void destroy() { }

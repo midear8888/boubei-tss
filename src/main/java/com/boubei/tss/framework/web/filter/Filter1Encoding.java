@@ -57,7 +57,7 @@ public class Filter1Encoding implements Filter {
         this.encoding = filterConfig.getInitParameter("encoding");
         this.encoding = (String) EasyUtils.checkNull(this.encoding, "UTF-8");
         
-        log.info("Filter1Encoding init in" + Config.getAttribute(PX.APPLICATION_CODE));
+        log.info("Filter1Encoding init in" + Config.getAttribute(PX.ENVIRONMENT));
     }
     
     public void destroy() {

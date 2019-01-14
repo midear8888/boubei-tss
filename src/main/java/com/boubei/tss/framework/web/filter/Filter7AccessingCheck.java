@@ -35,8 +35,9 @@ import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.Element;
 
+import com.boubei.tss.PX;
+import com.boubei.tss.framework.Config;
 import com.boubei.tss.framework.sso.SSOConstants;
-import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.XMLDocUtil;
 
@@ -50,7 +51,7 @@ public class Filter7AccessingCheck implements Filter {
     Log log = LogFactory.getLog(Filter7AccessingCheck.class);
 
     public void init(FilterConfig filterConfig) throws ServletException {
-        log.info("Filter7AccessingCheck init in " + Context.getApplicationContext().getCurrentAppCode());
+        log.info("Filter7AccessingCheck init in " + Config.getAttribute(PX.ENVIRONMENT));
     }
  
     public void destroy() { }

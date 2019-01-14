@@ -24,6 +24,7 @@ import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.web.servlet.AfterUpload;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
+import com.boubei.tss.util.Imager;
 
 public class CreateAttach implements AfterUpload {
 
@@ -32,8 +33,11 @@ public class CreateAttach implements AfterUpload {
 	RecordService recordService = (RecordService) Global.getBean("RecordService");
 	
 	public static int getAttachType(String filepath) {
-		int type; // = Integer.parseInt(request.getParameter("type")); 不用前台传入的文件类型
+		int type;
 		if( FileHelper.isImage(filepath) ) {
+			// 对超过1M的图片进行压缩
+			try { Imager.zoomImage(filepath, 1024); } catch (Exception e) { }
+			
 			type = RecordAttach.ATTACH_TYPE_PIC;
 		} else {
 			type = RecordAttach.ATTACH_TYPE_DOC;

@@ -59,7 +59,7 @@ public class Log implements IEntity, IXForm, IGridNode {
     private String operatorBrowser;  // 操作者浏览器类型
     
     @Column(length = 4000)  
-    private String  content;      // 操作内容
+    private String  content;      // 操作内容（LogOutputTask里限定长度为2000）
     
     private Integer methodExcuteTime; // 方法执行时间（单位: 微秒）
     private String udf1;

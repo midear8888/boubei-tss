@@ -56,7 +56,7 @@ public class Filter6XmlHttpDecode implements Filter {
     Logger log = Logger.getLogger(Filter6XmlHttpDecode.class);
  
     public void init(FilterConfig arg0) throws ServletException {
-        log.info("Filter6XmlHttpDecode init in " + Config.getAttribute(PX.APPLICATION_CODE));
+        log.info("Filter6XmlHttpDecode init in " + Config.getAttribute(PX.ENVIRONMENT));
     }
 
     /**

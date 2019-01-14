@@ -120,8 +120,8 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
     private String  wxicon;
     private String  wxurl;  // 自定义小程序展示页面
     private Integer logicDel = ParamConstants.FALSE;
-    private Integer showCreator  = ParamConstants.FALSE;  // 显示创建人、创建时间
-    private Integer ignoreDomain = ParamConstants.FALSE;  // 忽略【域】
+    private Integer showCreator  = ParamConstants.TRUE;  // 显示创建人、创建时间
+    private Integer ignoreDomain = ParamConstants.FALSE; // 忽略【域】
    
     @Column(length = 2000)
     private String  remark; 

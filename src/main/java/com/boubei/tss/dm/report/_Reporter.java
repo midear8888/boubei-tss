@@ -226,6 +226,7 @@ public class _Reporter extends BaseActionSupport {
     /**
      * report可能是report的ID 也 可能是 Name.
      * 注：一次最多能取10万行。
+     * http://localhost:9000/tss/data/json/xxx?debugSQL=true
      */
     @RequestMapping("/json/{report}")
     @ResponseBody
@@ -256,6 +257,10 @@ public class _Reporter extends BaseActionSupport {
         
         AccessLogRecorder.outputAccessLog(reportService, reportId, "showAsJson", requestMap, start);
         
+        if(requestMap.containsKey("debugSQL")) { // 调试SQL解析
+        	return excutor.sql.replaceAll("\n", " ");
+        }
+
         if(page != null || requestMap.containsKey("rows")) {
         	Map<String, Object> returlVal = new HashMap<String, Object>();
         	returlVal.put("total", excutor.count);

@@ -281,6 +281,10 @@ public class _Recorder extends ProgressActionSupport {
 		requestMap.put(_Field.STRICT_QUERY, strictQuery);
 
 		SQLExcutor ex = queryRecordData(_db, page, _pagesize, requestMap, pointedFileds, false);
+		
+		if(requestMap.containsKey("debugSQL")) { // 调试SQL解析
+        	return ex.sql.replaceAll("\n", " ");
+        }
 
 		if (requestMap.containsKey("rows")) { // for EasyUI
 			Map<String, Object> returlVal = new HashMap<String, Object>();

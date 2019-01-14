@@ -1,4 +1,4 @@
-package com.boubei.tss.modules.cloud;
+package com.boubei.tss.modules.cloud.entity;
 
 import java.io.Serializable;
 
@@ -10,6 +10,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import com.boubei.tss.dm.record.ARecordTable;
+import com.boubei.tss.modules.param.ParamConstants;
 
 /**
  * 域信息扩展：必须由域账号自行创建，Admin等域外部创建的账号无效
@@ -43,8 +44,8 @@ public class DomainInfo extends ARecordTable {
 	private Long id;
  
 	private String name; // 域名
-	
 	private String logo;
+	private Integer multiLogin = ParamConstants.FALSE;  // 账号多地登录
 	
 	private String wxpay_qr;
 	private String wxpay_account;
@@ -62,8 +63,6 @@ public class DomainInfo extends ARecordTable {
 	private String contact_info;
 	
 	private Boolean kd100;
-	
-	private String cw_dl;
 	
 	public Long getId() {
 		return id;
@@ -158,10 +157,10 @@ public class DomainInfo extends ARecordTable {
 	public void setKd100(Boolean kd100) {
 		this.kd100 = kd100;
 	}
-	public String getCw_dl() {
-		return cw_dl;
+	public Integer getMultiLogin() {
+		return multiLogin;
 	}
-	public void setCw_dl(String cw_dl) {
-		this.cw_dl = cw_dl;
+	public void setMultiLogin(Integer multiLogin) {
+		this.multiLogin = multiLogin;
 	}
 }

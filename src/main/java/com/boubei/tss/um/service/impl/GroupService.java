@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
 import com.boubei.tss.EX;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.Environment;
-import com.boubei.tss.modules.cloud.ModuleDef;
+import com.boubei.tss.modules.cloud.entity.ModuleDef;
 import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.dao.IGroupDao;
@@ -66,10 +66,15 @@ public class GroupService implements IGroupService {
         List<Role> list = (List<Role>) roleDao.getEditableRoles();
         Set<Role> set = new LinkedHashSet<Role>(list);
         
-        // 加上因域管理员选用功能模块而得来的模块角色，以用来给域内用户定岗
+        /* 加上因域管理员选用功能模块而得来的模块角色，以用来给域内用户定岗
+         * （注：只适合定价为0的免费模块，付费的需要域管理员通过使用转授策略把购买的模块角色赋予域用户）
+         */
         String hql = "select o from ModuleDef o, ModuleUser mu where mu.moduleId = o.id and mu.userId = ? and o.status in ('opened') ";
         List<ModuleDef> modules = (List<ModuleDef>) roleDao.getEntities(hql, Environment.getUserId());
         for(ModuleDef module : modules ) {
+        	Double price = EasyUtils.obj2Double(module.getPrice1());
+			if( price > 0 ) continue;
+        	
         	String[] roles = module.getRoles().split(",");
     		for(String role : roles) {
     			Long roleId = EasyUtils.obj2Long(role);

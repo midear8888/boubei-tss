@@ -26,6 +26,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 
+import com.boubei.tss.PX;
+import com.boubei.tss.framework.Config;
 import com.boubei.tss.framework.exception.BusinessServletException;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.sso.context.RequestContext;
@@ -58,7 +60,7 @@ public class Filter3Context implements Filter {
         String paths = EasyUtils.obj2String( filterConfig.getInitParameter("ignorePaths") );
         ignorePaths.addAll( Arrays.asList(paths.split(",")) );
         
-        log.info("Filter3Context init in " + Context.getApplicationContext().getCurrentAppCode() + ", ignorePaths=" + paths);
+        log.info("Filter3Context init in " + Config.getAttribute(PX.ENVIRONMENT) + ", ignorePaths=" + paths);
     }
  
     public void destroy() {

@@ -778,6 +778,12 @@ public abstract class _Database {
 			String key = _key.toLowerCase();  // code默认都是小写
 			if( EasyUtils.isNullOrEmpty(_valueStr) ) continue;
 			
+			if( "creator".equals(key) || "updator".equals(key)) {
+				// 支持按姓名、账号、电话、email等查询 录入表
+				String sql = "select loginName v from um_user where ? in (loginName,userName,telephone,email)";
+				_valueStr = (String) EasyUtils.checkNull(SQLExcutor.queryVL(sql, "v", _valueStr), _valueStr);
+			}
+			
 			// 对paramValue进行检测，防止SQL注入
 			_valueStr = DMUtil.fmParse(_valueStr);
 			String valueStr = DMUtil.checkSQLInject(_valueStr);

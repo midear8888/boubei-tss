@@ -32,11 +32,11 @@ public interface SSOConstants {
     public static final String USER_RIGHTS_L = "userRoles";   // List<Long id>
     public static final String USER_RIGHTS_S = "_userRoles";  // 逗号分隔字符串
     
-    public static final String USER_MODULE_C = "userModules";   // List<>
-    public static final String USER_MODULE_N = "_userModuleNames";  // List<>
+    public static final String USER_MODULE_C = "userModules";       // List<String> 用户域拥有模块Codes
+    public static final String USER_MODULE_N = "_userModuleNames";  // List<String> 用户域拥有模块Names
     
     public static final String USER_ROLES_L = "userRoleNames";    // List<String name>
-    public static final String USER_ROLES_S = "_userRoleNames";  // 逗号分隔字符串
+    public static final String USER_ROLES_S = "_userRoleNames";   // 逗号分隔字符串
     
     /** 存在session里的用户账号名称 */
     public static final String USER_ACCOUNT = "loginName";
@@ -56,6 +56,6 @@ public interface SSOConstants {
     public static final String USERIDS_OF_GROUP_DEEP = "USERIDS_OF_GROUP_DEEP";
     
     public static final String RANDOM_KEY  = "randomKey";
-    
     public static final String LOGIN_CHECK_KEY = "loginCheckKey";
+    public static final String SMS_CHECK_KEY = "smsCheckKey";
 }

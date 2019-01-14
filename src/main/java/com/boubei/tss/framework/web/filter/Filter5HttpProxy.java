@@ -38,6 +38,7 @@ import com.boubei.tss.PX;
 import com.boubei.tss.cache.AbstractPool;
 import com.boubei.tss.cache.Cacheable;
 import com.boubei.tss.cache.extension.CacheHelper;
+import com.boubei.tss.framework.Config;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.exception.BusinessServletException;
 import com.boubei.tss.framework.sso.Environment;
@@ -80,7 +81,7 @@ public class Filter5HttpProxy implements Filter {
 	String P_KEY = "proxying_req_";
  
 	public void init(FilterConfig config) throws ServletException {
-		log.info("Filter5HttpProxy init in " + Context.getApplicationContext().getCurrentAppCode());
+		log.info("Filter5HttpProxy init in " + Config.getAttribute(PX.ENVIRONMENT));
 	}
  
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws ServletException, IOException {

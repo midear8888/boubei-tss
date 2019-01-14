@@ -186,7 +186,7 @@ public class Filter0Security implements Filter {
     }
 
 	public void init(FilterConfig filterConfig) throws ServletException {
-        log.info("Filter0Security init in " + Config.getAttribute(PX.APPLICATION_CODE));
+        log.info("Filter0Security init in " + Config.getAttribute(PX.ENVIRONMENT));
     }
     
     public void destroy() { }

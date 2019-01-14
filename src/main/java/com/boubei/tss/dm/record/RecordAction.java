@@ -132,6 +132,7 @@ public class RecordAction extends BaseActionSupport {
             map.put("needLog", ParamConstants.TRUE);
             map.put("needFile", ParamConstants.TRUE);
             map.put("batchImp", ParamConstants.TRUE);
+            map.put("showCreator", ParamConstants.TRUE);
             xformEncoder = new XFormEncoder(uri, map);
         } 
         else {

@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.DMUtil;
+import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.MacrocodeCompiler;
@@ -35,7 +36,7 @@ public class SystemInfo {
 	
 	@RequestMapping(value = "/version", method = RequestMethod.GET)
 	@ResponseBody
-	public Object[] getVersion() {
+	public Object[] getVersion(String sessionId) {
 		String packageTime = Config.getAttribute("last.package.time");
 		String environment = Config.getAttribute("environment");
 		
@@ -43,7 +44,7 @@ public class SystemInfo {
 		d = DateUtil.addDays(d, 1d/3);  //  +8小时，变成北京时间
 		packageTime = DateUtil.format(d, "yyyy-MM-dd HH:mm:ss");
 		
-		return new Object[] { packageTime, environment };
+		return new Object[] { packageTime, environment, !Environment.isAnonymous() };
 	}
 	
 	@RequestMapping(value = "/ui/{sessionAttr}", method = RequestMethod.GET)
@@ -53,6 +54,7 @@ public class SystemInfo {
 		String result = DMUtil.fmParse( MacrocodeCompiler.createMacroCode(sessionAttr));
 		return new Object[] { result };
 	}
+	
 	
 	@RequestMapping(value = "/test", method = RequestMethod.GET)
 	@ResponseBody

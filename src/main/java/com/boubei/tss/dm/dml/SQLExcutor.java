@@ -52,6 +52,7 @@ public class SQLExcutor {
     public List<Integer> fieldTypes  = new ArrayList<Integer>(); // java.sql.Types
     public List<String> fieldWidths  = new ArrayList<String>(); 
     
+    public String sql;
     public int count;
     public List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
     
@@ -97,6 +98,14 @@ public class SQLExcutor {
     
     public static List<Map<String, Object>> queryL(String sql, Object...params) {
 		return query(DMConstants.LOCAL_CONN_POOL, sql, params);
+    }
+    
+    public static Object queryVL(String sql, String field, Object...params) {
+    	List<Map<String, Object>> result = queryL(sql, params);
+    	if(result.size() > 0) {
+    		return result.get(0).get(field);
+    	}
+    	return null;
     }
     
     public static List<Map<String, Object>> query(String dataSource, String sql, Object...params) {
@@ -179,6 +188,7 @@ public class SQLExcutor {
         PreparedStatement pstmt = null;
         ResultSet rs = null;
         result = new ArrayList<Map<String, Object>>();
+        this.sql = sql;
         
         String dbUrl = null, driveName;
         try {

@@ -46,6 +46,8 @@ public class SubAuthorize extends OperateInfo implements IEntity, ITreeNode, IXF
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "SubAuthorize_sequence")
 	private Long   id;   // 策略ID：策略主键ID
     
+    private Long ownerId;  // 策略所有人
+    
     @Column(nullable = false)  
 	private String name; // 名称:策略名称
 	private Date   startDate;  // 开始时间 
@@ -123,5 +125,13 @@ public class SubAuthorize extends OperateInfo implements IEntity, ITreeNode, IXF
  
 	public Serializable getPK() {
 		return this.id;
+	}
+
+	public Long getOwnerId() {
+		return ownerId;
+	}
+
+	public void setOwnerId(Long ownerId) {
+		this.ownerId = ownerId;
 	}
 }

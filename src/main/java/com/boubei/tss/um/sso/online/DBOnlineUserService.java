@@ -20,8 +20,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.boubei.tss.framework.persistence.ICommonDao;
+import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.sso.online.IOnlineUserManager;
+import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.um.entity.Group;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.URLUtil;
@@ -46,8 +48,11 @@ public class DBOnlineUserService implements IOnlineUserManager {
         	DBOnlineUser ou = new DBOnlineUser(userId, sessionId, appCode, token, userName);
         	
         	String hql = "from Group where id in (select groupId from GroupUser where userId = ?) and groupType = " + Group.MAIN_GROUP_TYPE;
-        	Group group = (Group) dao.getEntities(hql, userId).get(0);
-        	ou.setDomain(group.getDomain());
+        	List<?> groups = dao.getEntities(hql, userId);
+        	if( groups.size() > 0 ) {
+        		Group group = (Group) groups.get(0);
+            	ou.setDomain(group.getDomain());
+        	}
         	
         	dao.create(ou);
         } 
@@ -78,8 +83,13 @@ public class DBOnlineUserService implements IOnlineUserManager {
             return dao.getEntities(hql, userId, URLUtil.QQ_WX);
     	}
     	
-    	// TODO 检查域信息配置，限制用户账号个数的域限制登录
+    	// 检查域信息配置，限制用户账号个数的域限制登录
+    	Boolean multiLogin = ParamConstants.TRUE.equals( Environment.getDomainInfo("multiLogin") );
+    	if( multiLogin ) {
+    		return new ArrayList<Object>(); 
+    	}
     	
+    	// 一个账号只能登录一台电脑
     	String hql = " from DBOnlineUser o where o.userId = ? ";
         return dao.getEntities(hql, userId);
     }

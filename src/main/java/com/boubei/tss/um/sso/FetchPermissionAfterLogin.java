@@ -11,6 +11,7 @@
 package com.boubei.tss.um.sso;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -89,8 +90,8 @@ public class FetchPermissionAfterLogin implements ILoginCustomizer {
         	lastGroup = temp;
         }
         
-        if( !"noGroup".equals(lastGroup[1]) ) {
-        	Long inGroup = (Long) lastGroup[0];
+        Long inGroup = (Long) lastGroup[0];
+		if( !"noGroup".equals(lastGroup[1]) ) {
 			List<OperatorDTO> users = loginService.getUsersByGroupId(inGroup, false);
         	String list = EasyUtils.list2Str(EasyUtils.objAttr2List(users, "loginName"));
 			session.setAttribute(SSOConstants.USERS_OF_GROUP, DMUtil.insertSingleQuotes(list));
@@ -103,34 +104,43 @@ public class FetchPermissionAfterLogin implements ILoginCustomizer {
         }
         
         session.setAttribute(SSOConstants.USER_DOMAIN, domain); // 用户所属域
-        if( domain != null) { // 取出域下所有用户
+        if( domain != null ) {
+        	// 取出域下所有用户
         	List<?> users = loginService.getUsersByDomain(domain, "loginName", logonUserId);
         	session.setAttribute(SSOConstants.USERS_OF_DOMAIN, DMUtil.insertSingleQuotes(EasyUtils.list2Str(users)));
         	users = loginService.getUsersByDomain(domain, "id", logonUserId);
         	session.setAttribute(SSOConstants.USERIDS_OF_DOMAIN, EasyUtils.list2Str(users));
+        	
+        	// 读取DomainInfo表里的信息
+    		List<Map<String, Object>> x = SQLExcutor.queryL("select * from x_domain where domain = ?", Environment.getDomain());
+    		if( x.size() > 0 ) {
+				Map<String, Object> domainInfo = x.get(0);
+				for (String key : domainInfo.keySet()) {
+					List<String> ignores = Arrays.asList("domain,version,id,createtime,creator,updator,updatetime".split(","));
+					if (!ignores.contains(key)) {
+						session.setAttribute("domain_" + key, domainInfo.get(key));
+					}
+				}
+    		}
+    		
+    		// 获取用户所属域的功能模块信息
+        	String sql = "select distinct code, module from cloud_module_def s, cloud_module_user t where s.id = t.moduleid and t.domain = ? ";
+    		List<Map<String,Object>> list = SQLExcutor.queryL(sql, domain);
+
+    		List<Object> modules = new ArrayList<Object>();
+    		List<Object> moduleNames = new ArrayList<Object>();
+    		for(Map<String, Object> map : list){
+    			modules.add(map.get("code"));
+    			moduleNames.add(map.get("module"));
+    		}
+    		session.setAttribute(SSOConstants.USER_MODULE_C, modules);
+    	    session.setAttribute(SSOConstants.USER_MODULE_N, moduleNames);
         }
         
-        session.setAttribute("GROUP_LAST_ID", lastGroup[0]);
+        session.setAttribute("GROUP_LAST_ID", inGroup);
     	session.setAttribute("GROUP_LAST_NAME", lastGroup[1]);
-    	session.setAttribute(SSOConstants.USER_GROUP_ID, lastGroup[0]);
+    	session.setAttribute(SSOConstants.USER_GROUP_ID, inGroup);
     	session.setAttribute(SSOConstants.USER_GROUP, lastGroup[1]);
-
-    	// 获取用户所属域的功能模块信息
-    	List<Map<String,Object>> list;
-    	if(logonUserId == -1L){
-    		list = SQLExcutor.queryL("select * from cloud_module_def");
-    	}else{
-    		list = SQLExcutor.queryL("select distinct s.* from cloud_module_def s,cloud_module_user t where s.id = t.moduleid and t.domain = ? ", domain);
-    		//TODO 正式使用2.0版本，需对功能模块加有效期限制 sql：and t.expiredate > ?   param：DateUtil.addDays(new Date(), -1)
-    	}
-		List<Object> modules = new ArrayList<Object>();
-		List<Object> moduleNames = new ArrayList<Object>();
-		for(Map<String,Object> map : list){
-			modules.add(map.get("code"));
-			moduleNames.add(map.get("module"));
-		}
-		session.setAttribute(SSOConstants.USER_MODULE_C, modules);
-	    session.setAttribute(SSOConstants.USER_MODULE_N, moduleNames);
 	}
 
     public void execute() {

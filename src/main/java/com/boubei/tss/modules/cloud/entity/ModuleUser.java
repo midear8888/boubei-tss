@@ -8,7 +8,7 @@
  * ================================================================== 
  */
 
-package com.boubei.tss.modules.cloud;
+package com.boubei.tss.modules.cloud.entity;
 
 import java.io.Serializable;
 import java.util.Date;

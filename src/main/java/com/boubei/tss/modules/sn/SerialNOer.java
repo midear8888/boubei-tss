@@ -53,7 +53,7 @@ public class SerialNOer {
 		String precode = sntemplate.replace(_Field.SNO_yyMMddxxxx, "").replace(_Field.SNO_xxxx, "").toUpperCase();
 		
 		// 如果域扩展表(x_domain)里明确维护了订单前缀
-		precode = EasyUtils.obj2String( Environment.getDomainInfo("domain_prefix") ) + precode;
+		precode = EasyUtils.obj2String( Environment.getDomainInfo("prefix") ) + precode;
 		
 		ICommonService commonService = Global.getCommonService();
 		domain = (String) EasyUtils.checkNull(domain, UMConstants.DEFAULT_DOMAIN);

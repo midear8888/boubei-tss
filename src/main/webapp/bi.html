@@ -101,6 +101,16 @@ $(function(){
         document.title = result;
     });
 
+    var interval =setInterval(function() {  
+        $.get("/tss/si/version", {sessionId: $.Cookie.getValue("JSESSIONID")}, function(result) {
+            if(result[2] === false) {
+                clearInterval(interval);
+                $.confirm("登录已失效，请重新登录", "重新登录", function() {
+                    location.href = "login.html";
+                });
+            }
+        }, false);  
+    }, 60*1000);
 });
 
 window.onresize = resizeIFrame;

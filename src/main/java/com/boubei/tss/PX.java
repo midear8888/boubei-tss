@@ -23,6 +23,7 @@ public interface PX {
 	
 	/** 配置文件中应用编号属性名：系统获取Code值，如TSS、CMS */
 	static String APPLICATION_CODE = "application.code";
+	static String ENVIRONMENT = "environment";
 
 	/** Spring配置文件， 默认为spring.xml */
 	static String SPRING_CONTEXT_PATH = "aplication.context";

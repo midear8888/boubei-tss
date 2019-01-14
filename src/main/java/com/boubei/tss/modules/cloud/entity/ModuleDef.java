@@ -8,7 +8,7 @@
  * ================================================================== 
  */
 
-package com.boubei.tss.modules.cloud;
+package com.boubei.tss.modules.cloud.entity;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -57,20 +57,18 @@ public class ModuleDef extends ARecordTable {
 	
 	private String status; // creating|opened|closed
 	
-	private Integer seqno = 0; // 
+	private Integer seqno = 0; // 排列次序
 	
-//	private Double price1;
-//	private Double price3;  // month * 12 * 0.9
-//	private Double price6;  // month * 12 * 0.85
-//	private Double price12; // month * 12 * 0.8
-//	private Double price24; // month * 24 * 0.7
-// 	private Double price36; // month * 36 * 0.5
+	private Double price1;    // 单价（账号/月）
+	private String price_def; // 优惠定义，eg: {mouth: 1,6,12,24,36|1,0.95,0.9,0.75,0.5, accout:1,7|300,0}
 	
-	@Column(length = 2000)
-	private String description;
+	private Integer try_days = 31; // 试用天数, 如果=0，表示不支持试用
 	
-	@Column(length = 2000)
-	private String remark;
+	@Column(length = 800)
+	private String description; //模块描述
+	
+	@Column(length = 800)
+	private String remark;   // 模块备注
 	
 	public List<Long> roles() {
 		List<Long> roleIds = new ArrayList<Long>();
@@ -217,6 +215,30 @@ public class ModuleDef extends ARecordTable {
 
 	public void setSeqno(Integer seqno) {
 		this.seqno = seqno;
+	}
+
+	public Double getPrice1() {
+		return price1;
+	}
+
+	public void setPrice1(Double price1) {
+		this.price1 = price1;
+	}
+
+	public String getPrice_def() {
+		return price_def;
+	}
+
+	public void setPrice_def(String price_def) {
+		this.price_def = price_def;
+	}
+
+	public Integer getTry_days() {
+		return try_days;
+	}
+
+	public void setTry_days(Integer try_days) {
+		this.try_days = try_days;
 	}
 
 }

@@ -44,7 +44,7 @@ public class PasswordPassport {
         // 检查图形验证码，如果有的话
         String loginCheckKey = requestContext.getValue(SSOConstants.LOGIN_CHECK_KEY);
         Object lckInSession = session.getAttribute(SSOConstants.LOGIN_CHECK_KEY);
-        if(loginCheckKey !=null || lckInSession != null) {
+        if(loginCheckKey != null || lckInSession != null) {
         	if( !EasyUtils.obj2String(lckInSession).equals(loginCheckKey) ) {
         		session.removeAttribute(SSOConstants.LOGIN_CHECK_KEY); // 一次验证不成功，就要重新生成验证码(在生成图片验证码时)
         		throw new BusinessException(EX.U_01);

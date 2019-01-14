@@ -28,6 +28,7 @@ import com.boubei.tss.dm.report.Report;
 import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.sso.SSOConstants;
+import com.boubei.tss.modules.cloud.entity.ModuleDef;
 import com.boubei.tss.util.EasyUtils;
 
 @Controller

@@ -9,10 +9,13 @@
 	<entity class="com.boubei.tss.modules.log.Log"/>
 	<entity class="com.boubei.tss.modules.param.Param"/>
 	<entity class="com.boubei.tss.modules.timer.JobDef"/>
-	<entity class="com.boubei.tss.modules.cloud.ModuleDef"/>
-	<entity class="com.boubei.tss.modules.cloud.ModuleUser"/>
 	<entity class="com.boubei.tss.modules.sn.SerialNO"/>
-	<entity class="com.boubei.tss.modules.cloud.DomainInfo"/>
+	<entity class="com.boubei.tss.modules.cloud.entity.ModuleDef"/>
+	<entity class="com.boubei.tss.modules.cloud.entity.ModuleUser"/>
+	<entity class="com.boubei.tss.modules.cloud.entity.ModuleOrder"/>
+	<entity class="com.boubei.tss.modules.cloud.entity.Account"/>
+	<entity class="com.boubei.tss.modules.cloud.entity.AccountFlow"/>
+	<entity class="com.boubei.tss.modules.cloud.entity.DomainInfo"/>
  
 	<!-- um -->	
 	<entity class="com.boubei.tss.um.sso.online.DBOnlineUser"/>

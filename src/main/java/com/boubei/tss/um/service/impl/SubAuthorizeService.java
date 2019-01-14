@@ -72,11 +72,12 @@ public class SubAuthorizeService implements ISubAuthorizeService {
 	}
 
 	public List<?> getStrategyByCreator() {
-	    return roleDao.getEntities("from SubAuthorize o where o.creatorId = ?" , Environment.getUserId());
+	    return roleDao.getEntities("from SubAuthorize o where ? in (o.creatorId, -1)" , Environment.getUserId());
 	}
 
 	public void saveSubauth(SubAuthorize strategy, String userIds, String groupIds, String roleIds) {
 		if(strategy.getId() == null) {
+			strategy.setOwnerId( Environment.getUserId() );
 		    roleDao.createObject(strategy);
 		} 
 		else {

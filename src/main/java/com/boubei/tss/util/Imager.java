@@ -8,20 +8,24 @@
  * ================================================================== 
  */
 
-package com.boubei.tss.cms.helper;
+package com.boubei.tss.util;
 
 import java.awt.Image;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
 /**
  * 制作图片文件的缩略图
  */
-public class ImageProcessor {
+public class Imager {
     
     private String destFilePath;// 如果需要保存目标文件到其他目录时需要
     
@@ -39,7 +43,7 @@ public class ImageProcessor {
      *            构造函数参数 源文件（图片）的路径
      * @throws IOException
      */
-    public ImageProcessor(String filePath) throws IOException {
+    public Imager(String filePath) throws IOException {
         File _file = new File(filePath); // 读入文件
         destFilePath = _file.getParent();
         srcFile = _file.getName();
@@ -106,4 +110,30 @@ public class ImageProcessor {
         }
         return resize(w, h);
     }
+    
+    /*
+     * 图片按比率缩放
+     * size为文件大小, 单位 K
+     */
+	public static void zoomImage(String src, Integer size) throws Exception {
+		File srcFile = new File(src);
+		long fileSize = srcFile.length();
+		String subfix = FileHelper.getFileSuffix(srcFile.getName());
+		List<String> list = Arrays.asList( "jpg,jpeg,bmp,gif".split(",") ); // 这些格式支持有损压缩，png等不支持
+		
+		if (fileSize <= size * 1024 || !list.contains(subfix.toLowerCase()))  { // 文件本身已小于size（K）时，不做缩放
+			return;
+		}
+			
+		Double rate = (size * 1024.0) / fileSize; // 获取长宽缩放比例
+		rate = Math.max(rate, 0.5);
+
+		BufferedImage bufImg = ImageIO.read(srcFile);
+		Image Itemp = bufImg.getScaledInstance(bufImg.getWidth(), bufImg.getHeight(), Image.SCALE_SMOOTH);
+
+		AffineTransformOp ato = new AffineTransformOp(AffineTransform.getScaleInstance(rate, rate), null);
+		Itemp = ato.filter(bufImg, null);
+		
+		ImageIO.write((BufferedImage) Itemp, subfix, srcFile);
+	}
 }
