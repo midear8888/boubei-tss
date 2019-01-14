@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.boubei.tss.dm.DMUtil;
+import com.boubei.tss.util.EasyUtils;
 
 /**
  * 支持宏定义的查询条件类基类 
@@ -95,7 +96,7 @@ public abstract class MacrocodeQueryCondition  {
 	}
 	
 	public static String wrapLike(String val) {
-		if(val != null){
+		if(!EasyUtils.isNullOrEmpty(val)){
 			val = "%" + val.trim() + "%";           
         }
 		return val;
