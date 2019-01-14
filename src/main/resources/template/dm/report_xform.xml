@@ -2,7 +2,7 @@
 <xform>
 	<declare>	
 		<column name="id"     caption="报表ID"  mode="number" editable="false"/>
-		<column name="name"   caption="报表名称" mode="string" maxLength="8" empty="false"/>
+		<column name="name"   caption="报表名称" mode="string" maxLength="10" empty="false"/>
 		<column name="code"   caption="服务编码" mode="string" maxLength="30"/>
 		<column name="script" caption="报表脚本" mode="string" maxLength="40000"/>
 		<column name="param"  caption="报表参数" mode="string" maxLength="2000"/>

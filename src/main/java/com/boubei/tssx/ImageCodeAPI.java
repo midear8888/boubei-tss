@@ -24,7 +24,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.boubei.tss.framework.exception.BusinessException;
+import com.boubei.tss.framework.sso.SSOConstants;
 import com.boubei.tss.util.EasyUtils;
+import com.boubei.tss.util.MathUtil;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
@@ -42,6 +44,13 @@ public class ImageCodeAPI {
 	@RequestMapping(value = "/ck/{code}", method = RequestMethod.GET)
 	public void createCKCodeImg(@PathVariable("code") String code,
 			HttpServletRequest request, HttpServletResponse response) {
+		
+		// 登录验证码（4位数）
+		if( SSOConstants.RANDOM_KEY.equals(code) ||  SSOConstants.LOGIN_CHECK_KEY.equals(code)  ) {
+			String _code = String.valueOf( MathUtil.randomInt(8999) + 1000 );
+			request.getSession(true).setAttribute(code, _code);
+			code = _code;
+		}
  
 		ServletOutputStream outputStream = null;
 		int width = 62, height = 30;

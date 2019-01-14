@@ -127,6 +127,7 @@ textarea { border: 1px solid #95B8E7; margin-bottom: 2px; padding: 3px; height: 
 </div>
 <div>
     <button class="tssbutton blue medium" onclick="sendRequest();">发送请求</button>
+    <button class="tssbutton blue medium" onclick="sendRequest(true);" id="b2">查看脚本</button>
 </div>
 
 <script type="text/javascript">
@@ -167,6 +168,9 @@ textarea { border: 1px solid #95B8E7; margin-bottom: 2px; padding: 3px; height: 
     function jQueryDemo() {
         $("#request").text( request );
         $(".tssbutton").show();
+        if(url.indexOf("data/json") < 0) {
+            $("#b2").hide();
+        }
 
         $("#tabmenu li").removeClass("selected");
         $("#l1").addClass("selected");
@@ -174,8 +178,13 @@ textarea { border: 1px solid #95B8E7; margin-bottom: 2px; padding: 3px; height: 
 
     !manual && sendRequest();
 
-    function sendRequest() {
+    function sendRequest(debugSQL) {
         var js = $("#request").val();
+        if(debugSQL) {
+            js = js.replace("page:1", "page:1,debugSQL:1");
+            js = js.replace('"page":1', "page:1,debugSQL:1");
+        }
+
         eval(js);
     }
     

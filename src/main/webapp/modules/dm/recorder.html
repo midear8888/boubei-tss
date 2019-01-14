@@ -51,7 +51,7 @@
     .bt_unselected:hover { text-decoration: underline; }
 
     #page1Form .ext { margin: 10px 4px 0 2px; }
-    #pcontainer { min-height: 36px; margin-top: 5px; overflow: scroll; }
+    #pcontainer { min-height: 36px; margin-top: 5px; overflow: auto; }
     #pcontainer li { float: left; margin-right: 15px; line-height: 25px; }
 
     #lcontainer {  }
@@ -1325,8 +1325,8 @@ function delAttach() {
             <span>
                 <input type="file" name="file" id="attachFile"/>
                 附件类型: 
-                <label><input name="fileType" type="radio" value="1"/> 图片 </label> 
-                <label><input name="fileType" type="radio" value="2" checked="checked"/> 文档 </label> 
+                <label><input name="fileType" type="radio" value="1" checked="checked"/> 图片 </label> 
+                <label><input name="fileType" type="radio" value="2"/> 文档 </label> 
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 <input type="button" class="tssbutton small white" onclick="uploadAttach()" value="上传附件" />
                 <b>&nbsp;单个附件大小不宜超过2M</b>

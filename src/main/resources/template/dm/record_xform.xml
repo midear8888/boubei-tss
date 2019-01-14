@@ -2,7 +2,7 @@
 <xform>
 	<declare>	
 		<column name="id"     caption="数据表ID"  mode="number" editable="false"/>
-		<column name="name"   caption="数据表名称" maxLength="8" empty="false"/>
+		<column name="name"   caption="数据表名称" maxLength="10" empty="false"/>
 		<column name="datasource" caption="数据（源）库" mode="combo" empty="false"/>
 		<column name="table"  caption="数据库表" maxLength="100" empty="false"/>
 		<column name="define" caption="表字段定义" maxLength="10000" empty="false"/>
