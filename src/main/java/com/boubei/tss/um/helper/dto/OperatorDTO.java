@@ -15,10 +15,10 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.boubei.tss.framework.persistence.IEntity;
 import com.boubei.tss.framework.sso.Anonymous;
 import com.boubei.tss.framework.sso.IPWDOperator;
 import com.boubei.tss.um.UMConstants;
+import com.boubei.tss.um.entity.User;
 import com.boubei.tss.util.BeanUtil;
 
 /**
@@ -41,9 +41,14 @@ public class OperatorDTO implements IPWDOperator, Serializable {
     	this.loginName = loginName;
     }
     
-    public OperatorDTO(IEntity user) {
+    public OperatorDTO(User user) {
         // 共有的属性直接拷贝
-        BeanUtil.copy(this, user);
+        //BeanUtil.copy(this, user);
+        this.setId(user.getId());
+        this.setLoginName(user.getLoginName());
+        this.setUserName(user.getUserName());
+        this.setPassword(user.getPassword());
+        
 
         // 用户对象特有的其他属性全部放到DTO的map里面保存
         Map<String, Object> dtoMap = this.getAttributesMap();
