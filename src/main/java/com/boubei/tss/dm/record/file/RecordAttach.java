@@ -63,8 +63,9 @@ public class RecordAttach implements IEntity, IGridNode {
 	private String name; // 原文件名
 
 	@Column(nullable = false)
-	private String fileName; // 附件名称
-	private String fileExt;  // 文件后缀
+	private String fileName;  // 附件名称
+	private String fileExt;   // 附件后缀
+	private Long   fileSize;  // 附件大小
 
 	private Date   uploadDate; // 上传日期
 	private String uploadUser; // 上传用户
@@ -204,5 +205,13 @@ public class RecordAttach implements IEntity, IGridNode {
 
 	public void setHitCount(Integer hitCount) {
 		this.hitCount = hitCount;
+	}
+
+	public Long getFileSize() {
+		return fileSize;
+	}
+
+	public void setFileSize(Long fileSize) {
+		this.fileSize = fileSize;
 	}
 }

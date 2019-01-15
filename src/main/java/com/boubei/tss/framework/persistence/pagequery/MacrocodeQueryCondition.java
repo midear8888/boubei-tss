@@ -96,7 +96,7 @@ public abstract class MacrocodeQueryCondition  {
 	}
 	
 	public static String wrapLike(String val) {
-		if(!EasyUtils.isNullOrEmpty(val)){
+		if( !EasyUtils.isNullOrEmpty(val) ) {
 			val = "%" + val.trim() + "%";           
         }
 		return val;

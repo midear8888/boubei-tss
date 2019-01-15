@@ -50,7 +50,7 @@ public class ModuleServiceImpl implements ModuleService {
 		sa.setOwnerId( Environment.getUserId() );
 		
 		Calendar calendar = new GregorianCalendar();
-        calendar.add(Calendar.DAY_OF_YEAR, def.getTry_days());
+        calendar.add(Calendar.DAY_OF_YEAR, EasyUtils.obj2Int(def.getTry_days()));
 		sa.setEndDate(calendar.getTime());
 		commonDao.create(sa);
 		

@@ -204,19 +204,26 @@ public class _Recorder extends ProgressActionSupport {
 			wfService.fixWFStatus(_db, ex.result);
 		}
 
-		if (pointedFileds) {
+		if (pointedFileds && !ex.selectFields.contains("id") ) {
 			return ex;
+		}
+		
+		List<Long> itemIDs = new ArrayList<Long>();
+		for (Map<String, Object> item : ex.result) {
+			itemIDs.add( (Long) item.get("id") );
 		}
 		
 		Map<String, String> usersMap = loginSerivce.getUsersMap();
 
 		/* 读取记录的附件信息 */
 		Map<Object, Object> itemAttach = new HashMap<Object, Object>();
-		if (_db.needFile) {
-			String sql = "select itemId item, count(*) num from dm_record_attach where recordId = ? group by itemId";
+		if ( _db.needFile && itemIDs.size() > 0 ) {
+			String sql = "select itemId item, group_concat(id separator ',' ) ids from dm_record_attach " +
+					" where recordId = ? and itemId in (" +EasyUtils.list2Str(itemIDs)+ ") " +
+					" group by itemId";
 			List<Map<String, Object>> attachResult = SQLExcutor.queryL(sql, _db.recordId);
 			for (Map<String, Object> temp : attachResult) {
-				itemAttach.put(temp.get("item").toString(), temp.get("num"));
+				itemAttach.put(temp.get("item").toString(), temp.get("ids"));
 			}
 		}
 		for (Map<String, Object> item : ex.result) {
@@ -242,13 +249,15 @@ public class _Recorder extends ProgressActionSupport {
 				}
 			}
 
-			Object itemId = item.get("id").toString();
-			Object fileCount = itemAttach.get(itemId);
+			Object itemId  = item.get("id").toString();
+			String fileIds = (String) itemAttach.get(itemId);
+			int fileCount  = fileIds == null ? 0 : fileIds.split(",").length;
 			
 			if( isTssGrid || requestMap.containsKey("showAttach") ) {
 				String onclick = "manageAttach(" +itemId+ ", " +_db.recordId+ ")";
-				Object attachTag = EasyUtils.checkNull(fileCount, isWFQuery ? "0" : "上传");
+				Object attachTag = fileCount > 0 ? fileCount : (isWFQuery ? "0" : "上传");
 				item.put("fileNum", "<a href='javascript:void(0)' onclick='" +onclick+ "'>" + attachTag + "</a>");
+				item.put("fileIds", fileIds);
 			}
 			item.put("_fileNum", EasyUtils.obj2Int(fileCount));
 			

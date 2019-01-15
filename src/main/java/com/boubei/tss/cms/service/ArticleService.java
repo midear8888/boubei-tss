@@ -71,6 +71,7 @@ public class ArticleService implements IArticleService {
 		attachment.setType(type);
 		attachment.setFileName(FileHelper.getFileNameNoSuffix(fileName));
 		attachment.setFileExt(fileSuffix);
+		attachment.setFileSize(file.length());
 		attachment.setUrl(CMSConstants.DOWNLOAD_SERVLET_URL);
 		attachment.setArticleId(articleId);
 		

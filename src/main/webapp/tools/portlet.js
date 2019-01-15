@@ -30,6 +30,20 @@ function initUserInfo(callback) {
 	});
 }
 
+function su() {
+    $.prompt("请输入您要切换的账号", "切换账号", function(value) {
+        if ( $.isNullOrEmpty(value) ) return alert("账号不能为空");
+        $.ajax({
+            url: "/tss/si/su",
+            method: "PUT",
+            params: {"sessionId": $.Cookie.getValue("JSESSIONID"), "target": value},
+            ondata: function() { 
+                $.alert("账号切换完成，请刷新页面.");
+            }
+        });
+    }); 
+}
+
 function logout() {
 	$.ajax({
 		url : "/tss/logout.in",

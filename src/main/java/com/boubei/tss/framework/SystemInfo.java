@@ -70,10 +70,10 @@ public class SystemInfo {
 	/** 剔除在线用户 */
 	@RequestMapping(value = "/su", method = RequestMethod.PUT)
 	@ResponseBody
-	public Object su(HttpServletResponse response, String sessionId, String target) {	
+	public Object su(HttpServletResponse response, String target) {	
 		if( !Environment.isAdmin() ) return null;
 		
-		sessionId = Context.getRequestContext().getSessionId();
+		String sessionId = Context.getRequestContext().getSessionId();
 		List<?> list = commonService.getList("from DBOnlineUser where sessionId = ?", sessionId);
 		for(Object o : list) {
 			commonService.delete(DBOnlineUser.class, ((DBOnlineUser)o).getId() );

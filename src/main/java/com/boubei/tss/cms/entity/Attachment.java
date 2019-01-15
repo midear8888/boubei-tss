@@ -55,7 +55,8 @@ public class Attachment implements IEntity, IGridNode {
     
     @Column(nullable = false)
     private String fileName;	// 附件名称（上车后）  默认为时间戳
-    private String fileExt;		// 文件后缀	.gif
+    private String fileExt;		// 附件后缀	eg: gif
+    private Long   fileSize;    // 附件大小
     
     @Column(nullable = false)
     private String url;         // 值默认为 "/download?id="
@@ -213,5 +214,13 @@ public class Attachment implements IEntity, IGridNode {
 
 	public void setHitCount(Integer hitCount) {
 		this.hitCount = hitCount;
+	}
+
+	public Long getFileSize() {
+		return fileSize;
+	}
+
+	public void setFileSize(Long fileSize) {
+		this.fileSize = fileSize;
 	}
 }
