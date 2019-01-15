@@ -84,8 +84,7 @@ public class DBOnlineUserService implements IOnlineUserManager {
     	}
     	
     	// 检查域信息配置，限制用户账号个数的域限制登录
-    	Boolean multiLogin = ParamConstants.TRUE.equals( Environment.getDomainInfo("multiLogin") );
-    	if( multiLogin ) {
+    	if( ParamConstants.TRUE.equals( Environment.getDomainInfo("multilogin") ) ) {
     		return new ArrayList<Object>(); 
     	}
     	
