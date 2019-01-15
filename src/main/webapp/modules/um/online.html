@@ -22,7 +22,8 @@
 <SCRIPT type="text/javascript">
 <!--  
     /* XMLHTTP请求地址汇总 */
-    URL_USER_ONLINE   = AUTH_PATH + "user/online";
+    URL_USER_ONLINE = AUTH_PATH + "user/online";
+    URL_SI_SU     = "/tss/si/su";
 
 	if(IS_TEST) {
 		URL_USER_ONLINE = "data/message_list.xml?";
@@ -40,9 +41,20 @@
 			},
 			icon: "icon icon-x"
 		}
+		var item2 = {
+			label:"切换账号",
+			callback: function() {
+				su();
+			},
+			icon: "icon icon-sign-out",
+			visible:function() { 
+				return $.G("grid").getColumnValue("user") === '系统管理员';  ; 
+			}
+		}
 
 		var menu = new $.Menu();
 		menu.addItem(item1);
+		menu.addItem(item2);
 		$1("grid").contextmenu = menu;
 
     });
@@ -80,6 +92,21 @@
 		        }
 		    });
 	    }); 	
+	}
+
+	function su() {
+		$.prompt("请输入您要切换的账号", "切换账号", function(value) {
+            if ( $.isNullOrEmpty(value) ) return alert("账号不能为空");
+            console.log( $.Cookie.getValue("token") );
+			$.ajax({
+		        url: URL_SI_SU,
+		        method: "PUT",
+		        params: {"sessionId": $.G("grid").getColumnValue("sessionId"), "target": value},
+		        ondata: function() { 
+		            $.alert("账号切换完成，请刷新页面.");
+		        }
+		    });
+	    }); 
 	}
 	
 //-->

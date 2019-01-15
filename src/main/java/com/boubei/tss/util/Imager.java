@@ -92,24 +92,6 @@ public class Imager {
         int h = (int) (height * t);
         return resize(w, h);
     }
-
-    /**
-     * 按照最大高度限制，生成最大的等比例缩略图
-     * 
-     * @param w
-     *            int 最大宽度
-     * @param h
-     *            int 最大高度
-     * @throws IOException
-     */
-    public String resizeFix(int w, int h) throws IOException {
-        if (width / height > w / h) {
-            h = (int) (height * w / width);
-        } else {
-            w = (int) (width * h / height);
-        }
-        return resize(w, h);
-    }
     
     /*
      * 图片按比率缩放

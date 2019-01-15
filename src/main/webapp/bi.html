@@ -101,7 +101,7 @@ $(function(){
         document.title = result;
     });
 
-    var interval =setInterval(function() {  
+    var interval = setInterval(function() {  
         $.get("/tss/si/version", {sessionId: $.Cookie.getValue("JSESSIONID")}, function(result) {
             if(result[2] === false) {
                 clearInterval(interval);

@@ -46,6 +46,7 @@ import com.boubei.tss.framework.web.display.tree.TreeEncoder;
 import com.boubei.tss.framework.web.display.xform.XFormEncoder;
 import com.boubei.tss.framework.web.display.xmlhttp.XmlHttpEncoder;
 import com.boubei.tss.framework.web.mvc.BaseActionSupport;
+import com.boubei.tss.modules.api.APIService;
 import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.entity.Group;
 import com.boubei.tss.um.entity.User;
@@ -66,6 +67,7 @@ public class UserAction extends BaseActionSupport {
 	@Autowired private IUserService userService;
 	@Autowired private ILoginService loginService;
 	@Autowired private ICommonService commonService;
+	@Autowired private APIService apiService;
 
     /**
      * 获取一个User（用户）对象的明细信息、用户对用户组信息、用户对角色的信息

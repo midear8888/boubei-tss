@@ -88,6 +88,8 @@ public class WxGetPhoneNumber extends HttpServlet {
         byte[] sessionKey = Base64.decodeBase64(_sessionKey);
         byte[] iv = Base64.decodeBase64(requestMap.get("iv"));
         
+        try { Thread.sleep(1000); } catch (InterruptedException e1) { }
+        
         String phoneNumber = null;
         String result = null;
 		try {
@@ -98,7 +100,7 @@ public class WxGetPhoneNumber extends HttpServlet {
 			phoneNumber = resultMap.get("phoneNumber");
 		} 
 		catch (Exception e) {
-			log.error("获取手机号失败, requestMap = " + requestMap + ", \nresult = " + result, e);
+			log.error("获取手机号失败, requestMap = " + requestMap + ", \nresult = " + result + ", \nsessionKey = " + _sessionKey, e);
 			response.getWriter().println( WXUtil.returnCode(402, e.getMessage()) );
 		}
 		

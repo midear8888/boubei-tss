@@ -16,7 +16,11 @@ import java.lang.management.ThreadMXBean;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Date;
+import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,7 +29,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.DMUtil;
+import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.framework.sso.context.Context;
+import com.boubei.tss.modules.api.APIService;
+import com.boubei.tss.modules.param.ParamConstants;
+import com.boubei.tss.um.sso.online.DBOnlineUser;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.MacrocodeCompiler;
@@ -33,6 +42,9 @@ import com.boubei.tss.util.MacrocodeCompiler;
 @Controller
 @RequestMapping("/si")
 public class SystemInfo {
+	
+	@Autowired private ICommonService commonService;
+	@Autowired private APIService apiService;
 	
 	@RequestMapping(value = "/version", method = RequestMethod.GET)
 	@ResponseBody
@@ -55,6 +67,22 @@ public class SystemInfo {
 		return new Object[] { result };
 	}
 	
+	/** 剔除在线用户 */
+	@RequestMapping(value = "/su", method = RequestMethod.PUT)
+	@ResponseBody
+	public Object su(HttpServletResponse response, String sessionId, String target) {	
+		if( !Environment.isAdmin() ) return null;
+		
+		sessionId = Context.getRequestContext().getSessionId();
+		List<?> list = commonService.getList("from DBOnlineUser where sessionId = ?", sessionId);
+		for(Object o : list) {
+			commonService.delete(DBOnlineUser.class, ((DBOnlineUser)o).getId() );
+		}
+		
+		Context.sessionMap.get(sessionId).setAttribute("domain_multiLogin", ParamConstants.TRUE);
+		String token = apiService.mockLogin(target);
+		return token;
+	}
 	
 	@RequestMapping(value = "/test", method = RequestMethod.GET)
 	@ResponseBody
