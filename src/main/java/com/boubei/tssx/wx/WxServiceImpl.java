@@ -162,7 +162,8 @@ public class WxServiceImpl implements WxService {
 			data.put(in, keyvalue);
 		}
 		
-		Map<String, Object> mp = new ObjectMapper().readValue( requestMap.get("miniprogram"), Map.class); 
+		String miniprogram_ = (String) EasyUtils.checkNull(requestMap.get("miniprogram"), "{}");
+		Map<String, Object> mp = new ObjectMapper().readValue( miniprogram_, Map.class); 
 		JSONObject miniprogram = new JSONObject();
 		
 		for (String in : mp.keySet()) {
