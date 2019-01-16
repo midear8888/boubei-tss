@@ -218,7 +218,7 @@ public class _Recorder extends ProgressActionSupport {
 		/* 读取记录的附件信息 */
 		Map<Object, Object> itemAttach = new HashMap<Object, Object>();
 		if ( _db.needFile && itemIDs.size() > 0 ) {
-			String sql = "select itemId item, group_concat(id separator ',' ) ids from dm_record_attach " +
+			String sql = "select itemId item, group_concat(id ORDER BY id ASC) ids from dm_record_attach " +
 					" where recordId = ? and itemId in (" +EasyUtils.list2Str(itemIDs)+ ") " +
 					" group by itemId";
 			List<Map<String, Object>> attachResult = SQLExcutor.queryL(sql, _db.recordId);

@@ -91,7 +91,7 @@ public class Filter0Security implements Filter {
         	}
         	
         	if( !flag ){
-        		rep.sendRedirect(THE_404_URL);
+        		_404(rep, servletPath);
             	return;
         	}
         }      
@@ -116,13 +116,13 @@ public class Filter0Security implements Filter {
         
         if ( !checkPermission(userRights, servletPath) ) {
             log.debug("checking permission failed");
-            rep.sendRedirect(THE_404_URL);
+            _404(rep, servletPath);
             return;
         }
         
         /* 4、密码强度及有效期检测，安全等级 >= 4 */ 
         if( SecurityUtil.isSafeMode()
-        		&& servletPath.indexOf(".htm") >= 0 
+        		&& servletPath.indexOf(".htm") > 0 
         		&& servletPath.indexOf("_password.htm") < 0) {
         	
         	ILoginService loginService = (ILoginService) Global.getBean("LoginService");
@@ -138,6 +138,15 @@ public class Filter0Security implements Filter {
         // 权限检测通过
         chain.doFilter(request, response);
     }
+
+	protected void _404(HttpServletResponse rep, String servletPath) throws IOException {
+		if( servletPath.indexOf(".htm") > 0 ) {
+			rep.sendRedirect(THE_404_URL);
+		} else {
+			rep.setContentType("application/json;charset=UTF-8");
+			rep.getWriter().println("{\"code\": \"TSS-404\", \"errorMsg\": \"资源不存在或限制访问\"}");
+		}
+	}
  
     /**
      * 登陆即可访问: 除掉匿名角色，还必须有其它角色
@@ -163,12 +172,13 @@ public class Filter0Security implements Filter {
     	}
     	
     	// 3、安全级别 >= 3, 限制对所有 htm、html、restful（部分除外）的访问
-		if( servletPath.indexOf(".htm") >= 0 ) {
+		if( servletPath.indexOf(".htm") > 0 ) {
     		return true;
     	}
 		else if( servletPath.indexOf(".") < 0 ) { // 无后缀，一般restful地址 或 /download
-    		boolean apiCall = request.getParameter("uName") != null;
-			if(servletPath.indexOf("/data/export/") >= 0 || apiCall) {  // 跨机器数据导出请求 & 【接口】调用，放行
+    		boolean apiCall = request.getParameter("uName") != null && servletPath.indexOf("/api/") >= 0; // apicall 在Filter8里检测
+			boolean expCall = request.getHeader("referer")  != null && servletPath.indexOf("/data/export/") >= 0; // 跨机器数据导出请求 & 【接口】调用，放行
+			if( expCall || apiCall ) {  
     			return false; 
     		}
     		

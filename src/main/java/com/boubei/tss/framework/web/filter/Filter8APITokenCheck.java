@@ -30,7 +30,7 @@ import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.InfoEncoder;
 
 /** 
- * 对外发布接口，调用时令牌检测。
+ * 对外发布接口，调用时令牌检测。(注：地址里必须含 /api/ )
  * 
  * API接口旨在规范TSS开放平台与第三方接入平台的交互方式、交互原则、接口定义。
  * 每个接入方都有唯一的账号和对应的秘钥，这是双方交互过程中唯一的识别依据。

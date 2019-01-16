@@ -67,8 +67,8 @@ public class CheckEmail extends HttpServlet {
             	// 产生一个登录随机数，发到用户的邮箱里
                 int randomKey = MathUtil.randomInt6();
     			request.getSession(true).setAttribute(SSOConstants.RANDOM_KEY, randomKey);
-            	String info = "凭此随机数修改您的密码，打死不要告诉其它人。随机数 = " + randomKey;
-            	MailUtil.sendHTML("reset password", info, new String[] { email }, MailUtil.DEFAULT_MS);
+            	String info = "凭此随机数修改您的密码，打死不要告诉其它人，随机数：" + randomKey;
+            	MailUtil.sendHTML("验证码确认", info, new String[] { email }, MailUtil.DEFAULT_MS);
             	
             	SuccessMessageEncoder encoder = new SuccessMessageEncoder("请速去您的邮箱查取修改密码的验证码。");
                 encoder.print(new XmlPrintWriter(response.getWriter()));

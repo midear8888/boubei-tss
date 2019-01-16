@@ -83,9 +83,10 @@ public class DBOnlineUserService implements IOnlineUserManager {
             return dao.getEntities(hql, userId, URLUtil.QQ_WX);
     	}
     	
-    	// 检查域信息配置，限制用户账号个数的域限制登录
+    	// 检查域信息配置，判断当前用户所在域是否支持一个账号多地同时登陆
     	if( ParamConstants.TRUE.equals( Environment.getDomainInfo("multilogin") ) ) {
-    		return new ArrayList<Object>(); 
+    		String hql = " from DBOnlineUser o where o.userId = ? and o.origin = ? and clientIp = ? ";
+            return dao.getEntities(hql, userId, Environment.getOrigin(), Environment.getClientIp());
     	}
     	
     	// 一个账号只能登录一台电脑

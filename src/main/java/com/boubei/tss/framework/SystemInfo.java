@@ -18,8 +18,6 @@ import java.security.SecureRandom;
 import java.util.Date;
 import java.util.List;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -70,7 +68,7 @@ public class SystemInfo {
 	/** 剔除在线用户 */
 	@RequestMapping(value = "/su", method = RequestMethod.PUT)
 	@ResponseBody
-	public Object su(HttpServletResponse response, String target) {	
+	public Object su(String target) {	
 		if( !Environment.isAdmin() ) return null;
 		
 		String sessionId = Context.getRequestContext().getSessionId();

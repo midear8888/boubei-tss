@@ -265,6 +265,11 @@ function _search() {
 function showSearchDialog() {
 	$('#dlg').dialog( {"modal": true} ).dialog('open').dialog('setTitle', "内容|功能|目录检索");
 }
+
+var global_userlist;
+$.getJSON("/tss/wx/api/users", {}, function(result) {
+    global_userlist = result;
+});
     </script>
 
 </head>

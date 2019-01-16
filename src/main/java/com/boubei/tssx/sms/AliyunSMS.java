@@ -156,7 +156,10 @@ public class AliyunSMS {
     	int randomKey = MathUtil.randomInt(899999) + 100000;
     	String tlCode = getConfig("sms_verify", "SMS_133270155");
 		String tlParam = "{\"code\":\"" +randomKey+ "\"}";
-		return send(phone, tlCode, tlParam, randomKey);
+		
+		SendSmsResponse ssr = send(phone, tlCode, tlParam, randomKey);
+		ssr.setMessage( String.valueOf(randomKey) );
+		return ssr;
     }
     
     public boolean checkCode(String mobile, Object code) {

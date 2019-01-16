@@ -28,8 +28,7 @@ public class OperatorDTO implements IPWDOperator, Serializable {
  
     private static final long serialVersionUID = 4239235668043689655L;
     
-    public final static OperatorDTO ADMIN = 
-    		new OperatorDTO(UMConstants.ADMIN_USER_ID, UMConstants.ADMIN_USER_NAME);
+    public final static OperatorDTO ADMIN = new OperatorDTO(UMConstants.ADMIN_USER_ID, UMConstants.ADMIN_USER);
 
     private Long id;          // 用户ID 
     private String loginName; // 用户名: 即用户登陆系统的帐号
@@ -37,18 +36,15 @@ public class OperatorDTO implements IPWDOperator, Serializable {
     private String password;  // 密码
     
     public OperatorDTO(Long userId, String loginName) {
-    	this.id = userId;
-    	this.loginName = loginName;
+    	this.setId(userId);
+    	this.setLoginName(loginName);
     }
     
     public OperatorDTO(User user) {
         // 共有的属性直接拷贝
-        //BeanUtil.copy(this, user);
-        this.setId(user.getId());
-        this.setLoginName(user.getLoginName());
+        this(user.getId(), user.getLoginName());
         this.setUserName(user.getUserName());
         this.setPassword(user.getPassword());
-        
 
         // 用户对象特有的其他属性全部放到DTO的map里面保存
         Map<String, Object> dtoMap = this.getAttributesMap();

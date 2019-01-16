@@ -171,7 +171,7 @@ public class EX {
 	public static String U_42 = "【${x1}】没有设置密码保护问题，请用其它方法重置密码";
 	public static String U_43 = "邮箱信息有误或者您没有设置邮箱信息，无法通过邮箱重置密码";
 	public static String U_44 = "密码保护问题或答案不正确";
-	public static String U_45 = "修改密码失败";
+	public static String U_45 = "验证码校验失败，请输入正确的验证码";
 	public static String U_46 = "系统不支持自注册，可联系管理员添加账号";
 	public static String U_47 = "系统不支持开发者自注册，可联系管理员添加账号";
 	public static String U_48 = "权限不足";

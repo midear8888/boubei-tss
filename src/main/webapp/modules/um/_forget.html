@@ -119,7 +119,15 @@
     }
 
     window.onload = function() {
-        $(".modal").height(400);
+        $(".modal").height(410);
+    }
+
+    $.alert = function(msg) {
+        $.tssTip(msg);
+        
+        setTimeout(function(){
+            $("#tssTip").hide();
+        }, 3000);
     }
 
 //-->
@@ -166,7 +174,6 @@
                 <label>输入验证码：</label><input id="ckcode" style="width: 90px"/>
                 <span class=" required">*</span>
                 <br>
-                <br>
             </div>
 
             <div id="d4">
@@ -177,7 +184,6 @@
                 <br>
                 <label>输入验证码：</label><input id="sms_ckcode" style="width: 90px"/>
                 <span class=" required">*</span>
-                <br>
                 <br>
             </div>
 

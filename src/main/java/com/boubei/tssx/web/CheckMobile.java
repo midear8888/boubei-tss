@@ -66,7 +66,7 @@ public class CheckMobile extends HttpServlet {
             else {
             	// 产生一个登录随机数，发到用户的手机短信
             	SendSmsResponse ssr = AliyunSMS.instance().sendRandomNum( mobile );
-                int randomKey = EasyUtils.obj2Int(ssr.getCode());
+                int randomKey = EasyUtils.obj2Int(ssr.getMessage());
                 
     			request.getSession(true).setAttribute(SSOConstants.RANDOM_KEY, randomKey);
             	

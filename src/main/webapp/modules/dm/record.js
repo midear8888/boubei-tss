@@ -653,13 +653,18 @@ function editFieldConfig() {
 				delete valuesMap[field];
 			}
 			else {
+				newValue = newValue.trim();  // code、正则等配置头尾不能有空格
+				
 				if(field === 'label') {
 					newValue = newValue.replace(/\&|\|/g, ""); // 过滤名称里的特殊字符:|、&
 				}
 				if(field === 'code') {
 					newValue = newValue.toLowerCase(); // code 默认为小写
+					// 且只能为英文字母、数字、下划线
+					if( !/^[a-zA-Z][a-zA-Z0-9_]*$/.test(newValue) ) {
+						return $(fieldEl).notice("不能含有字母、数字、下划线以外的字符");
+					}
 				}
-				newValue = newValue.trim();  // code、正则等配置头尾不能有空格
 				valuesMap[field] = newValue;   
 			}			
 

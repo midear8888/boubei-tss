@@ -17,8 +17,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 
-import org.apache.log4j.Logger;
-
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.Global;
@@ -44,8 +42,6 @@ public class FetchPermissionAfterLogin implements ILoginCustomizer {
     ILoginService loginService = (ILoginService) Global.getBean("LoginService");
     ICommonService commonService = Global.getCommonService();
     IBusinessLogger businessLogger = ((IBusinessLogger) Global.getBean("BusinessLogger"));
-    
-    protected Logger log = Logger.getLogger(this.getClass());
     
     /**
      * 加载用户的角色权限信息（用户登录后，角色设置有变化，可单独执行本方法刷新）
@@ -150,15 +146,8 @@ public class FetchPermissionAfterLogin implements ILoginCustomizer {
     public void execute() {
         Long logonUserId = Environment.getUserId();
         
-        log.info("FetchPermissionAfterLogin start...");
-        
         HttpSession session = loadRights(logonUserId);
-        
-        log.info("FetchPermissionAfterLogin loadRights end....");
-        
         loadGroups(logonUserId, session);
-        
-        log.info("FetchPermissionAfterLogin loadGroups end....");
     	
     	// 记录登陆成功的日志信息
     	Object loginMsg = session.getAttribute("LOGIN_MSG");

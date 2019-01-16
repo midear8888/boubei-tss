@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -191,12 +192,14 @@ public abstract class _Database {
 		
 		try {  
    			List<Map<Object, Object>> list = new ObjectMapper().readValue(define, List.class);  
+   			Pattern pattern = Pattern.compile("^[a-zA-Z][a-zA-Z0-9_]*$"); // code：字母、数字、下划线
    			for(int i = 0; i < list.size(); i++) {
    	        	Map<Object, Object> fDefs = list.get(i);
    	        	int index = i + 1;
    	        	
    				String code = (String) fDefs.get("code");
-   				code = (EasyUtils.isNullOrEmpty(code) ? _Field.COLUMN + index : code).toLowerCase().trim();
+   				boolean codeVaild = !EasyUtils.isNullOrEmpty(code) && pattern.matcher(code).matches();
+   				code = (codeVaild ? code : _Field.COLUMN + index).toLowerCase().trim();
    				fDefs.put("code", code);
    				
    				String label = (String) fDefs.get("label");

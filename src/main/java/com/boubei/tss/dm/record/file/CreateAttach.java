@@ -91,6 +91,7 @@ public class CreateAttach implements AfterUpload {
 		
         String attachDir = RecordAttach.getAttachDir(recordId, itemId);
         File rootDir = new File(attachDir);
+        long fileSize = file.length();
         
         // 将附件从上传临时目录剪切到站点指定的附件目录里
         String fileName = FileHelper.copyFile(rootDir, file); 
@@ -108,7 +109,7 @@ public class CreateAttach implements AfterUpload {
 		attach.setUploadUser(Environment.getUserName());
         attach.setFileName(fileName);
         attach.setFileExt(fileSuffix.toLowerCase());
-        attach.setFileSize(file.length());
+        attach.setFileSize( fileSize );
 		
         recordService.createAttach(attach);
 
