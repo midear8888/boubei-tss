@@ -132,7 +132,7 @@ public abstract class AbstractTest4TSS extends AbstractTransactionalJUnit4Spring
     	}
     	
     	// 初始化虚拟登录用户信息
-        login(UMConstants.ADMIN_USER_ID, UMConstants.ADMIN_USER_NAME);
+        login(UMConstants.ADMIN_USER_ID, UMConstants.ADMIN_USER);
         
         /* 初始化应用系统、资源、权限项 */
         Document doc = XMLDocUtil.createDocByAbsolutePath(_TestUtil.getSQLDir() + "/tss-resource-config.xml");
