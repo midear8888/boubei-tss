@@ -140,7 +140,7 @@ public abstract class PaginationQuery {
     protected Integer getTotalRows(String ql, Map<String, Object> properties)  {
     	// 生成对应的总记录数统计QL语句
     	int fromIndex = ql.toLowerCase().indexOf("from ");
-    	int toIndex = ql.toLowerCase().indexOf(" order by ");
+    	int toIndex = ql.toLowerCase().lastIndexOf(" order by ");
     	if(toIndex <= 0) {
     	    toIndex = ql.length();
     	}
