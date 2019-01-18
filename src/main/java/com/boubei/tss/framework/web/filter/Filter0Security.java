@@ -156,7 +156,7 @@ public class Filter0Security implements Filter {
     	return userRights.size() > 0;
 	}
     
-    private boolean isNeedPermission(String servletPath, HttpServletRequest request) {
+    private boolean isNeedPermission(String servletPath, HttpServletRequest req) {
     	// 1、安全级别 < 4, 全部放行
     	if( !SecurityUtil.isSafeMode() || EasyUtils.isNullOrEmpty(servletPath) ) {
     		return false;
@@ -176,13 +176,16 @@ public class Filter0Security implements Filter {
     		return true;
     	}
 		else if( servletPath.indexOf(".") < 0 ) { // 无后缀，一般restful地址 或 /download
-    		boolean apiCall = request.getParameter("uName") != null && (servletPath.indexOf("/api/") >= 0  || servletPath.indexOf("/remote/") >= 0); // apicall 在Filter8里检测
-			boolean expCall = request.getHeader("referer")  != null && servletPath.indexOf("/data/export/") >= 0; // 跨机器数据导出请求 & 【接口】调用，放行
+			/* 
+			 * 地址带/api/的apicall 在Filter8里检测,其它自定义的接口远程调用时需自己控制访问许可检测（eg: Servlet4Upload /remote/upload 和 xdata及data） 
+			 */
+    		boolean apiCall = req.getParameter("uName") != null && (req.getParameter("uToken") != null  || req.getParameter("uSign") != null); 
+			boolean expCall = req.getHeader("referer")  != null && servletPath.indexOf("/data/export/") >= 0; // 跨机器数据导出请求 & 【接口】调用，放行
 			if( expCall || apiCall ) {  
     			return false; 
     		}
     		
-    		String requestType = request.getHeader(RequestContext.REQUEST_TYPE);
+    		String requestType = req.getHeader(RequestContext.REQUEST_TYPE);
 			if( servletPath.indexOf("/data/json/") >= 0 
 					&& RequestContext.XMLHTTP_REQUEST.equals(requestType) ) {
 				

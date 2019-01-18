@@ -136,7 +136,6 @@
 	    <url-pattern>/wx/api/*</url-pattern>
 	    <url-pattern>/img/api/*</url-pattern>
 	    <url-pattern>/api/*</url-pattern>
-	    <url-pattern>/remote/*</url-pattern>
 	</filter-mapping>
 
 	
