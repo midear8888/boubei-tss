@@ -85,7 +85,7 @@ public abstract class PaginationQuery {
         // 获取当前页数据记录集
         int firstResult = page.getFirstResult();
         if (firstResult >= 0) {
-            Query query = createQuery(queryQl);
+            Query query = createQuery(queryQl.replace("order by 1", ""));
             query.setFirstResult(firstResult);
             query.setMaxResults(page.getPageSize());
             
