@@ -42,7 +42,7 @@ public class ModuleOrder extends ARecordTable {
 	
 	private Integer month_num;
 	
-	private Date 	order_date;
+	private Date 	order_date = new Date();
 	private Date 	pay_date;
 	
 	private String  status = NEW; // 新建、取消、已付款
