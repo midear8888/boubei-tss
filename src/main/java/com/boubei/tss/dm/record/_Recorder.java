@@ -234,6 +234,7 @@ public class _Recorder extends ProgressActionSupport {
 				if (isFileField) {
 					String[] values = EasyUtils.obj2String(item.get(field)).split(",");
 					String urls = "";
+					List<String> ids = new ArrayList<>();
 					for (String value : values) {
 						int splitIndex = value.indexOf("#");
 						if (splitIndex < 0)
@@ -243,9 +244,11 @@ public class _Recorder extends ProgressActionSupport {
 						String id = value.substring(splitIndex + 1);
 						String downloadUrl = "/tss/xdata/attach/download/" + id;
 						urls += "<a href='" + downloadUrl + "' target='_blank'>" + name + "</a>&nbsp&nbsp";
+						ids.add(id);
 					}
 
 					item.put(field, urls);
+					item.put(field + "_ids", EasyUtils.list2Str(ids));
 				}
 			}
 

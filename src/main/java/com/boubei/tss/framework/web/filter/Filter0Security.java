@@ -176,7 +176,7 @@ public class Filter0Security implements Filter {
     		return true;
     	}
 		else if( servletPath.indexOf(".") < 0 ) { // 无后缀，一般restful地址 或 /download
-    		boolean apiCall = request.getParameter("uName") != null && servletPath.indexOf("/api/") >= 0; // apicall 在Filter8里检测
+    		boolean apiCall = request.getParameter("uName") != null && servletPath.indexOf("/api/") >= 0  && servletPath.indexOf("/remote/") >= 0; // apicall 在Filter8里检测
 			boolean expCall = request.getHeader("referer")  != null && servletPath.indexOf("/data/export/") >= 0; // 跨机器数据导出请求 & 【接口】调用，放行
 			if( expCall || apiCall ) {  
     			return false; 

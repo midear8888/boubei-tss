@@ -109,7 +109,7 @@ public class CreateAttach implements AfterUpload {
 		attach.setUploadUser(Environment.getUserName());
         attach.setFileName(fileName);
         attach.setFileExt(fileSuffix.toLowerCase());
-        attach.setFileSize( fileSize );
+        attach.setFileSize( fileSize / 1024 );
 		
         recordService.createAttach(attach);
 

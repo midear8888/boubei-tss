@@ -56,6 +56,7 @@ public class ArticleService implements IArticleService {
         Channel site = channelDao.getEntity(channelId).getSite();
         String siteRootPath =  ArticleHelper.getAttachmentPath(site, type);
         File siteRootDir = new File(siteRootPath);
+        long fileSize = file.length();
         
         // 将附件从上传临时目录剪切到站点指定的附件目录里
         String fileName = FileHelper.copyFile(siteRootDir, file); 
@@ -71,7 +72,7 @@ public class ArticleService implements IArticleService {
 		attachment.setType(type);
 		attachment.setFileName(FileHelper.getFileNameNoSuffix(fileName));
 		attachment.setFileExt(fileSuffix);
-		attachment.setFileSize(file.length());
+		attachment.setFileSize( fileSize / 1024 );
 		attachment.setUrl(CMSConstants.DOWNLOAD_SERVLET_URL);
 		attachment.setArticleId(articleId);
 		
