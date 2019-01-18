@@ -6,8 +6,6 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -19,14 +17,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.boubei.tss.framework.persistence.ICommonDao;
-import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.dao.IGroupDao;
 import com.boubei.tss.um.dao.IUserDao;
 import com.boubei.tss.um.entity.Group;
 import com.boubei.tss.um.entity.GroupUser;
-import com.boubei.tss.um.entity.RoleUser;
 import com.boubei.tss.um.entity.User;
-import com.boubei.tss.um.service.IGroupService;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tssx.wx.gzh.WxGZHBindPhone;
 
@@ -37,7 +32,6 @@ public class WxServiceImpl implements WxService {
 	
 	@Autowired IUserDao userDao;
 	@Autowired IGroupDao groupDao;
-	@Autowired IGroupService groupService;
 	@Autowired ICommonDao commonDao;
 
 	public User getUserByAuthToken(String authToken) {
@@ -88,21 +82,6 @@ public class WxServiceImpl implements WxService {
         
         return WXUtil.returnCode(100);  // register user success;
 	}
-	
-	public String regWxBusiness(User user, String domain) {
-		Group domainGroup = groupService.createDomainGroup(domain);
-    	user.setGroupId(domainGroup.getId());
-    	
-		this.regWxUser(user, domain, domainGroup.getId().toString());
-		
-        // 商家默认授予“域管理员”角色
- 		RoleUser ru = new RoleUser();
- 		ru.setRoleId(UMConstants.DOMAIN_ROLE_ID);
- 		ru.setUserId(user.getId());
- 		userDao.createObject(ru);
- 		
- 		return WXUtil.returnCode(100); // register business user success;
-	}
 
 	public void bindOpenID(User user, String openID) {
 		user.setAuthToken(openID);
@@ -135,10 +114,9 @@ public class WxServiceImpl implements WxService {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public String sendWxGZHMsg(Map<String, String> requestMap, HttpServletResponse response) throws IOException {
-		response.setContentType("text/plain;charset=UTF-8");
-		String accessToken = null;
+	public String sendWxGZHMsg(Map<String, String> requestMap) throws IOException {
 		
+		String accessToken = null;
 		try {
 			accessToken = new WXUtil().getToken( requestMap.get("appid"));
     	} catch (Exception e) {
@@ -173,7 +151,8 @@ public class WxServiceImpl implements WxService {
 		
 		String mobile = requestMap.get("phone");
 		String appid = requestMap.get("appid");
-		List<WxGZHBindPhone> bindPhones = (List<WxGZHBindPhone>) commonDao.getEntities("from WxGZHBindPhone where mobile = '" + mobile + "' and appid = '" + appid + "'");
+		String hql = "from WxGZHBindPhone where mobile = '" + mobile + "' and appid = '" + appid + "'";
+		List<WxGZHBindPhone> bindPhones = (List<WxGZHBindPhone>) commonDao.getEntities(hql);
 		
 		JSONObject json = new JSONObject();
 		if(bindPhones.size() == 0) {

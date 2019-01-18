@@ -3,8 +3,6 @@ package com.boubei.tssx.wx;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletResponse;
-
 import com.boubei.tss.um.entity.User;
 
 public interface WxService {
@@ -14,8 +12,6 @@ public interface WxService {
 	User checkPhoneNum(String phoneNum);
 
 	String regWxUser(User user, String domain, String groupName);
-	
-	String regWxBusiness(User user, String domain);
 
 	/**
 	 * 绑定微信openId到同手机号用户
@@ -77,6 +73,6 @@ public interface WxService {
 	    })
 	 * @throws IOException 
      */
-	String sendWxGZHMsg(Map<String, String> requestMap, HttpServletResponse response) throws IOException;
+	String sendWxGZHMsg(Map<String, String> requestMap) throws IOException;
 
 }
