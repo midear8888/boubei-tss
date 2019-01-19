@@ -59,7 +59,7 @@ public class ModuleDef extends ARecordTable {
 	
 	private Integer seqno = 0; // 排列次序
 	
-	private Double price1;    // 单价（账号/月）
+	private Double price;    // 单价（账号/月）
 	private String price_def; // 优惠定义，eg: {mouth: 1,6,12,24,36|1,0.95,0.9,0.75,0.5, accout:1,7|300,0}
 	
 	private Integer try_days = 31; // 试用天数, 如果=0，表示不支持试用
@@ -217,12 +217,12 @@ public class ModuleDef extends ARecordTable {
 		this.seqno = seqno;
 	}
 
-	public Double getPrice1() {
-		return price1;
+	public Double getPrice() {
+		return price;
 	}
 
-	public void setPrice1(Double price1) {
-		this.price1 = price1;
+	public void setPrice(Double price) {
+		this.price = price;
 	}
 
 	public String getPrice_def() {

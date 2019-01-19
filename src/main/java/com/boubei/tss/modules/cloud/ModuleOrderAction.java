@@ -50,8 +50,8 @@ public class ModuleOrderAction {
 
 	private void calMoney(ModuleOrder mo) {
 		ModuleDef md = (ModuleDef) commonService.getEntity(ModuleDef.class, mo.getModule_id());
-		mo.setPrice( md.getPrice1() );
-		mo.setMoney_cal( md.getPrice1() * mo.getMonth_num() ); 
+		mo.setPrice( md.getPrice() );
+		mo.setMoney_cal( md.getPrice() * mo.getMonth_num() ); 
 		// 价格以后台计算为准，防止篡改  （同时检查前后台的报价是否一致）  TODO 折扣优惠，创建一个计算价格的接口
 	}
 	

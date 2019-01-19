@@ -72,7 +72,7 @@ public class GroupService implements IGroupService {
         String hql = "select o from ModuleDef o, ModuleUser mu where mu.moduleId = o.id and mu.userId = ? and o.status in ('opened') ";
         List<ModuleDef> modules = (List<ModuleDef>) roleDao.getEntities(hql, Environment.getUserId());
         for(ModuleDef module : modules ) {
-        	Double price = EasyUtils.obj2Double(module.getPrice1());
+        	Double price = EasyUtils.obj2Double(module.getPrice());
 			if( price > 0 ) continue;
         	
         	String[] roles = module.getRoles().split(",");
