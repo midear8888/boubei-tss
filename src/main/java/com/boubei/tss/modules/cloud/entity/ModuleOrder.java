@@ -38,7 +38,7 @@ public class ModuleOrder extends ARecordTable {
 	@Column(nullable = false)
 	private Long module_id;
 	
-	private Integer acount_num;
+	private Integer account_num;
 	
 	private Integer month_num;
 	
@@ -73,12 +73,12 @@ public class ModuleOrder extends ARecordTable {
 		this.module_id = module_id;
 	}
 
-	public Integer getAcount_num() {
-		return acount_num;
+	public Integer getAccount_num() {
+		return account_num;
 	}
 
-	public void setAcount_num(Integer acount_num) {
-		this.acount_num = acount_num;
+	public void setAccount_num(Integer account_num) {
+		this.account_num = account_num;
 	}
 
 	public Integer getMonth_num() {

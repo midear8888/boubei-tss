@@ -85,7 +85,7 @@ public class ModuleOrderAction {
 		mo.setPay_date( new Date() );
 		mo.setStatus(ModuleOrder.PAYED);
 		
-		int account_num = mo.getAcount_num();
+		int account_num = mo.getAccount_num();
 		int mouth_num = mo.getMonth_num();
 		for(int i = 0; i < account_num; i++) {
 			SubAuthorize sa = new SubAuthorize();
@@ -110,13 +110,15 @@ public class ModuleOrderAction {
 			commonService.create(mu);
 		}
 		
+		commonService.update(mo);
+		
 		return "Success";
 	}
 	
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
 	@ResponseBody
 	public List<?> listOrders() {
-		String hql = "from ModuleOrder where creator = ?";
+		String hql = "from ModuleOrder where creator = ? order by id desc";
 		return commonService.getList(hql, Environment.getUserCode());
 	}
 }
