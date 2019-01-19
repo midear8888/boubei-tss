@@ -19,6 +19,7 @@ import com.alipay.api.request.AlipayTradeQueryRequest;
 import com.alipay.api.response.AlipayTradeQueryResponse;
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.framework.exception.BusinessException;
+import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
 
 @Controller
@@ -69,6 +70,7 @@ public class AlipayAPI {
 	public void query(HttpServletRequest request, HttpServletResponse response) throws AlipayApiException, IOException {
 		
         Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
+        String iAfterPayBean = requestMap.get("afterPaySuccess");
 		AlipayConfig alipay = new AlipayConfig( requestMap.remove("appid") );
 		
 		AlipayClient aClient = new DefaultAlipayClient(alipay.getUrl(), alipay.appid, alipay.getPrivateKey(),
@@ -89,7 +91,12 @@ public class AlipayAPI {
 			Map<Object, Object> trade_map = (Map<Object, Object>) map.get("alipay_trade_query_response");
 			
 			if("10000".equals(trade_map.get("code")) && "TRADE_SUCCESS".equals(trade_map.get("trade_status"))){
+				if(!EasyUtils.isNullOrEmpty(iAfterPayBean)){
+					IAfterPay iAfterPay = (IAfterPay) BeanUtil.newInstanceByName(iAfterPayBean);
+					iAfterPay.handle(trade_map);
+				}
 				response.getWriter().println("{\"code\": \"success\", \"data\": \"支付成功\"}");
+				
 			}
 			else{
 				response.getWriter().println("{\"code\": \"fail\", \"errorMsg\": \"" + trade_map.get("msg") + "\"}");

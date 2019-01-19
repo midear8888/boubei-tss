@@ -17,12 +17,14 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import com.boubei.tss.EX;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.ICommonDao;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.modules.cloud.entity.ModuleDef;
+import com.boubei.tss.modules.cloud.entity.ModuleOrder;
 import com.boubei.tss.modules.cloud.entity.ModuleUser;
 import com.boubei.tss.um.entity.RoleUser;
 import com.boubei.tss.um.entity.SubAuthorize;
@@ -116,5 +118,43 @@ public class ModuleServiceImpl implements ModuleService {
 	public List<?> listAvaliableModules() {
 		String hql = "select o from ModuleDef o where o.status in ('opened') order by o.seqno asc, o.id desc ";
 		return commonDao.getEntities(hql);
+	}
+	
+	public Object payOrder(@PathVariable Long id) {
+		Long userId = Environment.getUserId();
+		ModuleOrder mo = (ModuleOrder) commonDao.getEntity(ModuleOrder.class, id);
+		if( ModuleOrder.PAYED.equals(mo.getStatus()) ){
+			throw new BusinessException("订单已支付");
+		}
+		mo.setPay_date( new Date() );
+		mo.setStatus(ModuleOrder.PAYED);
+		commonDao.update(mo);
+		
+		int account_num = mo.getAccount_num();
+		int mouth_num = mo.getMonth_num();
+		for(int i = 0; i < account_num; i++) {
+			SubAuthorize sa = new SubAuthorize();
+			sa.setName( mo.getModule_id() + "_" + userId + "_" + i );
+			sa.setStartDate(new Date());
+			sa.setOwnerId( userId );
+			
+			Calendar calendar = new GregorianCalendar();
+	        calendar.add(Calendar.MONTH, mouth_num);
+			sa.setEndDate(calendar.getTime());
+			
+			commonDao.create(sa);
+		}
+		
+		// 如果此时还没有选择 试用模块， 在此创建 ModuleUser 映射关系
+		String domain = Environment.getDomain();
+		String hql = "from ModuleUser where userId = ? and moduleId = ? and domain = ?";
+		List<?> list = commonDao.getEntities(hql, Environment.getUserId(), mo.getModule_id(), domain);
+		if( list.isEmpty() ) {
+			ModuleUser mu = new ModuleUser(Environment.getUserId(), mo.getModule_id());
+			mu.setDomain( domain );
+			commonDao.create(mu);
+		} 
+		
+		return "Success";
 	}
 }

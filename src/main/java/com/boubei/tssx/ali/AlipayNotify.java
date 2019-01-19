@@ -29,6 +29,7 @@ public class AlipayNotify extends HttpServlet {
 	
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) 
     		throws ServletException, IOException {
+		System.out.println("ali access!");
 		
 		ICommonService commService = (ICommonService) Global.getBean("CommonService");
 		response.setContentType("text/html;charset=UTF-8");
