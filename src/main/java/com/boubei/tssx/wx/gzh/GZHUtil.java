@@ -46,7 +46,7 @@ $.ajax({
 		String url = "https://www.boudata.com/tss/wx/api/sendgzhmsg";
 		PostMethod postMethod = new PostMethod(url);
 		postMethod.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
-		postMethod.setRequestHeader("Referer", "https://e8.boudata.com");
+		postMethod.setRequestHeader("Referer", "https://boudata.com");
 		
 		postMethod.addParameter("uName", "BD0000");
 		postMethod.addParameter("uToken", "oKYA65HP9aMry2lgcQgyorxYXasU" );
@@ -59,8 +59,9 @@ $.ajax({
 			httpClient.executeMethod(postMethod);
 			return postMethod.getResponseBodyAsString();
 		} catch (Exception e) {
-			log.error("发送公众号通知失败", e);
-			return e.getMessage();
+			String errMsg = "发送公众号通知失败: " + e.getMessage() + ", params: " + params;
+			log.error(errMsg);
+			return errMsg;
 		}
 	}
 	
