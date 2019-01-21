@@ -74,7 +74,4 @@ public interface WxService {
 	 * @throws IOException 
      */
 	String sendWxGZHMsg(Map<String, String> requestMap) throws IOException;
-	
-	String sendWxGZHMsgAll(Map<String, String> requestMap) throws IOException;
-
 }
