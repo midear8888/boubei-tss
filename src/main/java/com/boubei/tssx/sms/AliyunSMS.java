@@ -163,19 +163,9 @@ public class AliyunSMS {
     }
     
     public boolean checkCode(String mobile, Object code) {
-//    	Date from = DateUtil.subDays(new Date(), 10.0/(24*60));
-//    	List<?> list = commService.getList(" from SMSLog where phonenum = ? and randomnum = ? and createTime > ? ", 
-//    			mobile, EasyUtils.obj2Int(code), from);
-    	List<?> list;
-    	if(mobile.equals("15378206704")){
-    		list = commService.getList(" from SMSLog where phonenum = ? and randomnum = ? ", 
-        			mobile, EasyUtils.obj2Int(code));
-    	}
-    	else{
-    		Date from = DateUtil.subDays(new Date(), 10.0/(24*60));
-        	list = commService.getList(" from SMSLog where phonenum = ? and randomnum = ? and createTime > ? ", 
-        			mobile, EasyUtils.obj2Int(code), from);
-    	}
+    	Date from = DateUtil.subDays(new Date(), 10.0/(24*60));
+    	List<?> list = commService.getList(" from SMSLog where phonenum = ? and randomnum = ? and createTime > ? ", 
+    			mobile, EasyUtils.obj2Int(code), from);
     	
     	return list.size() > 0;
     }
