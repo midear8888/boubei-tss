@@ -12,7 +12,15 @@ package com.boubei.tss.modules.cloud;
 
 import java.util.List;
 
+import com.boubei.tss.modules.cloud.entity.ModuleOrder;
+
 public interface ModuleService {
+
+	ModuleOrder createOrder(ModuleOrder mo);
+
+	ModuleOrder updateOrder(ModuleOrder mo);
+	
+	ModuleOrder calMoney(ModuleOrder mo,Boolean throw_) ;
 
 	List<?> listAvaliableModules();
 

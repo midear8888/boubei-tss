@@ -27,7 +27,7 @@ import com.boubei.tss.dm.record.ARecordTable;
 @SequenceGenerator(name = "module_order_seq", sequenceName = "module_order_seq", initialValue = 1, allocationSize = 10)
 public class ModuleOrder extends ARecordTable {
 	
-	public final static String NEW      = "新建";
+	public final static String NEW      = "待付款";
 	public final static String CANCELED = "取消";
 	public final static String PAYED    = "已付款";
 	
@@ -42,10 +42,11 @@ public class ModuleOrder extends ARecordTable {
 	
 	private Integer month_num;
 	
+	private String  order_num;
 	private Date 	order_date = new Date();
 	private Date 	pay_date;
 	
-	private String  status = NEW; // 新建、取消、已付款
+	private String  status = NEW; // 待付款、取消、已付款
 	
 	private Double  price;
 	private Double  money_cal;  // 应付金额
@@ -59,6 +60,15 @@ public class ModuleOrder extends ARecordTable {
 
 	public Long getId() {
 		return id;
+	}
+
+	
+	public String getOrder_num() {
+		return order_num;
+	}
+
+	public void setOrder_num(String order_num) {
+		this.order_num = order_num;
 	}
 
 	public void setId(Long id) {

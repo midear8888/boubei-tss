@@ -19,6 +19,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -402,4 +405,36 @@ public class EasyUtils {
     	Writer out = new StringWriter();
     	return fmParse(template, data, out, new Configuration());
     }
+    
+    /**
+	 * 调用freeMarker解析后，用js的eval方法计算结果
+	 * 
+	 * @param reader
+	 * @param params
+	 * @return
+	 */
+	public static Double eval(String reader, Map<String, ?> params) {
+		if (reader.indexOf("$") > -1) {
+			reader = EasyUtils.fmParse(reader, params);
+		}
+		return eval(reader);
+	}
+	
+	static ScriptEngine jse = new ScriptEngineManager().getEngineByName("JavaScript");
+	
+	/**
+	 * 用js的eval方法计算结果
+	 * 
+	 * @param reader
+	 * @return
+	 */
+	public static Double eval(String reader) {
+		Object value = 0;
+		try {
+			value = jse.eval(reader);
+		} catch (Exception e) {
+
+		}
+		return EasyUtils.obj2Double(value);
+	}
 }

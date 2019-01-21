@@ -13,11 +13,12 @@ package com.boubei.tss.modules.cloud;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import com.boubei.tss.EX;
 import com.boubei.tss.framework.exception.BusinessException;
@@ -28,12 +29,50 @@ import com.boubei.tss.modules.cloud.entity.ModuleOrder;
 import com.boubei.tss.modules.cloud.entity.ModuleUser;
 import com.boubei.tss.um.entity.RoleUser;
 import com.boubei.tss.um.entity.SubAuthorize;
+import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
 
 @Service("ModuleService")
 public class ModuleServiceImpl implements ModuleService {
 	
 	@Autowired ICommonDao commonDao;
+	
+	public ModuleOrder createOrder(ModuleOrder mo){
+		calMoney(mo, true);
+		mo.setStatus(ModuleOrder.NEW);
+		mo = (ModuleOrder) commonDao.create(mo);
+		mo.setOrder_num(mo.getOrder_date().getTime() + "-" + mo.getModule_id() + "-" + mo.getId());
+		return mo;
+	}
+	
+	public ModuleOrder calMoney(ModuleOrder mo,Boolean throw_) {
+		ModuleDef md = (ModuleDef) commonDao.getEntity(ModuleDef.class, mo.getModule_id());
+		mo.setPrice( md.getPrice() );
+		Map<String,Object> params = new HashMap<String,Object>();
+		BeanUtil.addBeanProperties2Map(mo, params);
+		Double money = EasyUtils.eval(md.getPrice_def(), params);
+		if(mo.getRebate()!=null){
+			money *= mo.getRebate();
+		}
+		if(mo.getDerate()!=null){
+			money -= mo.getDerate();
+		}
+		Double money_cal = mo.getMoney_cal();
+		if(throw_ && money_cal != null && money_cal != money){
+			throw new BusinessException("应付金额异常！");
+		}
+		mo.setMoney_cal( money ); 
+		return mo;
+		// 价格以后台计算为准，防止篡改  （同时检查前后台的报价是否一致）  TODO 折扣优惠，创建一个计算价格的接口
+	}
+	
+	public ModuleOrder updateOrder(ModuleOrder mo) {
+		// 重新计算价格
+		calMoney(mo, true);
+		
+		commonDao.update(mo);
+		return mo;
+	}
 	
 	public void selectModule(Long user, Long module) {
 		checkIsDomainAdmin();
@@ -120,7 +159,7 @@ public class ModuleServiceImpl implements ModuleService {
 		return commonDao.getEntities(hql);
 	}
 	
-	public Object payOrder(@PathVariable Long id) {
+	public Object payOrder(Long id) {
 		Long userId = Environment.getUserId();
 		ModuleOrder mo = (ModuleOrder) commonDao.getEntity(ModuleOrder.class, id);
 		if( ModuleOrder.PAYED.equals(mo.getStatus()) ){
