@@ -627,5 +627,15 @@ public class WxAPI {
 		response.setContentType("text/plain;charset=UTF-8");
 		response.getWriter().println( wxService.sendWxGZHMsg(requestMap) );
 	}
+	
+	@RequestMapping(value = "/sendgzhmsgall")
+	@ResponseBody
+	public void sendGZHMessageAll(HttpServletRequest request, HttpServletResponse response) throws IOException{
+		Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
+//		log.info(requestMap);
+		
+		response.setContentType("text/plain;charset=UTF-8");
+		response.getWriter().println( wxService.sendWxGZHMsgAll(requestMap) );
+	}
 
 }
