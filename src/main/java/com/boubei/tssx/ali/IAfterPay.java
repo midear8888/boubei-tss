@@ -1,5 +1,7 @@
 package com.boubei.tssx.ali;
 
+import java.util.Map;
+
 public interface IAfterPay {
-	void handle(Object params);
+	void handle(Map<?, ?> trade_map);
 }

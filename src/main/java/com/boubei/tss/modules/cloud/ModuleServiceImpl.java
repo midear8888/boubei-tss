@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,8 +28,10 @@ import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.modules.cloud.entity.ModuleDef;
 import com.boubei.tss.modules.cloud.entity.ModuleOrder;
 import com.boubei.tss.modules.cloud.entity.ModuleUser;
+import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.entity.RoleUser;
 import com.boubei.tss.um.entity.SubAuthorize;
+import com.boubei.tss.um.entity.User;
 import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
 
@@ -36,6 +39,9 @@ import com.boubei.tss.util.EasyUtils;
 public class ModuleServiceImpl implements ModuleService {
 	
 	@Autowired ICommonDao commonDao;
+	
+	protected Logger log = Logger.getLogger(this.getClass());
+	
 	
 	public ModuleOrder createOrder(ModuleOrder mo){
 		calMoney(mo, true);
@@ -58,8 +64,8 @@ public class ModuleServiceImpl implements ModuleService {
 			money -= mo.getDerate();
 		}
 		Double money_cal = mo.getMoney_cal();
-		if(throw_ && money_cal != null && money_cal != money){
-			throw new BusinessException("应付金额异常！");
+		if(throw_ && money_cal != null && !money_cal.equals(money)){
+			throw new BusinessException("应付金额异常");
 		}
 		mo.setMoney_cal( money ); 
 		return mo;
@@ -159,37 +165,46 @@ public class ModuleServiceImpl implements ModuleService {
 		return commonDao.getEntities(hql);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public Object payOrder(Long id) {
-		Long userId = Environment.getUserId();
+		
 		ModuleOrder mo = (ModuleOrder) commonDao.getEntity(ModuleOrder.class, id);
-		if( ModuleOrder.PAYED.equals(mo.getStatus()) ){
-			throw new BusinessException("订单已支付");
+		
+		List<User> users = (List<User>) commonDao.getEntities(" from User where loginName = ?", mo.getCreator());
+		Long userId = users.get(0).getId();
+		
+		if( !ModuleOrder.NEW.equals(mo.getStatus()) ){
+			//throw new BusinessException("订单已支付");
+			return "订单" + mo.getStatus();
 		}
+		
 		mo.setPay_date( new Date() );
 		mo.setStatus(ModuleOrder.PAYED);
 		commonDao.update(mo);
 		
 		int account_num = mo.getAccount_num();
 		int mouth_num = mo.getMonth_num();
+		Long module_id = mo.getModule_id();
 		for(int i = 0; i < account_num; i++) {
 			SubAuthorize sa = new SubAuthorize();
-			sa.setName( mo.getModule_id() + "_" + userId + "_" + i );
-			sa.setStartDate(new Date());
+			sa.setName( module_id + "_" + userId + "_" + i );
+			sa.setStartDate( new Date());
 			sa.setOwnerId( userId );
 			
 			Calendar calendar = new GregorianCalendar();
-	        calendar.add(Calendar.MONTH, mouth_num);
-			sa.setEndDate(calendar.getTime());
-			
+            calendar.add(Calendar.MONTH, mouth_num);
+            sa.setEndDate(calendar.getTime());
+            
 			commonDao.create(sa);
 		}
 		
 		// 如果此时还没有选择 试用模块， 在此创建 ModuleUser 映射关系
-		String domain = Environment.getDomain();
+		String domain = (String) EasyUtils.checkNull(mo.getDomain(), UMConstants.DEFAULT_DOMAIN);
+		
 		String hql = "from ModuleUser where userId = ? and moduleId = ? and domain = ?";
-		List<?> list = commonDao.getEntities(hql, Environment.getUserId(), mo.getModule_id(), domain);
+		List<?> list = commonDao.getEntities(hql, userId, module_id, domain);
 		if( list.isEmpty() ) {
-			ModuleUser mu = new ModuleUser(Environment.getUserId(), mo.getModule_id());
+			ModuleUser mu = new ModuleUser(userId, module_id);
 			mu.setDomain( domain );
 			commonDao.create(mu);
 		} 

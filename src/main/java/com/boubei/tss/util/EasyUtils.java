@@ -415,7 +415,7 @@ public class EasyUtils {
 	 */
 	public static Double eval(String reader, Map<String, ?> params) {
 		if (reader.indexOf("$") > -1) {
-			reader = EasyUtils.fmParse(reader, params);
+			reader = fmParse(reader, params);
 		}
 		return eval(reader);
 	}
@@ -435,6 +435,6 @@ public class EasyUtils {
 		} catch (Exception e) {
 
 		}
-		return EasyUtils.obj2Double(value);
+		return obj2Double(value);
 	}
 }

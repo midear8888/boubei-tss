@@ -25,7 +25,7 @@ import com.boubei.tss.util.EasyUtils;
 @Controller
 @RequestMapping("/alipay/api")
 public class AlipayAPI {
- 
+ static final String afterPaySuccess = "afterPaySuccess";
 	/**
 	 * PC场景下单并支付
 	 * appid 应用编号
@@ -46,8 +46,8 @@ public class AlipayAPI {
 		
 		AlipayClient aClient = new DefaultAlipayClient(alipay.getUrl(), alipay.appid, alipay.getPrivateKey(), "json", AlipayConfig.Char_Set, alipay.getAlipayKey(), AlipayConfig.Sign_Type); //获得初始化的AlipayClient
 	    AlipayTradePagePayRequest aRequest = new AlipayTradePagePayRequest(); // 创建API对应的request
-	    aRequest.setNotifyUrl(alipay.getNotifyUrl()); // 在公共参数中设置回跳和通知地址
-	    
+	    aRequest.setNotifyUrl(alipay.getNotifyUrl(requestMap.get(afterPaySuccess))); // 在公共参数中设置回跳和通知地址
+	    aRequest.setReturnUrl(requestMap.get("return_url"));
 	    String bizcontent = EasyUtils.obj2Json(requestMap);
 	    aRequest.setBizContent(bizcontent); // 填充业务参数
  
@@ -70,7 +70,7 @@ public class AlipayAPI {
 	public void query(HttpServletRequest request, HttpServletResponse response) throws AlipayApiException, IOException {
 		
         Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
-        String iAfterPayBean = requestMap.get("afterPaySuccess");
+        String iAfterPayBean = requestMap.get(afterPaySuccess);
 		AlipayConfig alipay = new AlipayConfig( requestMap.remove("appid") );
 		
 		AlipayClient aClient = new DefaultAlipayClient(alipay.getUrl(), alipay.appid, alipay.getPrivateKey(),

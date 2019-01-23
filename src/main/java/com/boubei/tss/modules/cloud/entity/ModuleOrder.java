@@ -28,7 +28,7 @@ import com.boubei.tss.dm.record.ARecordTable;
 public class ModuleOrder extends ARecordTable {
 	
 	public final static String NEW      = "待付款";
-	public final static String CANCELED = "取消";
+	public final static String CANCELED = "已取消";
 	public final static String PAYED    = "已付款";
 	
 	@Id
