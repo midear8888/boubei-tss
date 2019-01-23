@@ -32,6 +32,6 @@ public interface ModuleService {
 
 	void refreshModuleUserRoles(Long module);
 
-	Object payOrder(Long id);
+	Object payOrder(Long id,Double receipt_amount);
 
 }

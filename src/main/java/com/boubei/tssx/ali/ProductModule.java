@@ -11,11 +11,11 @@ public class ProductModule implements IAfterPay {
 	public void handle(Map<?, ?> trade_map) {
 
 		String orderNo = trade_map.get("out_trade_no").toString();
-
-		String module_order_id = orderNo.split("-")[2];
+		Double receipt_amount = EasyUtils.obj2Double(trade_map.get("receipt_amount"));
+		Long module_order_id = EasyUtils.obj2Long(orderNo.split("-")[2]);
 
 		ModuleService ms = (ModuleService) Global.getBean("ModuleService");
-		ms.payOrder(EasyUtils.obj2Long(module_order_id));
+		ms.payOrder(module_order_id, receipt_amount);
 	}
 
 }

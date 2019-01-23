@@ -46,6 +46,7 @@ public class DomainInfo extends ARecordTable {
 	private String name; // 域名
 	private String logo;
 	private Integer multilogin = ParamConstants.FALSE;  // 账号多地登录
+	private Integer multi_bind_clerk = ParamConstants.FALSE; //一个客户允许绑定多个业务员 eff的情形
 	
 	private String wxpay_qr;
 	private String wxpay_account;
@@ -66,6 +67,8 @@ public class DomainInfo extends ARecordTable {
 	private String udf1;
 	private String udf2;
 	private String udf3;
+	
+	
 	
 	public Long getId() {
 		return id;
@@ -184,4 +187,11 @@ public class DomainInfo extends ARecordTable {
 	public void setMultilogin(Integer multilogin) {
 		this.multilogin = multilogin;
 	}
+	public Integer getMulti_bind_clerk() {
+		return multi_bind_clerk;
+	}
+	public void setMulti_bind_clerk(Integer multi_bind_clerk) {
+		this.multi_bind_clerk = multi_bind_clerk;
+	}
+	
 }

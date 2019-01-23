@@ -166,7 +166,7 @@ public class ModuleServiceImpl implements ModuleService {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public Object payOrder(Long id) {
+	public Object payOrder(Long id,Double receipt_amount) {
 		
 		ModuleOrder mo = (ModuleOrder) commonDao.getEntity(ModuleOrder.class, id);
 		
@@ -178,6 +178,10 @@ public class ModuleServiceImpl implements ModuleService {
 			return "订单" + mo.getStatus();
 		}
 		
+		if(!receipt_amount.equals(mo.getMoney_cal())){
+			return "订单金额不符";
+		}
+		mo.setMoney_real(receipt_amount);
 		mo.setPay_date( new Date() );
 		mo.setStatus(ModuleOrder.PAYED);
 		commonDao.update(mo);
