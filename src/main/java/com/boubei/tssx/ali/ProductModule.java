@@ -17,7 +17,7 @@ public class ProductModule extends AbstractAfterPay {
 		super(co);
 	}
 
-	protected Boolean doNext() {
+	public Boolean handle() {
 
 		int account_num = co.getAccount_num();
 		int mouth_num = co.getMonth_num();

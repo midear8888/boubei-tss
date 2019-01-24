@@ -20,6 +20,9 @@ import com.boubei.tss.framework.persistence.IEntity;
 @SequenceGenerator(name = "account_seq", sequenceName = "account_seq", initialValue = 1, allocationSize = 10)
 public class Account implements IEntity {
 	
+	public static final String STATUS0 = "激活";
+	public static final String STATUS1 = "冻结";
+	
 	@Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "account_seq")
 	private Long id;
@@ -34,9 +37,9 @@ public class Account implements IEntity {
 	
 	private Double balance_safe;   // 安全额度
 	
-	private Date createDate;
+	private Date createDate = new Date();
 	
-	private String status;   // 激活|冻结
+	private String status = STATUS0;   // 激活|冻结
 	
 	private String remark;  // 备注
 

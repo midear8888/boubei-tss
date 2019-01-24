@@ -33,6 +33,6 @@ public interface ModuleService {
 
 	void refreshModuleUserRoles(Long module);
 
-	Object payOrder(Map<?, ?> trade_map);
+	Object payOrder(Map<?, ?> trade_map, String type);
 
 }

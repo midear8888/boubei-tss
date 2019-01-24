@@ -168,10 +168,10 @@ public class ModuleServiceImpl implements ModuleService {
 		return commonDao.getEntities(hql);
 	}
 
-	public Object payOrder(Map<?, ?> trade_map) {
+	public Object payOrder(Map<?, ?> trade_map,String type) {
 		IAfterPay iAfterPay = AbstractAfterPay.createBean(trade_map.get("out_trade_no").toString());
 		if (iAfterPay != null) {
-			return iAfterPay.handle(trade_map);
+			return iAfterPay.handle(trade_map, type);
 		}
 		return null;
 	}

@@ -12,10 +12,12 @@ import com.boubei.tss.util.EasyUtils;
 
 public abstract class AbstractAfterPay implements IAfterPay {
 
-	protected static ICommonDao commonDao = (ICommonDao) Global.getBean("ICommonDao");
+	protected static ICommonDao commonDao = (ICommonDao) Global.getBean("CommonDao");
 
 	public CloudOrder co;
 	public Long userId;
+	public Map<?, ?> trade_map;
+	public String payType;
 
 	public AbstractAfterPay() {
 
@@ -41,7 +43,9 @@ public abstract class AbstractAfterPay implements IAfterPay {
 		return null;
 	}
 
-	public Object handle(Map<?, ?> trade_map) {
+	public Object handle(Map<?, ?> trade_map, String payType) {
+		this.trade_map = trade_map;
+		this.payType = payType;
 		Double receipt_amount = EasyUtils.obj2Double(trade_map.get("receipt_amount"));
 		@SuppressWarnings("unchecked")
 		List<User> users = (List<User>) commonDao.getEntities(" from User where loginName = ?", co.getCreator());
@@ -59,15 +63,13 @@ public abstract class AbstractAfterPay implements IAfterPay {
 		co.setPay_date(new Date());
 		co.setStatus(CloudOrder.PAYED);
 		commonDao.update(co);
-		if (doNext()) {
+		if (handle()) {
 			return "success";
 		}
 		return "false";
 
 	}
 
-	protected Boolean doNext() {
-		return false;
-	}
+	public abstract Boolean handle();
 
 }

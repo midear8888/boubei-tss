@@ -22,7 +22,8 @@ import com.boubei.tss.util.EasyUtils;
 public class AlipayNotify extends HttpServlet {
 
 	private static final long serialVersionUID = -740569423483772472L;
-
+	static final String payType = "支付宝";
+	
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		doPost(request, response);
 	}
@@ -56,7 +57,7 @@ public class AlipayNotify extends HttpServlet {
 
 				if (!EasyUtils.isNullOrEmpty(iAfterPayBean)) {
 					ModuleService moduleService = (ModuleService) Global.getBean("ModuleService");
-					moduleService.payOrder(map);
+					moduleService.payOrder(map, payType);
 				}
 
 				response.getWriter().println("success");
