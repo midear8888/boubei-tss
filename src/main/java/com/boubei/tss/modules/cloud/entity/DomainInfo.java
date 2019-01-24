@@ -39,6 +39,9 @@ import com.boubei.tss.modules.param.ParamConstants;
 @SequenceGenerator(name = "x_domain_seq")
 public class DomainInfo extends ARecordTable {
 	
+	public static final String TYPE0 = "E8";
+	public static final String TYPE1 = "EFF";
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO, generator = "x_domain_seq")
 	private Long id;
@@ -46,7 +49,7 @@ public class DomainInfo extends ARecordTable {
 	private String name; // 域名
 	private String logo;
 	private Integer multilogin = ParamConstants.FALSE;  // 账号多地登录
-	private Integer multi_bind_clerk = ParamConstants.FALSE; //一个客户允许绑定多个业务员 eff的情形
+	private String type; //eff e8
 	
 	private String wxpay_qr;
 	private String wxpay_account;
@@ -187,11 +190,12 @@ public class DomainInfo extends ARecordTable {
 	public void setMultilogin(Integer multilogin) {
 		this.multilogin = multilogin;
 	}
-	public Integer getMulti_bind_clerk() {
-		return multi_bind_clerk;
+	public String getType() {
+		return type;
 	}
-	public void setMulti_bind_clerk(Integer multi_bind_clerk) {
-		this.multi_bind_clerk = multi_bind_clerk;
+	public void setType(String type) {
+		this.type = type;
 	}
+	
 	
 }
