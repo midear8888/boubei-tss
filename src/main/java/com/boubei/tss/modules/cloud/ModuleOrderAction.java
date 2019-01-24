@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.sso.Environment;
-import com.boubei.tss.modules.cloud.entity.ModuleOrder;
+import com.boubei.tss.modules.cloud.entity.CloudOrder;
 
 @Controller
 @RequestMapping("/auth/module/order")
@@ -33,26 +33,26 @@ public class ModuleOrderAction {
 
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
-	public ModuleOrder createOrder(ModuleOrder mo) {
+	public CloudOrder createOrder(CloudOrder mo) {
 		return service.createOrder(mo);
 	}
 
 	@RequestMapping(method = RequestMethod.PUT)
 	@ResponseBody
-	public ModuleOrder updateOrder(ModuleOrder mo) {
+	public CloudOrder updateOrder(CloudOrder mo) {
 		return service.updateOrder(mo);
 	}
 	
 	@RequestMapping(value = "/price/query")
 	@ResponseBody
-	public Object queryPrice(ModuleOrder mo) {
+	public Object queryPrice(CloudOrder mo) {
 		return service.calMoney(mo,false);
 	}
 
 	@RequestMapping(value = "/price", method = RequestMethod.POST)
 	@ResponseBody
 	public Object updatePrice(Long id, Double rebate, Double derate) {
-		ModuleOrder mo = (ModuleOrder) commonService.getEntity(ModuleOrder.class, id);
+		CloudOrder mo = (CloudOrder) commonService.getEntity(CloudOrder.class, id);
 		mo.setRebate(rebate);
 		mo.setDerate(derate);
 		mo.setMoney_real(mo.getMoney_cal() * rebate - derate);
@@ -64,7 +64,7 @@ public class ModuleOrderAction {
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
 	@ResponseBody
 	public List<?> listOrders() {
-		String hql = "from ModuleOrder where creator = ? order by id desc";
+		String hql = "from CloudOrder where creator = ? order by id desc";
 		return commonService.getList(hql, Environment.getUserCode());
 	}
 }

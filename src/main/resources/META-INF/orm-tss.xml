@@ -12,7 +12,7 @@
 	<entity class="com.boubei.tss.modules.sn.SerialNO"/>
 	<entity class="com.boubei.tss.modules.cloud.entity.ModuleDef"/>
 	<entity class="com.boubei.tss.modules.cloud.entity.ModuleUser"/>
-	<entity class="com.boubei.tss.modules.cloud.entity.ModuleOrder"/>
+	<entity class="com.boubei.tss.modules.cloud.entity.CloudOrder"/>
 	<entity class="com.boubei.tss.modules.cloud.entity.Account"/>
 	<entity class="com.boubei.tss.modules.cloud.entity.AccountFlow"/>
 	<entity class="com.boubei.tss.modules.cloud.entity.DomainInfo"/>

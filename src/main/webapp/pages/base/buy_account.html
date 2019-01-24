@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>我的订单</title>
+	<!-- <link rel="stylesheet" href="buy_index.css"> -->
+	<script src="../../tools/tssJS/tssJS.all.js"></script>
+	<script src="../../tools/tssJS/tssJS.data.js"></script>
+	<script src="../../tools/jquery/jquery-2.1.1.min.js"></script>
+	<script src="buy_index.js"></script>
+</head>
+<style type="text/css">
+	.bd-order-list{
+		margin-top: 30px;
+	}
+	table{
+	  width:100%;
+	  color:#666;
+	  font-size:14px;
+	  text-align: center;
+	  padding: 0px 50px;
+	}
+	thead tr{
+	  background-color:#00a1ff;
+	  color: white;
+	  font-size:18px;
+	}
+	tbody tr:nth-child(even){
+	  padding:2 5px;
+	  background-color: #eee;
+	}
+	tbody tr td,thead tr th{
+	  width:8% !important;
+	}
+	.active{
+		/*background-color: #eee;*/
+	}
+</style>
+<body>
+	<div class="user-account">
+		<div class="user-account-info-balance">
+			<span>余额</span>
+			<sup class="superscript">¥</sup>
+			<span class="account-info-balance"></span>
+			<button onclick="setMoney(this)">充值</button>
+			<form id="rechargeForm" style="display: none;" onsubmit="return false">
+				请输入充值金额
+				<input name="money_cal" autocomplete="off" required />
+				<button type="submit">提交</button>
+			</form>
+		</div>
+	</div>
+	<div class="bd-order-list" style="display: none;">
+		<table border="0" cellspacing="0" cellpadding="0">
+			<thead>
+				<tr>
+					<th>订单号</th>
+					<th>下单时间</th>
+					<th>支付时间</th>
+					<th>状态</th>
+					<th>产品</th>
+					<th>单价</th>
+					<th>购买账号</th>
+					<th>购买时长</th>
+					<th>应付金额</th>
+					<th>实付金额</th>
+					<th>优惠</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+			<tbody class="bd-module-order-list">
+			</tbody>
+		</table>
+	</div>
+</body>
+<script type="text/javascript">
+
+	function queryAccount(){
+		$.getJSON('/tss/auth/module/account',{},function(account){
+			$('.account-info-balance').text(tssJS.Data.number_format(account.balance,2));
+		})
+	}
+
+	function setMoney(e){
+		$(e).next().show()
+	}
+
+	
+	$("#rechargeForm").submit((e)=>{
+		$.post('/tss/auth/module/order', {
+			type : 'recharge',
+			money_cal : $('input[name="money_cal"]').val()
+		} ,function(moduleOrderBack){
+			if(moduleOrderBack.id){
+				//跳转我的订单
+				window.location.href = 'buy_order.html?id=' + moduleOrderBack.id;
+			}else{
+				confirm(moduleOrderBack.errorMsg);
+			}
+		})
+	})
+	
+
+	queryAccount();
+	
+</script>
+</html>

@@ -25,35 +25,40 @@ import com.boubei.tss.dm.record.ARecordTable;
 @Entity
 @Table(name = "cloud_module_order")
 @SequenceGenerator(name = "module_order_seq", sequenceName = "module_order_seq", initialValue = 1, allocationSize = 10)
-public class ModuleOrder extends ARecordTable {
-	
-	public final static String NEW      = "待付款";
+public class CloudOrder extends ARecordTable {
+
+	public final static String NEW = "待付款";
 	public final static String CANCELED = "已取消";
-	public final static String PAYED    = "已付款";
+	public final static String PAYED = "已付款";
 	
+	public final static String TYPE0 = "module";
+	public final static String TYPE1 = "recharge";
+
 	@Id
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "module_order_seq")
+	@GeneratedValue(strategy = GenerationType.AUTO, generator = "module_order_seq")
 	private Long id;
-	
+
 	@Column(nullable = false)
+	private String type;
+
 	private Long module_id;
-	
+
 	private Integer account_num;
-	
+
 	private Integer month_num;
-	
-	private String  order_num;
-	private Date 	order_date = new Date();
-	private Date 	pay_date;
-	
-	private String  status = NEW; // 待付款、取消、已付款
-	
-	private Double  price;
-	private Double  money_cal;  // 应付金额
-	private Double  money_real; // 实付金额
-	private Double  rebate;     // 折扣
-	private Double  derate;     // 减免
-	
+
+	private String order_no;// 订单号 编码规则=时间戳-module_id-id
+	private Date order_date = new Date();
+	private Date pay_date;
+
+	private String status = NEW; // 待付款、取消、已付款
+
+	private Double price;
+	private Double money_cal; // 应付金额
+	private Double money_real; // 实付金额
+	private Double rebate; // 折扣
+	private Double derate; // 减免
+
 	public Serializable getPK() {
 		return this.getId();
 	}
@@ -62,13 +67,28 @@ public class ModuleOrder extends ARecordTable {
 		return id;
 	}
 
-	
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public String getOrder_no() {
+		return order_no;
+	}
+
+	public void setOrder_no(String order_no) {
+		this.order_no = order_no;
+	}
+
 	public String getOrder_num() {
-		return order_num;
+		return order_no;
 	}
 
 	public void setOrder_num(String order_num) {
-		this.order_num = order_num;
+		this.order_no = order_num;
 	}
 
 	public void setId(Long id) {

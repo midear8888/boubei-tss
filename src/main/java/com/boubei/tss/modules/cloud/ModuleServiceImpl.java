@@ -25,15 +25,15 @@ import com.boubei.tss.EX;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.ICommonDao;
 import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.modules.cloud.entity.CloudOrder;
 import com.boubei.tss.modules.cloud.entity.ModuleDef;
-import com.boubei.tss.modules.cloud.entity.ModuleOrder;
 import com.boubei.tss.modules.cloud.entity.ModuleUser;
-import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.entity.RoleUser;
 import com.boubei.tss.um.entity.SubAuthorize;
-import com.boubei.tss.um.entity.User;
 import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
+import com.boubei.tssx.ali.AbstractAfterPay;
+import com.boubei.tssx.ali.IAfterPay;
 
 @Service("ModuleService")
 public class ModuleServiceImpl implements ModuleService {
@@ -43,15 +43,18 @@ public class ModuleServiceImpl implements ModuleService {
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	
-	public ModuleOrder createOrder(ModuleOrder mo){
-		calMoney(mo, true);
-		mo.setStatus(ModuleOrder.NEW);
-		mo = (ModuleOrder) commonDao.create(mo);
-		mo.setOrder_num(mo.getOrder_date().getTime() + "-" + mo.getModule_id() + "-" + mo.getId());
+	public CloudOrder createOrder(CloudOrder mo){
+		Long module_id = mo.getModule_id();
+		if(module_id!=null){
+			calMoney(mo, true);
+		}
+		mo.setStatus(CloudOrder.NEW);
+		mo = (CloudOrder) commonDao.create(mo);
+		mo.setOrder_no(mo.getOrder_date().getTime() + "-" + mo.getId());
 		return mo;
 	}
 	
-	public ModuleOrder calMoney(ModuleOrder mo,Boolean throw_) {
+	public CloudOrder calMoney(CloudOrder mo,Boolean throw_) {
 		ModuleDef md = (ModuleDef) commonDao.getEntity(ModuleDef.class, mo.getModule_id());
 		mo.setPrice( md.getPrice() );
 		Map<String,Object> params = new HashMap<String,Object>();
@@ -72,7 +75,7 @@ public class ModuleServiceImpl implements ModuleService {
 		// 价格以后台计算为准，防止篡改  （同时检查前后台的报价是否一致）  TODO 折扣优惠，创建一个计算价格的接口
 	}
 	
-	public ModuleOrder updateOrder(ModuleOrder mo) {
+	public CloudOrder updateOrder(CloudOrder mo) {
 		// 重新计算价格
 		calMoney(mo, true);
 		
@@ -164,55 +167,13 @@ public class ModuleServiceImpl implements ModuleService {
 		String hql = "select o from ModuleDef o where o.status in ('opened') order by o.seqno asc, o.id desc ";
 		return commonDao.getEntities(hql);
 	}
-	
-	@SuppressWarnings("unchecked")
-	public Object payOrder(Long id,Double receipt_amount) {
-		
-		ModuleOrder mo = (ModuleOrder) commonDao.getEntity(ModuleOrder.class, id);
-		
-		List<User> users = (List<User>) commonDao.getEntities(" from User where loginName = ?", mo.getCreator());
-		Long userId = users.get(0).getId();
-		
-		if( !ModuleOrder.NEW.equals(mo.getStatus()) ){
-			//throw new BusinessException("订单已支付");
-			return "订单" + mo.getStatus();
+
+	public Object payOrder(Map<?, ?> trade_map) {
+		IAfterPay iAfterPay = AbstractAfterPay.createBean(trade_map.get("out_trade_no").toString());
+		if (iAfterPay != null) {
+			return iAfterPay.handle(trade_map);
 		}
-		
-		if(!receipt_amount.equals(mo.getMoney_cal())){
-			return "订单金额不符";
-		}
-		mo.setMoney_real(receipt_amount);
-		mo.setPay_date( new Date() );
-		mo.setStatus(ModuleOrder.PAYED);
-		commonDao.update(mo);
-		
-		int account_num = mo.getAccount_num();
-		int mouth_num = mo.getMonth_num();
-		Long module_id = mo.getModule_id();
-		for(int i = 0; i < account_num; i++) {
-			SubAuthorize sa = new SubAuthorize();
-			sa.setName( module_id + "_" + userId + "_" + i );
-			sa.setStartDate( new Date());
-			sa.setOwnerId( userId );
-			
-			Calendar calendar = new GregorianCalendar();
-            calendar.add(Calendar.MONTH, mouth_num);
-            sa.setEndDate(calendar.getTime());
-            
-			commonDao.create(sa);
-		}
-		
-		// 如果此时还没有选择 试用模块， 在此创建 ModuleUser 映射关系
-		String domain = (String) EasyUtils.checkNull(mo.getDomain(), UMConstants.DEFAULT_DOMAIN);
-		
-		String hql = "from ModuleUser where userId = ? and moduleId = ? and domain = ?";
-		List<?> list = commonDao.getEntities(hql, userId, module_id, domain);
-		if( list.isEmpty() ) {
-			ModuleUser mu = new ModuleUser(userId, module_id);
-			mu.setDomain( domain );
-			commonDao.create(mu);
-		} 
-		
-		return "Success";
+		return null;
 	}
+	
 }
