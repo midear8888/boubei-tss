@@ -2,7 +2,6 @@
 <html>
 <head>
 	<title></title>
-	<script src="../../tools/tssJS/tssJS.all.js"></script>
 	<script src="../../tools/jquery/jquery-2.1.1.min.js"></script>
 	<script src="buy_index.js"></script>
 </head>
@@ -99,7 +98,7 @@
 
 </body>
 <script type="text/javascript">
-	const index = tssJS.Query.get("index") || 0;
+	const index = searchParams("index") || 0;
 	$('.navigation-text')[index].click()
 
 	function getCargoNum(){

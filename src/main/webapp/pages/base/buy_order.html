@@ -2,8 +2,6 @@
 <html>
 <head>
 	<title>我的订单</title>
-	<!-- <link rel="stylesheet" href="buy_index.css"> -->
-	<script src="../../tools/tssJS/tssJS.all.js"></script>
 	<script src="../../tools/jquery/jquery-2.1.1.min.js"></script>
 	<script src="buy_index.js"></script>
 </head>
@@ -60,12 +58,10 @@
 </body>
 <script type="text/javascript">
 
-	const moduleOrderSelected = decodeURI(tssJS.Query.get("id"));
-
-	queryModuleDef((moduleMap)=>{ queryModuleOrder(moduleMap) })	
+	queryModuleDef((moduleMap)=>{ queryModuleOrder(moduleMap) })
 
 	function queryModuleOrder(moduleMap){
-		$.getJSON('/tss/auth/module/order/list',function(moduleOrders){
+		$.get('/tss/auth/module/order/list',{},function(moduleOrders){
 			$('.bd-module-order-list tr').remove();
 			moduleOrders.each(function(i,item){
 				let $tr = $(
@@ -83,7 +79,7 @@
 						<td>` + formatter1(item) + `</td>
 						<td>` + (item.status == '待付款' ? `<button>支付订单</button>` : ``) +`</td>
 					</tr>`
-				).addClass( item.id == moduleOrderSelected ? 'active' : '' ).appendTo('.bd-module-order-list');
+				).appendTo('.bd-module-order-list');
 
 				$tr.find('button').click(()=>{
 					let out_trade_no = this.order_no;
@@ -92,7 +88,7 @@
 						out_trade_no : out_trade_no,
 						product_code : "FAST_INSTANT_TRADE_PAY",
 						total_amount : this.money_cal,
-						subject : '支付' + moduleMap[this.module_id],
+						subject : '支付' + formatterProduct(item),
 						body : "",
 						afterPaySuccess : 'do',
 						return_url : 'https://e8dev.boudata.com/tss/pages/base/buy_index.html?index=1'
@@ -114,9 +110,7 @@
 			callback(moduleMap)
 		})
 	}
-
 	
-
 	function formatter(value,dw){
 		value = ( value == 0 || value ) ? value : '-';
 		dw = ( value == '-' ? '' : dw ) || '';

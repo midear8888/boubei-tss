@@ -2,205 +2,203 @@
 <html>
 <head>
 	<title></title>
-	<!-- <link rel="stylesheet" href="buy_index.css"> -->
-	<script src="../../tools/tssJS/tssJS.all.js"></script>
 	<script src="../../tools/jquery/jquery-2.1.1.min.js"></script>
 	<script src="buy_index.js"></script>
 </head>
 <style type="text/css">
 
-* {
-	margin: 0;
-	padding: 0;
-	box-sizing: border-box;
-	-moz-box-sizing: border-box;
-}
+	* {
+		margin: 0;
+		padding: 0;
+		box-sizing: border-box;
+		-moz-box-sizing: border-box;
+	}
 
-html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, figcaption, figure, footer, header, hgroup, menu, nav, section, summary, time, mark, audio, video {
-	margin: 0;
-	padding: 0;
-	border: 0;
-	outline: 0;
-	font-size: 100%;
-	font: inherit;
-	vertical-align: top;
-	box-sizing: border-box;
-	-moz-box-sizing: border-box;
-}
+	html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, figcaption, figure, footer, header, hgroup, menu, nav, section, summary, time, mark, audio, video {
+		margin: 0;
+		padding: 0;
+		border: 0;
+		outline: 0;
+		font-size: 100%;
+		font: inherit;
+		vertical-align: top;
+		box-sizing: border-box;
+		-moz-box-sizing: border-box;
+	}
 
-body {
-	font-family: "Source Sans Pro", "helvetica", sans-serif;
-	font-style: normal;
-	font-weight: normal;
-	text-align: center;
-	font-size: 16px;
-	color: rgba(39,65,90,1);
-}
+	body {
+		font-family: "Source Sans Pro", "helvetica", sans-serif;
+		font-style: normal;
+		font-weight: normal;
+		text-align: center;
+		font-size: 16px;
+		color: rgba(39,65,90,1);
+	}
 
-h4 {
-	margin-bottom: 12px;
-	font-size: 1.25em;
-	font-weight: 400;
-	text-transform: uppercase;
-}
+	h4 {
+		margin-bottom: 12px;
+		font-size: 1.25em;
+		font-weight: 400;
+		text-transform: uppercase;
+	}
 
-h5 {
-	font-size: 1.75em;
-}
+	h5 {
+		font-size: 1.75em;
+	}
 
-p {
-	margin-top: 1em;
-	margin-bottom: 1em;
-	color: rgba(39,65,90,.9);
-	font-size: 1.25em;
-	line-height: 1.625em;
-	/*border-style: border-box;*/
-}
+	p {
+		margin-top: 1em;
+		margin-bottom: 1em;
+		color: rgba(39,65,90,.9);
+		font-size: 1.25em;
+		line-height: 1.625em;
+		/*border-style: border-box;*/
+	}
 
-ol, ul {
-	list-style: none;
-}
+	ol, ul {
+		list-style: none;
+	}
 
-body {
-	line-height: 1;
-}
+	body {
+		line-height: 1;
+	}
 
-strong {
-	color: rgba(39,65,90,1);
-	font-weight: 600;
-}
+	strong {
+		color: rgba(39,65,90,1);
+		font-weight: 600;
+	}
 
-.bd-product-list{
-	margin-top: 30px;
-}
+	.bd-product-list{
+		margin-top: 30px;
+	}
 
-.third {
-	width: 400px;
-	margin: 0 30px 0 0;
-	display: inline-block;
-}
+	.third {
+		width: 400px;
+		margin: 0 30px 0 0;
+		display: inline-block;
+	}
 
-.plan-tier {
-	background: white;
-	vertical-align: baseline;
-	border-radius: 3px;
-	-moz-border-radius: 3px;
-	cursor: pointer;
-	overflow: hidden;
-}
+	.plan-tier {
+		background: white;
+		vertical-align: baseline;
+		border-radius: 3px;
+		-moz-border-radius: 3px;
+		cursor: pointer;
+		overflow: hidden;
+	}
 
-.lift {
-	position: relative;
-	-webkit-transition: all .075s ease-out;
-	-moz-transition: all .075s ease-out;
-	-o-transition: all .075s ease-out;
-	transition: all .075s ease-out;
-}
+	.lift {
+		position: relative;
+		-webkit-transition: all .075s ease-out;
+		-moz-transition: all .075s ease-out;
+		-o-transition: all .075s ease-out;
+		transition: all .075s ease-out;
+	}
 
-.lift:hover {
-	top: -3px;
-	-webkit-box-shadow: 0 2px 6px rgba(39,65,90,.15);
-	-moz-box-shadow: 0 2px 6px rgba(39,65,90,.15);
-	box-shadow: 0 2px 6px rgba(39,65,90,.15);
-}
+	.lift:hover {
+		top: -3px;
+		-webkit-box-shadow: 0 2px 6px rgba(39,65,90,.15);
+		-moz-box-shadow: 0 2px 6px rgba(39,65,90,.15);
+		box-shadow: 0 2px 6px rgba(39,65,90,.15);
+	}
 
-.bd-product-description{
-	border-top: 2px solid #e7f2f0;
-	height: 5em;
-	overflow: hidden; 
-	/*text-overflow: ellipsis;*/
-	font-size: 0.8em;
-	display: -webkit-box;
-	-webkit-line-clamp: 3;
-	-webkit-box-orient: vertical;
-	padding: 5px 1px;
-	text-indent:2em;
-}
+	.bd-product-description{
+		border-top: 2px solid #e7f2f0;
+		height: 5em;
+		overflow: hidden; 
+		/*text-overflow: ellipsis;*/
+		font-size: 0.8em;
+		display: -webkit-box;
+		-webkit-line-clamp: 3;
+		-webkit-box-orient: vertical;
+		padding: 5px 1px;
+		text-indent:2em;
+	}
 
-.plan-tier h4 {
-	padding: 18px 0 15px;
-	margin: 0 0 30px;
-	background: #00a1ff;
-	color: white;
-}
+	.plan-tier h4 {
+		padding: 18px 0 15px;
+		margin: 0 0 30px;
+		background: #00a1ff;
+		color: white;
+	}
 
-.plan-tier {
-	cursor: pointer;
-}
+	.plan-tier {
+		cursor: pointer;
+	}
 
-.plan-tier sup {
-	position: relative;
-	right: -9px;
-}
+	.plan-tier sup {
+		position: relative;
+		right: -9px;
+	}
 
-.plan-tier ul {
-	/*margin: 30px 0 0;*/
-	border-top: 2px solid #e7f2f0;
-}
+	.plan-tier ul {
+		/*margin: 30px 0 0;*/
+		border-top: 2px solid #e7f2f0;
+	}
 
-.plan-tier ul li {
-	font-size: 1.25em;
-	padding: 18px 0;
-	color: rgba(39,65,90,.9);
-	border-bottom: 2px solid #e7f2f0;
-}
+	.plan-tier ul li {
+		font-size: 1.25em;
+		padding: 18px 0;
+		color: rgba(39,65,90,.9);
+		border-bottom: 2px solid #e7f2f0;
+	}
 
-.plan-tier ul li input {
-	height: 2em;
-	width: 5em;
-}
+	.plan-tier ul li input {
+		height: 2em;
+		width: 5em;
+	}
 
-sup {
-	vertical-align: top;
-}
+	sup {
+		vertical-align: top;
+	}
 
 
-.plan-tier .plan-price {
-	font-size: 5em;
-	font-weight: 300;
-	letter-spacing: -3px;
-}
+	.plan-tier .plan-price {
+		font-size: 5em;
+		font-weight: 300;
+		letter-spacing: -3px;
+	}
 
-.plan-tier sub {
-	vertical-align: bottom;
-	position: relative;
-	bottom: .875em;
-	font-size: 0.7em;
-}
+	.plan-tier sub {
+		vertical-align: bottom;
+		position: relative;
+		bottom: .875em;
+		font-size: 0.7em;
+	}
 
-.plan-tier .early-adopter-price {
-	color: #0091e5;
-}
+	.plan-tier .early-adopter-price {
+		color: #0091e5;
+	}
 
-p:first-of-type {
-	margin-top: 0;
-}
+	p:first-of-type {
+		margin-top: 0;
+	}
 
-del {
-	color: rgba(39,65,90,.5);
-	font-size: 1em;
-	line-height: 1.5em;
-}
+	del {
+		color: rgba(39,65,90,.5);
+		font-size: 1em;
+		line-height: 1.5em;
+	}
 
-button,input[type="button"]{
-  background-color: skyblue;
-  border-radius: 5px;
-  outline:none;
-  height: 2em;
-  font-size: 1em;
-}
-button:hover{
-  cursor: pointer;
-  color: white;
-}
-button[type="submit"]{
-	width: 100%;
-}
+	button,input[type="button"]{
+	  background-color: skyblue;
+	  border-radius: 5px;
+	  outline:none;
+	  height: 2em;
+	  font-size: 1em;
+	}
+	button:hover{
+	  cursor: pointer;
+	  color: white;
+	}
+	button[type="submit"]{
+		width: 100%;
+	}
 
-input[name="experience"]{
-	height: 1.8em;
-	font-size: 0.8em;
-}
+	input[name="experience"]{
+		height: 1.8em;
+		font-size: 0.8em;
+	}
 
 
 </style>
@@ -210,7 +208,7 @@ input[name="experience"]{
 
 <script type="text/javascript">
 
-	$.getJSON('/tss/xdata/json/cloud_module_def',function(data){
+	$.get('/tss/xdata/json/cloud_module_def', {}, function(data){
 
 		$('.module').remove();
 		data.each(function(i,item){
@@ -265,7 +263,6 @@ input[name="experience"]{
 
 		})
 	})
-
 	
 
 </script>

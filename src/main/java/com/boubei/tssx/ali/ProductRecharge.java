@@ -42,6 +42,8 @@ public class ProductRecharge extends AbstractAfterPay {
 		Double balance = account.getBalance() + flow.getMoney();
 		flow.setBalance(balance);
 		commonDao.create(flow);
+
+		account.setBalance(balance);
 		return true;
 	}
 }

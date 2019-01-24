@@ -2,22 +2,23 @@
 <html>
 <head>
 	<title>我的订单</title>
-	<!-- <link rel="stylesheet" href="buy_index.css"> -->
-	<script src="../../tools/tssJS/tssJS.all.js"></script>
-	<script src="../../tools/tssJS/tssJS.data.js"></script>
 	<script src="../../tools/jquery/jquery-2.1.1.min.js"></script>
 	<script src="buy_index.js"></script>
 </head>
 <style type="text/css">
-	.bd-order-list{
+	.user-account{
 		margin-top: 30px;
+	}
+	.user-account > div{
+		margin-top: 10px;
+		border-bottom: 1px solid #eee;
 	}
 	table{
 	  width:100%;
 	  color:#666;
 	  font-size:14px;
 	  text-align: center;
-	  padding: 0px 50px;
+	  padding: 30px 50px;
 	}
 	thead tr{
 	  background-color:#00a1ff;
@@ -31,22 +32,53 @@
 	tbody tr td,thead tr th{
 	  width:8% !important;
 	}
-	.active{
-		/*background-color: #eee;*/
+	.money{
+		color: orange;
+	}
+	.title{
+		color: #729ded;
+	}
+	ul{
+		list-style:none;
 	}
 </style>
 <body>
 	<div class="user-account">
-		<div class="user-account-info-balance">
-			<span>余额</span>
-			<sup class="superscript">¥</sup>
-			<span class="account-info-balance"></span>
-			<button onclick="setMoney(this)">充值</button>
-			<form id="rechargeForm" style="display: none;" onsubmit="return false">
-				请输入充值金额
-				<input name="money_cal" autocomplete="off" required />
-				<button type="submit">提交</button>
-			</form>
+		<div class="user-account-balance">
+			<div class="title">资产信息</div>
+			<ul>
+				<li>
+					<span>余额</span>
+					<span class="superscript">¥</span>
+					<span class="money account-info-balance"></span>
+					<button onclick="setMoney(this)">充值</button>
+					<form id="rechargeForm" style="display: none;" onsubmit="return false">
+						请输入充值金额
+						<input name="money_cal" autocomplete="off" required />
+						<button type="submit">提交</button>
+					</form>
+				</li>
+			</ul>
+		</div>
+		<div class="user-account-flow">
+			<div class="title">费用流水</div>
+			<table border="0" cellspacing="0" cellpadding="0">
+				<thead>
+					<tr>
+						<th>流水号</th>
+						<th>费用类型</th>
+						<th>支付方式</th>
+						<th>关联的订单号</th>
+						<th>金额</th>
+						<th>余额（后）</th>
+						<th>入账时间</th>
+						<th>操作人</th>
+						<th>备注</th>
+					</tr>
+				</thead>
+				<tbody class="flow-list">
+				</tbody>
+			</table>
 		</div>
 	</div>
 	<div class="bd-order-list" style="display: none;">
@@ -75,8 +107,8 @@
 <script type="text/javascript">
 
 	function queryAccount(){
-		$.getJSON('/tss/auth/module/account',{},function(account){
-			$('.account-info-balance').text(tssJS.Data.number_format(account.balance,2));
+		$.get('/tss/auth/module/account',{},function(account){
+			$('.account-info-balance').text(number_format(account.balance,2));
 		})
 	}
 
@@ -98,6 +130,31 @@
 			}
 		})
 	})
+
+	function queryFlow(){
+		$.get('/tss/auth/module/account/flow',{},function(flows){
+			$('.flow-list').html("");
+			flows.each(function(i,item){
+				let tr = 
+				`<tr>
+					<td>` + item.sn + `</td>
+					<td>` + item.type + `</td>
+					<td>` + item.payment + `</td>
+					<td>` + item.order_no + `</td>
+					<td>` + item.money + `</td>
+					<td>` + item.balance + `</td>
+					<td>` + item.pay_time + `</td>
+					<td>` + item.pay_man + `</td>
+					<td>` + formatterNull2Empty(item.remark) + `</td>
+				</tr>`;
+				$('.flow-list').append(tr)
+			})
+		})
+	}
+
+	
+
+	queryFlow();
 	
 
 	queryAccount();
