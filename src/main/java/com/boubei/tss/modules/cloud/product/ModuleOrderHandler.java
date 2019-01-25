@@ -1,4 +1,4 @@
-package com.boubei.tssx.ali;
+package com.boubei.tss.modules.cloud.product;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -11,9 +11,9 @@ import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.entity.SubAuthorize;
 import com.boubei.tss.util.EasyUtils;
 
-public class ProductModule extends AbstractAfterPay {
+public class ModuleOrderHandler extends AbstractAfterPay {
 
-	public ProductModule(CloudOrder co) {
+	public ModuleOrderHandler(CloudOrder co) {
 		super(co);
 	}
 

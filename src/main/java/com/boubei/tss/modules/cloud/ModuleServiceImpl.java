@@ -28,15 +28,16 @@ import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.modules.cloud.entity.CloudOrder;
 import com.boubei.tss.modules.cloud.entity.ModuleDef;
 import com.boubei.tss.modules.cloud.entity.ModuleUser;
+import com.boubei.tss.modules.cloud.product.AbstractAfterPay;
+import com.boubei.tss.modules.cloud.product.IAfterPay;
 import com.boubei.tss.um.entity.RoleUser;
 import com.boubei.tss.um.entity.SubAuthorize;
 import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
-import com.boubei.tssx.ali.AbstractAfterPay;
-import com.boubei.tssx.ali.IAfterPay;
+import com.boubei.tssx.ali.AfterPayService;
 
 @Service("ModuleService")
-public class ModuleServiceImpl implements ModuleService {
+public class ModuleServiceImpl implements ModuleService, AfterPayService{
 	
 	@Autowired ICommonDao commonDao;
 	
@@ -168,12 +169,14 @@ public class ModuleServiceImpl implements ModuleService {
 		return commonDao.getEntities(hql);
 	}
 
-	public Object payOrder(Map<?, ?> trade_map,String type) {
+	public Object handle(Map<?, ?> trade_map, String payType) {
 		IAfterPay iAfterPay = AbstractAfterPay.createBean(trade_map.get("out_trade_no").toString());
 		if (iAfterPay != null) {
-			return iAfterPay.handle(trade_map, type);
+			return iAfterPay.handle(trade_map, payType);
 		}
 		return null;
 	}
+
+	
 	
 }

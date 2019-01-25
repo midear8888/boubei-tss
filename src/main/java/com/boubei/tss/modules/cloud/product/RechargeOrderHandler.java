@@ -1,4 +1,4 @@
-package com.boubei.tssx.ali;
+package com.boubei.tss.modules.cloud.product;
 
 import java.util.Date;
 import java.util.List;
@@ -8,9 +8,9 @@ import com.boubei.tss.modules.cloud.entity.AccountFlow;
 import com.boubei.tss.modules.cloud.entity.CloudOrder;
 import com.boubei.tss.modules.sn.SerialNOer;
 
-public class ProductRecharge extends AbstractAfterPay {
+public class RechargeOrderHandler extends AbstractAfterPay {
 
-	public ProductRecharge(CloudOrder co) {
+	public RechargeOrderHandler(CloudOrder co) {
 		super(co);
 	}
 

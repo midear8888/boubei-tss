@@ -1,4 +1,4 @@
-package com.boubei.tssx.ali;
+package com.boubei.tss.modules.cloud.product;
 
 import java.util.Date;
 import java.util.List;
@@ -35,10 +35,10 @@ public abstract class AbstractAfterPay implements IAfterPay {
 		CloudOrder co = (CloudOrder) commonDao.getEntity(CloudOrder.class, EasyUtils.obj2Long(cloudOrderId));
 		String type = co.getType();
 		if (CloudOrder.TYPE0.equals(type)) {
-			return new ProductModule(co);
+			return new ModuleOrderHandler(co);
 		}
 		if (CloudOrder.TYPE1.equals(type)) {
-			return new ProductRecharge(co);
+			return new RechargeOrderHandler(co);
 		}
 		return null;
 	}

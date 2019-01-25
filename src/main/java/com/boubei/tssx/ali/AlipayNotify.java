@@ -14,7 +14,6 @@ import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.ICommonService;
-import com.boubei.tss.modules.cloud.ModuleService;
 import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
 
@@ -23,7 +22,7 @@ public class AlipayNotify extends HttpServlet {
 
 	private static final long serialVersionUID = -740569423483772472L;
 	static final String payType = "支付宝";
-	
+
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		doPost(request, response);
 	}
@@ -56,8 +55,8 @@ public class AlipayNotify extends HttpServlet {
 				commService.create(log);
 
 				if (!EasyUtils.isNullOrEmpty(iAfterPayBean)) {
-					ModuleService moduleService = (ModuleService) Global.getBean("ModuleService");
-					moduleService.payOrder(map, payType);
+					AfterPayService afterPayService = (AfterPayService) Global.getBean(iAfterPayBean);
+					afterPayService.handle(map, payType);
 				}
 
 				response.getWriter().println("success");

@@ -1,4 +1,4 @@
-package com.boubei.tssx.ali;
+package com.boubei.tss.modules.cloud.product;
 
 import java.util.Map;
 

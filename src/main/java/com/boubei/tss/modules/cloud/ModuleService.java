@@ -11,7 +11,6 @@
 package com.boubei.tss.modules.cloud;
 
 import java.util.List;
-import java.util.Map;
 
 import com.boubei.tss.modules.cloud.entity.CloudOrder;
 
@@ -33,6 +32,5 @@ public interface ModuleService {
 
 	void refreshModuleUserRoles(Long module);
 
-	Object payOrder(Map<?, ?> trade_map, String type);
 
 }
