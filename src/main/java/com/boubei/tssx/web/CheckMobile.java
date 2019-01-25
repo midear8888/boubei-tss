@@ -66,12 +66,14 @@ public class CheckMobile extends HttpServlet {
             else {
             	// 产生一个登录随机数，发到用户的手机短信
             	SendSmsResponse ssr = AliyunSMS.instance().sendRandomNum( mobile );
-                int randomKey = EasyUtils.obj2Int(ssr.getMessage());
-                
-    			request.getSession(true).setAttribute(SSOConstants.RANDOM_KEY, randomKey);
-            	
-            	SuccessMessageEncoder encoder = new SuccessMessageEncoder("请速去手机短信查取修改密码的验证码。");
-                encoder.print(new XmlPrintWriter(response.getWriter()));
+            	if( ssr != null) {
+            		int randomKey = EasyUtils.obj2Int(ssr.getMessage());
+                    
+        			request.getSession(true).setAttribute(SSOConstants.RANDOM_KEY, randomKey);
+                	
+                	SuccessMessageEncoder encoder = new SuccessMessageEncoder("请速去手机短信查取修改密码的验证码。");
+                    encoder.print(new XmlPrintWriter(response.getWriter()));
+            	}
 			} 
 		}
 	}

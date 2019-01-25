@@ -158,7 +158,10 @@ public class AliyunSMS {
 		String tlParam = "{\"code\":\"" +randomKey+ "\"}";
 		
 		SendSmsResponse ssr = send(phone, tlCode, tlParam, randomKey);
-		ssr.setMessage( String.valueOf(randomKey) );
+		if( ssr != null ) {
+			ssr.setMessage( String.valueOf(randomKey) );
+		}
+		
 		return ssr;
     }
     

@@ -175,8 +175,9 @@ public class WxLogin extends HttpServlet {
 					" \"roles\": \"" + roles + "\", " +
 					" \"groups\": \"" + EasyUtils.list2Str(groups, 1) + "\", " +
 					" \"assistGroups\": \"" + EasyUtils.list2Str(assistGroups, 1) + "\", " +
-					" \"uName\": \"" + user.getLoginName() + "\", " +
-					" \"cnName\": \"" + user.getUserName() + "\", " +
+					" \"uName\" : \"" + user.getLoginName() + "\", " +
+					" \"cnName\": \"" + user.getUserName()  + "\", " +
+					" \"mobile\": \"" + user.getTelephone() + "\", " +
 					" \"domain\": \"" + domain + "\", " +
 					" \"belongUserId\": \"" + user.getBelongUserId() + "\", " +
 					" \"openid\": \"" + openid + "\""
