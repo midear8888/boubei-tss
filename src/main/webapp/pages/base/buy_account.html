@@ -66,6 +66,19 @@
 		display: flex;
 	}
 
+	form{
+		padding-bottom: 5px;
+	}
+
+	form > input{
+		width: 60px;
+	}
+
+	form > span{
+		font-size: 10px;
+		color: orange;
+	}
+
 </style>
 <body>
 	<div class="user-account">
@@ -77,32 +90,20 @@
 					<span class="superscript">¥</span>
 					<span class="money account-info-balance"></span>
 					<button onclick="setMoney(this)">充值</button>
-					<form id="rechargeForm" style="display: none;" onsubmit="return false">
-						请输入充值金额
-						<input name="money_cal" autocomplete="off" required />
-						<button type="submit">提交</button>
-					</form>
 				</li>
 			</ul>
+			<form id="rechargeForm" style="display: none;" onsubmit="return false">
+				<span>请输入充值金额</span>
+				<input name="money_cal" autocomplete="off" required />
+				<button type="submit">提交</button>
+			</form>
 		</div>
 		<div class="user-account-device">
 			<div class="title">我的设备</div>
-			<ul>
-				<li class="active">
-					<h2>name</h2>
-					<div>
-						<div>有效期</div>
-						<div>
-							<div>2018-12-12 12:12:12</div>
-							<div>2018-12-30 12:12:12</div>
-						</div>
-					</div>
-					<button>立即续费</button>
-				</li>
-			</ul>
+			<ul></ul>
 			<form id="renewalfeeForm" style="display: none;" onsubmit="return false">
-				您已选择<b id="device_num"></b>个设备
-				请输入续费月数
+				<span>您已选择<b id="device_num"></b>个设备</span>
+				<span>请输入续费月数</span>
 				<input name="month_num" autocomplete="off" required />
 				<button type="submit">提交</button>
 			</form>
@@ -160,7 +161,7 @@
 	}
 
 	function setMoney(e){
-		$(e).next().show()
+		$("#rechargeForm").show()
 	}
 
 	
@@ -214,7 +215,10 @@
 								<div>`+item.endDate+`</div>
 							</div>
 						</div>
-						<input type="checkbox" class="subauthorize-checkbox" data-id=`+item.id+` />
+						<input type="checkbox" class="subauthorize-checkbox" 
+							   data-id=` + item.id + ` 
+							   data-module_id=` + item.name.split('_')[0] + ` 
+						/>
 						<span>我要续费</span>
 					</li>
 				`;
@@ -234,11 +238,20 @@
 	}
 
 	$('#renewalfeeForm').submit((e)=>{
-		let ids = [];
+		let ids = [], module_ids = [];
 		$('.subauthorize-checkbox:checkbox:checked').each(function(i,item){
 			ids.push(item.getAttribute('data-id'))
+			let module_id = item.getAttribute('data-module_id');
+			if(!module_ids.contains(module_id)){
+				module_ids.push(module_id)
+			}
 		})
+		if(module_ids.length>1){
+			confirm("您不能同时续费多个产品，请分开续费!");
+			return
+		}
 		$.post('/tss/auth/module/order', {
+			module_id : module_ids[0],
 			type : 'renewalfee',
 			month_num : $('input[name="month_num"]').val(),
 			params : ids.join(","),

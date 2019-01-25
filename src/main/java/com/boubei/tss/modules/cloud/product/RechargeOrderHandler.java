@@ -1,13 +1,15 @@
 package com.boubei.tss.modules.cloud.product;
 
 import java.util.Date;
-import java.util.List;
 
 import com.boubei.tss.modules.cloud.entity.Account;
 import com.boubei.tss.modules.cloud.entity.AccountFlow;
 import com.boubei.tss.modules.cloud.entity.CloudOrder;
 import com.boubei.tss.modules.sn.SerialNOer;
 
+/**
+ * @author hank 充值成功后续操作
+ */
 public class RechargeOrderHandler extends AbstractAfterPay {
 
 	public RechargeOrderHandler(CloudOrder co) {
@@ -16,18 +18,7 @@ public class RechargeOrderHandler extends AbstractAfterPay {
 
 	public Boolean handle() {
 		// 获取账户
-		@SuppressWarnings("unchecked")
-		List<Account> accounts = (List<Account>) commonDao.getEntities(" from Account where belong_user_id = ?", userId);
-		Account account;
-		if (accounts.size() > 0) {
-			account = accounts.get(0);
-		} else {
-			account = new Account();
-			account.setBalance(0D);
-			account.setBelong_user_id(userId);
-			account.setDomain(co.getDomain());
-			account = (Account) commonDao.create(account);
-		}
+		Account account = getAccount();
 		Long account_id = account.getId();
 		// 创建流水
 		AccountFlow flow = new AccountFlow();

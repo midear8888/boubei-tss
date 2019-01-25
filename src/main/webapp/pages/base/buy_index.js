@@ -96,6 +96,14 @@ Array.prototype.each = function(callback){
         callback(i,this[i])
     }
 }
+Array.prototype.contains = function(value){
+    for (var i = 0; i < this.length; i++) {
+        if(this[i] == value){
+            return true;
+        }
+    }
+    return false;
+}
 
 function searchParams(name, decode) {
     let items = {}; // 先清空

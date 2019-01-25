@@ -12,6 +12,10 @@ import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.entity.SubAuthorize;
 import com.boubei.tss.util.EasyUtils;
 
+/**
+ * @author hank
+ * 购买模块成功后续操作
+ */
 public class ModuleOrderHandler extends AbstractAfterPay {
 
 	public ModuleOrderHandler(CloudOrder co) {

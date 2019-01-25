@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.persistence.ICommonDao;
+import com.boubei.tss.modules.cloud.entity.Account;
 import com.boubei.tss.modules.cloud.entity.CloudOrder;
 import com.boubei.tss.um.entity.User;
 import com.boubei.tss.util.EasyUtils;
@@ -40,6 +41,9 @@ public abstract class AbstractAfterPay implements IAfterPay {
 		if (CloudOrder.TYPE1.equals(type)) {
 			return new RechargeOrderHandler(co);
 		}
+		if(CloudOrder.TYPE2.equals(type)){
+			return new RenewalfeeOrderHandler(co);
+		}
 		return null;
 	}
 
@@ -67,6 +71,23 @@ public abstract class AbstractAfterPay implements IAfterPay {
 			return "success";
 		}
 		return "false";
+
+	}
+
+	protected Account getAccount() {
+		@SuppressWarnings("unchecked")
+		List<Account> accounts = (List<Account>) commonDao.getEntities(" from Account where belong_user_id = ?", userId);
+
+		if (accounts.size() > 0) {
+			return accounts.get(0);
+		}
+
+		Account account = new Account();
+		account.setBalance(0D);
+		account.setBelong_user_id(userId);
+		account.setDomain(co.getDomain());
+		account = (Account) commonDao.create(account);
+		return account;
 
 	}
 
