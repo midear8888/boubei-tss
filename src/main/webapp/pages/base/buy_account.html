@@ -44,11 +44,9 @@
 	.user-account-device h2{
 		text-align: center;
 	}
-	.user-account-device button{
-		width: 100%;
-	}
 	.user-account-device > ul{
 		display: flex;
+		flex-wrap: wrap;
 	}
 	.user-account-device > ul > li{
 		background-color: #eee;
@@ -58,8 +56,8 @@
 	.user-account-device > ul > li.active{
 		background-color: #70f57c;
 	}
-	.user-account-device > ul > li > h5{
-		font-size: 25px;
+	.user-account-device > ul > li > span{
+		font-size: 10px;
 	}
 	.user-account-device ul li div{
 		font-size: 8px;
@@ -102,6 +100,12 @@
 					<button>立即续费</button>
 				</li>
 			</ul>
+			<form id="renewalfeeForm" style="display: none;" onsubmit="return false">
+				您已选择<b id="device_num"></b>个设备
+				请输入续费月数
+				<input name="month_num" autocomplete="off" required />
+				<button type="submit">提交</button>
+			</form>
 		</div>
 		<div class="user-account-flow">
 			<div class="title">费用流水</div>
@@ -210,13 +214,44 @@
 								<div>`+item.endDate+`</div>
 							</div>
 						</div>
-						<button>立即续费</button>
+						<input type="checkbox" class="subauthorize-checkbox" data-id=`+item.id+` />
+						<span>我要续费</span>
 					</li>
 				`;
 				$(str).addClass(item.disabled == 0 ? 'active' : '').appendTo($ul);
 			})
+			$('.subauthorize-checkbox').click(function(e){
+				const checkedNum = $('.subauthorize-checkbox:checkbox:checked').length;
+				if(checkedNum){
+					$('#device_num').text(checkedNum)
+					//展示合并支付
+					$('#renewalfeeForm').show();
+				}else{
+					$('#renewalfeeForm').hide();
+				}
+			})
 		})
 	}
+
+	$('#renewalfeeForm').submit((e)=>{
+		let ids = [];
+		$('.subauthorize-checkbox:checkbox:checked').each(function(i,item){
+			ids.push(item.getAttribute('data-id'))
+		})
+		$.post('/tss/auth/module/order', {
+			type : 'renewalfee',
+			month_num : $('input[name="month_num"]').val(),
+			params : ids.join(","),
+			account_num : ids.length
+		} ,function(moduleOrderBack){
+			if(moduleOrderBack.id){
+				//跳转我的订单
+				window.location.href = 'buy_order.html?id=' + moduleOrderBack.id;
+			}else{
+				confirm(moduleOrderBack.errorMsg);
+			}
+		})
+	})
 
 	
 

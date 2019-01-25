@@ -43,8 +43,8 @@
 					<th>状态</th>
 					<th>产品</th>
 					<th>单价</th>
-					<th>购买账号</th>
-					<th>购买时长</th>
+					<th>账号</th>
+					<th>时长</th>
 					<th>应付金额</th>
 					<th>实付金额</th>
 					<th>优惠</th>
@@ -131,6 +131,7 @@
 	function formatterProduct(item, moduleMap){
 		const productMap = {
 			recharge : '充值',
+			renewalfee : '续费'
 		}
 		return item.module_id ? moduleMap[item.module_id] : productMap[item.type];
 	}

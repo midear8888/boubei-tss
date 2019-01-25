@@ -30,9 +30,10 @@ public class CloudOrder extends ARecordTable {
 	public final static String NEW = "待付款";
 	public final static String CANCELED = "已取消";
 	public final static String PAYED = "已付款";
-	
+
 	public final static String TYPE0 = "module";
 	public final static String TYPE1 = "recharge";
+	public final static String TYPE2 = "renewalfee";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO, generator = "module_order_seq")
@@ -47,7 +48,7 @@ public class CloudOrder extends ARecordTable {
 
 	private Integer month_num;
 
-	private String order_no;// 订单号 编码规则=时间戳-module_id-id
+	private String order_no;// 订单号 编码规则=时间戳-id
 	private Date order_date = new Date();
 	private Date pay_date;
 
@@ -58,6 +59,7 @@ public class CloudOrder extends ARecordTable {
 	private Double money_real; // 实付金额
 	private Double rebate; // 折扣
 	private Double derate; // 减免
+	private String params;// 更多参数
 
 	public Serializable getPK() {
 		return this.getId();
@@ -182,4 +184,13 @@ public class CloudOrder extends ARecordTable {
 	public void setStatus(String status) {
 		this.status = status;
 	}
+
+	public String getParams() {
+		return params;
+	}
+
+	public void setParams(String params) {
+		this.params = params;
+	}
+
 }
