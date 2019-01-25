@@ -82,13 +82,13 @@
 				).appendTo('.bd-module-order-list');
 
 				$tr.find('button').click(()=>{
-					let out_trade_no = this.order_no;
+					let out_trade_no = item.order_no;
 					let uri = restfulParams({
 						appid : appid,
 						out_trade_no : out_trade_no,
 						product_code : "FAST_INSTANT_TRADE_PAY",
-						total_amount : this.money_cal,
-						subject : '支付' + formatterProduct(item),
+						total_amount : item.money_cal,
+						subject : '支付' + formatterProduct(item, moduleMap),
 						body : "",
 						afterPaySuccess : 'do',
 						return_url : 'https://e8dev.boudata.com/tss/pages/base/buy_index.html?index=1'
@@ -103,11 +103,11 @@
 
 	function queryModuleDef(callback){
 		const moduleMap = {};
-		$.getJSON('/tss/xdata/json/cloud_module_def',function(data){
+		$.get('/tss/xdata/json/cloud_module_def',{},function(data){
 			data.each(function(i,item){
 				moduleMap[item.id] = item.module;
 			})
-			callback(moduleMap)
+			callback && callback(moduleMap)
 		})
 	}
 	
@@ -128,7 +128,7 @@
 		return str.join(',') || '-'
 	}
 
-	function formatterProduct(item,moduleMap){
+	function formatterProduct(item, moduleMap){
 		const productMap = {
 			recharge : '充值',
 		}

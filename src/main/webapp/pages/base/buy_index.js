@@ -18,7 +18,7 @@ function getFormData(formId){
 
 function restfulParams(params){
     var queryString = "?";
-    tssJS.each(params, function(key, value) {
+    $.each(params, function(key, value) {
         if( queryString.length > 1 ) {
             queryString += "&";
         }
@@ -28,8 +28,8 @@ function restfulParams(params){
 }
 
 function formatterNull2Empty(value){
-        return value || ''
-    }
+    return value || ''
+}
 
 
 function domToString (node) {  

@@ -41,6 +41,33 @@
 	ul{
 		list-style:none;
 	}
+	.user-account-device h2{
+		text-align: center;
+	}
+	.user-account-device button{
+		width: 100%;
+	}
+	.user-account-device > ul{
+		display: flex;
+	}
+	.user-account-device > ul > li{
+		background-color: #eee;
+		margin: 5px 5px;
+		padding: 20px 20px;
+	}
+	.user-account-device > ul > li.active{
+		background-color: #70f57c;
+	}
+	.user-account-device > ul > li > h5{
+		font-size: 25px;
+	}
+	.user-account-device ul li div{
+		font-size: 8px;
+	}
+	.user-account-device ul li > div{
+		display: flex;
+	}
+
 </style>
 <body>
 	<div class="user-account">
@@ -57,6 +84,22 @@
 						<input name="money_cal" autocomplete="off" required />
 						<button type="submit">提交</button>
 					</form>
+				</li>
+			</ul>
+		</div>
+		<div class="user-account-device">
+			<div class="title">我的设备</div>
+			<ul>
+				<li class="active">
+					<h2>name</h2>
+					<div>
+						<div>有效期</div>
+						<div>
+							<div>2018-12-12 12:12:12</div>
+							<div>2018-12-30 12:12:12</div>
+						</div>
+					</div>
+					<button>立即续费</button>
 				</li>
 			</ul>
 		</div>
@@ -152,12 +195,37 @@
 		})
 	}
 
+	function querySubAuthorize(){
+		$.get('/tss/auth/module/account/subauthorize',{},function(subauthorizes){
+			let $ul = $('.user-account-device > ul');
+			$ul.html('');
+			subauthorizes.each(function(i,item){
+				let str = `
+					<li>
+						<h2>`+item.name+`</h2>
+						<div>
+							<div>有效期</div>
+							<div>
+								<div>`+item.startDate+`</div>
+								<div>`+item.endDate+`</div>
+							</div>
+						</div>
+						<button>立即续费</button>
+					</li>
+				`;
+				$(str).addClass(item.disabled == 0 ? 'active' : '').appendTo($ul);
+			})
+		})
+	}
+
 	
 
 	queryFlow();
 	
 
 	queryAccount();
+
+	querySubAuthorize();
 	
 </script>
 </html>
