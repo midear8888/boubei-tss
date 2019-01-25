@@ -96,12 +96,13 @@ public class ModuleServiceImpl implements ModuleService, AfterPayService{
 		
 		// 生成一个转授策略
 		SubAuthorize sa = new SubAuthorize();
-		sa.setName(def.getModule() + "_" + user);
+		sa.setName(def.getId() + "_" + def.getModule() + "_test"); // name: 模块ID_模块名称_购买序号
 		sa.setStartDate(new Date());
 		sa.setOwnerId( Environment.getUserId() );
 		
 		Calendar calendar = new GregorianCalendar();
-        calendar.add(Calendar.DAY_OF_YEAR, EasyUtils.obj2Int(def.getTry_days()));
+        Object try_days = EasyUtils.checkNull(def.getTry_days(), 31);
+		calendar.add(Calendar.DAY_OF_YEAR, EasyUtils.obj2Int(try_days));
 		sa.setEndDate(calendar.getTime());
 		commonDao.create(sa);
 		
@@ -177,6 +178,4 @@ public class ModuleServiceImpl implements ModuleService, AfterPayService{
 		return null;
 	}
 
-	
-	
 }

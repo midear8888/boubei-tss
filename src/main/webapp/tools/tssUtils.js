@@ -682,18 +682,25 @@ function moveTreeNode(tree, id, targetId, url) {
 }
 
 /*********************** 和UM相关 的 公用函数 **********************************/
+// 用户权限信息
+var userCode, 
+	userName, 
+	userDomain,
+	userGroups = [], 
+	userRoles = [],
+	userRoleNames = [];
 
-function showOnlineUser() {
-	$.ajax({
-		url : AUTH_PATH + "user/online",
-		method : "GET",
-		headers : {"appCode": FROMEWORK_CODE, "anonymous": "true"},
-		onresult : function() { 
-			var size  = this.getNodeValue("size");
-			var users = this.getNodeValue("users");
-			alert("当前共有" + size + "个用户在线：" + users);
-		}
-	});
+var userHas = tssJS.Cookie.decode("userHas");
+if(userHas) {
+    userGroups = userHas[0];
+    userRoles  = userHas[1];
+    userRoleNames = userHas[11];
+    userCode   = userHas[3];
+    userName   = userHas[4];
+    userDomain = userHas[12];
+    userRoleNames.each(function(i, item){
+        userRoles.push(item);
+    });
 }
 
 function logout() {

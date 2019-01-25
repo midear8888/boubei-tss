@@ -64,10 +64,12 @@ public class User extends OperateInfo implements ITreeNode, IGridNode, IXForm {
     private String email;           // 邮件 
     private String telephone;       // 联系电话 
     private String address;         // 地址 
-    private String postalCode;      // 邮编 
     private String certificateNo;   // 证件号
     private String certificate;     // 证件种类 :  1：工作证  2：身份证等
     private Date   accountLife;     // 帐户有效期限 ：用户帐户到某个指顶的期限过期
+    
+    @Column(length = 1000)
+    private String udf;     		// 自定义 
     
     private String  password;         // 密码 
     private String  passwordQuestion; // 密码提示问题 
@@ -93,6 +95,7 @@ public class User extends OperateInfo implements ITreeNode, IGridNode, IXForm {
     @Transient private Long   groupId;      // 用户所在组id
     @Transient private String groupName;    // 用户所在组名称
     @Transient private String domain;       // 用户所在域
+    @Transient private String roleNames;
 
     public Long getId() {
         return id;
@@ -236,14 +239,6 @@ public class User extends OperateInfo implements ITreeNode, IGridNode, IXForm {
 	public void setPasswordStrength(Integer passwordStrength) {
 		this.passwordStrength = passwordStrength;
 	}
- 
-    public String getPostalCode() {
-        return postalCode;
-    }
- 
-    public void setPostalCode(String postalCode) {
-        this.postalCode = postalCode;
-    }
  
     public String getSex() {
         return sex;
@@ -390,5 +385,21 @@ public class User extends OperateInfo implements ITreeNode, IGridNode, IXForm {
 
 	public void setDomain(String domain) {
 		this.domain = domain;
+	}
+
+	public String getUdf() {
+		return udf;
+	}
+
+	public void setUdf(String udf) {
+		this.udf = udf;
+	}
+
+	public String getRoleNames() {
+		return roleNames;
+	}
+
+	public void setRoleNames(String roleNames) {
+		this.roleNames = roleNames;
 	}
 }

@@ -406,6 +406,7 @@ public class EasyUtils {
     	return fmParse(template, data, out, new Configuration());
     }
     
+    
     /**
 	 * 调用freeMarker解析后，用js的eval方法计算结果
 	 * 

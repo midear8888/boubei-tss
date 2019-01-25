@@ -224,7 +224,9 @@
         menu1.addItem(subitem12_2);
         menu1.addItem(subitem12_4);
 
-        menu1.addItem(createPermissionMenuItem("1"));
+        if(userCode === 'Admin') {
+            menu1.addItem(createPermissionMenuItem("1"));
+        }
 
         $1("tree").contextmenu = menu1;
     }

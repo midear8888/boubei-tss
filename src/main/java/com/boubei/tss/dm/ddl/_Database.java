@@ -493,10 +493,11 @@ public abstract class _Database {
 			paramsMap.put(++index, value);
 		}
 		
+		String creator= (String) EasyUtils.checkNull(Environment.getUserCode(), Anonymous._CODE);
 		String domain = (String) EasyUtils.checkNull( pointedDomain, Environment.getDomainOrign() );
 		paramsMap.put(++index, domain); 
 		paramsMap.put(++index, new Timestamp(new Date().getTime())); 
-		paramsMap.put(++index, Environment.getUserCode());
+		paramsMap.put(++index, creator);
 		paramsMap.put(++index, 0);
 		return paramsMap;
 	}

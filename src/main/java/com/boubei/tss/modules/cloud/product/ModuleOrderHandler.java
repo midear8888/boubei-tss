@@ -6,6 +6,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import com.boubei.tss.modules.cloud.entity.CloudOrder;
+import com.boubei.tss.modules.cloud.entity.ModuleDef;
 import com.boubei.tss.modules.cloud.entity.ModuleUser;
 import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.entity.SubAuthorize;
@@ -24,7 +25,10 @@ public class ModuleOrderHandler extends AbstractAfterPay {
 		Long module_id = co.getModule_id();
 		for (int i = 0; i < account_num; i++) {
 			SubAuthorize sa = new SubAuthorize();
-			sa.setName(module_id + "_" + userId + "_" + i);
+			
+			ModuleDef def = (ModuleDef) commonDao.getEntity(ModuleDef.class, module_id);
+			sa.setName(def.getId() + "_" + def.getModule() + "_" + i); // name: 模块ID_模块名称_购买序号
+			
 			sa.setStartDate(new Date());
 			sa.setOwnerId(userId);
 

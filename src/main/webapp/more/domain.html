@@ -38,8 +38,8 @@ ul>li div.module>p { margin-bottom: 3px; line-height: 18px; text-indent: 2em; }
 ul>li div.module>.issue { position: absolute; bottom: 45px; left: 0; width: 100%; }
 ul>li div.module>.issue>b { color: #797BED; font-size: 110%; }
 ul>li div.module>.bts { position: absolute; bottom: 12px; left: 0; width: 100%; }
-ul>li div.module>.bts>button { visibility: hidden; }
-
+ul>li div.module>.bts>button { display: none; }
+ul>li div.module>.bts>button.medium { padding: .3em; }
 
 ul>li:hover>div { background-color: #FEF7A9;}
 .selected>div { background-color: #FEF7A9; }
@@ -88,10 +88,18 @@ function initList() {
 
       $li.find("div.issue").text(item.creator + " 发布于 " + (item.updateTime||item.createTime).split(" ")[0]);
 
-      $li.find("div.module>.bts>button").css("visibility", "visible")
+      // 购买按钮
+      var price = item.price || 100;
+      $li.find("div.module>.bts>button:nth-child(1)").css("display", "inline-block").click( function() {  buy(item.id, item.init_url); });
+      $li.find("div.module>.bts>button:nth-child(1) .price").text("￥" + price + " ");
+
+      // 没有试用期的模块需要购买才能使用
+      if( item.try_days > 0 || true) {
+        $li.find("div.module>.bts>button:nth-child(2)").css("display", "inline-block")
           .click( function() {
             selectModule(item.id, "POST", item.init_url);
           });
+      }
     });
 
     initSelected();
@@ -105,15 +113,15 @@ function initSelected() {
             var $li = $("#li" + item.id).addClass("selected");
             if(!$li.length) return true;
             
-            $li.find("div.module>.bts>button:nth-child(1)")
-                .text("结束使用")
+            $li.find("div.module>.bts>button:nth-child(2)")
+                .text("结束试用")
                 .addClass("orange")
                 .removeClass("blue")
                 .click( function() {
                     selectModule(item.id, "DELETE");
                 });
 
-            $li.find("div.module>.bts>button:nth-child(2)").click( function() {
+            $li.find("div.module>.bts>button:nth-child(3)").css("display", "inline-block").click( function() {
                     exportModule(item.id);
                 });
         });
@@ -160,8 +168,9 @@ function refresh() {
   </p>
   <div class="issue"></div> 
   <div class="bts">
-    <button class="tssbutton blue medium"><span class="price"><!-- （<b>免费</b>） --></span>我要试用</button> 
-    <button class="tssbutton blue small">下载</button> 
+    <button class="tssbutton blue medium"><span class="price"></span>购买使用</button> 
+    <button class="tssbutton blue small"></span>免费试用</button> 
+    <!-- <button class="tssbutton blue small">下载</button>  -->
   </div>
 </div>
 

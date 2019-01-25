@@ -13,7 +13,7 @@
 		<column name="email" caption="电子邮件" maxLength="100" inputReg="\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*"/>
 		<column name="telephone" caption="手机" maxLength="30"/>
 		<column name="address"   caption="地址" maxLength="100"/>
-		<column name="postalCode" caption="邮编" maxLength="10" inputReg="^\d{0,10}$"/>
+		<column name="udf" caption="自定义"/>
 		
 		<column name="certificate" caption="证件种类" mode="combo" values="1|2" texts="工作证|身份证"/>
 		<column name="certificateNo" caption="证件号" maxLength="50"/>
@@ -52,6 +52,10 @@
  
 			<TD><label binding="authToken"/></TD>
 			<TD><input binding="authToken" style="width:250px;"/></TD>
+		</TR>
+		<TR>
+			<TD valign="top"><label binding="udf"/></TD>
+			<TD colspan="3"><textarea binding="udf" style="width:89%;height:60px"/></TD>
 		</TR>
 	</layout>
 </xform>

@@ -217,9 +217,8 @@ public class UserAction extends BaseActionSupport {
 		
 		checkPermission(groupId, UMConstants.GROUP_EDIT_OPERRATION);
 		
-        PageInfo users = userService.searchUser(groupId, searchStr, page);
-        GridDataEncoder gridEncoder = new GridDataEncoder(users.getItems(), UMConstants.MAIN_USER_GRID);
-        print(new String[]{"SourceList", "PageInfo"}, new Object[]{gridEncoder, users});
+        PageInfo pi = userService.searchUser(groupId, searchStr, page);
+        showUserGrid(pi);
 	}
 
 	/**
@@ -231,10 +230,24 @@ public class UserAction extends BaseActionSupport {
     	
 		checkPermission(groupId, UMConstants.GROUP_EDIT_OPERRATION);
 		
-        PageInfo users = userService.getUsersByGroupId(groupId, page, " u.loginName asc ");
-        GridDataEncoder gridEncoder = new GridDataEncoder(users.getItems(), UMConstants.MAIN_USER_GRID);
-        print(new String[]{"SourceList", "PageInfo"}, new Object[]{gridEncoder, users});
+        PageInfo pi = userService.getUsersByGroupId(groupId, page, " u.loginName asc ");
+        showUserGrid(pi);
     }
+	
+	private void showUserGrid(PageInfo pi) {
+		String hql = "select distinct r.name from ViewRoleUser o, Role r " +
+				" where o.id.roleId = r.id and o.id.userId = ? order by r.seqNo ";
+        
+		List<?> items = pi.getItems();
+		for(Object o : items) {
+			User u = (User) o;
+			List<?> list = commonService.getList(hql, u.getId());
+			u.setRoleNames( EasyUtils.list2Str(list) );
+		}
+		
+        GridDataEncoder gridEncoder = new GridDataEncoder(items, UMConstants.MAIN_USER_GRID);
+        print(new String[]{"SourceList", "PageInfo"}, new Object[]{gridEncoder, pi});
+	}
  
 	/**
 	 * 初始化密码

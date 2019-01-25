@@ -19,6 +19,14 @@ import com.boubei.tss.um.entity.SubAuthorize;
  * 权限转授策略相关。
  */
 public interface ISubAuthorizeService {
+	
+	/**
+	 * 列出指定用户拥有的转授策略（自己创建或购买模块获得）
+	 * 
+	 * @param creatorId
+	 * @return
+	 */
+	List<?> listMySubauth(Long creatorId);
 
 	/**
 	 * <p>
