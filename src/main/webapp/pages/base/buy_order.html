@@ -41,7 +41,7 @@
 					<th>下单时间</th>
 					<th>支付时间</th>
 					<th>状态</th>
-					<th>产品</th>
+					<th>类型</th>
 					<th>单价</th>
 					<th>账号</th>
 					<th>时长</th>
@@ -58,9 +58,9 @@
 </body>
 <script type="text/javascript">
 
-	queryModuleDef((moduleMap)=>{ queryModuleOrder(moduleMap) })
+	queryModuleDef(()=>{ queryModuleOrder() })
 
-	function queryModuleOrder(moduleMap){
+	function queryModuleOrder(){
 		$.get('/tss/auth/module/order/list',{},function(moduleOrders){
 			$('.bd-module-order-list tr').remove();
 			moduleOrders.each(function(i,item){
@@ -70,7 +70,7 @@
 						<td>` + formatter(item.order_date) + `</td>
 						<td>` + formatter(item.pay_date) + `</td>
 						<td>` + formatter(item.status) + `</td>
-						<td>` + formatterProduct(item,moduleMap) + `</td>
+						<td>` + formatterProduct(item) + `</td>
 						<td>` + formatter(item.price,'元') + `</td>
 						<td>` + formatter(item.account_num,'个') + `</td>
 						<td>` + formatter(item.month_num,'月') + `</td>
@@ -88,7 +88,7 @@
 						out_trade_no : out_trade_no,
 						product_code : "FAST_INSTANT_TRADE_PAY",
 						total_amount : item.money_cal,
-						subject : '支付' + formatterProduct(item, moduleMap),
+						subject : '支付' + formatterProduct(item),
 						body : "",
 						afterPaySuccess : 'ModuleService',
 						return_url : 'https://e8dev.boudata.com/tss/pages/base/buy_index.html?index=1'
@@ -98,16 +98,6 @@
 					
 				})
 			})
-		})
-	}
-
-	function queryModuleDef(callback){
-		const moduleMap = {};
-		$.get('/tss/xdata/json/cloud_module_def',{},function(data){
-			data.each(function(i,item){
-				moduleMap[item.id] = item.module;
-			})
-			callback && callback(moduleMap)
 		})
 	}
 	
@@ -126,14 +116,6 @@
 			str.push( "减免 " + item.derate + ' 元' );
 		}
 		return str.join(',') || '-'
-	}
-
-	function formatterProduct(item, moduleMap){
-		const productMap = {
-			recharge : '充值',
-			renewalfee : '续费'
-		}
-		return (item.module_id ? moduleMap[item.module_id] : "") + (productMap[item.type] || "");
 	}
 </script>
 </html>

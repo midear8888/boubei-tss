@@ -8,9 +8,7 @@ import org.apache.commons.lang.time.DateUtils;
 
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.modules.cloud.entity.Account;
-import com.boubei.tss.modules.cloud.entity.AccountFlow;
 import com.boubei.tss.modules.cloud.entity.CloudOrder;
-import com.boubei.tss.modules.sn.SerialNOer;
 import com.boubei.tss.um.entity.SubAuthorize;
 
 /**
@@ -35,7 +33,7 @@ public class RenewalfeeOrderHandler extends AbstractAfterPay {
 			if (!module_ids.contains(module_id)) {
 				module_ids.add(module_id);
 			}
-			if (!name[1].equals(userId.toString())) {
+			if (!subAuthorize.getCreatorId().equals(userId)) {
 				throw new BusinessException("您不能操作别的用户的设备！");
 			}
 			if (subAuthorize.getEndDate().before(date)) {
@@ -47,38 +45,11 @@ public class RenewalfeeOrderHandler extends AbstractAfterPay {
 			throw new BusinessException("您不能同时续费多个产品，请分开续费！");
 		}
 		// ----校验结束----
-		// 先给账户充值
-		Account account = getAccount();
-		// 创建充值流水
-		AccountFlow flow = new AccountFlow();
-		flow.setAccount_id(account.getId());
-		flow.setMoney(co.getMoney_real());
-		flow.setOrder_no(co.getOrder_no());
-		flow.setPay_man(this.trade_map.get("buyer_id").toString());
-		flow.setPay_time(new Date());
-		flow.setPayment(this.payType);
-		flow.setSn(SerialNOer.get("AF"));
-		flow.setType(CloudOrder.TYPE1);
-		Double balance = account.getBalance() + flow.getMoney();
-		flow.setBalance(balance);
-		account.setBalance(balance);
-		commonDao.create(flow);
 
-		// 创建续费扣款流水
-		flow = new AccountFlow();
-		flow.setAccount_id(account.getId());
-		flow.setMoney(-co.getMoney_real());
-		flow.setOrder_no(co.getOrder_no());
-		flow.setPay_man(this.trade_map.get("buyer_id").toString());
-		flow.setPay_time(new Date());
-		flow.setPayment(this.payType);
-		flow.setSn(SerialNOer.get("AF"));
-		flow.setType(co.getType());
-		balance = account.getBalance() + flow.getMoney();
-		flow.setBalance(balance);
-		account.setBalance(balance);
-		commonDao.create(flow);
+		Account account = getAccount();
+		createFlows(account);
 
 		return true;
 	}
+
 }

@@ -45,8 +45,7 @@ public class ModuleServiceImpl implements ModuleService, AfterPayService{
 	
 	
 	public CloudOrder createOrder(CloudOrder mo){
-		Long module_id = mo.getModule_id();
-		if(module_id!=null){
+		if(mo.getModule_id()!=null){
 			calMoney(mo, true);
 		}
 		mo.setStatus(CloudOrder.NEW);
@@ -71,7 +70,7 @@ public class ModuleServiceImpl implements ModuleService, AfterPayService{
 		if(throw_ && money_cal != null && !money_cal.equals(money)){
 			throw new BusinessException("应付金额异常");
 		}
-		mo.setMoney_cal( money ); 
+		mo.setMoney_cal( (double)Math.round(money*100) / 100 );
 		return mo;
 		// 价格以后台计算为准，防止篡改  （同时检查前后台的报价是否一致）  TODO 折扣优惠，创建一个计算价格的接口
 	}
@@ -172,10 +171,7 @@ public class ModuleServiceImpl implements ModuleService, AfterPayService{
 
 	public Object handle(Map<?, ?> trade_map, String payType) {
 		IAfterPay iAfterPay = AbstractAfterPay.createBean(trade_map.get("out_trade_no").toString());
-		if (iAfterPay != null) {
-			return iAfterPay.handle(trade_map, payType);
-		}
-		return null;
+		return iAfterPay.handle(trade_map, payType);
 	}
 
 }

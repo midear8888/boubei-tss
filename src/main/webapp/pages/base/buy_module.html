@@ -250,7 +250,7 @@
 			//确认订单
 			$form.submit(()=>{
 				let moduleOrder = getFormData($form.attr('id'));
-				moduleOrder.type = "module";
+				moduleOrder.type = "ModuleOrderHandler";
 				$.post('/tss/auth/module/order', moduleOrder ,function(moduleOrderBack){
 					if(moduleOrderBack.id){
 						//跳转我的订单

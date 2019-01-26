@@ -55,7 +55,7 @@ public class AccoutAction {
 	@RequestMapping(value = "/subauthorize", method = RequestMethod.GET)
 	@ResponseBody
 	public List<?> querySubAuthorize(){
-		return commonService.getList(" from SubAuthorize where ownerId = ? order by id desc", Environment.getUserId());
+		return commonService.getList(" from SubAuthorize where creatorId = ? order by id desc", Environment.getUserId());
 	}
 
 }

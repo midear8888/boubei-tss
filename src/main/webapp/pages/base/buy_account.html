@@ -167,7 +167,7 @@
 	
 	$("#rechargeForm").submit((e)=>{
 		$.post('/tss/auth/module/order', {
-			type : 'recharge',
+			type : 'RechargeOrderHandler',
 			money_cal : $('input[name="money_cal"]').val()
 		} ,function(moduleOrderBack){
 			if(moduleOrderBack.id){
@@ -186,7 +186,7 @@
 				let tr = 
 				`<tr>
 					<td>` + item.sn + `</td>
-					<td>` + item.type + `</td>
+					<td>` + formatterProduct(item) + `</td>
 					<td>` + item.payment + `</td>
 					<td>` + item.order_no + `</td>
 					<td>` + item.money + `</td>
@@ -252,7 +252,7 @@
 		}
 		$.post('/tss/auth/module/order', {
 			module_id : module_ids[0],
-			type : 'renewalfee',
+			type : 'RenewalfeeOrderHandler',
 			month_num : $('input[name="month_num"]').val(),
 			params : ids.join(","),
 			account_num : ids.length

@@ -6,17 +6,26 @@ import java.util.Map;
 
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.persistence.ICommonDao;
+import com.boubei.tss.modules.api.APIService;
 import com.boubei.tss.modules.cloud.entity.Account;
+import com.boubei.tss.modules.cloud.entity.AccountFlow;
 import com.boubei.tss.modules.cloud.entity.CloudOrder;
+import com.boubei.tss.modules.sn.SerialNOer;
 import com.boubei.tss.um.entity.User;
+import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
+import com.boubei.tss.util.MathUtil;
 
 public abstract class AbstractAfterPay implements IAfterPay {
 
 	protected static ICommonDao commonDao = (ICommonDao) Global.getBean("CommonDao");
+	protected APIService apiService = (APIService) Global.getBean("APIService");
+
+	static String path = AbstractAfterPay.class.getName().replace(AbstractAfterPay.class.getSimpleName(), "");
 
 	public CloudOrder co;
 	public Long userId;
+	public String userCode;
 	public Map<?, ?> trade_map;
 	public String payType;
 
@@ -34,26 +43,17 @@ public abstract class AbstractAfterPay implements IAfterPay {
 			return null;
 		}
 		CloudOrder co = (CloudOrder) commonDao.getEntity(CloudOrder.class, EasyUtils.obj2Long(cloudOrderId));
-		String type = co.getType();
-		if (CloudOrder.TYPE0.equals(type)) {
-			return new ModuleOrderHandler(co);
-		}
-		if (CloudOrder.TYPE1.equals(type)) {
-			return new RechargeOrderHandler(co);
-		}
-		if(CloudOrder.TYPE2.equals(type)){
-			return new RenewalfeeOrderHandler(co);
-		}
-		return null;
+		return (AbstractAfterPay) BeanUtil.newInstanceByName(path + co.getType(), new Class[] { CloudOrder.class }, new Object[] { co });
 	}
 
 	public Object handle(Map<?, ?> trade_map, String payType) {
 		this.trade_map = trade_map;
 		this.payType = payType;
 		Double receipt_amount = EasyUtils.obj2Double(trade_map.get("receipt_amount"));
-		@SuppressWarnings("unchecked")
-		List<User> users = (List<User>) commonDao.getEntities(" from User where loginName = ?", co.getCreator());
-		this.userId = users.get(0).getId();
+
+		User user = (User) commonDao.getEntities(" from User where loginName = ?", co.getCreator()).get(0);
+		this.userId = user.getId();
+		this.userCode = user.getLoginName();
 
 		if (!CloudOrder.NEW.equals(co.getStatus())) {
 			// throw new BusinessException("订单已支付");
@@ -71,7 +71,6 @@ public abstract class AbstractAfterPay implements IAfterPay {
 			return "success";
 		}
 		return "false";
-
 	}
 
 	protected Account getAccount() {
@@ -88,9 +87,47 @@ public abstract class AbstractAfterPay implements IAfterPay {
 		account.setDomain(co.getDomain());
 		account = (Account) commonDao.create(account);
 		return account;
-
 	}
 
 	public abstract Boolean handle();
+
+	protected void createFlows(Account account) {
+		createIncomeFlow(account);
+		createBuyFlow(account);
+	}
+
+	protected void createIncomeFlow(Account account) {
+		// 创建充值流水
+		AccountFlow flow = new AccountFlow();
+		flow.setAccount_id(account.getId());
+		flow.setMoney(co.getMoney_real());
+		flow.setOrder_no(co.getOrder_no());
+		flow.setPay_man(this.trade_map.get("buyer_id").toString());
+		flow.setPay_time(new Date());
+		flow.setPayment(this.payType);
+		flow.setSn(SerialNOer.get("AF"));
+		flow.setType(CloudOrder.TYPE0);
+		Double balance = MathUtil.addDoubles(account.getBalance(), flow.getMoney());
+		flow.setBalance(balance);
+		account.setBalance(balance);
+		commonDao.create(flow);
+	}
+
+	protected void createBuyFlow(Account account) {
+		// 创建续费扣款流水
+		AccountFlow flow = new AccountFlow();
+		flow.setAccount_id(account.getId());
+		flow.setMoney(-co.getMoney_real());
+		flow.setOrder_no(co.getOrder_no());
+		flow.setPay_man(this.trade_map.get("buyer_id").toString());
+		flow.setPay_time(new Date());
+		flow.setPayment(this.payType);
+		flow.setSn(SerialNOer.get("AF"));
+		flow.setType(co.getType());
+		Double balance = MathUtil.addDoubles(account.getBalance(), flow.getMoney());
+		flow.setBalance(balance);
+		account.setBalance(balance);
+		commonDao.create(flow);
+	}
 
 }

@@ -121,4 +121,28 @@ function searchParams(name, decode) {
     return decode ? unescape(str) : str; // decode=true，对参数值（可能为中文等）进行编码
 }
 
+const moduleMap = {};
+
+function queryModuleDef(callback){
+    $.get('/tss/xdata/json/cloud_module_def',{},function(data){
+        data.each(function(i,item){
+            moduleMap[item.id] = item.module;
+        })
+        callback && callback()
+    })
+}
+
+function formatterProduct(item){
+    const productMap = {
+        RechargeOrderHandler : '充值',
+        RenewalfeeOrderHandler : '续费',
+        ModuleOrderHandler : '购买'
+    }
+    const h = productMap[item.type];
+    const t = item.module_id ? moduleMap[item.module_id] : "";
+    if(t){
+        return h + " " + t
+    }
+    return h
+}
 

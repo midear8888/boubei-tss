@@ -21,6 +21,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import com.boubei.tss.dm.record.ARecordTable;
+import com.boubei.tss.modules.cloud.product.RechargeOrderHandler;
 
 @Entity
 @Table(name = "cloud_module_order")
@@ -31,9 +32,7 @@ public class CloudOrder extends ARecordTable {
 	public final static String CANCELED = "已取消";
 	public final static String PAYED = "已付款";
 
-	public final static String TYPE0 = "module";
-	public final static String TYPE1 = "recharge";
-	public final static String TYPE2 = "renewalfee";
+	public final static String TYPE0 = RechargeOrderHandler.class.getSimpleName();
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO, generator = "module_order_seq")
