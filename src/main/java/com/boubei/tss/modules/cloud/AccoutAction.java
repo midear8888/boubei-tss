@@ -51,11 +51,17 @@ public class AccoutAction {
 		}
 		return commonService.getList(" from AccountFlow where account_id = ? order by id desc", account_id);
 	}
-	
+
 	@RequestMapping(value = "/subauthorize", method = RequestMethod.GET)
 	@ResponseBody
-	public List<?> querySubAuthorize(){
+	public List<?> querySubAuthorize() {
 		return commonService.getList(" from SubAuthorize where creatorId = ? order by id desc", Environment.getUserId());
+	}
+
+	@RequestMapping(value = "/subauthorize/role", method = RequestMethod.GET)
+	@ResponseBody
+	public List<?> querySubAuthorizeRoles(Long strategyId) {
+		return commonService.getList("select u, r.name from RoleUser u, Role r where u.strategyId = ? and u.roleId = r.id", strategyId);
 	}
 
 }

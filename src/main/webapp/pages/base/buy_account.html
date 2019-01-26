@@ -27,7 +27,7 @@
 	}
 	tbody tr:nth-child(even){
 	  padding:2 5px;
-	  background-color: #eee;
+	  background-color: #f7f7f7;
 	}
 	tbody tr td,thead tr th{
 	  width:8% !important;
@@ -77,6 +77,46 @@
 	form > span{
 		font-size: 10px;
 		color: orange;
+	}
+
+	.panel{
+		height: 400px; width: 800px; 
+		background-color: white;
+		position: fixed;
+	    left: 50%;
+	    top: 50%;
+	    -webkit-transform: translate(-50%, -50%);
+	    transform: translate(-50%, -50%);
+	    box-shadow:0 0 4px #000 inset;
+	}
+	.panel-title{
+		height: 25px;
+		padding: 2px 15px;
+		background-color: #0871af;
+	}
+	.panel-title-button{
+		float: right;
+	}
+
+	.assign{
+		display:flex; 
+		flex-flow:row nowrap;
+	}
+	.assign li{
+		margin: 2px 1px;
+	}
+	.assign span{
+		font-size: 13px;
+	}
+	.assign > div{
+		flex:1;
+	}
+	.assign > div:nth-child(1){
+		border-right: 1px solid #eee;
+	}
+	.assign > div > div{
+		padding-left: 5px;
+		border-bottom: 1px solid #eee;
 	}
 
 </style>
@@ -215,11 +255,12 @@
 								<div>`+item.endDate+`</div>
 							</div>
 						</div>
+						<span>续费</span>
 						<input type="checkbox" class="subauthorize-checkbox" 
 							   data-id=` + item.id + ` 
 							   data-module_id=` + item.name.split('_')[0] + ` 
 						/>
-						<span>我要续费</span>
+						<button type="button" onclick="assign(` + item.id + `)" style="float:right">分配账号</button>
 					</li>
 				`;
 				$(str).addClass(item.disabled == 0 ? 'active' : '').appendTo($ul);
@@ -266,10 +307,60 @@
 		})
 	})
 
-	
+	function assign(sa_id){console.log(sa_id)
+		//获取用户
+		function getRoles(callback){
+			$.get("/tss/auth/module/account/subauthorize/role", {strategyId:sa_id}, (roles)=>{
+				let roleStr = "<ul>";
+				roles.each((i,item)=>{
+			    	roleStr += ` <li data-id=` + item[0].id + `> <input type="checkbox" name="roles" /> <span>` + item[1] + `</span> </li> `;
+			    })
+			    roleStr += "</ul>";
+			    callback(roleStr);
+			})
+		}
+
+		getRoles((roleStr)=>{
+			$.get("/tss/wx/api/users", {}, function(result) {
+				let str = "<ul>";
+			    $.each(result,(key,value)=>{
+			    	str += ` <li data-id=` + key + `> <input type="checkbox" name="users" /> <span>` + value + `</span> </li> `;
+			    })
+			    str += "</ul>";
+
+			    str = `
+				    <div class="assign">
+				    	<div>  
+				    		<div> 请选择授予账号 </div>
+				    		` + str + `
+				    	</div>
+				    	<div class="assign-role">
+				    		<div> 请选择授予角色 </div>
+				    		` + roleStr + `
+				    	</div>
+				    </div>
+			    `;
+
+			    createPanel(str);
+
+			    //单选
+			    $('input[type="checkbox"][name="users"]').each(function(){
+		            $(this).click(function(){
+		                if(this.checked){
+		                    $('input[type="checkbox"][name="users"]').removeAttr('checked');
+		                    this.checked = true;
+		                    // alert(this.id);
+		                }
+		            });
+		        });
+			})
+		})
+
+		
+		
+	}
 
 	queryFlow();
-	
 
 	queryAccount();
 

@@ -114,7 +114,7 @@ public abstract class AbstractAfterPay implements IAfterPay {
 	}
 
 	protected void createBuyFlow(Account account) {
-		// 创建续费扣款流水
+		// 创建扣款流水
 		AccountFlow flow = new AccountFlow();
 		flow.setAccount_id(account.getId());
 		flow.setMoney(-co.getMoney_real());

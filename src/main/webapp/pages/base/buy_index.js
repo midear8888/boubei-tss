@@ -136,13 +136,34 @@ function formatterProduct(item){
     const productMap = {
         RechargeOrderHandler : '充值',
         RenewalfeeOrderHandler : '续费',
-        ModuleOrderHandler : '购买'
+        //模块产品购买
+        ModuleOrderHandler : '购买',//普通产品
+        ModuleOrderE8Handler : 'E8',//e8产品
+        ModuleOrderEFFHandler : 'EFF',//eff产品
     }
-    const h = productMap[item.type];
+    const h = productMap[item.type] || item.type;
     const t = item.module_id ? moduleMap[item.module_id] : "";
-    if(t){
-        return h + " " + t
+    //普通产品需带上module_id的中文名
+    if( item.type == "ModuleOrderHandler" ){
+        return h + t
     }
     return h
+}
+
+function createPanel(content){
+    $('.panel').remove();
+    let $div = $(`
+        <div class="panel">
+            <div class="panel-title">
+                <div class="panel-title-button">
+                    <span> <button class="panel-title-button-close">关闭</button> </span>
+                </div>
+            </div>
+        </div>`);
+    $div.append(content).appendTo('body');
+    $('.panel-title-button-close').click((e)=>{
+        $div.remove();
+    })
+    return $div;
 }
 

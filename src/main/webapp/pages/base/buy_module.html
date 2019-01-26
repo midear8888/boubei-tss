@@ -208,7 +208,7 @@
 
 <script type="text/javascript">
 
-	$.get('/tss/xdata/json/cloud_module_def', {}, function(data){
+	$.get('/tss/xdata/json/cloud_module_def', {status:'opened'}, function(data){
 
 		$('.module').remove();
 		data.each(function(i,item){
@@ -216,6 +216,7 @@
 			<form id='`+item.id+`' class="third lift plan-tier" action="" method="POST" onsubmit="return false">
 				<input type="hidden" name="module_id" value="` + item.id + `">
 				<input type="hidden" name="module" value="` + item.module + `">
+				<input type="hidden" name="type" value="` + (item.after_pay_success || 'ModuleOrderHandler')  + `">
 				<input type="hidden" name="money_cal">
 				<h4>` + item.module + `</h4>
 				<h5>
@@ -250,7 +251,6 @@
 			//确认订单
 			$form.submit(()=>{
 				let moduleOrder = getFormData($form.attr('id'));
-				moduleOrder.type = "ModuleOrderHandler";
 				$.post('/tss/auth/module/order', moduleOrder ,function(moduleOrderBack){
 					if(moduleOrderBack.id){
 						//跳转我的订单

@@ -67,6 +67,8 @@ public class ModuleDef extends ARecordTable {
 	@Column(length = 800)
 	private String description; //模块描述
 	
+	private String after_pay_success; // 购买成功后的实现类
+	
 	@Column(length = 800)
 	private String remark;   // 模块备注
 	
@@ -239,6 +241,14 @@ public class ModuleDef extends ARecordTable {
 
 	public void setTry_days(Integer try_days) {
 		this.try_days = try_days;
+	}
+
+	public String getAfter_pay_success() {
+		return after_pay_success;
+	}
+
+	public void setAfter_pay_success(String after_pay_success) {
+		this.after_pay_success = after_pay_success;
 	}
 
 }
