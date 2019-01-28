@@ -15,7 +15,7 @@ import com.boubei.tss.framework.persistence.IEntity;
 @Entity
 @Table(name = "wx_gzh_bind")
 @SequenceGenerator(name = "wx_gzh_bind_sequence", sequenceName = "wx_gzh_bind_sequence", initialValue = 1, allocationSize = 10)
-public class WxGZHBindPhone implements IEntity {
+public class GZHPhone implements IEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO, generator = "wx_gzh_bind_sequence")

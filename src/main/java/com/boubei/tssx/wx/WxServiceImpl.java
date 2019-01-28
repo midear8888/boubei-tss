@@ -23,7 +23,7 @@ import com.boubei.tss.um.entity.Group;
 import com.boubei.tss.um.entity.GroupUser;
 import com.boubei.tss.um.entity.User;
 import com.boubei.tss.util.EasyUtils;
-import com.boubei.tssx.wx.gzh.WxGZHBindPhone;
+import com.boubei.tssx.wx.gzh.GZHPhone;
 
 @Service("WxService")
 public class WxServiceImpl implements WxService {
@@ -152,7 +152,7 @@ public class WxServiceImpl implements WxService {
 		String mobile = requestMap.get("phone");
 		String appid = requestMap.get("appid");
 		String hql = "from WxGZHBindPhone where mobile = '" + mobile + "' and appid = '" + appid + "'";
-		List<WxGZHBindPhone> bindPhones = (List<WxGZHBindPhone>) commonDao.getEntities(hql);
+		List<GZHPhone> bindPhones = (List<GZHPhone>) commonDao.getEntities(hql);
 		
 		JSONObject json = new JSONObject();
 		if(bindPhones.size() == 0) {

@@ -1,0 +1,14 @@
+【链接】微信公众平台技术文档
+https://mp.weixin.qq.com/wiki?t=resource/res_main&id=mp1433751277
+
+【链接】微信公众平台技术文档
+https://mp.weixin.qq.com/wiki?t=resource/res_main&id=mp1421140842
+
+1、在公众号菜单里加入以下链接
+  https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx784c62545bddf62b&redirect_uri=https://www.boudata.com/tss/pages/gzh.html&response_type=code&scope=snsapi_base&state=123#wechat_redirect
+      appid 公众号的ID
+      redirect_uri 调整到此页面，并携带一个?code=CODE
+2、在GetGZHOpenId中根据 appid 和 code 值换取用户对应公众号的openId
+3、同时用户在绑定页里输入手机号和验证码，连同上一步的openId及appId一并发到GZHBindPhone
+4、记录手机号、appid、openid的对应关系
+5、依据用户的openid来发送公众号通知
