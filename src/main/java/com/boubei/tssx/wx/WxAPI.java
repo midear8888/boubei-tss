@@ -321,7 +321,7 @@ public class WxAPI {
 	 * product_id 商品ID
 	 * appid 小程序app ID
 	 * mchid 商户ID
-	 * http://127.0.0.1:9000/tss/wx/api/scanpay?body=支付测试&out_trade_no=8001&total_fee=1&spbill_create_ip=123.12.12.123&product_id=8001&appid=wx32ecfcea6f822096&mchid=1503974521
+	 * http://127.0.0.1:9000/tss/wx/api/scanpay?body=支付测试&out_trade_no=8001&total_fee=1&product_id=8001&appid=wx32ecfcea6f822096&mchid=1503974521
 	 */
 	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/scanpay")
@@ -363,7 +363,7 @@ public class WxAPI {
 	 * openid 小程序账号唯一标识
 	 * appid 小程序app ID
 	 * mchid 商户ID
-	 * http://127.0.0.1:9000/tss/wx/api/minipay?body=支付测试&out_trade_no=8002&total_fee=1&spbill_create_ip=123.12.12.123&openid=oNi3W5XOKp6GoFtHoX3iKa5gxyRg&appid=wx32ecfcea6f822096&mchid=1503974521
+	 * http://127.0.0.1:9000/tss/wx/api/minipay?body=支付测试&out_trade_no=8002&total_fee=1&openid=oNi3W5XOKp6GoFtHoX3iKa5gxyRg&appid=wx32ecfcea6f822096&mchid=1503974521
 	 */
 	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/minipay")
@@ -515,7 +515,7 @@ public class WxAPI {
         			response.getWriter().println("{\"code\": \"success\", \"data\": \"支付成功\"}");
         		}
         		else{
-        			response.getWriter().println("{\"code\": \"success\", \"errorMsg\": \"" + r.get("trade_state_desc") + "\"}");
+        			response.getWriter().println("{\"code\": \"fail\", \"errorMsg\": \"" + r.get("trade_state_desc") + "\"}");
         		}
         	}
         	else {
