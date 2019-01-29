@@ -151,7 +151,7 @@ public class WxServiceImpl implements WxService {
 		
 		String mobile = requestMap.get("phone");
 		String appid = requestMap.get("appid");
-		String hql = "from WxGZHBindPhone where mobile = '" + mobile + "' and appid = '" + appid + "'";
+		String hql = "from GZHPhone where mobile = '" + mobile + "' and appid = '" + appid + "'";
 		List<GZHPhone> bindPhones = (List<GZHPhone>) commonDao.getEntities(hql);
 		
 		JSONObject json = new JSONObject();

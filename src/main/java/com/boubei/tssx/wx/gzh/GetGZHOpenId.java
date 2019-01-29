@@ -63,7 +63,7 @@ public class GetGZHOpenId extends HttpServlet {
 		String openId = map.get("openid");
 		
 		// 判断该 微信号是否已经绑定手机号
-		String hql = "from WxGZHBindPhone where openid = ? and appid = ?";
+		String hql = "from GZHPhone where openid = ? and appid = ?";
 		List<?> bindPhones = Global.getCommonService().getList(hql, openId, appId);
 		if (bindPhones.size() == 1) {
 			response.getWriter().println("已绑定");
