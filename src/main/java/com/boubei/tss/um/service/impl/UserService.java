@@ -371,13 +371,14 @@ public class UserService implements IUserService{
 	
 	public void regBusiness(User user, String domain) {
 		Group domainGroup = groupService.createDomainGroup(domain);
-    	user.setGroupId(domainGroup.getId());
+    	Long newDomainGroupId = domainGroup.getId();
+		user.setGroupId(newDomainGroupId);
     	
     	// 默认创建一个客户组【customer】，小程序默认注册在各个域的客户组下
     	Group customerGroup = new Group();
     	customerGroup.setName("customer");
     	customerGroup.setGroupType(Group.MAIN_GROUP_TYPE);
-    	customerGroup.setParentId( domainGroup.getId() );
+    	customerGroup.setParentId( newDomainGroupId );
     	groupService.createNewGroup(customerGroup, "", "");
     	
     	// 创建一行域扩展信息 DomainInfo
@@ -401,7 +402,12 @@ public class UserService implements IUserService{
 			roleDao.createObject(ru);
 		} 
     	else {
-			this.regUser(user);
+    		// 判断用户是否已存在，则直接移动到当前新域下（适用于用户购买账号生成域）
+    		if(user.getId() != null) {
+    			this.moveUser(user.getId(), newDomainGroupId);
+    		} else {
+    			this.regUser(user);
+    		}
 		}
 	}
  
@@ -410,14 +416,11 @@ public class UserService implements IUserService{
 			throw new BusinessException(EX.U_46);
 		}
 		
+		// 创建用户
 		userDao.checkUserAccout(user);
-        
         user.setOrignPassword( user.getPassword() );
         user.setAuthMethod(UMPasswordIdentifier.class.getName());
-
-        // 默认有效期50年
-        user.setAccountLife(null);
-        
+        user.setAccountLife(null);  // 默认有效期50年
         userDao.create(user);
         
         // 自注册用户默认加入到自注册用户组(特殊组)
