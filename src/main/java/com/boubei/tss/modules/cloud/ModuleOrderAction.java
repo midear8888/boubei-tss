@@ -14,13 +14,16 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.modules.cloud.entity.CloudOrder;
+import com.boubei.tss.modules.cloud.product.AfterPayService;
 
 @Controller
 @RequestMapping("/auth/module/order")
@@ -42,11 +45,11 @@ public class ModuleOrderAction {
 	public CloudOrder updateOrder(CloudOrder mo) {
 		return service.updateOrder(mo);
 	}
-	
+
 	@RequestMapping(value = "/price/query")
 	@ResponseBody
 	public Object queryPrice(CloudOrder mo) {
-		return service.calMoney(mo,false);
+		return service.calMoney(mo, false);
 	}
 
 	@RequestMapping(value = "/price", method = RequestMethod.POST)
@@ -66,5 +69,14 @@ public class ModuleOrderAction {
 	public List<?> listOrders() {
 		String hql = "from CloudOrder where creator = ? order by id desc";
 		return commonService.getList(hql, Environment.getUserCode());
+	}
+
+	@RequestMapping(value = "/payed/{order_no}", method = RequestMethod.POST)
+	@ResponseBody
+	public Object payedOrders(@PathVariable String order_no) {
+		AfterPayService afterPayService = (AfterPayService) Global.getBean("ModuleService");
+		CloudOrder co = (CloudOrder) commonService.getList(" from CloudOrder where order_no = ?", order_no).get(0);
+		return afterPayService.handle(order_no, co.getMoney_cal(), "admin", "线下", null);
+
 	}
 }

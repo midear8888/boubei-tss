@@ -100,6 +100,12 @@ public class WxAPI {
 		return loginService.getUsersMap();
 	}
 	
+	@RequestMapping(value = "/users/id2name")
+	@ResponseBody
+	public Map<Long, String> getUsersI() {
+		return loginService.getUsersMapI();
+	}
+	
 	/**
 	 * http://localhost:9000/tss/wx/api/myroles
 	 * 获取用户个人所有用的角色

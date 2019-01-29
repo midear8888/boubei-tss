@@ -10,6 +10,7 @@
 
 package com.boubei.tss.modules.cloud;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -169,9 +170,24 @@ public class ModuleServiceImpl implements ModuleService, AfterPayService{
 		return commonDao.getEntities(hql);
 	}
 
-	public Object handle(Map<?, ?> trade_map, String payType) {
-		IAfterPay iAfterPay = AbstractAfterPay.createBean(trade_map.get("out_trade_no").toString());
-		return iAfterPay.handle(trade_map, payType);
+	public Object handle( String order_no, Double real_money, String payer,String payType, Map<?, ?> trade_map) {
+		IAfterPay iAfterPay = AbstractAfterPay.createBean(order_no);
+		return iAfterPay.handle(trade_map, real_money, payer, payType);
+	}
+	
+	public void setSubAuthorizeRoles(Long userId, String roleIds, Long strategyId){
+		SubAuthorize sa = (SubAuthorize) commonDao.getEntity(SubAuthorize.class, strategyId);
+		sa.setOwnerId(userId);
+		List<?> roleIdsArray = Arrays.asList( roleIds.split(",") );
+		@SuppressWarnings("unchecked")
+		List<RoleUser> rus = (List<RoleUser>) commonDao.getEntities(" from RoleUser where strategyId = ?", strategyId);
+		for(RoleUser ru:rus){
+			if(roleIdsArray.contains(ru.getId().toString())){
+				ru.setUserId(userId);
+			}else{
+				ru.setUserId(sa.getCreatorId());
+			}
+		}		
 	}
 
 }

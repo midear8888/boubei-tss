@@ -28,6 +28,7 @@ public abstract class AbstractAfterPay implements IAfterPay {
 	public String userCode;
 	public Map<?, ?> trade_map;
 	public String payType;
+	public String payer;
 
 	public AbstractAfterPay() {
 
@@ -46,10 +47,10 @@ public abstract class AbstractAfterPay implements IAfterPay {
 		return (AbstractAfterPay) BeanUtil.newInstanceByName(path + co.getType(), new Class[] { CloudOrder.class }, new Object[] { co });
 	}
 
-	public Object handle(Map<?, ?> trade_map, String payType) {
+	public Object handle(Map<?, ?> trade_map, Double real_money, String payer, String payType) {
 		this.trade_map = trade_map;
 		this.payType = payType;
-		Double receipt_amount = EasyUtils.obj2Double(trade_map.get("receipt_amount"));
+		this.payer = payer;
 
 		User user = (User) commonDao.getEntities(" from User where loginName = ?", co.getCreator()).get(0);
 		this.userId = user.getId();
@@ -60,10 +61,10 @@ public abstract class AbstractAfterPay implements IAfterPay {
 			return "订单" + co.getStatus();
 		}
 
-		if (!receipt_amount.equals(co.getMoney_cal())) {
+		if (!real_money.equals(co.getMoney_cal())) {
 			return "订单金额不符";
 		}
-		co.setMoney_real(receipt_amount);
+		co.setMoney_real(real_money);
 		co.setPay_date(new Date());
 		co.setStatus(CloudOrder.PAYED);
 		commonDao.update(co);
@@ -102,7 +103,7 @@ public abstract class AbstractAfterPay implements IAfterPay {
 		flow.setAccount_id(account.getId());
 		flow.setMoney(co.getMoney_real());
 		flow.setOrder_no(co.getOrder_no());
-		flow.setPay_man(this.trade_map.get("buyer_id").toString());
+		flow.setPay_man(payer);
 		flow.setPay_time(new Date());
 		flow.setPayment(this.payType);
 		flow.setSn(SerialNOer.get("AF"));
@@ -119,7 +120,7 @@ public abstract class AbstractAfterPay implements IAfterPay {
 		flow.setAccount_id(account.getId());
 		flow.setMoney(-co.getMoney_real());
 		flow.setOrder_no(co.getOrder_no());
-		flow.setPay_man(this.trade_map.get("buyer_id").toString());
+		flow.setPay_man(payer);
 		flow.setPay_time(new Date());
 		flow.setPayment(this.payType);
 		flow.setSn(SerialNOer.get("AF"));

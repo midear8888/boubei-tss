@@ -2,36 +2,19 @@
 <html>
 <head>
 	<title>我的订单</title>
+	<link rel="stylesheet" type="text/css" href="buy_index.css">
 	<script src="../../tools/jquery/jquery-2.1.1.min.js"></script>
 	<script src="buy_index.js"></script>
 </head>
 <style type="text/css">
-	.user-account{
+	body{
 		margin-top: 30px;
 	}
 	.user-account > div{
 		margin-top: 10px;
 		border-bottom: 1px solid #eee;
 	}
-	table{
-	  width:100%;
-	  color:#666;
-	  font-size:14px;
-	  text-align: center;
-	  padding: 30px 50px;
-	}
-	thead tr{
-	  background-color:#00a1ff;
-	  color: white;
-	  font-size:18px;
-	}
-	tbody tr:nth-child(even){
-	  padding:2 5px;
-	  background-color: #f7f7f7;
-	}
-	tbody tr td,thead tr th{
-	  width:8% !important;
-	}
+	
 	.money{
 		color: orange;
 	}
@@ -65,6 +48,14 @@
 	.user-account-device ul li > div{
 		display: flex;
 	}
+	
+	.subauthorize-button{
+		float:right;
+		display: none;
+	}
+	.active .subauthorize-button{
+		display: inline-block;
+	}
 
 	form{
 		padding-bottom: 5px;
@@ -77,25 +68,6 @@
 	form > span{
 		font-size: 10px;
 		color: orange;
-	}
-
-	.panel{
-		height: 400px; width: 800px; 
-		background-color: white;
-		position: fixed;
-	    left: 50%;
-	    top: 50%;
-	    -webkit-transform: translate(-50%, -50%);
-	    transform: translate(-50%, -50%);
-	    box-shadow:0 0 4px #000 inset;
-	}
-	.panel-title{
-		height: 25px;
-		padding: 2px 15px;
-		background-color: #0871af;
-	}
-	.panel-title-button{
-		float: right;
 	}
 
 	.assign{
@@ -118,7 +90,6 @@
 		padding-left: 5px;
 		border-bottom: 1px solid #eee;
 	}
-
 </style>
 <body>
 	<div class="user-account">
@@ -195,7 +166,7 @@
 <script type="text/javascript">
 
 	function queryAccount(){
-		$.get('/tss/auth/module/account',{},function(account){
+		$.get(ACCOUNT, {}, function(account){
 			$('.account-info-balance').text(number_format(account.balance,2));
 		})
 	}
@@ -206,7 +177,7 @@
 
 	
 	$("#rechargeForm").submit((e)=>{
-		$.post('/tss/auth/module/order', {
+		$.post(MODULE_ORDER, {
 			type : 'RechargeOrderHandler',
 			money_cal : $('input[name="money_cal"]').val()
 		} ,function(moduleOrderBack){
@@ -220,7 +191,7 @@
 	})
 
 	function queryFlow(){
-		$.get('/tss/auth/module/account/flow',{},function(flows){
+		$.get(ORDER_FLOW, {}, function(flows){
 			$('.flow-list').html("");
 			flows.each(function(i,item){
 				let tr = 
@@ -229,8 +200,8 @@
 					<td>` + formatterProduct(item) + `</td>
 					<td>` + item.payment + `</td>
 					<td>` + item.order_no + `</td>
-					<td>` + item.money + `</td>
-					<td>` + item.balance + `</td>
+					<td>` + number_format(item.money,2) + `</td>
+					<td>` + number_format(item.balance,2) + `</td>
 					<td>` + item.pay_time + `</td>
 					<td>` + item.pay_man + `</td>
 					<td>` + formatterNull2Empty(item.remark) + `</td>
@@ -241,7 +212,7 @@
 	}
 
 	function querySubAuthorize(){
-		$.get('/tss/auth/module/account/subauthorize',{},function(subauthorizes){
+		$.get(SUBAUTHORIZE, {}, function(subauthorizes){
 			let $ul = $('.user-account-device > ul');
 			$ul.html('');
 			subauthorizes.each(function(i,item){
@@ -255,14 +226,14 @@
 								<div>`+item.endDate+`</div>
 							</div>
 						</div>
+						<span>拥有者</span> <span>` + USER_MAP[item.ownerId] + `</span>
+						</br>
 						<span>续费</span>
 						<input type="checkbox" class="subauthorize-checkbox" 
 							   data-id=` + item.id + ` 
-							   data-module_id=` + item.name.split('_')[0] + ` 
-						/>
-						<button type="button" onclick="assign(` + item.id + `)" style="float:right">分配账号</button>
-					</li>
-				`;
+							   data-module_id=` + item.name.split('_')[0] + ` />
+						<button type="button" onclick="assign(` + item.id + `,` + item.ownerId + `)" class="subauthorize-button">分配账号</button>
+					</li> `;
 				$(str).addClass(item.disabled == 0 ? 'active' : '').appendTo($ul);
 			})
 			$('.subauthorize-checkbox').click(function(e){
@@ -291,7 +262,7 @@
 			confirm("您不能同时续费多个产品，请分开续费!");
 			return
 		}
-		$.post('/tss/auth/module/order', {
+		$.post(MODULE_ORDER, {
 			module_id : module_ids[0],
 			type : 'RenewalfeeOrderHandler',
 			month_num : $('input[name="month_num"]').val(),
@@ -307,64 +278,83 @@
 		})
 	})
 
-	function assign(sa_id){console.log(sa_id)
+	
+	function assign(sa_id, ownerId){
 		//获取用户
 		function getRoles(callback){
-			$.get("/tss/auth/module/account/subauthorize/role", {strategyId:sa_id}, (roles)=>{
-				let roleStr = "<ul>";
+			$.get(SUBAUTHORIZE_ROLE, {strategyId:sa_id}, (roles)=>{
+				let roleStr = "";
 				roles.each((i,item)=>{
-			    	roleStr += ` <li data-id=` + item[0].id + `> <input type="checkbox" name="roles" /> <span>` + item[1] + `</span> </li> `;
+					let checked = item[0].userId == ownerId ? 'checked' : '';
+			    	roleStr += ` <input type="checkbox" name="roles" value=` + item[0].id + ` ` + checked + ` /> <span>` + item[1] + `</span> `;
 			    })
-			    roleStr += "</ul>";
 			    callback(roleStr);
 			})
 		}
 
 		getRoles((roleStr)=>{
-			$.get("/tss/wx/api/users", {}, function(result) {
-				let str = "<ul>";
-			    $.each(result,(key,value)=>{
-			    	str += ` <li data-id=` + key + `> <input type="checkbox" name="users" /> <span>` + value + `</span> </li> `;
-			    })
-			    str += "</ul>";
+			let str = "";
+		    $.each(USER_MAP, (key,value)=>{
+		    	let checked = key == ownerId ? 'checked' : '';
+		    	str += `<div style="display:inline-block;width:110px;">
+		    				<input name="users" type="radio" value=` + key + ` ` + checked + ` /> 
+		    				<span>` + value + `</span>
+		    			</div>`;
+		    })
 
-			    str = `
-				    <div class="assign">
-				    	<div>  
-				    		<div> 请选择授予账号 </div>
-				    		` + str + `
-				    	</div>
-				    	<div class="assign-role">
-				    		<div> 请选择授予角色 </div>
-				    		` + roleStr + `
-				    	</div>
-				    </div>
-			    `;
+		    str = `
+			    <div class="assign">
+			    	<div>  
+			    		<div> 1.请选择授予账号 </div>
+			    		` + str + `
+			    	</div>
+			    	<div class="assign-role">
+			    		<div> 2.请选择授予角色 </div>
+			    		` + roleStr + `
+			    	</div>
+			    </div>
+		    `;
 
-			    createPanel(str);
-
-			    //单选
-			    $('input[type="checkbox"][name="users"]').each(function(){
-		            $(this).click(function(){
-		                if(this.checked){
-		                    $('input[type="checkbox"][name="users"]').removeAttr('checked');
-		                    this.checked = true;
-		                    // alert(this.id);
-		                }
-		            });
-		        });
-			})
+		    createPanel("分配账号", str, function(e){
+		    	let user = $('input[type="radio"][name="users"]:checked').val();
+		    	let roles = [];
+		    	$('input[type="checkbox"][name="roles"]:checked').each(function(i,item){
+		    		roles.push( $(item).val() )
+		    	})
+		    	if( !user || !roles.length ){
+		    		confirm("请设置完成后再提交！");
+		    		return
+		    	}
+		    	$.post(SUBAUTHORIZE_ROLE, {userId: user, roleIds: roles.join(','), strategyId: sa_id}, function(result){
+		    		if(result == true){
+		    			e.remove();
+		    			querySubAuthorize()
+		    		}else{
+		    			confirm(result)
+		    		}
+		    	})
+		    });
 		})
 
 		
 		
 	}
 
-	queryFlow();
 
-	queryAccount();
+	let USER_MAP = {};
+	(function init(){
+		$.get(API_USER, {}, function(result) {
+			USER_MAP = result;
 
-	querySubAuthorize();
+			queryFlow();
+
+			queryAccount();
+
+			querySubAuthorize();
+		})
+	})();
+
+	
 	
 </script>
 </html>

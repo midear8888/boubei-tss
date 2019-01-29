@@ -40,6 +40,7 @@ public class RenewalfeeOrderHandler extends AbstractAfterPay {
 				subAuthorize.setEndDate(date);
 			}
 			subAuthorize.setEndDate(DateUtils.addMonths(subAuthorize.getEndDate(), co.getMonth_num()));
+			subAuthorize.setDisabled(0);
 		}
 		if (module_ids.size() > 1) {
 			throw new BusinessException("您不能同时续费多个产品，请分开续费！");

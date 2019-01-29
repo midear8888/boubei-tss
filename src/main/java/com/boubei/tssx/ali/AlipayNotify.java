@@ -57,7 +57,8 @@ public class AlipayNotify extends HttpServlet {
 
 				if (!EasyUtils.isNullOrEmpty(iAfterPayBean)) {
 					AfterPayService afterPayService = (AfterPayService) Global.getBean(iAfterPayBean);
-					afterPayService.handle(map, payType);
+					afterPayService.handle(map.get("out_trade_no"), EasyUtils.obj2Double(map.get("receipt_amount")), map.get("buyer_id"), payType,
+							map);
 				}
 
 				response.getWriter().println("success");

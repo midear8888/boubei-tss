@@ -6,7 +6,6 @@
 	<script src="buy_index.js"></script>
 </head>
 <style type="text/css">
-
 	* {
 		margin: 0;
 		padding: 0;
@@ -199,8 +198,6 @@
 		height: 1.8em;
 		font-size: 0.8em;
 	}
-
-
 </style>
 <body>
 	<div class="bd-product-list"></div>
@@ -208,7 +205,7 @@
 
 <script type="text/javascript">
 
-	$.get('/tss/xdata/json/cloud_module_def', {status:'opened'}, function(data){
+	$.get(MODULE_DEF, {}, function(data){
 
 		$('.module').remove();
 		data.each(function(i,item){
@@ -240,7 +237,7 @@
 				const v1 = $form.find("input[name='account_num']").val();
 				const v2 = $form.find("input[name='month_num']").val();
 				if(v1 && v2){
-					$.post('/tss/auth/module/order/price/query', getFormData($form.attr('id')), function(mo){
+					$.post(MODULE_MONEY, getFormData($form.attr('id')), function(mo){
 						const money_cal = mo.money_cal;
 						$form.find("input[name='money_cal']").val(money_cal)
 						$form.find(".money_cal").text(money_cal)
@@ -251,7 +248,7 @@
 			//确认订单
 			$form.submit(()=>{
 				let moduleOrder = getFormData($form.attr('id'));
-				$.post('/tss/auth/module/order', moduleOrder ,function(moduleOrderBack){
+				$.post(MODULE_ORDER, moduleOrder ,function(moduleOrderBack){
 					if(moduleOrderBack.id){
 						//跳转我的订单
 						window.location.href = 'buy_order.html?id=' + moduleOrderBack.id;

@@ -157,6 +157,11 @@ public interface ILoginService {
      */
     Map<String, String> getUsersMap();
     
+    /**
+     * 获取登录用户所在域的所有登陆账号ID和中文名字映射
+     */
+    Map<Long, String> getUsersMapI();
+    
 	/**
 	 * 读取用户联系方式：
 	 * 1、ID列表，用于站内消息

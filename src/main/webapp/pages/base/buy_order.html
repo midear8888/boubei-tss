@@ -2,34 +2,13 @@
 <html>
 <head>
 	<title>我的订单</title>
+	<link rel="stylesheet" type="text/css" href="buy_index.css">
 	<script src="../../tools/jquery/jquery-2.1.1.min.js"></script>
 	<script src="buy_index.js"></script>
 </head>
 <style type="text/css">
-	.bd-order-list{
+	body{
 		margin-top: 30px;
-	}
-	table{
-	  width:100%;
-	  color:#666;
-	  font-size:14px;
-	  text-align: center;
-	  padding: 0px 50px;
-	}
-	thead tr{
-	  background-color:#00a1ff;
-	  color: white;
-	  font-size:18px;
-	}
-	tbody tr:nth-child(even){
-	  padding:2 5px;
-	  background-color: #f7f7f7;
-	}
-	tbody tr td,thead tr th{
-	  width:8% !important;
-	}
-	.active{
-		/*background-color: #eee;*/
 	}
 </style>
 <body>
@@ -61,7 +40,7 @@
 	queryModuleDef(()=>{ queryModuleOrder() })
 
 	function queryModuleOrder(){
-		$.get('/tss/auth/module/order/list',{},function(moduleOrders){
+		$.get(MODULE_ORDER_LIST,{},function(moduleOrders){
 			$('.bd-module-order-list tr').remove();
 			moduleOrders.each(function(i,item){
 				let $tr = $(

@@ -32,5 +32,5 @@ public interface ModuleService {
 
 	void refreshModuleUserRoles(Long module);
 
-
+	void setSubAuthorizeRoles(Long userId, String roleIds, Long strategyId);
 }
