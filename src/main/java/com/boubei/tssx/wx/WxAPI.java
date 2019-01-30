@@ -444,7 +444,7 @@ public class WxAPI {
     		if ("SUCCESS".equals(r.get("return_code")) && "FAIL".equals(r.get("result_code"))){
     			result.put("errorMsg", r.get("err_code_des"));
     		}
-    		else if("FAIL".equals(r.get("result_code"))){
+    		else if("FAIL".equals(r.get("return_code"))){
     			result.put("errorMsg", r.get("return_msg"));
     		}
     		else{
