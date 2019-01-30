@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +27,7 @@ import com.boubei.tss.EX;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.ICommonDao;
 import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.modules.api.APIService;
 import com.boubei.tss.modules.cloud.entity.CloudOrder;
 import com.boubei.tss.modules.cloud.entity.ModuleDef;
 import com.boubei.tss.modules.cloud.entity.ModuleUser;
@@ -34,18 +36,28 @@ import com.boubei.tss.modules.cloud.product.AfterPayService;
 import com.boubei.tss.modules.cloud.product.IAfterPay;
 import com.boubei.tss.um.entity.RoleUser;
 import com.boubei.tss.um.entity.SubAuthorize;
+import com.boubei.tss.um.entity.User;
+import com.boubei.tss.um.service.IUserService;
 import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
+import com.boubei.tssx.sms.AliyunSMS;
 
 @Service("ModuleService")
 public class ModuleServiceImpl implements ModuleService, AfterPayService{
 	
 	@Autowired ICommonDao commonDao;
+	@Autowired IUserService userService;
+	@Autowired APIService apiService;
 	
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	
-	public CloudOrder createOrder(CloudOrder mo){
+	@SuppressWarnings("unchecked")
+	public CloudOrder createOrder(CloudOrder mo) throws Exception{
+		Map<String, String> params = new ObjectMapper().readValue(mo.getParams(), HashMap.class);
+		if(!checkLogin(params)){
+			throw new BusinessException("注册出错！");
+		}
 		if(mo.getModule_id()!=null){
 			calMoney(mo, true);
 		}
@@ -53,6 +65,29 @@ public class ModuleServiceImpl implements ModuleService, AfterPayService{
 		mo = (CloudOrder) commonDao.create(mo);
 		mo.setOrder_no(mo.getOrder_date().getTime() + "-" + mo.getId());
 		return mo;
+	}
+	
+	public Boolean checkLogin(Map<String,String> map){
+		if(!Environment.isAnonymous())
+			return true;
+		
+		// 验证码注册（mode=phone）：校验短信验证码smsCode
+    	String smsCode = map.get("smsCode");
+    	String mobile = map.get("phone");
+    	if( EasyUtils.isNullOrEmpty(smsCode) || !AliyunSMS.instance().checkCode( mobile, smsCode ) ) {
+    		return false;
+    	}
+        
+        //注册账号
+        User user = new User();
+        user.setLoginName(mobile);
+        user.setUserName(map.get("user_name"));
+        user.setUdf(map.get("company_name"));
+        userService.regUser(user);   
+        
+        apiService.mockLogin(user.getLoginName());
+        
+        return true;
 	}
 	
 	public CloudOrder calMoney(CloudOrder mo,Boolean throw_) {

@@ -19,8 +19,9 @@ tbody tr td,thead tr th{
 }
 
 button{
-	background-color: #4686f7;
-    color: white;
+	/*background-color: #4686f7;
+    color: white;*/
+    padding: 1px 7px 2px;
 }
 
 .panel{

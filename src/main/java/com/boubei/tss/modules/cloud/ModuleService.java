@@ -16,7 +16,7 @@ import com.boubei.tss.modules.cloud.entity.CloudOrder;
 
 public interface ModuleService {
 
-	CloudOrder createOrder(CloudOrder mo);
+	CloudOrder createOrder(CloudOrder mo) throws Exception;
 
 	CloudOrder updateOrder(CloudOrder mo);
 

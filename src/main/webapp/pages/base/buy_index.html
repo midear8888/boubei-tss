@@ -75,19 +75,19 @@
 <body>
 	<div class="navigation">
 		<!-- <img class="logo-image" src="../images/excel.ico"> -->
-		<div class="logo-text">卜数</div>
+		<div class="logo-text">卜贝数据</div>
 		<ul class="menu-list">
 			<li>
 				<a class="navigation-text" target="iframe" href="buy_module.html">推荐产品</a>
 			</li>
-			<li>
+			<li class="login-visible">
 				<a class="navigation-text" target="iframe" href="buy_order.html">我的订单</a>
 			</li>
 			<!-- <li>
 				<a class="navigation-text" id="shoppingCart">购物车</a>
 				<span id="cargo_num">0</span>
 			</li> -->
-			<li>
+			<li class="login-visible">
 				<a class="navigation-text" target="iframe" href="buy_account.html">账户</a>
 			</li>
 		</ul>
@@ -100,6 +100,15 @@
 <script type="text/javascript">
 	const index = searchParams("index") || 0;
 	$('.navigation-text')[index].click()
+
+	var isLogin = true;
+
+	$.get('/tss/auth/user/has',{}, function(r){
+		if(r.code == 'TSS-404'){
+			isLogin = false;
+			$('.login-visible').hide()
+		}
+	})
 
 	function getCargoNum(){
 		// 重新请求购物车内物品件数

@@ -26,7 +26,7 @@ import com.boubei.tss.modules.cloud.entity.CloudOrder;
 import com.boubei.tss.modules.cloud.product.AfterPayService;
 
 @Controller
-@RequestMapping("/auth/module/order")
+@RequestMapping("/cloud")
 public class ModuleOrderAction {
 
 	@Autowired
@@ -34,25 +34,25 @@ public class ModuleOrderAction {
 	@Autowired
 	private ICommonService commonService;
 
-	@RequestMapping(method = RequestMethod.POST)
+	@RequestMapping(value = "/order", method = RequestMethod.POST)
 	@ResponseBody
-	public CloudOrder createOrder(CloudOrder mo) {
+	public CloudOrder createOrder(CloudOrder mo) throws Exception {
 		return service.createOrder(mo);
 	}
 
-	@RequestMapping(method = RequestMethod.PUT)
+	@RequestMapping(value = "/order", method = RequestMethod.PUT)
 	@ResponseBody
 	public CloudOrder updateOrder(CloudOrder mo) {
 		return service.updateOrder(mo);
 	}
 
-	@RequestMapping(value = "/price/query")
+	@RequestMapping(value = "/order/price/query")
 	@ResponseBody
 	public Object queryPrice(CloudOrder mo) {
 		return service.calMoney(mo, false);
 	}
 
-	@RequestMapping(value = "/price", method = RequestMethod.POST)
+	@RequestMapping(value = "/order/price", method = RequestMethod.POST)
 	@ResponseBody
 	public Object updatePrice(Long id, Double rebate, Double derate) {
 		CloudOrder mo = (CloudOrder) commonService.getEntity(CloudOrder.class, id);
@@ -64,19 +64,25 @@ public class ModuleOrderAction {
 		return null;
 	}
 
-	@RequestMapping(value = "/list", method = RequestMethod.GET)
+	@RequestMapping(value = "/order/list", method = RequestMethod.GET)
 	@ResponseBody
 	public List<?> listOrders() {
 		String hql = "from CloudOrder where creator = ? order by id desc";
 		return commonService.getList(hql, Environment.getUserCode());
 	}
 
-	@RequestMapping(value = "/payed/{order_no}", method = RequestMethod.POST)
+	@RequestMapping(value = "/order/payed/{order_no}", method = RequestMethod.POST)
 	@ResponseBody
 	public Object payedOrders(@PathVariable String order_no) {
 		AfterPayService afterPayService = (AfterPayService) Global.getBean("ModuleService");
 		CloudOrder co = (CloudOrder) commonService.getList(" from CloudOrder where order_no = ?", order_no).get(0);
 		return afterPayService.handle(order_no, co.getMoney_cal(), "admin", "线下", null);
 
+	}
+
+	@RequestMapping(value = "/modules", method = RequestMethod.GET)
+	@ResponseBody
+	public List<?> listAvaliableModules() {
+		return service.listAvaliableModules();
 	}
 }

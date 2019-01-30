@@ -1,14 +1,14 @@
 const appid = 2018051160132356,
-    MODULE_DEF = "/tss/auth/module",
-    MODULE_MONEY = "/tss/auth/module/order/price/query",
-    MODULE_ORDER = '/tss/auth/module/order',
-    MODULE_ORDER_LIST = '/tss/auth/module/order/list',
-    ACCOUNT = '/tss/auth/module/account',
-    ORDER_FLOW = '/tss/auth/module/account/flow',
-    SUBAUTHORIZE = '/tss/auth/module/account/subauthorize',
-    SUBAUTHORIZE_ROLE = "/tss/auth/module/account/subauthorize/role",
+    MODULE_DEF = "/tss/cloud/modules",
+    MODULE_MONEY = "/tss/cloud/order/price/query",
+    MODULE_ORDER = '/tss/cloud/order',
+    MODULE_ORDER_LIST = '/tss/cloud/order/list',
+    ACCOUNT = '/tss/auth/account',
+    ORDER_FLOW = '/tss/auth/account/flow',
+    SUBAUTHORIZE = '/tss/auth/account/subauthorize',
+    SUBAUTHORIZE_ROLE = "/tss/auth/account/subauthorize/role",
     API_USER = "/tss/wx/api/users/id2name",
-    OFFLINE_PAYED = "/tss/auth/module/order/payed/";
+    OFFLINE_PAYED = "/tss/cloud/order/payed/";
 
 function offline_payed(order_no){
     $.post(OFFLINE_PAYED + order_no, {}, (result)=>{
@@ -17,9 +17,12 @@ function offline_payed(order_no){
 }
 
 function getFormData(formId){
-    formId = formId ||'fm';
+    formId = formId || 'fm';
+    if( !formId.indexOf('.') == 0 && !formId.indexOf('#') == 0 ){
+        formId = '#' + formId;
+    }
     var d = {};
-    var t = $("#"+formId).serializeArray();
+    var t = $(formId).serializeArray();
     $.each(t, function() {
         if(d[this.name]){
             d[this.name] += ',' + this.value;
@@ -190,8 +193,39 @@ function createPanel(title, content, funcSubmit){
     $('.panel-title-button-close').click((e)=>{
         $div.remove();
     })
-    $('.panel-footer-button-submit').click((e)=>{
-        funcSubmit($div);
-    })
+    if( funcSubmit ){
+        $('.panel-footer-button-submit').click((e)=>{
+            funcSubmit($div);
+        })
+    }else{
+        $('.panel-footer-button-submit').remove();
+    }
+}
+
+//英文值检测
+function isEnglish(name) {
+    if(name.length == 0)
+        return false;
+    for(i = 0; i < name.length; i++) {
+        if(name.charCodeAt(i) > 128)
+            return false;
+    }
+    return true;
+}
+
+// E-mail值检测
+function isMail(name){
+    if(! isEnglish(name))
+        return false;
+    i = name.indexOf("@");
+    j = name.lastIndexOf("@");
+    if(i == -1)
+        return false;
+    if(i != j)
+        return false;
+    if(i == name.length)
+        return false;
+
+    return true;
 }
 

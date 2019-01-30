@@ -286,7 +286,15 @@
 				let roleStr = "";
 				roles.each((i,item)=>{
 					let checked = item[0].userId == ownerId ? 'checked' : '';
-			    	roleStr += ` <input type="checkbox" name="roles" value=` + item[0].id + ` ` + checked + ` /> <span>` + item[1] + `</span> `;
+					let str = `<div style="display:inline-block;width:110px;">
+			    					<input type="checkbox" name="roles" value=` + item[0].id + ` ` + checked + ` /> 
+			    					<span>` + item[1] + `</span> 
+			    				</div>`;
+			    	if(checked){
+			    		roleStr = str + roleStr;
+			    	}else{
+			    		roleStr += str;
+			    	}
 			    })
 			    callback(roleStr);
 			})
@@ -296,10 +304,15 @@
 			let str = "";
 		    $.each(USER_MAP, (key,value)=>{
 		    	let checked = key == ownerId ? 'checked' : '';
-		    	str += `<div style="display:inline-block;width:110px;">
+		    	substr = `<div style="display:inline-block;width:110px;">
 		    				<input name="users" type="radio" value=` + key + ` ` + checked + ` /> 
 		    				<span>` + value + `</span>
 		    			</div>`;
+		    	if(checked){
+		    		str = substr + str;
+		    	}else{
+		    		str += substr;
+		    	}
 		    })
 
 		    str = `

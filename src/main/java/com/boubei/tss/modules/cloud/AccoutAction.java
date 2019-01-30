@@ -14,7 +14,7 @@ import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.modules.cloud.entity.Account;
 
 @Controller
-@RequestMapping("/auth/module/account")
+@RequestMapping("/auth/account")
 public class AccoutAction {
 
 	@Autowired
