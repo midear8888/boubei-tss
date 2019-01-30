@@ -1,6 +1,8 @@
 package com.boubei.tss.modules.cloud.product;
 
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 
@@ -10,8 +12,13 @@ import com.boubei.tss.modules.api.APIService;
 import com.boubei.tss.modules.cloud.entity.Account;
 import com.boubei.tss.modules.cloud.entity.AccountFlow;
 import com.boubei.tss.modules.cloud.entity.CloudOrder;
+import com.boubei.tss.modules.cloud.entity.ModuleDef;
 import com.boubei.tss.modules.sn.SerialNOer;
+import com.boubei.tss.um.dao.IUserDao;
+import com.boubei.tss.um.entity.RoleUser;
+import com.boubei.tss.um.entity.SubAuthorize;
 import com.boubei.tss.um.entity.User;
+import com.boubei.tss.um.service.IUserService;
 import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.MathUtil;
@@ -20,6 +27,8 @@ public abstract class AbstractAfterPay implements IAfterPay {
 
 	protected static ICommonDao commonDao = (ICommonDao) Global.getBean("CommonDao");
 	protected APIService apiService = (APIService) Global.getBean("APIService");
+	protected IUserService userService = (IUserService) Global.getBean("UserService");
+	protected IUserDao userDao = (IUserDao) Global.getBean("UserDao");
 
 	static String path = AbstractAfterPay.class.getName().replace(AbstractAfterPay.class.getSimpleName(), "");
 
@@ -29,6 +38,7 @@ public abstract class AbstractAfterPay implements IAfterPay {
 	public Map<?, ?> trade_map;
 	public String payType;
 	public String payer;
+	public User user;
 
 	public AbstractAfterPay() {
 
@@ -44,7 +54,8 @@ public abstract class AbstractAfterPay implements IAfterPay {
 			return null;
 		}
 		CloudOrder co = (CloudOrder) commonDao.getEntity(CloudOrder.class, EasyUtils.obj2Long(cloudOrderId));
-		return (AbstractAfterPay) BeanUtil.newInstanceByName(path + co.getType(), new Class[] { CloudOrder.class }, new Object[] { co });
+		String clazz = co.getType().indexOf(".") > 0 ? "" : path;
+		return (AbstractAfterPay) BeanUtil.newInstanceByName(clazz + co.getType(), new Class[] { CloudOrder.class }, new Object[] { co });
 	}
 
 	public Object handle(Map<?, ?> trade_map, Double real_money, String payer, String payType) {
@@ -52,7 +63,7 @@ public abstract class AbstractAfterPay implements IAfterPay {
 		this.payType = payType;
 		this.payer = payer;
 
-		User user = (User) commonDao.getEntities(" from User where loginName = ?", co.getCreator()).get(0);
+		user = (User) commonDao.getEntities(" from User where loginName = ?", co.getCreator()).get(0);
 		this.userId = user.getId();
 		this.userCode = user.getLoginName();
 
@@ -129,6 +140,38 @@ public abstract class AbstractAfterPay implements IAfterPay {
 		flow.setBalance(balance);
 		account.setBalance(balance);
 		commonDao.create(flow);
+	}
+
+	protected void createSubAuthorize() {
+		int account_num = co.getAccount_num();
+		int mouth_num = co.getMonth_num();
+		Long module_id = co.getModule_id();
+		ModuleDef def = (ModuleDef) commonDao.getEntity(ModuleDef.class, module_id);
+		for (int i = 0; i < account_num; i++) {
+			SubAuthorize sa = new SubAuthorize();
+			sa.setName(def.getId() + "_" + def.getModule() + "_" + i); // name=模块ID_模块名称_购买序号
+
+			sa.setStartDate(new Date());
+			sa.setOwnerId(userId);
+
+			Calendar calendar = new GregorianCalendar();
+			calendar.add(Calendar.MONTH, mouth_num);
+			sa.setEndDate(calendar.getTime());
+
+			commonDao.create(sa);
+
+			// 创建策略角色对应关系
+			String[] roleIds = EasyUtils.checkNullI(def.getRoles(), "").toString().split(",");
+			for (String roleId : roleIds) {
+				RoleUser ru = new RoleUser();
+				ru.setModuleId(module_id);
+				ru.setRoleId(EasyUtils.obj2Long(roleId));
+				ru.setStrategyId(sa.getId());
+				ru.setUserId(userId);
+				commonDao.create(ru);
+			}
+
+		}
 	}
 
 }

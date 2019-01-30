@@ -1,5 +1,5 @@
 /* ==================================================================   
- * Created [2016-06-22] by Jon.King 
+T * Created [2016-06-22] by Jon.King 
  * ==================================================================  
  * TSS 
  * ================================================================== 
@@ -34,6 +34,7 @@ import com.boubei.tss.modules.cloud.entity.ModuleUser;
 import com.boubei.tss.modules.cloud.product.AbstractAfterPay;
 import com.boubei.tss.modules.cloud.product.AfterPayService;
 import com.boubei.tss.modules.cloud.product.IAfterPay;
+import com.boubei.tss.um.dao.IUserDao;
 import com.boubei.tss.um.entity.RoleUser;
 import com.boubei.tss.um.entity.SubAuthorize;
 import com.boubei.tss.um.entity.User;
@@ -48,14 +49,14 @@ public class ModuleServiceImpl implements ModuleService, AfterPayService{
 	@Autowired ICommonDao commonDao;
 	@Autowired IUserService userService;
 	@Autowired APIService apiService;
+	@Autowired IUserDao userDao;
 	
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	
-	@SuppressWarnings("unchecked")
+	
 	public CloudOrder createOrder(CloudOrder mo) throws Exception{
-		Map<String, String> params = new ObjectMapper().readValue(mo.getParams(), HashMap.class);
-		if(!checkLogin(params)){
+		if(!checkLogin(mo)){
 			throw new BusinessException("注册出错！");
 		}
 		if(mo.getModule_id()!=null){
@@ -67,10 +68,11 @@ public class ModuleServiceImpl implements ModuleService, AfterPayService{
 		return mo;
 	}
 	
-	public Boolean checkLogin(Map<String,String> map){
+	private Boolean checkLogin(CloudOrder mo) throws Exception{
 		if(!Environment.isAnonymous())
 			return true;
-		
+		@SuppressWarnings("unchecked")
+		Map<String,String> map = new ObjectMapper().readValue(mo.getParams(), HashMap.class);
 		// 验证码注册（mode=phone）：校验短信验证码smsCode
     	String smsCode = map.get("smsCode");
     	String mobile = map.get("phone");
@@ -78,14 +80,21 @@ public class ModuleServiceImpl implements ModuleService, AfterPayService{
     		return false;
     	}
         
+    	
         //注册账号
         User user = new User();
         user.setLoginName(mobile);
         user.setUserName(map.get("user_name"));
         user.setUdf(map.get("company_name"));
-        userService.regUser(user);   
-        
-        apiService.mockLogin(user.getLoginName());
+        user.setOrignPassword(map.get("password"));
+        try{
+        	userDao.checkUserAccout(user);
+        	userService.regUser(user);
+        }catch(Exception e){
+        	
+        }finally{
+        	apiService.mockLogin(user.getLoginName());
+        }
         
         return true;
 	}

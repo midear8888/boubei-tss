@@ -51,6 +51,8 @@ public class CloudOrder extends ARecordTable {
 	private Date order_date = new Date();
 	private Date pay_date;
 
+	private Long belong_user_id;
+
 	private String status = NEW; // 待付款、取消、已付款
 
 	private Double price;
@@ -68,32 +70,16 @@ public class CloudOrder extends ARecordTable {
 		return id;
 	}
 
+	public void setId(Long id) {
+		this.id = id;
+	}
+
 	public String getType() {
 		return type;
 	}
 
 	public void setType(String type) {
 		this.type = type;
-	}
-
-	public String getOrder_no() {
-		return order_no;
-	}
-
-	public void setOrder_no(String order_no) {
-		this.order_no = order_no;
-	}
-
-	public String getOrder_num() {
-		return order_no;
-	}
-
-	public void setOrder_num(String order_num) {
-		this.order_no = order_num;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
 	}
 
 	public Long getModule_id() {
@@ -118,6 +104,46 @@ public class CloudOrder extends ARecordTable {
 
 	public void setMonth_num(Integer month_num) {
 		this.month_num = month_num;
+	}
+
+	public String getOrder_no() {
+		return order_no;
+	}
+
+	public void setOrder_no(String order_no) {
+		this.order_no = order_no;
+	}
+
+	public Date getOrder_date() {
+		return order_date;
+	}
+
+	public void setOrder_date(Date order_date) {
+		this.order_date = order_date;
+	}
+
+	public Date getPay_date() {
+		return pay_date;
+	}
+
+	public void setPay_date(Date pay_date) {
+		this.pay_date = pay_date;
+	}
+
+	public Long getBelong_user_id() {
+		return belong_user_id;
+	}
+
+	public void setBelong_user_id(Long belong_user_id) {
+		this.belong_user_id = belong_user_id;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 	public Double getPrice() {
@@ -158,30 +184,6 @@ public class CloudOrder extends ARecordTable {
 
 	public void setDerate(Double derate) {
 		this.derate = derate;
-	}
-
-	public Date getOrder_date() {
-		return order_date;
-	}
-
-	public void setOrder_date(Date order_date) {
-		this.order_date = order_date;
-	}
-
-	public Date getPay_date() {
-		return pay_date;
-	}
-
-	public void setPay_date(Date pay_date) {
-		this.pay_date = pay_date;
-	}
-
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
 	}
 
 	public String getParams() {

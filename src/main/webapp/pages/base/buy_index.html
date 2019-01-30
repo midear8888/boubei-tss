@@ -103,12 +103,19 @@
 
 	var isLogin = true;
 
-	$.get('/tss/auth/user/has',{}, function(r){
-		if(r.code == 'TSS-404'){
-			isLogin = false;
-			$('.login-visible').hide()
-		}
-	})
+	function checkLogin(){
+		$.get('/tss/auth/user/has',{}, function(r){
+			if(r.code == 'TSS-404'){
+				isLogin = false;
+				$('.login-visible').hide()
+			}else{
+				isLogin = true;
+				$('.login-visible').show()
+			}
+		})
+	}
+
+	checkLogin();
 
 	function getCargoNum(){
 		// 重新请求购物车内物品件数

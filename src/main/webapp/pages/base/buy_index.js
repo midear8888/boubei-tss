@@ -156,14 +156,14 @@ function formatterProduct(item){
         RechargeOrderHandler : '充值',
         RenewalfeeOrderHandler : '续费',
         //模块产品购买
-        ModuleOrderHandler : '购买',//普通产品
-        ModuleOrderE8Handler : 'E8',//e8产品
+        ModuleOrderHandler : 'E8',//普通产品
         ModuleOrderEFFHandler : 'EFF',//eff产品
     }
-    const h = productMap[item.type] || item.type;
+    let clazzs = (item.type||'').split('.');
+    let clazz = clazzs[clazzs.length-1];
+    const h = productMap[clazz] || clazz;
     const t = item.module_id ? moduleMap[item.module_id] : "";
-    //普通产品需带上module_id的中文名
-    if( item.type == "ModuleOrderHandler" ){
+    if( clazz == "RenewalfeeOrderHandler" ){
         return h + t
     }
     return h
