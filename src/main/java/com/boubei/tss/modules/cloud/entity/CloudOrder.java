@@ -32,7 +32,7 @@ public class CloudOrder extends ARecordTable {
 	public final static String CANCELED = "已取消";
 	public final static String PAYED = "已付款";
 
-	public final static String TYPE0 = RechargeOrderHandler.class.getSimpleName();
+	public final static String TYPE0 = RechargeOrderHandler.class.getName();
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO, generator = "module_order_seq")

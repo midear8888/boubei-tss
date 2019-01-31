@@ -21,7 +21,7 @@ public class ModuleOrderHandler extends AbstractAfterPay {
 
 		userService.regBusiness(user, user.getUdf());
 
-		apiService.mockLogin(userCode);
+//		apiService.mockLogin(userCode);
 
 		Long module_id = co.getModule_id();
 		createSubAuthorize();

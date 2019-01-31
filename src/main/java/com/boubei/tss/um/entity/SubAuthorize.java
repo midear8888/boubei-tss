@@ -47,6 +47,7 @@ public class SubAuthorize extends OperateInfo implements IEntity, ITreeNode, IXF
 	private Long   id;   // 策略ID：策略主键ID
     
     private Long ownerId;  // 策略所有人
+    private Long buyerId;  // 策略购买人
     
     @Column(nullable = false)  
 	private String name;       // 名称:策略名称，如果是购买模块所获策略，则name=模块ID_模块名称_购买序号
@@ -134,4 +135,14 @@ public class SubAuthorize extends OperateInfo implements IEntity, ITreeNode, IXF
 	public void setOwnerId(Long ownerId) {
 		this.ownerId = ownerId;
 	}
+
+	public Long getBuyerId() {
+		return buyerId;
+	}
+
+	public void setBuyerId(Long buyerId) {
+		this.buyerId = buyerId;
+	}
+	
+	
 }

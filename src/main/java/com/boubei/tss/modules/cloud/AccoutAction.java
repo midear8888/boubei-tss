@@ -57,7 +57,7 @@ public class AccoutAction {
 	@RequestMapping(value = "/subauthorize", method = RequestMethod.GET)
 	@ResponseBody
 	public List<?> querySubAuthorize() {
-		return commondao.getEntities(" from SubAuthorize where creatorId = ? order by id desc", Environment.getUserId());
+		return commondao.getEntities(" from SubAuthorize where buyerId = ? order by id desc", Environment.getUserId());
 	}
 
 	@RequestMapping(value = "/subauthorize/role", method = RequestMethod.GET)

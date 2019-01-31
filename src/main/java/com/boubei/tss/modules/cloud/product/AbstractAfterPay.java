@@ -159,6 +159,7 @@ public abstract class AbstractAfterPay implements IAfterPay {
 
 			sa.setStartDate(new Date());
 			sa.setOwnerId(userId);
+			sa.setBuyerId(userId);
 
 			Calendar calendar = new GregorianCalendar();
 			calendar.add(Calendar.MONTH, mouth_num);
