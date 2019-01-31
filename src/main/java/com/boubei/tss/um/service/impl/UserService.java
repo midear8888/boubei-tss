@@ -410,9 +410,13 @@ public class UserService implements IUserService{
     		}
 		}
 	}
- 
 	public void regUser(User user) {
-		if( ParamConfig.getAttribute(PX.REGABLE, "true").equals( Config.FALSE ) ) {
+		regUser(user,false);
+	}
+	
+ 
+	public void regUser(User user, Boolean regByOrder) {
+		if( !regByOrder && ParamConfig.getAttribute(PX.REGABLE, "true").equals( Config.FALSE ) ) {
 			throw new BusinessException(EX.U_46);
 		}
 		

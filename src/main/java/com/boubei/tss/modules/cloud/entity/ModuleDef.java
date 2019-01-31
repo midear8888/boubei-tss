@@ -67,11 +67,22 @@ public class ModuleDef extends ARecordTable {
 	@Column(length = 800)
 	private String description; //模块描述
 	
+	private String before_order; // 下单前校验类
 	private String after_pay_success; // 购买成功后的实现类
 	
 	@Column(length = 800)
 	private String remark;   // 模块备注
 	
+	
+	
+	public String getBefore_order() {
+		return before_order;
+	}
+
+	public void setBefore_order(String before_order) {
+		this.before_order = before_order;
+	}
+
 	public List<Long> roles() {
 		List<Long> roleIds = new ArrayList<Long>();
 		String[] array = EasyUtils.obj2String(roles).split(",");

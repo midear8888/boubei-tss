@@ -144,6 +144,12 @@ public interface IUserService {
      */
     @Logable(operateObject="用户注册", operateInfo=" 用户（${args[0]}）完成注册。")
     void regUser(User user);
+    
+    
+    /**
+     * 用户下单注册
+     */
+    void regUser(User user, Boolean regByOrder);
 
     /**
      * 域账号自注册

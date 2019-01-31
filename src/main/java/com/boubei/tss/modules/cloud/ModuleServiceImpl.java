@@ -54,7 +54,6 @@ public class ModuleServiceImpl implements ModuleService, AfterPayService{
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	
-	
 	public CloudOrder createOrder(CloudOrder mo) throws Exception{
 		if(!checkLogin(mo)){
 			throw new BusinessException("注册出错！");
@@ -62,6 +61,7 @@ public class ModuleServiceImpl implements ModuleService, AfterPayService{
 		if(mo.getModule_id()!=null){
 			calMoney(mo, true);
 		}
+		
 		mo.setStatus(CloudOrder.NEW);
 		mo = (CloudOrder) commonDao.create(mo);
 		mo.setOrder_no(mo.getOrder_date().getTime() + "-" + mo.getId());
@@ -80,7 +80,6 @@ public class ModuleServiceImpl implements ModuleService, AfterPayService{
     		return false;
     	}
         
-    	
         //注册账号
         User user = new User();
         user.setLoginName(mobile);
@@ -89,7 +88,7 @@ public class ModuleServiceImpl implements ModuleService, AfterPayService{
         user.setOrignPassword(map.get("password"));
         try{
         	userDao.checkUserAccout(user);
-        	userService.regUser(user);
+        	userService.regUser(user, true);
         }catch(Exception e){
         	
         }finally{
@@ -101,6 +100,16 @@ public class ModuleServiceImpl implements ModuleService, AfterPayService{
 	
 	public CloudOrder calMoney(CloudOrder mo,Boolean throw_) {
 		ModuleDef md = (ModuleDef) commonDao.getEntity(ModuleDef.class, mo.getModule_id());
+		if(!EasyUtils.isNullOrEmpty(md.getBefore_order())){
+			IBeforeOrderCheck iBeforeOrderCheck = (IBeforeOrderCheck) BeanUtil.newInstanceByName(md.getBefore_order());
+			try{
+				iBeforeOrderCheck.vaild(mo);
+			}catch(Exception e){
+				if(throw_){
+					throw new BusinessException(e.getMessage());
+				}
+			}
+		}
 		mo.setPrice( md.getPrice() );
 		Map<String,Object> params = new HashMap<String,Object>();
 		BeanUtil.addBeanProperties2Map(mo, params);

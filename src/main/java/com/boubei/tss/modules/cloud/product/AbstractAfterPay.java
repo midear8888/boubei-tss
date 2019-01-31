@@ -9,6 +9,7 @@ import java.util.Map;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.persistence.ICommonDao;
 import com.boubei.tss.modules.api.APIService;
+import com.boubei.tss.modules.cloud.ModuleService;
 import com.boubei.tss.modules.cloud.entity.Account;
 import com.boubei.tss.modules.cloud.entity.AccountFlow;
 import com.boubei.tss.modules.cloud.entity.CloudOrder;
@@ -29,6 +30,7 @@ public abstract class AbstractAfterPay implements IAfterPay {
 	protected APIService apiService = (APIService) Global.getBean("APIService");
 	protected IUserService userService = (IUserService) Global.getBean("UserService");
 	protected IUserDao userDao = (IUserDao) Global.getBean("UserDao");
+	protected ModuleService moduleService = (ModuleService) Global.getBean("ModuleService");
 
 	static String path = AbstractAfterPay.class.getName().replace(AbstractAfterPay.class.getSimpleName(), "");
 
@@ -86,6 +88,10 @@ public abstract class AbstractAfterPay implements IAfterPay {
 	}
 
 	protected Account getAccount() {
+		return getAccount(userId);
+	}
+	
+	protected Account getAccount(Long userId) {
 		@SuppressWarnings("unchecked")
 		List<Account> accounts = (List<Account>) commonDao.getEntities(" from Account where belong_user_id = ?", userId);
 
