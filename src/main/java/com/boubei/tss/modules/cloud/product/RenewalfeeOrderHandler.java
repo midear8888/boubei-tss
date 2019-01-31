@@ -33,7 +33,7 @@ public class RenewalfeeOrderHandler extends AbstractAfterPay {
 			if (!module_ids.contains(module_id)) {
 				module_ids.add(module_id);
 			}
-			if (!subAuthorize.getCreatorId().equals(userId)) {
+			if (!subAuthorize.getBuyerId().equals(userId)) {
 				throw new BusinessException("您不能操作别的用户的设备！");
 			}
 			if (subAuthorize.getEndDate().before(date)) {
