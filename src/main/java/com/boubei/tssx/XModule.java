@@ -33,7 +33,7 @@ import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.persistence.entityaop.IDecodable;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.web.servlet.AfterUpload;
-import com.boubei.tss.modules.cloud.ModuleService;
+import com.boubei.tss.modules.cloud.CloudService;
 import com.boubei.tss.modules.cloud.entity.ModuleDef;
 import com.boubei.tss.modules.param.Param;
 import com.boubei.tss.modules.param.ParamManager;
@@ -49,7 +49,7 @@ import com.boubei.tss.util.URLUtil;
 @RequestMapping("/auth/modulex")
 public class XModule implements AfterUpload {
 	
-	@Autowired ModuleService service;
+	@Autowired CloudService service;
 	@Autowired ICommonService commonService;
 	@Autowired ReportService reportService;
 	@Autowired RecordService recordService;

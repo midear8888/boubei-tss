@@ -21,7 +21,6 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import com.boubei.tss.dm.record.ARecordTable;
-import com.boubei.tss.modules.cloud.product.RechargeOrderHandler;
 
 @Entity
 @Table(name = "cloud_module_order")
@@ -32,14 +31,24 @@ public class CloudOrder extends ARecordTable {
 	public final static String CANCELED = "已取消";
 	public final static String PAYED = "已付款";
 
-	public final static String TYPE0 = RechargeOrderHandler.class.getName();
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO, generator = "module_order_seq")
 	private Long id;
 
+	private String product; 
+	
+	public String getProduct() {
+		return product;
+	}
+
+	public void setProduct(String product) {
+		this.product = product;
+	}
+
 	@Column(nullable = false)
 	private String type;
+	
+	private Long invite_user_id; // 邀请人
 
 	private Long module_id;
 
@@ -47,20 +56,18 @@ public class CloudOrder extends ARecordTable {
 
 	private Integer month_num;
 
-	private String order_no;// 订单号 编码规则=时间戳-id
+	private String order_no; // 订单号 编码规则=时间戳-id
 	private Date order_date = new Date();
 	private Date pay_date;
-
-	private Long belong_user_id;
 
 	private String status = NEW; // 待付款、取消、已付款
 
 	private Double price;
-	private Double money_cal; // 应付金额
+	private Double money_cal;  // 应付金额
 	private Double money_real; // 实付金额
-	private Double rebate; // 折扣
-	private Double derate; // 减免
-	private String params;// 更多参数
+	private Double rebate;     // 折扣
+	private Double derate;     // 减免
+	private String params;     // 更多参数
 
 	public Serializable getPK() {
 		return this.getId();
@@ -74,6 +81,8 @@ public class CloudOrder extends ARecordTable {
 		this.id = id;
 	}
 
+	
+	
 	public String getType() {
 		return type;
 	}
@@ -130,14 +139,6 @@ public class CloudOrder extends ARecordTable {
 		this.pay_date = pay_date;
 	}
 
-	public Long getBelong_user_id() {
-		return belong_user_id;
-	}
-
-	public void setBelong_user_id(Long belong_user_id) {
-		this.belong_user_id = belong_user_id;
-	}
-
 	public String getStatus() {
 		return status;
 	}
@@ -192,6 +193,14 @@ public class CloudOrder extends ARecordTable {
 
 	public void setParams(String params) {
 		this.params = params;
+	}
+
+	public Long getInvite_user_id() {
+		return invite_user_id;
+	}
+
+	public void setInvite_user_id(Long invite_user_id) {
+		this.invite_user_id = invite_user_id;
 	}
 
 }

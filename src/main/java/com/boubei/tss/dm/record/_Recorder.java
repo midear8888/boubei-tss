@@ -50,7 +50,6 @@ import com.boubei.tss.dm.record.workflow.WFStatus;
 import com.boubei.tss.dm.record.workflow.WFUtil;
 import com.boubei.tss.dm.report.log.AccessLogRecorder;
 import com.boubei.tss.framework.Config;
-import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.SecurityUtil;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.exception.ExceptionEncoder;
@@ -65,8 +64,7 @@ import com.boubei.tss.framework.web.display.tree.TreeEncoder;
 import com.boubei.tss.framework.web.filter.Filter8APITokenCheck;
 import com.boubei.tss.framework.web.mvc.ProgressActionSupport;
 import com.boubei.tss.modules.HitRateManager;
-import com.boubei.tss.modules.log.IBusinessLogger;
-import com.boubei.tss.modules.log.Log;
+import com.boubei.tss.modules.log.BusinessLogger;
 import com.boubei.tss.um.permission.PermissionHelper;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.DateUtil;
@@ -953,9 +951,7 @@ public class _Recorder extends ProgressActionSupport {
 		FileHelper.deleteFile(new File(attach.getAttachPath()));
 
 		// 记录附件删除日志，关联到附件所属的录入表
-		Log excuteLog = new Log("删除附件, " + id, attach);
-		excuteLog.setOperateTable(recordService.getRecord(recordId).getName());
-		((IBusinessLogger) Global.getBean("BusinessLogger")).output(excuteLog);
+		BusinessLogger.log(recordService.getRecord(recordId).getName(), "删除附件, " + id, attach);
 
 		printSuccessMessage();
 	}

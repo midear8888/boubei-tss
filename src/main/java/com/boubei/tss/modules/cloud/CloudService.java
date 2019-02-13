@@ -14,14 +14,13 @@ import java.util.List;
 
 import com.boubei.tss.modules.cloud.entity.CloudOrder;
 
-public interface ModuleService {
+public interface CloudService {
 
-	CloudOrder createOrder(CloudOrder mo) throws Exception;
+	CloudOrder createOrder(CloudOrder mo);
 
-	CloudOrder updateOrder(CloudOrder mo);
+	CloudOrder calMoney(CloudOrder mo);
 
-	CloudOrder calMoney(CloudOrder mo, Boolean throw_);
-
+	
 	List<?> listAvaliableModules();
 
 	List<?> listSelectedModules(Long user);

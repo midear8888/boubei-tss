@@ -22,7 +22,6 @@ import org.apache.log4j.Logger;
 
 import com.boubei.tss.PX;
 import com.boubei.tss.dm.DMUtil;
-import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.exception.convert.ExceptionConvertorFactory;
 import com.boubei.tss.framework.exception.convert.IExceptionConvertor;
 import com.boubei.tss.framework.sso.Environment;
@@ -31,8 +30,7 @@ import com.boubei.tss.framework.sso.context.RequestContext;
 import com.boubei.tss.framework.web.display.ErrorMessageEncoder;
 import com.boubei.tss.framework.web.display.IDataEncoder;
 import com.boubei.tss.framework.web.display.XmlPrintWriter;
-import com.boubei.tss.modules.log.IBusinessLogger;
-import com.boubei.tss.modules.log.Log;
+import com.boubei.tss.modules.log.BusinessLogger;
 import com.boubei.tss.modules.param.ParamConfig;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.MailUtil;
@@ -160,9 +158,7 @@ public class ExceptionEncoder {
 		
 		// 记录异常信息到日志里
 		String errorMessage = be.getMessage();
-		Log excuteLog = new Log(errorMessage, stackTrace);
-    	excuteLog.setOperateTable("系统异常");
-        ((IBusinessLogger) Global.getBean("BusinessLogger")).output(excuteLog);
+        BusinessLogger.log("系统异常", errorMessage, stackTrace);
         
         // 对指定了关键字的错误异常进行邮件提醒
         String errorKeyword = ParamConfig.getAttribute(PX.ERROR_KEYWORD, "java.lang.OutOfMemoryError");

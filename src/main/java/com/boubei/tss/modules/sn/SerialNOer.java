@@ -27,13 +27,22 @@ import com.boubei.tss.util.EasyUtils;
 @Controller
 @RequestMapping("/sn")
 public class SerialNOer {
+	
+	private boolean isGlobal;
+	
+	public SerialNOer() { }
+	public SerialNOer(boolean isGlobal) { 
+		this.isGlobal = isGlobal;
+	}
 
 	@RequestMapping(value = "/{sntemplate}/{count}")
 	@ResponseBody
 	public synchronized List<String> create(@PathVariable("sntemplate") String sntemplate, @PathVariable("count") int count) {
-		return create(Environment.getDomainOrign(), sntemplate, count);
-	}
+		String domain = this.isGlobal ? UMConstants.DEFAULT_DOMAIN : Environment.getDomainOrign();
 		
+		return create(domain, sntemplate, count);
+	}
+	
 	public synchronized List<String> create(String domain, String sntemplate, int count) {
 		
 		sntemplate = EasyUtils.obj2String(sntemplate).toLowerCase();
@@ -53,7 +62,7 @@ public class SerialNOer {
 		String precode = sntemplate.replace(_Field.SNO_yyMMddxxxx, "").replace(_Field.SNO_xxxx, "").toUpperCase();
 		
 		// 如果域扩展表(x_domain)里明确维护了订单前缀
-		precode = EasyUtils.obj2String( Environment.getDomainInfo("prefix") ) + precode;
+		precode = (isGlobal ? "" : EasyUtils.obj2String( Environment.getDomainInfo("prefix") ) ) + precode;
 		
 		ICommonService commonService = Global.getCommonService();
 		domain = (String) EasyUtils.checkNull(domain, UMConstants.DEFAULT_DOMAIN);
@@ -111,6 +120,10 @@ public class SerialNOer {
 	}
 	
 	public static String get(String preCode) {
-		return new SerialNOer().createOne( preCode );
+		return get(preCode, false);
+	}
+	
+	public static String get(String preCode, boolean isGlobal) {
+		return new SerialNOer(isGlobal).createOne( preCode );
 	}
 }

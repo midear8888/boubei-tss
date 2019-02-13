@@ -19,11 +19,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
+
+import com.boubei.tss.framework.exception.BusinessException;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -418,23 +419,12 @@ public class EasyUtils {
 		if (reader.indexOf("$") > -1) {
 			reader = fmParse(reader, params);
 		}
-		return eval(reader);
-	}
-	
-	static ScriptEngine jse = new ScriptEngineManager().getEngineByName("JavaScript");
-	
-	/**
-	 * 用js的eval方法计算结果
-	 * 
-	 * @param reader
-	 * @return
-	 */
-	public static Double eval(String reader) {
+		
 		Object value = 0;
 		try {
-			value = jse.eval(reader);
+			value = new ScriptEngineManager().getEngineByName("JavaScript").eval(reader);
 		} catch (Exception e) {
-
+			throw new BusinessException( reader + "," + params + " eval error: " + e.getMessage(), e);
 		}
 		return obj2Double(value);
 	}

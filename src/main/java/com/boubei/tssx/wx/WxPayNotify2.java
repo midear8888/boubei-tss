@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.persistence.ICommonService;
-import com.boubei.tss.modules.cloud.product.AfterPayService;
+import com.boubei.tss.modules.cloud.pay.AfterPayService;
 import com.boubei.tss.util.EasyUtils;
 
 @WebServlet(urlPatterns = "/wxnotify2.in")

@@ -44,20 +44,14 @@ public class DBOnlineUserService implements IOnlineUserManager {
      */
     public void register(String token, String appCode, String sessionId, Long userId, String userName) {
         List<?> list = queryExists(userId);
+        
+        DBOnlineUser ou;
         if( list.isEmpty() ) {
-        	DBOnlineUser ou = new DBOnlineUser(userId, sessionId, appCode, token, userName);
-        	
-        	String hql = "from Group where id in (select groupId from GroupUser where userId = ?) and groupType = " + Group.MAIN_GROUP_TYPE;
-        	List<?> groups = dao.getEntities(hql, userId);
-        	if( groups.size() > 0 ) {
-        		Group group = (Group) groups.get(0);
-            	ou.setDomain(group.getDomain());
-        	}
-        	
+        	ou = new DBOnlineUser(userId, sessionId, appCode, token, userName);
         	dao.create(ou);
         } 
         else {
-        	DBOnlineUser ou = (DBOnlineUser) list.get(0);
+        	ou = (DBOnlineUser) list.get(0);
         	
         	// 移动端登录不干扰PC端
         	HttpSession session = Context.sessionMap.get(ou.getSessionId());
@@ -67,8 +61,17 @@ public class DBOnlineUserService implements IOnlineUserManager {
         	
         	ou.setSessionId(sessionId);
         	ou.setLoginCount( EasyUtils.obj2Int(ou.getLoginCount()) + 1 );
-        	dao.update(ou);
         }
+        
+        // 设置域信息（每次登陆domain可能已经发生了变化，重新设置）
+        String hql = "from Group where id in (select groupId from GroupUser where userId = ?) and groupType = " + Group.MAIN_GROUP_TYPE;
+    	List<?> groups = dao.getEntities(hql, userId);
+    	if( groups.size() > 0 ) {
+    		Group group = (Group) groups.get(0);
+        	ou.setDomain(group.getDomain());
+    	}
+    	
+    	dao.update(ou);
     }
     
     private List<?> queryExists(Long userId) {

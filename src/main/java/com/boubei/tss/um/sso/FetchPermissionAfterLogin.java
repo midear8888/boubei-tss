@@ -25,8 +25,7 @@ import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.sso.ILoginCustomizer;
 import com.boubei.tss.framework.sso.SSOConstants;
 import com.boubei.tss.framework.sso.context.Context;
-import com.boubei.tss.modules.log.IBusinessLogger;
-import com.boubei.tss.modules.log.Log;
+import com.boubei.tss.modules.log.BusinessLogger;
 import com.boubei.tss.um.helper.dto.OperatorDTO;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.EasyUtils;
@@ -41,7 +40,6 @@ public class FetchPermissionAfterLogin implements ILoginCustomizer {
     
     ILoginService loginService = (ILoginService) Global.getBean("LoginService");
     ICommonService commonService = Global.getCommonService();
-    IBusinessLogger businessLogger = ((IBusinessLogger) Global.getBean("BusinessLogger"));
     
     /**
      * 加载用户的角色权限信息（用户登录后，角色设置有变化，可单独执行本方法刷新）
@@ -145,6 +143,7 @@ public class FetchPermissionAfterLogin implements ILoginCustomizer {
 
     public void execute() {
         Long logonUserId = Environment.getUserId();
+        Long start = System.currentTimeMillis();
         
         HttpSession session = loadRights(logonUserId);
         loadGroups(logonUserId, session);
@@ -152,9 +151,7 @@ public class FetchPermissionAfterLogin implements ILoginCustomizer {
     	// 记录登陆成功的日志信息
     	Object loginMsg = session.getAttribute("LOGIN_MSG");
     	if( !Environment.isAnonymous() && loginMsg != null ) {
-			Log log = new Log(Environment.getUserName(), loginMsg);
-        	log.setOperateTable( "用户登录" );
-        	businessLogger.output(log);
+        	BusinessLogger.log("用户登录", Environment.getUserName(), loginMsg, null, start);
     	}
     }
 }

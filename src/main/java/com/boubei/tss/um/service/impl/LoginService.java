@@ -283,25 +283,22 @@ public class LoginService implements ILoginService {
     
     // 登陆账号和中文名字映射
     public Map<String, String> getUsersMap() {
-		String domain = Environment.getDomain();
-		List<?> list = getUsersByDomain(domain, "loginName, u.userName", Environment.getUserId());
-		
-		Map<String, String> map = new HashMap<String, String>();
-		for( Object obj : list ) {
-			Object[] objs = (Object[]) obj;
-			map.put((String)objs[0], (String)objs[1]);
-		}
-		return map;
+		return (Map<String, String>) _getUsersMap("loginName, u.userName");
 	}
+    
     // 登陆账号ID和中文名字映射
     public Map<Long, String> getUsersMapI() {
+		return (Map<Long, String>) _getUsersMap("id, u.userName");
+	}
+    
+    private Map<?, String> _getUsersMap(String key) {
 		String domain = Environment.getDomain();
-		List<?> list = getUsersByDomain(domain, "id, u.userName", Environment.getUserId());
+		List<?> list = getUsersByDomain(domain, key, Environment.getUserId());
 		
-		Map<Long, String> map = new HashMap<Long, String>();
+		Map<Object, String> map = new HashMap<Object, String>();
 		for( Object obj : list ) {
 			Object[] objs = (Object[]) obj;
-			map.put((Long) objs[0], (String)objs[1]);
+			map.put(objs[0], (String)objs[1]);
 		}
 		return map;
 	}

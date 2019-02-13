@@ -42,13 +42,11 @@ import com.boubei.tss.dm.record.permission.RecordResource;
 import com.boubei.tss.dm.record.workflow.WFStatus;
 import com.boubei.tss.dm.record.workflow.WFUtil;
 import com.boubei.tss.dm.report.log.AccessLogRecorder;
-import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.Anonymous;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.web.display.grid.GridTemplet;
-import com.boubei.tss.modules.log.IBusinessLogger;
-import com.boubei.tss.modules.log.Log;
+import com.boubei.tss.modules.log.BusinessLogger;
 import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.modules.sn.SerialNOer;
@@ -676,11 +674,9 @@ public abstract class _Database {
 	}
 	
 	public void logCUD(Object id, String opeartion, String logMsg) {
-		if( !this.needLog ) return;
-		
-		Log excuteLog = new Log(opeartion + ", " + id, logMsg);
-		excuteLog.setOperateTable(recordName);
-		((IBusinessLogger) Global.getBean("BusinessLogger")).output(excuteLog);
+		if( this.needLog ) {
+			BusinessLogger.log(recordName, opeartion + ", " + id, logMsg);
+		}
 	}
 	
 	/**

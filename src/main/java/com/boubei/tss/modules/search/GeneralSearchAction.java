@@ -167,6 +167,8 @@ public class GeneralSearchAction extends BaseActionSupport {
 		if( !Environment.isAdmin() && !Environment.getDomain().equals(domain) ) {
 			return new ArrayList<String>();
 		}
+		
+		field = field.replaceAll("password", "").replaceAll("authToken", ""); // 禁止查询敏感字段
 		return loginService.getUsersByDomain(domain, field, -0L);
 	}
 	

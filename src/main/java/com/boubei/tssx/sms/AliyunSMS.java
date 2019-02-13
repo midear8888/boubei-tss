@@ -2,8 +2,6 @@ package com.boubei.tssx.sms;
 
 import java.util.Date;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
@@ -21,15 +19,15 @@ import com.boubei.tss.cache.Pool;
 import com.boubei.tss.cache.extension.CacheHelper;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.persistence.ICommonService;
+import com.boubei.tss.framework.sms.AbstractSMS;
+import com.boubei.tss.framework.sms.SMSLog;
 import com.boubei.tss.framework.sso.Environment;
-import com.boubei.tss.modules.log.IBusinessLogger;
-import com.boubei.tss.modules.log.Log;
 import com.boubei.tss.modules.param.ParamConfig;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.MathUtil;
 
-public class AliyunSMS {
+public class AliyunSMS extends AbstractSMS{
 	
 	private Logger log = Logger.getLogger(this.getClass());
  
@@ -80,16 +78,7 @@ public class AliyunSMS {
         commService = Global.getCommonService();
     }
     
-    /** 
-     * 大陆手机号码11位数，匹配格式. 
-     */
-    public static boolean isChinaPhoneLegal(String phone) {  
-        String regExp = "^[1][3,4,5,6,7,8,9][0-9]{9}$";  
-        Pattern p = Pattern.compile(regExp);  
-        Matcher m = p.matcher(phone);  
-        return m.matches();  
-    } 
-
+   
     /**
      * 按照短信模板发送短信
      * 
@@ -141,15 +130,7 @@ public class AliyunSMS {
         return ssr;
     }
     
-    // 不成功则记录异常
-    public void logException(Exception e) {
-    	String errMsg = "短信接口异常";
-		log.error(errMsg, e);
-    	
-		Log excuteLog = new Log(e.getMessage(), e.getCause());
-    	excuteLog.setOperateTable(errMsg);
-        ((IBusinessLogger) Global.getBean("BusinessLogger")).output(excuteLog);
-    }
+   
     
     // 发送随机数验证码
     public SendSmsResponse sendRandomNum(String phone) {
@@ -165,13 +146,7 @@ public class AliyunSMS {
 		return ssr;
     }
     
-    public boolean checkCode(String mobile, Object code) {
-    	Date from = DateUtil.subDays(new Date(), 10.0/(24*60));
-    	List<?> list = commService.getList(" from SMSLog where phonenum = ? and randomnum = ? and createTime > ? ", 
-    			mobile, EasyUtils.obj2Int(code), from);
-    	
-    	return list.size() > 0;
-    }
+   
     
     public QuerySendDetailsResponse querySendDetails(String phone, String bizId) throws ClientException {
         QuerySendDetailsRequest request = new QuerySendDetailsRequest();

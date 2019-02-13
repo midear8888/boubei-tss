@@ -113,7 +113,6 @@ public interface ILoginService {
      * 		List: Object[](groupId, groupName)
      *		层次是从上向下,依次类推
      */
-    @Cached(cyclelife = CacheLife.SHORT)
     List<Object[]> getGroupsByUserId(Long userId);
 
     /**

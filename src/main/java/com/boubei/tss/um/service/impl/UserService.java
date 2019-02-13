@@ -373,6 +373,7 @@ public class UserService implements IUserService{
 		Group domainGroup = groupService.createDomainGroup(domain);
     	Long newDomainGroupId = domainGroup.getId();
 		user.setGroupId(newDomainGroupId);
+		user.setDomain( domainGroup.getDomain() );
     	
     	// 默认创建一个客户组【customer】，小程序默认注册在各个域的客户组下
     	Group customerGroup = new Group();
@@ -410,12 +411,12 @@ public class UserService implements IUserService{
     		}
 		}
 	}
+ 
 	public void regUser(User user) {
 		regUser(user,false);
 	}
 	
- 
-	public void regUser(User user, Boolean regByOrder) {
+	public void regUser(User user, boolean regByOrder) {
 		if( !regByOrder && ParamConfig.getAttribute(PX.REGABLE, "true").equals( Config.FALSE ) ) {
 			throw new BusinessException(EX.U_46);
 		}

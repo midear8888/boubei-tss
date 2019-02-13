@@ -19,49 +19,51 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.modules.cloud.entity.CloudOrder;
-import com.boubei.tss.modules.cloud.product.AfterPayService;
+import com.boubei.tss.modules.cloud.pay.AfterPayService;
 
 @Controller
 @RequestMapping("/cloud")
 public class ModuleOrderAction {
 
-	@Autowired
-	private ModuleService service;
-	@Autowired
-	private ICommonService commonService;
+	@Autowired private CloudService cloudService;
+	@Autowired private ICommonService commonService;
 
 	@RequestMapping(value = "/order", method = RequestMethod.POST)
 	@ResponseBody
-	public CloudOrder createOrder(CloudOrder mo) throws Exception {
-		return service.createOrder(mo);
+	public CloudOrder createOrder(CloudOrder mo) {
+		return cloudService.createOrder(mo);
 	}
 
 	@RequestMapping(value = "/order", method = RequestMethod.PUT)
 	@ResponseBody
 	public CloudOrder updateOrder(CloudOrder mo) {
-		return service.updateOrder(mo);
+		cloudService.calMoney(mo); // 重新计算价格
+		commonService.update(mo);
+		
+		return mo;
 	}
 
 	@RequestMapping(value = "/order/price/query")
 	@ResponseBody
 	public Object queryPrice(CloudOrder mo) {
-		return service.calMoney(mo, false);
+		return cloudService.calMoney(mo);
 	}
 
 	@RequestMapping(value = "/order/price", method = RequestMethod.POST)
 	@ResponseBody
-	public Object updatePrice(Long id, Double rebate, Double derate) {
+	public void updatePrice(Long id, Double rebate, Double derate) {
+		// 只有超级管理员有权限，才有权限对订单价格进行减免或给与折扣
+		if( !Environment.isAdmin() ) return;
+		
 		CloudOrder mo = (CloudOrder) commonService.getEntity(CloudOrder.class, id);
 		mo.setRebate(rebate);
 		mo.setDerate(derate);
 		mo.setMoney_real(mo.getMoney_cal() * rebate - derate);
 
 		commonService.update(mo);
-		return null;
 	}
 
 	@RequestMapping(value = "/order/list", method = RequestMethod.GET)
@@ -71,18 +73,22 @@ public class ModuleOrderAction {
 		return commonService.getList(hql, Environment.getUserCode());
 	}
 
-	@RequestMapping(value = "/order/payed/{order_no}", method = RequestMethod.POST)
-	@ResponseBody
-	public Object payedOrders(@PathVariable String order_no) {
-		AfterPayService afterPayService = (AfterPayService) Global.getBean("ModuleService");
-		CloudOrder co = (CloudOrder) commonService.getList(" from CloudOrder where order_no = ?", order_no).get(0);
-		return afterPayService.handle(order_no, co.getMoney_cal(), "admin", "线下", null);
-
-	}
-
 	@RequestMapping(value = "/modules", method = RequestMethod.GET)
 	@ResponseBody
 	public List<?> listAvaliableModules() {
-		return service.listAvaliableModules();
+		return cloudService.listAvaliableModules();
+	}
+	
+	/**
+	 * Admin 设置订单状态为已支付
+	 */
+	@RequestMapping(value = "/order/payed/{order_no}", method = RequestMethod.POST)
+	@ResponseBody
+	public void payedOrders(@PathVariable String order_no) {
+		AfterPayService afterPayService = (AfterPayService) cloudService;
+		List<?> list = commonService.getList(" from CloudOrder where order_no = ?", order_no);
+		CloudOrder co = (CloudOrder) list.get(0);
+		
+		afterPayService.handle(order_no, co.getMoney_cal(), "admin", "线下", null);
 	}
 }

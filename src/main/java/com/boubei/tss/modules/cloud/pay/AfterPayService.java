@@ -1,4 +1,4 @@
-package com.boubei.tss.modules.cloud.product;
+package com.boubei.tss.modules.cloud.pay;
 
 import java.util.Map;
 
@@ -12,5 +12,5 @@ public interface AfterPayService {
 	 * @param map
 	 * @return
 	 */
-	Object handle(String order_no, Double real_money, String payer, String payType, Map<?, ?> map);
+	void handle(String order_no, Double real_money, String payer, String payType, Map<?, ?> map);
 }

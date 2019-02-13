@@ -7,10 +7,12 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import com.boubei.tss.framework.persistence.IEntity;
+import com.boubei.tss.um.entity.User;
 
 /**
  * 域账户
@@ -27,7 +29,8 @@ public class Account implements IEntity {
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "account_seq")
 	private Long id;
 	
-	private Long belong_user_id;
+	@ManyToOne
+	private User belong_user;
 	
 	private String domain;
 	
@@ -49,14 +52,6 @@ public class Account implements IEntity {
 
 	public void setId(Long id) {
 		this.id = id;
-	}
-
-	public Long getBelong_user_id() {
-		return belong_user_id;
-	}
-
-	public void setBelong_user_id(Long belong_user_id) {
-		this.belong_user_id = belong_user_id;
 	}
 
 	public String getDomain() {
@@ -117,5 +112,13 @@ public class Account implements IEntity {
 
 	public Serializable getPK() {
 		return this.getId();
+	}
+
+	public User getBelong_user() {
+		return belong_user;
+	}
+
+	public void setBelong_user(User belong_user) {
+		this.belong_user = belong_user;
 	}
 }

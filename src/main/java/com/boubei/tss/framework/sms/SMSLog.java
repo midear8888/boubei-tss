@@ -1,4 +1,4 @@
-package com.boubei.tssx.sms;
+package com.boubei.tss.framework.sms;
 
 import java.io.Serializable;
 

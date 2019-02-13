@@ -38,7 +38,7 @@ import com.boubei.tss.dm.record.RecordService;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.ICommonService;
-import com.boubei.tss.modules.log.IBusinessLogger;
+import com.boubei.tss.modules.log.BusinessLogger;
 import com.boubei.tss.modules.log.Log;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.EasyUtils;
@@ -154,8 +154,7 @@ public class MultiSQLExcutor {
                     stepResults.put("step" + index, statement.getUpdateCount());
 	    		}
 	    		
-	    		Log excuteLog = new Log( sqlCode, sql ); // params.toString()
-    			excuteLog.setOperateTable( "SQLDef_" + sqlCode );
+	    		Log excuteLog = new Log( "SQL_" + sqlCode, sqlCode, sql ); // params.toString()
     			logs.add(excuteLog);
     			
     			index++;
@@ -164,12 +163,7 @@ public class MultiSQLExcutor {
 	    	// 提交事务
 	    	conn.commit();
 	    	
-	    	try {
-	    		IBusinessLogger bLogger = (IBusinessLogger) Global.getBean("BusinessLogger");
-	    		for(Log log : logs) {
-					bLogger.output(log);
-	    		}
-    		} catch(Exception e) { }
+	    	try { BusinessLogger.log(logs.toArray(new Log[logs.size()])); } catch(Exception e) { }
         } 
         catch (Exception e) {
         	try { conn.rollback(); } catch (Exception e2) { }

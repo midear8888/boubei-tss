@@ -19,6 +19,7 @@ import com.boubei.tss.cache.Cacheable;
 import com.boubei.tss.cache.JCache;
 import com.boubei.tss.cache.Pool;
 import com.boubei.tss.cache.extension.workqueue.OutputRecordsManager;
+import com.boubei.tss.framework.Global;
 import com.boubei.tss.modules.param.ParamConfig;
 
 /**
@@ -62,5 +63,23 @@ public class BusinessLogger extends OutputRecordsManager implements IBusinessLog
         catch(Exception e) {
             return super.getMaxSize(); 
         }
+    }
+    
+    public static void log(String opTable, String opCode, Object content) {
+    	log(opTable, opCode, content, null, System.currentTimeMillis());
+    }
+    
+    public static void log(String opTable, String opCode, Object content, String udf1, long start) {
+		Log excuteLog = new Log(opTable, opCode, content);
+    	excuteLog.setUdf1(udf1);
+    	excuteLog.setMethodExcuteTime( (int) (System.currentTimeMillis() - start) );
+        ((IBusinessLogger) Global.getBean("BusinessLogger")).output(excuteLog);
+    }
+    
+    public static void log(Log...logs) {
+		IBusinessLogger bLogger = (IBusinessLogger) Global.getBean("BusinessLogger");
+		for(Log log : logs) {
+			bLogger.output(log);
+		}
     }
 }

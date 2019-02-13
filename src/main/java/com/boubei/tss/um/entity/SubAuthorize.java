@@ -135,7 +135,7 @@ public class SubAuthorize extends OperateInfo implements IEntity, ITreeNode, IXF
 	public void setOwnerId(Long ownerId) {
 		this.ownerId = ownerId;
 	}
-
+	
 	public Long getBuyerId() {
 		return buyerId;
 	}
@@ -143,6 +143,4 @@ public class SubAuthorize extends OperateInfo implements IEntity, ITreeNode, IXF
 	public void setBuyerId(Long buyerId) {
 		this.buyerId = buyerId;
 	}
-	
-	
 }

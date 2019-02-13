@@ -33,8 +33,7 @@ import com.boubei.tss.dm.record._Recorder;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.web.servlet.AfterUpload;
-import com.boubei.tss.modules.log.IBusinessLogger;
-import com.boubei.tss.modules.log.Log;
+import com.boubei.tss.modules.log.BusinessLogger;
 import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.modules.progress.Progress;
 import com.boubei.tss.modules.progress.ProgressPool;
@@ -295,12 +294,7 @@ public class ImportCSV implements AfterUpload {
 		
 		logMsg.append( "\nrequest params: " + requestMap.toString() );
 		log.info(logMsg);
-		
-		Log impLog = new Log(_db.recordName, logMsg.toString());
-		impLog.setOperateTable("导入Excel");
-		impLog.setUdf1( String.valueOf(total) );
-		impLog.setMethodExcuteTime( (int) (System.currentTimeMillis() - start) );
-		((IBusinessLogger) Global.getBean("BusinessLogger")).output(impLog);
+		BusinessLogger.log("导入Excel", _db.recordName, logMsg.toString(), String.valueOf(total), start);
 		
 		return result;
 	}

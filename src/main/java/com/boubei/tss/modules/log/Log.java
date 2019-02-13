@@ -89,6 +89,11 @@ public class Log implements IEntity, IXForm, IGridNode {
         this.setOperatorBrowser( Environment.getOrigin() );
     }
     
+    public Log(String opTable, String opCode, Object entity) {
+    	this(opCode, entity);
+    	this.setOperateTable(opTable);
+    }
+    
     public String toString() {
 		return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
 	}

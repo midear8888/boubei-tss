@@ -48,9 +48,7 @@ public class ModuleDef extends ARecordTable {
 	
 	private String reports;
 	
-	private String records;   // 模块包含的数据表，为空则忽略
-	
-	private String init_url;  // 模块自定义初始化接口地址，在企业域用户选择此模块时自动调用，以完成模块初始化
+	private String records; // 模块包含的数据表，为空则忽略
 	
 	@Column(length = 500)
 	private String resource; // 资源目录，多个用逗号分隔
@@ -64,24 +62,17 @@ public class ModuleDef extends ARecordTable {
 	
 	private Integer try_days = 31; // 试用天数, 如果=0，表示不支持试用
 	
-	@Column(length = 800)
-	private String description; //模块描述
+	/*
+	 * 模块自定义初始化接口地址，在企业域用户选择此模块时自动调用，以完成模块初始化
+	 * TODO 如果是模块购买，init_url的逻辑写到 init()方法 里
+	 */
+	private String product_class; // 自定义实现类
 	
-	private String before_order; // 下单前校验类
-	private String after_pay_success; // 购买成功后的实现类
+	@Column(length = 800)
+	private String description; // 模块描述
 	
 	@Column(length = 800)
 	private String remark;   // 模块备注
-	
-	
-	
-	public String getBefore_order() {
-		return before_order;
-	}
-
-	public void setBefore_order(String before_order) {
-		this.before_order = before_order;
-	}
 
 	public List<Long> roles() {
 		List<Long> roleIds = new ArrayList<Long>();
@@ -206,14 +197,6 @@ public class ModuleDef extends ARecordTable {
 		this.records = records;
 	}
 
-	public String getInit_url() {
-		return init_url;
-	}
-
-	public void setInit_url(String init_url) {
-		this.init_url = init_url;
-	}
-
 	public String getCode() {
 		return code;
 	}
@@ -254,12 +237,11 @@ public class ModuleDef extends ARecordTable {
 		this.try_days = try_days;
 	}
 
-	public String getAfter_pay_success() {
-		return after_pay_success;
+	public String getProduct_class() {
+		return product_class;
 	}
 
-	public void setAfter_pay_success(String after_pay_success) {
-		this.after_pay_success = after_pay_success;
+	public void setProduct_class(String product_class) {
+		this.product_class = product_class;
 	}
-
 }

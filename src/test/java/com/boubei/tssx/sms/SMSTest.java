@@ -11,7 +11,6 @@ import org.junit.Test;
 
 import com.aliyuncs.dysmsapi.model.v20170525.SendSmsResponse;
 import com.boubei.tss.AbstractTest4;
-import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 
@@ -48,9 +47,8 @@ public class SMSTest extends AbstractTest4 {
 		// wrong phone num
 		ssr = sms.sendRandomNum( "123456" ); 
 		Assert.assertNull(ssr);
-		new SMSLog().setId(null);
+//		new SMSLog().setId(null);
 		
-		sms.logException( new BusinessException("test") );
 	}
 	
 	@Test

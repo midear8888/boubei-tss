@@ -49,7 +49,6 @@ public class DomainInfo extends ARecordTable {
 	private String name; // 域名
 	private String logo;
 	private Integer multilogin = ParamConstants.FALSE;  // 账号多地登录
-	private String type; //eff e8
 	
 	private String wxpay_qr;
 	private String wxpay_account;
@@ -70,8 +69,6 @@ public class DomainInfo extends ARecordTable {
 	private String udf1;
 	private String udf2;
 	private String udf3;
-	
-	
 	
 	public Long getId() {
 		return id;
@@ -190,12 +187,4 @@ public class DomainInfo extends ARecordTable {
 	public void setMultilogin(Integer multilogin) {
 		this.multilogin = multilogin;
 	}
-	public String getType() {
-		return type;
-	}
-	public void setType(String type) {
-		this.type = type;
-	}
-	
-	
 }

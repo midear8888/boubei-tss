@@ -35,7 +35,6 @@ import com.boubei.tss.dm.Excel;
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.report.log.AccessLogRecorder;
 import com.boubei.tss.framework.Config;
-import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.persistence.pagequery.PageInfo;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.web.display.grid.DefaultGridNode;
@@ -43,8 +42,7 @@ import com.boubei.tss.framework.web.display.grid.GridDataEncoder;
 import com.boubei.tss.framework.web.display.grid.IGridNode;
 import com.boubei.tss.framework.web.filter.Filter8APITokenCheck;
 import com.boubei.tss.framework.web.mvc.BaseActionSupport;
-import com.boubei.tss.modules.log.IBusinessLogger;
-import com.boubei.tss.modules.log.Log;
+import com.boubei.tss.modules.log.BusinessLogger;
 import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.MailUtil;
@@ -203,15 +201,15 @@ public class _Reporter extends BaseActionSupport {
 		
 		String fileName = name + "-" + System.currentTimeMillis() + ".csv";
         String exportPath = DataExport.getExportPath() + "/" + fileName;
+        
+        long start = System.currentTimeMillis();
  
 		// 先输出内容到服务端的导出文件中
         DataExport.exportCSV(exportPath, data);
         exportPath = Excel.csv2Excel(exportPath);
         
         // 记录导出日志
- 		Log excuteLog = new Log(name, Environment.getUserCode() + "导出了网页数据：" + fileName );
-     	excuteLog.setOperateTable("网页数据导出");
-         ((IBusinessLogger) Global.getBean("BusinessLogger")).output(excuteLog);
+         BusinessLogger.log("网页数据导出", name, Environment.getUserCode() + "导出了网页数据：" + fileName, null, start);
         
         return new String[] { fileName };
     }

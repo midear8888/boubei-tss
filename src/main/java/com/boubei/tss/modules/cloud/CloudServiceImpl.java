@@ -26,116 +26,32 @@ import org.springframework.stereotype.Service;
 import com.boubei.tss.EX;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.ICommonDao;
+import com.boubei.tss.framework.sms.AbstractSMS;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.modules.api.APIService;
 import com.boubei.tss.modules.cloud.entity.CloudOrder;
 import com.boubei.tss.modules.cloud.entity.ModuleDef;
 import com.boubei.tss.modules.cloud.entity.ModuleUser;
-import com.boubei.tss.modules.cloud.product.AbstractAfterPay;
-import com.boubei.tss.modules.cloud.product.AfterPayService;
-import com.boubei.tss.modules.cloud.product.IAfterPay;
-import com.boubei.tss.um.dao.IUserDao;
+import com.boubei.tss.modules.cloud.pay.AbstractProduct;
+import com.boubei.tss.modules.cloud.pay.AfterPayService;
+import com.boubei.tss.modules.cloud.pay.ModuleOrderHandler;
 import com.boubei.tss.um.entity.RoleUser;
 import com.boubei.tss.um.entity.SubAuthorize;
 import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.service.IUserService;
 import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
-import com.boubei.tssx.sms.AliyunSMS;
 
-@Service("ModuleService")
-public class ModuleServiceImpl implements ModuleService, AfterPayService{
+@Service("CloudService")
+public class CloudServiceImpl implements CloudService, AfterPayService{
 	
 	@Autowired ICommonDao commonDao;
 	@Autowired IUserService userService;
 	@Autowired APIService apiService;
-	@Autowired IUserDao userDao;
 	
 	protected Logger log = Logger.getLogger(this.getClass());
-	
-	
-	public CloudOrder createOrder(CloudOrder mo) throws Exception{
-		if(!checkLogin(mo)){
-			throw new BusinessException("注册出错！");
-		}
-		if(mo.getModule_id()!=null){
-			calMoney(mo, true);
-		}
 		
-		mo.setStatus(CloudOrder.NEW);
-		mo = (CloudOrder) commonDao.create(mo);
-		mo.setOrder_no(mo.getOrder_date().getTime() + "-" + mo.getId());
-		return mo;
-	}
-	
-	private Boolean checkLogin(CloudOrder mo) throws Exception{
-		if(!Environment.isAnonymous())
-			return true;
-		@SuppressWarnings("unchecked")
-		Map<String,String> map = new ObjectMapper().readValue(mo.getParams(), HashMap.class);
-		// 验证码注册（mode=phone）：校验短信验证码smsCode
-    	String smsCode = map.get("smsCode");
-    	String mobile = map.get("phone");
-    	if( EasyUtils.isNullOrEmpty(smsCode) || !AliyunSMS.instance().checkCode( mobile, smsCode ) ) {
-    		return false;
-    	}
-        
-        //注册账号
-        User user = new User();
-        user.setLoginName(mobile);
-        user.setUserName(map.get("user_name"));
-        user.setUdf(map.get("company_name"));
-        user.setOrignPassword(map.get("password"));
-        try{
-        	userDao.checkUserAccout(user);
-        	userService.regUser(user, true);
-        }catch(Exception e){
-        	
-        }finally{
-        	apiService.mockLogin(user.getLoginName());
-        }
-        
-        return true;
-	}
-	
-	public CloudOrder calMoney(CloudOrder mo,Boolean throw_) {
-		ModuleDef md = (ModuleDef) commonDao.getEntity(ModuleDef.class, mo.getModule_id());
-		if(!EasyUtils.isNullOrEmpty(md.getBefore_order())){
-			IBeforeOrderCheck iBeforeOrderCheck = (IBeforeOrderCheck) BeanUtil.newInstanceByName(md.getBefore_order());
-			try{
-				iBeforeOrderCheck.vaild(mo);
-			}catch(Exception e){
-				if(throw_){
-					throw new BusinessException(e.getMessage());
-				}
-			}
-		}
-		mo.setPrice( md.getPrice() );
-		Map<String,Object> params = new HashMap<String,Object>();
-		BeanUtil.addBeanProperties2Map(mo, params);
-		Double money = EasyUtils.eval(md.getPrice_def(), params);
-		if(mo.getRebate()!=null){
-			money *= mo.getRebate();
-		}
-		if(mo.getDerate()!=null){
-			money -= mo.getDerate();
-		}
-		Double money_cal = mo.getMoney_cal();
-		if(throw_ && money_cal != null && !money_cal.equals(money)){
-			throw new BusinessException("应付金额异常");
-		}
-		mo.setMoney_cal( (double)Math.round(money*100) / 100 );
-		return mo;
-		// 价格以后台计算为准，防止篡改  （同时检查前后台的报价是否一致）  TODO 折扣优惠，创建一个计算价格的接口
-	}
-	
-	public CloudOrder updateOrder(CloudOrder mo) {
-		// 重新计算价格
-		calMoney(mo, true);
-		
-		commonDao.update(mo);
-		return mo;
-	}
+/************************************* cloud module **************************************/
 	
 	public void selectModule(Long user, Long module) {
 		checkIsDomainAdmin();
@@ -222,25 +138,113 @@ public class ModuleServiceImpl implements ModuleService, AfterPayService{
 		String hql = "select o from ModuleDef o where o.status in ('opened') order by o.seqno asc, o.id desc ";
 		return commonDao.getEntities(hql);
 	}
-
-	public Object handle( String order_no, Double real_money, String payer,String payType, Map<?, ?> trade_map) {
-		IAfterPay iAfterPay = AbstractAfterPay.createBean(order_no);
-		return iAfterPay.handle(trade_map, real_money, payer, payType);
+	
+	
+/************************************* cloud order **************************************/
+	
+	public CloudOrder createOrder(CloudOrder co) {
+		if( Environment.isAnonymous() ) {
+			selfRegister(co);
+		}
+		
+		co.setCreator(Environment.getUserCode());
+		
+		if( EasyUtils.isNullOrEmpty(co.getType()) ){
+			co.setType(ModuleOrderHandler.class.getName());
+		}
+		
+		AbstractProduct product = AbstractProduct.createBean(co);
+				
+		product.beforeOrder(co);
+		
+		co.setProduct(product.getName());
+		co.setStatus(CloudOrder.NEW);
+		co = (CloudOrder) commonDao.create(co);
+		co.setOrder_no(co.getOrder_date().getTime() + "-" + co.getId());
+		
+		calMoney(co); // 价格以后台计算为准，防止篡改（同时检查前后台的报价是否一致）
+		
+		return co;
 	}
 	
-	public void setSubAuthorizeRoles(Long userId, String roleIds, Long strategyId){
+	@SuppressWarnings("unchecked")
+	private void selfRegister(CloudOrder mo) {
+		Map<String,String> map;
+		try {  
+  			map = new ObjectMapper().readValue(mo.getParams(), HashMap.class);
+		} 
+    	catch (Exception e) {  
+			throw new BusinessException(" cloud order error, params = " + mo.getParams(), e);
+  	    } 
+		
+		// 校验短信验证码smsCode
+    	String smsCode = map.get("smsCode");
+    	String mobile  = map.get("phone");
+    	if( EasyUtils.isNullOrEmpty(smsCode) || !AbstractSMS.create().checkCode(mobile, smsCode) ) {
+    		throw new BusinessException("短信验证码校验失败，请重新输入");
+    	}
+        
+        // 注册账号
+        User user = new User();
+        user.setLoginName(mobile);
+        user.setTelephone(mobile);
+        user.setBelongUserId(mo.getInvite_user_id());
+        user.setUserName(map.get("user_name"));
+        user.setUdf(map.get("company_name"));
+        user.setOrignPassword(map.get("password"));
+        try {
+        	userService.regUser(user, true);
+        } 
+        catch(Exception e) {
+        	// 手机号已经注册过了，直接登录
+        }
+        
+        // 模拟登录
+        apiService.mockLogin(user.getLoginName());
+	}
+	
+	public CloudOrder calMoney(CloudOrder mo) {
+		ModuleDef md = (ModuleDef) commonDao.getEntity(ModuleDef.class, mo.getModule_id());
+		
+		mo.setPrice( md.getPrice() );
+		
+		Map<String, Object> params = BeanUtil.getProperties(mo);
+		Double money = EasyUtils.eval(md.getPrice_def(), params);
+		
+		if(mo.getRebate() != null ) {
+			money *= mo.getRebate();
+		}
+		if(mo.getDerate() != null) {
+			money -= mo.getDerate();
+		}
+		
+		mo.setMoney_cal( (double)Math.round(money*100) / 100 );
+		
+		return mo;
+	}
+
+	public void handle( String order_no, Double real_money, String payer,String payType, Map<?, ?> trade_map) {
+		AbstractProduct iAfterPay = AbstractProduct.createBean(order_no);
+		iAfterPay.afterPay(trade_map, real_money, payer, payType);
+	}
+	
+	public void setSubAuthorizeRoles(Long userId, String roleIds, Long strategyId) {
 		SubAuthorize sa = (SubAuthorize) commonDao.getEntity(SubAuthorize.class, strategyId);
 		sa.setOwnerId(userId);
-		List<?> roleIdsArray = Arrays.asList( roleIds.split(",") );
+		commonDao.update(sa);
+		
+		List<?> roleIDList = Arrays.asList(roleIds.split(","));
+			
 		@SuppressWarnings("unchecked")
 		List<RoleUser> rus = (List<RoleUser>) commonDao.getEntities(" from RoleUser where strategyId = ?", strategyId);
-		for(RoleUser ru:rus){
-			if(roleIdsArray.contains(ru.getId().toString())){
+		for (RoleUser ru : rus) {
+			if (roleIDList.contains(ru.getId().toString())) {
 				ru.setUserId(userId);
-			}else{
-				ru.setUserId(sa.getCreatorId());
+			} else {
+				ru.setUserId(sa.getBuyerId());
 			}
-		}		
+			commonDao.update(ru);
+		}
 	}
 
 }

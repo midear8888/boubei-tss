@@ -6,6 +6,7 @@
    
    	<!-- framework & modules -->	
    	<entity class="com.boubei.tss.framework.persistence.Temp"/>
+   	<entity class="com.boubei.tss.framework.sms.SMSLog"/>
 	<entity class="com.boubei.tss.modules.log.Log"/>
 	<entity class="com.boubei.tss.modules.param.Param"/>
 	<entity class="com.boubei.tss.modules.timer.JobDef"/>

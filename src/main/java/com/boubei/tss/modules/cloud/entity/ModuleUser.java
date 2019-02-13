@@ -11,7 +11,6 @@
 package com.boubei.tss.modules.cloud.entity;
 
 import java.io.Serializable;
-import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -40,8 +39,6 @@ public class ModuleUser implements IEntity {
 	
 	private String domain;
 	
-	private Date expireDate;
-
 	public ModuleUser() {
 	}
 
@@ -86,13 +83,4 @@ public class ModuleUser implements IEntity {
 	public void setDomain(String domain) {
 		this.domain = domain;
 	}
-
-	public Date getExpireDate() {
-		return expireDate;
-	}
-
-	public void setExpireDate(Date expireDate) {
-		this.expireDate = expireDate;
-	}
-
 }

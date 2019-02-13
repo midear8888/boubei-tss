@@ -5,7 +5,6 @@
    version="1.0">
    
    	<!-- tssx -->	
-   	<entity class="com.boubei.tssx.sms.SMSLog"/>
 	<entity class="com.boubei.tssx.ali.AlipayLog"/>
 	<entity class="com.boubei.tssx.snapshot.Snapshot"/>
 	<entity class="com.boubei.tssx.wx.WxLog"/>

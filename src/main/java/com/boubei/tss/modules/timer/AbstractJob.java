@@ -18,12 +18,11 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
 import com.boubei.tss.EX;
-import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.sso.IOperator;
 import com.boubei.tss.framework.sso.IdentityCard;
 import com.boubei.tss.framework.sso.TokenUtil;
 import com.boubei.tss.framework.sso.context.Context;
-import com.boubei.tss.modules.log.IBusinessLogger;
+import com.boubei.tss.modules.log.BusinessLogger;
 import com.boubei.tss.modules.log.Log;
 import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.helper.dto.OperatorDTO;
@@ -102,9 +101,7 @@ public abstract class AbstractJob implements Job {
         	try {
         		if(excuteLog != null) {
         			excuteLog.setOperateTable(TIMER);
-        			
-        			IBusinessLogger businessLogger = (IBusinessLogger) Global.getBean("BusinessLogger"); // 跑Test时可能没有spring IOC
-        			businessLogger.output(excuteLog);
+        			BusinessLogger.log(excuteLog); // 跑Test时可能没有spring IOC
         		}
         	} 
         	catch(Exception e) { }

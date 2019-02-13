@@ -35,7 +35,7 @@ public class SubAuthorizeService implements ISubAuthorizeService {
 	@Autowired private IGroupDao groupDao;	
 	
 	public List<?> listMySubauth(Long creatorId) {
-		String hql = " from SubAuthorize where creatorId = ? and endDate >= ? and disabled = 0 ";
+		String hql = " from SubAuthorize where ? in (creatorId, buyerId) and endDate >= ? and disabled = 0 ";
 		return roleDao.getEntities(hql, creatorId, new Date());
 	}
 

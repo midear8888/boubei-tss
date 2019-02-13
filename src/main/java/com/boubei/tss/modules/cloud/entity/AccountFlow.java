@@ -11,6 +11,9 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import com.boubei.tss.framework.persistence.IEntity;
+import com.boubei.tss.modules.cloud.pay.AbstractProduct;
+import com.boubei.tss.modules.sn.SerialNOer;
+import com.boubei.tss.util.MathUtil;
 
 /**
  * 域账户流水
@@ -43,6 +46,24 @@ public class AccountFlow implements IEntity {
 	private String pay_man; // 操作人
 	
 	private String remark;  // 备注
+	
+	
+	public AccountFlow() { }
+	
+	public AccountFlow(Account account, AbstractProduct product, String type) {
+		AccountFlow flow = new AccountFlow();
+		flow.setAccount_id(account.getId());
+		flow.setOrder_no(product.co.getOrder_no());
+		flow.setPay_man(product.payer);
+		flow.setPay_time(new Date());
+		flow.setPayment(product.payType);
+		flow.setSn(SerialNOer.get("AF", true));
+		flow.setType(type);
+		
+		Double balance = MathUtil.addDoubles(account.getBalance(), flow.getMoney());
+		flow.setBalance(balance);
+		account.setBalance(balance);
+	}
 
 	public Long getId() {
 		return id;

@@ -35,7 +35,7 @@ import com.boubei.tss.util.EasyUtils;
 @RequestMapping("/auth/module")
 public class ModuleAction {
 	
-	@Autowired private ModuleService service;
+	@Autowired private CloudService service;
 	@Autowired private ICommonService commonService;
 	
 	@RequestMapping(value = "/resources/{resource}")
