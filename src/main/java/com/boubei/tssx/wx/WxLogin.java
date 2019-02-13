@@ -180,6 +180,7 @@ public class WxLogin extends HttpServlet {
 					" \"mobile\": \"" + user.getTelephone() + "\", " +
 					" \"domain\": \"" + domain + "\", " +
 					" \"belongUserId\": " + user.getBelongUserId() + ", " +
+					" \"userId\": " + user.getId() + ", " +
 					" \"openid\": \"" + openid + "\""
 				) 
 			);
