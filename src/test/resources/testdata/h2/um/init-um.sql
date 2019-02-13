@@ -41,7 +41,7 @@ values (-9, SYSDATE, SYSDATE + 365*50, 0, -6, 'Developer',  4, 0, 2, '0000100004
 
 commit;
 
-truncate table um_user;
+delete from um_user;
 
 --系统管理员ID=-1，初始化密码为123456
 insert into um_user (ID, DISABLED, ACCOUNTLIFE, AUTHMETHOD, LOGINNAME, PASSWORD, USERNAME, lockVersion, email)

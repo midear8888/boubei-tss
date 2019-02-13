@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.DataExport;
 import com.boubei.tss.dm.dml.SQLExcutor;
@@ -116,6 +117,15 @@ public class WxAPI {
 		HttpSession session = Context.getRequestContext().getSession();
 		Object roles = session.getAttribute(SSOConstants.USER_ROLES_S);
 		return roles;
+	}
+	
+	@RequestMapping(value = "/user/name", method = RequestMethod.POST)
+	@ResponseBody
+	public Object updateUserName(String userName) {
+		String sql= "update um_user set userName = '" +userName+ "' where id = " +Environment.getUserId(); 
+		SQLExcutor.excute(sql, DMConstants.LOCAL_CONN_POOL);
+		
+		return "success";
 	}
 	
 	/**

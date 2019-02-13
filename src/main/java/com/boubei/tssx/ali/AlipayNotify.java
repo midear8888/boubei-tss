@@ -9,10 +9,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
+
 import com.alipay.api.internal.util.AlipaySignature;
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.framework.Global;
-import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.modules.cloud.pay.AfterPayService;
 import com.boubei.tss.util.BeanUtil;
@@ -20,6 +21,8 @@ import com.boubei.tss.util.EasyUtils;
 
 @WebServlet(urlPatterns = "/alinotify.in")
 public class AlipayNotify extends HttpServlet {
+	
+	protected Logger log = Logger.getLogger(this.getClass());
 
 	private static final long serialVersionUID = -740569423483772472L;
 	static final String payType = "支付宝";
@@ -67,7 +70,8 @@ public class AlipayNotify extends HttpServlet {
 				response.getWriter().println("fail");
 			}
 		} catch (Exception e) {
-			throw new BusinessException(e.getMessage(), e);
+			response.getWriter().println("fail");
+			log.error("alipay callback error: " + e.getMessage(), e);
 		}
 	}
 }

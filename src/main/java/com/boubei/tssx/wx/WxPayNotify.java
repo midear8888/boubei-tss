@@ -38,7 +38,7 @@ public class WxPayNotify extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) 
     		throws ServletException, IOException {
 		
-		commService = (ICommonService) Global.getBean("CommonService");
+		commService = Global.getCommonService();
 		
 		response.setContentType("text/html;charset=UTF-8");
 		
