@@ -119,9 +119,15 @@ public class WxAPI {
 		return roles;
 	}
 	
+	/**
+	 * POST: /wx/api/user/name ? userName=xxx
+	 */
 	@RequestMapping(value = "/user/name", method = RequestMethod.POST)
 	@ResponseBody
-	public Object updateUserName(String userName) {
+	public Object updateUserName(HttpServletRequest request) {
+		Map<String, String> requestMap = DMUtil.parseRequestParams(request, true);
+		String userName = requestMap.get("userName");
+		
 		String sql= "update um_user set userName = '" +userName+ "' where id = " +Environment.getUserId(); 
 		SQLExcutor.excute(sql, DMConstants.LOCAL_CONN_POOL);
 		
