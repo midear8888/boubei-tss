@@ -80,14 +80,14 @@ public class PermissionServiceImpl implements PermissionService {
 			Long resourceId = Long.valueOf(resource2Opts.substring(0, index));
 			String optStates = resource2Opts.substring(index + 1);
             for (int i = 0; i < operationIds.size(); i++) {
-                // 0:没打勾, 1:仅此节点, 2:此节点并包含所有子节点, 3:禁用未选中 4:禁用已选中
-            	Integer permissionState = Character.getNumericValue(optStates.charAt(i)); 
+                /* 0:没打勾, 1:仅此节点, 2:此节点并包含所有子节点, 3:禁用未选中 4:禁用已选中 */
+            	Integer pState = Character.getNumericValue(optStates.charAt(i)); 
             	
-            	// 只有打上了半勾 或 全勾，才生成授权信息。其他状态均无授权信息生成
-                if (UMConstants.PERMIT_NODE_SELF.equals(permissionState) || UMConstants.PERMIT_SUB_TREE.equals(permissionState)) {
-                    // 创建一条未补全授权对象，用以后续补全权限
+            	/* 只有打上了半勾 或 全勾，才生成授权信息。其他状态均无授权信息生成 */
+                if (UMConstants.PERMIT_NODE_SELF.equals(pState) || UMConstants.PERMIT_SUB_TREE.equals(pState)) {
+                    /* 创建一条未补全授权对象，用以后续补全权限 */
                 	AbstractPermission unPermission = pHelper.createUnPermission(
-                			roleId, resourceId, (String) operationIds.get(i), permissionState, 
+                			roleId, resourceId, (String) operationIds.get(i), pState, 
 			                isGrantAndPass[0], isGrantAndPass[1], permissionTable);
 					
 					supplyPermission(unPermission, permissionTable, resourceTable);    
@@ -263,7 +263,7 @@ public class PermissionServiceImpl implements PermissionService {
             int permitedCount = EasyUtils.obj2Int( childNumMap2.get(resourceId) );
             
             // 用户是否对此资源的所有的子节点拥有权限，是的话可以打“全勾”
-            Integer permissionState = permitedCount == totalCount ? UMConstants.PERMIT_SUB_TREE : UMConstants.PERMIT_NODE_SELF;
+            Integer permissionState = calState(totalCount, permitedCount);
             resourceMappingRank.put(resourceId, permissionState);
         }
         
@@ -375,8 +375,7 @@ public class PermissionServiceImpl implements PermissionService {
     private Map<String, Integer[]> rolePermissionMappingRank(List<?> permissionList) {
         Map<String, Integer[]> mapping = new HashMap<String, Integer[]>();
         
-        if(permissionList == null) return mapping;
-        
+        permissionList = (List<?>) EasyUtils.checkNull(permissionList, new ArrayList<Object>());
         for ( Object temp : permissionList ) {
         	AbstractPermission permission = (AbstractPermission) temp;
             Integer grantAndPass = MathUtil.addInteger(permission.getIsGrant(), permission.getIsPass());  // 0 or 1 or 2
@@ -455,12 +454,16 @@ public class PermissionServiceImpl implements PermissionService {
         int totalCount 	= EasyUtils.obj2Int( childNumMap.get(resourceId) );
         int permitedCount = EasyUtils.obj2Int( childNumMap2.get(resourceId) );
 		
-        Integer permissionState = permitedCount == totalCount ? UMConstants.PERMIT_SUB_TREE : UMConstants.PERMIT_NODE_SELF;
+        Integer permissionState = calState(totalCount, permitedCount);
         resourceMappingRank.put(resourceId, permissionState);
         
         appendOptionInfo2LeftTree(false, resourceId, permissionRank, operations, setableRoleTree, 
                 userPermissionMappingRank, rolePermissionMappingRank, resourceMappingRank);
 		
 		return new Object[] { setableRoleTree, operations };
+	}
+
+	Integer calState(int totalCount, int permitedCount) {
+		return permitedCount == totalCount ? UMConstants.PERMIT_SUB_TREE : UMConstants.PERMIT_NODE_SELF;
 	}
 }

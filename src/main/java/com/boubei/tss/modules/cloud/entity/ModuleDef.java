@@ -57,7 +57,7 @@ public class ModuleDef extends ARecordTable {
 	
 	private Integer seqno = 0; // 排列次序
 	
-	private Double price;    // 单价（账号/月）
+	private Double price;     // 单价（账号/月）
 	private String price_def; // 优惠定义，eg: {mouth: 1,6,12,24,36|1,0.95,0.9,0.75,0.5, accout:1,7|300,0}
 	
 	private Integer try_days = 31; // 试用天数, 如果=0，表示不支持试用
@@ -68,6 +68,16 @@ public class ModuleDef extends ARecordTable {
 	 */
 	private String product_class; // 自定义实现类
 	
+	private Double cashback_ratio; // 返现比率 10% 请填写 10
+	
+	public Double getCashback_ratio() {
+		return cashback_ratio;
+	}
+
+	public void setCashback_ratio(Double cashback_ratio) {
+		this.cashback_ratio = cashback_ratio;
+	}
+
 	@Column(length = 800)
 	private String description; // 模块描述
 	

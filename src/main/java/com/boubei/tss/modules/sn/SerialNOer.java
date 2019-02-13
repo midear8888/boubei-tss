@@ -28,9 +28,10 @@ import com.boubei.tss.util.EasyUtils;
 @RequestMapping("/sn")
 public class SerialNOer {
 	
-	private boolean isGlobal;
+	private boolean isGlobal; // 全局流水号：账户流水号等
 	
 	public SerialNOer() { }
+	
 	public SerialNOer(boolean isGlobal) { 
 		this.isGlobal = isGlobal;
 	}

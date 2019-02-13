@@ -18,7 +18,7 @@ public class DefaultSMS extends AbstractSMS {
     	log.setParams(tlParam);
     	commService.create(log);
     	
-    	return null;
+    	return "success";
 	}
 
 	public Object sendRandomNum(String phone) {

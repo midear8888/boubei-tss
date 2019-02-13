@@ -236,7 +236,7 @@ public class UserAction extends BaseActionSupport {
 	
 	private void showUserGrid(PageInfo pi) {
 		String hql = "select distinct r.name from ViewRoleUser o, Role r " +
-				" where o.id.roleId = r.id and o.id.userId = ? order by r.seqNo ";
+				" where o.id.roleId = r.id and o.id.userId = ? ";
         
 		List<?> items = pi.getItems();
 		for(Object o : items) {

@@ -136,17 +136,19 @@ public class GroupService implements IGroupService {
 	 * 创建时，OperateInfoInterceptor 会执行 IOperatable.setDomain(Environment.getDomain())；需要单独再保存一遍domain信息
 	 */
 	private void fixDomain(String domain, Group group) {
-		if( domain == null) return;
+		Integer groupType = group.getGroupType();
+		if( domain == null && Group.MAIN_GROUP_TYPE.equals(groupType) ) return;
 		
-		// 控制注册时域名必须为英文字母或数字，方便小程序传递域参数
-		Pattern p = Pattern.compile("[a-z|A-Z|0-9]+");  
-	    if( !p.matcher(domain).matches() ) {
-	    	domain = "G" + group.getId();
-	    }
-	    
 	    // 如果是辅助组，则取创建人的域作为辅助组所属域
-	    if ( Group.ASSISTANT_GROUP_TYPE.equals(group.getGroupType()) ) {
+		if ( Group.ASSISTANT_GROUP_TYPE.equals(groupType) ) {
 	    	domain = Environment.getDomainOrign();
+	    } 
+		else {
+	    	// 控制注册时域名必须为英文字母或数字，方便小程序传递域参数
+			Pattern p = Pattern.compile("[a-z|A-Z|0-9]+");  
+		    if( !p.matcher(domain).matches() ) {
+		    	domain = "G" + group.getId();
+		    }
 	    }
 	        
 		group.setDomain(domain);

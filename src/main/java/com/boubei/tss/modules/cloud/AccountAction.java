@@ -14,7 +14,7 @@ import com.boubei.tss.modules.cloud.entity.Account;
 
 @Controller
 @RequestMapping({"/auth/account","/api/account"})
-public class AccoutAction {
+public class AccountAction {
 
 	@Autowired private ICommonService commService;
 	@Autowired private CloudService service;

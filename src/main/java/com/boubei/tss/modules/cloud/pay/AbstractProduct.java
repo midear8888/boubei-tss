@@ -162,11 +162,11 @@ public abstract class AbstractProduct {
 			// 创建策略角色对应关系
 			if( EasyUtils.isNullOrEmpty(md.getRoles()) ) continue;
 			
-			String[] roleIds = md.getRoles().split(",");
-			for (String roleId : roleIds) {
+			List<Long> roleIds = md.roles();
+			for (Long roleId : roleIds) {
 				RoleUser ru = new RoleUser();
 				ru.setModuleId(md.getId());
-				ru.setRoleId(EasyUtils.obj2Long(roleId));
+				ru.setRoleId(roleId);
 				ru.setStrategyId(sa.getId());
 				ru.setUserId(userId);
 				commonDao.create(ru);
@@ -174,12 +174,5 @@ public abstract class AbstractProduct {
 
 		}
 	}
-
-public static void main(String[] args){
-	String[] roleIds = "1".split(",");
-	for (String roleId : roleIds) {
-		System.out.println(roleId);
-	}
-}
 
 }
