@@ -32,6 +32,7 @@ import com.boubei.tss.framework.web.display.tree.TreeEncoder;
 import com.boubei.tss.framework.web.mvc.BaseActionSupport;
 import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.um.UMConstants;
+import com.boubei.tss.um.entity.Group;
 import com.boubei.tss.um.entity.Role;
 import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.service.IGroupService;
@@ -170,6 +171,20 @@ public class GeneralSearchAction extends BaseActionSupport {
 		
 		field = field.replaceAll("password", "").replaceAll("authToken", ""); // 禁止查询敏感字段
 		return loginService.getUsersByDomain(domain, field, -0L);
+	}
+	
+	@RequestMapping(value = "/domains", method = RequestMethod.GET)
+	@ResponseBody
+	public List<?> getDomains() {
+		List<Group> result = new ArrayList<Group>();
+		List<?> groups = groupService.getVisibleSubGroups(UMConstants.MAIN_GROUP_ID);
+		for(Object temp : groups) {
+			Group g = (Group) temp;
+			if( g.getLevelNo() == 4 && g.getDomain() != null) {
+				result.add(g);
+			}
+		}
+		return result;
 	}
 	
 	@RequestMapping("/rid")

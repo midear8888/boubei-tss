@@ -51,17 +51,16 @@ public class AccountFlow implements IEntity {
 	public AccountFlow() { }
 	
 	public AccountFlow(Account account, AbstractProduct product, String type) {
-		AccountFlow flow = new AccountFlow();
-		flow.setAccount_id(account.getId());
-		flow.setOrder_no(product.co.getOrder_no());
-		flow.setPay_man(product.payer);
-		flow.setPay_time(new Date());
-		flow.setPayment(product.payType);
-		flow.setSn(SerialNOer.get("AF", true));
-		flow.setType(type);
+		this.setAccount_id(account.getId());
+		this.setOrder_no(product.co.getOrder_no());
+		this.setPay_man(product.payer);
+		this.setPay_time(new Date());
+		this.setPayment(product.payType);
+		this.setSn(SerialNOer.get("AF", true));
+		this.setType(type);
 		
-		Double balance = MathUtil.addDoubles(account.getBalance(), flow.getMoney());
-		flow.setBalance(balance);
+		Double balance = MathUtil.addDoubles(account.getBalance(), this.getMoney());
+		this.setBalance(balance);
 		account.setBalance(balance);
 	}
 

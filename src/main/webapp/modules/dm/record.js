@@ -298,6 +298,7 @@ function loadRecordDetail(isCreate, type, readonly, isPage) {
 			if( !isCreate && type == "1" ) preview();
 
 			wf_def = (xform.getData("workflow")||"").revertEntry();
+			curr_record_id = treeNodeID;
 			$("#designerForm>iframe").attr("src", "record_wf_designer.html");
 		},
 		onexception : function() { 
@@ -306,7 +307,7 @@ function loadRecordDetail(isCreate, type, readonly, isPage) {
 	});
 }
 
-var wf_def;
+var wf_def, curr_record_id;
 function update_wf_def(wf_def) {
 	$.F("recordForm").updateDataExternal("workflow", wf_def.revertEntry());
 }

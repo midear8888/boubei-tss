@@ -30,7 +30,9 @@ import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.record.permission.RecordPermission;
 import com.boubei.tss.dm.record.permission.RecordResource;
+import com.boubei.tss.dm.record.workflow.WFDefine;
 import com.boubei.tss.dm.record.workflow.WFService;
+import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.web.display.tree.LevelTreeParser;
 import com.boubei.tss.framework.web.display.tree.StrictLevelTreeParser;
 import com.boubei.tss.framework.web.display.tree.TreeEncoder;
@@ -46,6 +48,7 @@ public class RecordAction extends BaseActionSupport {
     
     @Autowired private RecordService recordService;
     @Autowired private WFService wfService;
+    @Autowired private ICommonService commService;
     
     @RequestMapping("/all")
     public void getAllRecordTree(HttpServletResponse response) {
@@ -161,6 +164,38 @@ public class RecordAction extends BaseActionSupport {
         }
         
         doAfterSave(isnew, record, "SourceTree");
+    }
+    
+    @RequestMapping(value = "/wf/domain", method = RequestMethod.POST)
+    @ResponseBody
+    public Object saveWFDef4Domain(Long recordId, String domain, String define) {
+    	WFDefine wfDefine = quueryWFDef4Domain(recordId, domain);
+    	if(wfDefine.getId() != null) {
+    		wfDefine.setDefine(define);
+    		commService.update(wfDefine);
+    	} 
+    	else {
+    		wfDefine.setDefine(define);
+    		wfDefine.setDomain(domain);
+    		wfDefine.setTableId(recordId);
+    		commService.create(wfDefine);
+    	}
+    	
+    	return wfDefine;
+    }
+    
+    @RequestMapping(value = "/wf/domain", method = RequestMethod.GET)
+    @ResponseBody
+    public WFDefine quueryWFDef4Domain(Long recordId, String domain) {
+    	List<?> list = commService.getList("from WFDefine where tableId = ? and domain = ? ", recordId, domain);
+    	if( list.isEmpty() ) {
+    		String def = recordService.getRecord(recordId).getWorkflow();
+    		WFDefine wd = new WFDefine();
+    		wd.setDefine(def);
+    		return wd;
+    	}
+    	
+    	return (WFDefine)  list.get(0);
     }
     
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)

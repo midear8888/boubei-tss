@@ -11,6 +11,9 @@
 package com.boubei.tss.modules.cloud;
 
 import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -19,10 +22,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.modules.cloud.entity.CloudOrder;
 import com.boubei.tss.modules.cloud.pay.AfterPayService;
+import com.boubei.tss.util.BeanUtil;
 
 @Controller
 @RequestMapping("/cloud")
@@ -33,23 +38,27 @@ public class ModuleOrderAction {
 
 	@RequestMapping(value = "/order", method = RequestMethod.POST)
 	@ResponseBody
-	public CloudOrder createOrder(CloudOrder mo) {
-		return cloudService.createOrder(mo);
+	public CloudOrder createOrder(HttpServletRequest request) {
+		Map<String, String> map = DMUtil.getRequestMap(request, false);
+		CloudOrder co = new CloudOrder();
+		BeanUtil.setDataToBean(co, map);
+		
+		return cloudService.createOrder(co);
 	}
 
 	@RequestMapping(value = "/order", method = RequestMethod.PUT)
 	@ResponseBody
-	public CloudOrder updateOrder(CloudOrder mo) {
-		cloudService.calMoney(mo); // 重新计算价格
-		commonService.update(mo);
+	public CloudOrder updateOrder(CloudOrder co) {
+		cloudService.calMoney(co); // 重新计算价格
+		commonService.update(co);
 		
-		return mo;
+		return co;
 	}
 
 	@RequestMapping(value = "/order/price/query")
 	@ResponseBody
-	public Object queryPrice(CloudOrder mo) {
-		return cloudService.calMoney(mo);
+	public Object queryPrice(CloudOrder co) {
+		return cloudService.calMoney(co);
 	}
 
 	@RequestMapping(value = "/order/price", method = RequestMethod.POST)

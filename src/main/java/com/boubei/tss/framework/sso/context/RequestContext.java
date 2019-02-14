@@ -247,4 +247,12 @@ public class RequestContext {
 	public boolean isSecure() {
 		return request.isSecure();
 	}
+	
+	public boolean isApiCall() {
+		return isApiCall(request);
+	}
+	
+	public static boolean isApiCall(HttpServletRequest request) {
+		return request.getParameter("uName") != null && (request.getParameter("uToken") != null  || request.getParameter("uSign") != null);
+	}
 }

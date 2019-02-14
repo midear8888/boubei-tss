@@ -179,7 +179,7 @@ public class Filter0Security implements Filter {
 			/* 
 			 * 地址带/api/的apicall 在Filter8里检测,其它自定义的接口远程调用时需自己控制访问许可检测（eg: Servlet4Upload /remote/upload 和 xdata及data） 
 			 */
-    		boolean apiCall = req.getParameter("uName") != null && (req.getParameter("uToken") != null  || req.getParameter("uSign") != null); 
+    		boolean apiCall = RequestContext.isApiCall(req); 
 			boolean expCall = req.getHeader("referer")  != null && servletPath.indexOf("/data/export/") >= 0; // 跨机器数据导出请求 & 【接口】调用，放行
 			if( expCall || apiCall ) {  
     			return false; 

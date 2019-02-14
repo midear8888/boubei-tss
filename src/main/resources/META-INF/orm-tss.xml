@@ -64,6 +64,7 @@
 	<entity class="com.boubei.tss.dm.dml.SQLDef"/>
 	<entity class="com.boubei.tss.dm.record.workflow.WFLog"/>
 	<entity class="com.boubei.tss.dm.record.workflow.WFStatus"/>
+	<entity class="com.boubei.tss.dm.record.workflow.WFDefine"/>
 	<entity class="com.boubei.tss.dm.ext.EmptyRecord"/>
 	
 	<!-- cms -->	

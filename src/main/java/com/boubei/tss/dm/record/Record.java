@@ -29,9 +29,11 @@ import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.DMUtil;
+import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.record.permission.RecordResource;
 import com.boubei.tss.framework.persistence.entityaop.IDecodable;
 import com.boubei.tss.framework.persistence.entityaop.OperateInfo;
+import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.web.display.tree.TreeAttributesMap;
 import com.boubei.tss.framework.web.display.xform.IXForm;
 import com.boubei.tss.modules.param.ParamConstants;
@@ -359,7 +361,10 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
 	}
 
 	public String getWorkflow() {
-		return workflow;
+		// 优先取 dm_workflow_def 里的定义
+		String sql = "select define from dm_workflow_def where domain=? and tableId =?";
+		Object _workflow = SQLExcutor.queryVL(sql, "define", this.id, Environment.getDomain());
+		return (String) EasyUtils.checkNull(_workflow, workflow);
 	}
 
 	public void setWorkflow(String workflow) {

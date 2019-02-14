@@ -10,28 +10,21 @@
 <script src="../../tools/tssJS/tssJS.all.js"></script>
 
 <style type="text/css">
-	body {
-		padding: 10px;
-	}
+	body { padding: 10px; }
 	input.combo, input.string {
 		height: 23px; width: 180px;
 	}
-	td {
-		height: 35px;
+	td { height: 35px; }
+	#btns {
+		text-align: center; padding-top: 10px;
+	}
+	#btns label {
+		margin-right: 10px;
 	}
 
 </style>
 
-</head>
-
-<body>
-<div id="designerForm"></div>
-
 <script type="text/javascript">
-
-	var wf_def = parent.wf_def || "{}";
-	var workflow = $.parseJSON( wf_def );
-	var to = workflow.to || [], cc = workflow.cc || [], trans = workflow.trans || [];
 
 	var desiner_form = [];
 	desiner_form.push('<xform><declare>');
@@ -54,21 +47,51 @@
 	desiner_form.push('<data><row/></data></xform>');
 	desiner_form = desiner_form.join("\n");
 
-	var cacheID = "designerForm";
-	 
+</script>
+
+</head>
+
+<body>
+<div id="designerForm"></div>
+<div id="btns">
+	<INPUT name="by" id="byRole" type="radio" value="byRole" checked> <label>按角色审批</label>
+    <INPUT name="by" id="byUser" type="radio" value="byUser"> <label>按人员审批</label>
+
+	<label> 域:</label>
+	<select id="domains" style="width: 80px; margin-right: 5px;"></select>
+	<button id="saveBtn" class="tssbutton blue small">保存到域</button>
+</div>
+
+<script type="text/javascript">
+
+	var wf_def = parent.wf_def || "{}",
+		curr_record_id = parent.curr_record_id;
+
+	var workflow, to, cc, trans;
+	init(wf_def);
+
+	function init (_def) {
+		wf_def = _def;
+		workflow = $.parseJSON( _def );
+		to = workflow.to || [], cc = workflow.cc || [], trans = workflow.trans || [];
+	}
+
 	var formXML = $.XML.toNode(desiner_form);
 	var rowNode = formXML.querySelector("data row");
-
 	$.each( {}, function(key, value) {
 		$.XML.setCDATA(rowNode, key, value);
 	});
 
+	var cacheID = "designerForm";
 	$.cache.XmlDatas[cacheID] = formXML;
 	var xform = $.F(cacheID, formXML);	
-
-	var elIds = ['sp1', 'sp2', 'sp3', 'zs', 'cc'];
-	var roleIds = [], roles = [], roleMap = {};
-	$.getJSON("/tss/auth/service/roles", {}, function(data) {
+	$("#designerForm input").blur ( function() {
+		recordEdit( xform );
+    });
+	
+	var roleIds = [], roles = [], roleMap = {},
+		userCodes = [], userNames = [], userMap = {};
+	$.get("/tss/auth/service/roles", {}, function(data) {
 		data.each(function(i, r) {
 			roleIds.push( r[0] );
 			roles.push( r[1] );
@@ -76,77 +99,120 @@
 
 		});
 
+		initForm( workflow.by === 'byUser' );
+	});
+
+	$.get("/tss/api/users", {}, function(data) {
+ 		$.each(data, function(key, val) {
+			userCodes.push( key );
+			userNames.push( val );
+		});
+		userMap = data;
+	});
+
+	$.get("/tss/auth/service/domains", {}, function(data) {
+		var el = $1("domains");
+		el.options[0] = new Option();
+		data.each(function(i, g) {
+			var option = new Option();
+			option.value = g.domain;
+			option.text = g.name;
+			el.options[i+1] = option;
+		});
+	});
+
+	var elIds = ['sp1', 'sp2', 'sp3', 'zs', 'cc'];
+	function initForm(byUser) {
 		elIds.each( function(i, elId){
 			xform.updateField(elId, [
 	            {"name": "mode", "value": "combotree"},
-	            {"name": "texts", "value": roles.join('|')},
-	            {"name": "values", "value": roleIds.join('|')}
+	            {"name": "texts", "value": (byUser ? userNames:roles).join('|')},
+	            {"name": "values", "value": (byUser ? userCodes:roleIds).join('|')}
 	        ]);
 		});
 
 		to.each(function(i, r){
 			var toId = "sp" + (i+1);
-			updateField(xform, toId, r.roleId);
+			updateField(xform, toId, byUser ? r.user : r.roleId);
 			updateField(xform, toId + "_tj", r.when||'');
 		});
 
 		cc.each(function(i, r){
-			updateField(xform, "cc", r.roleId);
+			updateField(xform, "cc", byUser ? r.user : r.roleId);
 		});
 		trans.each(function(i, r){
-			updateField(xform, "zs", r.roleId);   
+			updateField(xform, "zs", byUser ? r.user : r.roleId);   
 		});
 
-		$("#designerForm input").blur ( function() {
-			recordEdit( xform );
-        });
+		$1( byUser ? "byUser" : "byRole" ).checked = true;
+	}
 
+	$("#byRole").click(function() {
+        initForm(false);
+    });
 
-	}, "GET");
+    $("#byUser").click(function() {
+        initForm(true);
+    });
+
+    $1("domains").onchange = function(e) { 
+    	var domain = this.value; 
+    	$.get("/tss/auth/rc/wf/domain", {"domain": domain, "recordId": curr_record_id}, function(result) {
+	 		init( result ? result.define : wf_def );
+
+	 		initForm( workflow.by === 'byUser' );
+		});
+    }
+
+    $("#saveBtn").click(function() {
+        var domain = $("#domains").value(); 
+        if( !domain ) {
+        	return $.alert("请选择企业域");
+        }
+
+    	$.post("/tss/auth/rc/wf/domain", {"domain": domain, "recordId": curr_record_id, "define": wf_def}, function(result) {
+	 		$.alert("保存成功");
+	 		parent.update_wf_def( parent.wf_def );
+		});
+    });
 
 	function updateField(xform, elID, val) {
 		xform.updateDataExternal(elID, val);    
-    	// xform.updateData( $1(elID) );
+	}
+
+	function f(index, byUser, to) {
+		var val = xform.getData("sp" + index);
+		if(  val && val.trim() ) {
+			if(byUser) {
+				to[index-1] = {"user": val, "name": userMap[val]};
+			} else {
+				to[index-1] = {"roleId": val, "role": roleMap[val]};
+			}
+
+			var when = xform.getData("sp" +index+ "_tj");
+			if( when && when.trim() ) {
+				to[index-1].when = when;
+			}
+		}
 	}
 
 	function recordEdit(xform) {
 		to = []; cc = []; trans = [];
+		var val, by = tssJS.radioValue("by"), byUser = by === 'byUser';
 
-		var val = xform.getData("sp1");
-		if(  val && val.trim() ) {
-			to[0] = {"roleId": val, "role": roleMap[val]};
-
-			var when = xform.getData("sp1_tj");
-			if( when && when.trim() ) {
-				to[0].when = when;
-			}
-		}
-
-		val = xform.getData("sp2");
-		if(  val && val.trim() ) {
-			to[1] = {"roleId": val, "role": roleMap[val]};
-
-			var when = xform.getData("sp2_tj");
-			if( when && when.trim() ) {
-				to[1].when = when;
-			}
-		}
-
-		val = xform.getData("sp3");
-		if(  val && val.trim() ) {
-			to[2] = {"roleId": val, "role": roleMap[val]};
-
-			var when = xform.getData("sp3_tj");
-			if( when && when.trim() ) {
-				to[2].when = when;
-			}
-		}
+		f(1, byUser, to);
+		f(2, byUser, to);
+		f(3, byUser, to);
 
 		val = xform.getData("cc");
 		if(  val && val.trim() ) {
 			var vals = val.split(",");
 			vals.each(function(i, r) {
-				cc[i] = {"roleId": r, "role": roleMap[r]};
+				if(byUser) {
+					cc[i] = {"user": r, "name": userMap[r]};
+				} else {
+					cc[i] = {"roleId": r, "role": roleMap[r]};
+				}
 			});		
 		}
 
@@ -154,16 +220,21 @@
 		if(  val && val.trim() ) {
 			var vals = val.split(",");
 			vals.each(function(i, r) {
-				trans[i] = {"roleId": r, "role": roleMap[r]};
+				if(byUser) {
+					trans[i] = {"user": r, "name": userMap[r]};
+				} else {
+					trans[i] = {"roleId": r, "role": roleMap[r]};
+				}
 			});		
 		}
 
 		workflow.to = to;
 		workflow.cc = cc;
 		workflow.trans = trans;
+		workflow.by = by;
 
 		if( to.length || cc.length ) {
-			wf_def = JSON.stringify(workflow, null, 4).replace("'", "\"");
+			wf_def = JSON.stringify(workflow, null, 4).replace("'", "\"").revertEntry();
 		} else {
 			wf_def = "";
 		}

@@ -138,7 +138,7 @@ public abstract class AbstractProduct {
 	// 创建扣款流水
 	protected void createBuyFlow(Account account) {
 		AccountFlow flow = new AccountFlow(account, this, this.getName());
-		flow.setMoney(co.getMoney_real());
+		flow.setMoney(-co.getMoney_real());
 
 		commonDao.create(flow);
 	}
