@@ -73,6 +73,7 @@ public class GetGZHOpenId extends HttpServlet {
 		List<?> bindPhones = Global.getCommonService().getList(hql, openId, appId);
 		if (bindPhones.size() == 1) {
 			back.put("result", "已绑定");
+			log.info(bindPhones.get(0));
 		} else {
 			back.put("result", "未绑定");
 		}
