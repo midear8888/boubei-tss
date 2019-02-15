@@ -11,6 +11,7 @@
 package com.boubei.tssx.wx.gzh;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -59,19 +60,23 @@ public class GetGZHOpenId extends HttpServlet {
 			return;
 		}
 		
-		// 获取openId
+		// 获取openId/access_token
 		String openId = map.get("openid");
-		// 获取access_token
 		String access_token = map.get("access_token");
+		
+		Map<String, String> back = new HashMap<String, String>();
+		back.put("openId", openId);
+		back.put("access_token", access_token);
 		
 		// 判断该 微信号是否已经绑定手机号
 		String hql = "from GZHPhone where openid = ? and appid = ?";
 		List<?> bindPhones = Global.getCommonService().getList(hql, openId, appId);
 		if (bindPhones.size() == 1) {
-			response.getWriter().println("已绑定");
+			back.put("result", "已绑定");
 		} else {
-			response.getWriter().println(openId);
+			back.put("result", "未绑定");
 		}
+		response.getWriter().println(EasyUtils.obj2Json(back));
 
 		// 尝试获取微信个人信息
 		ret = WXUtil.getUserInfo4GZH(access_token, openId);

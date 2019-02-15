@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 
+import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tssx.wx.WXUtil;
 
@@ -46,25 +47,15 @@ public class GetGZHUserInfo extends HttpServlet {
 
 		response.setContentType("text/html;charset=UTF-8");
 
-		String code = request.getParameter("code");
-		String appId = request.getParameter("appId");
+		log.info(DMUtil.parseRequestParams(request, false));
 
-		String ret = WXUtil.getOpenId4GZH(code, appId);
-
-		Map<String, String> map = (new ObjectMapper()).readValue(ret, Map.class);
-		log.info(map);
-		if (!EasyUtils.isNullOrEmpty(map.get("errmsg"))) {
-			response.getWriter().println("获取openid出错");
-			return;
-		}
-
-		String openId = map.get("openid");
-		String access_token = map.get("access_token");
+		String openId = request.getParameter("openid");
+		String access_token = request.getParameter("access_token");
 
 		// 尝试获取微信个人信息
-		ret = WXUtil.getUserInfo4GZH(access_token, openId);
+		String ret = WXUtil.getUserInfo4GZH(access_token, openId);
 
-		map = (new ObjectMapper()).readValue(ret, Map.class);
+		Map<String, String> map = (new ObjectMapper()).readValue(ret, Map.class);
 		log.info(map);
 		if (!EasyUtils.isNullOrEmpty(map.get("errmsg"))) {
 			response.getWriter().println("获取用户信息出错");
