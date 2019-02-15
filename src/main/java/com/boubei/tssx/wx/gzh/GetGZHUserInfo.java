@@ -11,7 +11,6 @@
 package com.boubei.tssx.wx.gzh;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -23,21 +22,21 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import com.boubei.tss.framework.Global;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tssx.wx.WXUtil;
 
 /**
  * 公众号注册登记
  */
-@WebServlet(urlPatterns = "/gzh_reg.in")
+@WebServlet(urlPatterns = "/gzh_userinfo.in")
 @SuppressWarnings("unchecked")
-public class GetGZHOpenId extends HttpServlet {
+public class GetGZHUserInfo extends HttpServlet {
 	private static final long serialVersionUID = -740569423483772472L;
 
 	Logger log = Logger.getLogger(this.getClass());
 
-	public void init() { }
+	public void init() {
+	}
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		doGet(request, response);
@@ -47,35 +46,32 @@ public class GetGZHOpenId extends HttpServlet {
 
 		response.setContentType("text/html;charset=UTF-8");
 
-		String code  = request.getParameter("code");
+		String code = request.getParameter("code");
 		String appId = request.getParameter("appId");
-		
+
 		String ret = WXUtil.getOpenId4GZH(code, appId);
-		
+
 		Map<String, String> map = (new ObjectMapper()).readValue(ret, Map.class);
 		log.info(map);
-		if ( !EasyUtils.isNullOrEmpty(map.get("errmsg")) ) {
+		if (!EasyUtils.isNullOrEmpty(map.get("errmsg"))) {
 			response.getWriter().println("获取openid出错");
 			return;
 		}
-		
-		// 获取openId
+
 		String openId = map.get("openid");
-		// 获取access_token
 		String access_token = map.get("access_token");
-		
-		// 判断该 微信号是否已经绑定手机号
-		String hql = "from GZHPhone where openid = ? and appid = ?";
-		List<?> bindPhones = Global.getCommonService().getList(hql, openId, appId);
-		if (bindPhones.size() == 1) {
-			response.getWriter().println("已绑定");
-		} else {
-			response.getWriter().println(openId);
-		}
 
 		// 尝试获取微信个人信息
 		ret = WXUtil.getUserInfo4GZH(access_token, openId);
-		log.info(ret);
+
+		map = (new ObjectMapper()).readValue(ret, Map.class);
+		log.info(map);
+		if (!EasyUtils.isNullOrEmpty(map.get("errmsg"))) {
+			response.getWriter().println("获取用户信息出错");
+			return;
+		} else {
+			response.getWriter().println(ret);
+		}
 	}
 
 }
