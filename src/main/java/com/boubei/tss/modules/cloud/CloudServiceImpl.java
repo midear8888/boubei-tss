@@ -189,15 +189,18 @@ public class CloudServiceImpl implements CloudService, AfterPayService{
         user.setLoginName(mobile);
         user.setTelephone(mobile);
         user.setBelongUserId(mo.getInvite_user_id());
-        user.setUserName(map.get("user_name"));
-        user.setUdf(map.get("company_name"));
+        user.setUserName(mobile);
         user.setOrignPassword(map.get("password"));
         try {
         	userService.regUser(user, true);
         } 
         catch(Exception e) {
-        	// 手机号已经注册过了，直接登录
+        	// 手机号已经注册过了
+        	user = userService.getUserByLoginName(mobile);
         }
+        
+        user.setUserName( EasyUtils.checkNull( map.get("user_name"), user.getUserName() ).toString() );
+    	user.setUdf( EasyUtils.checkNull(map.get("company_name"), user.getUdf() ).toString() );
         
         // 模拟登录
         apiService.mockLogin(user.getLoginName());

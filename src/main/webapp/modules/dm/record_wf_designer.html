@@ -57,15 +57,14 @@
 	<INPUT name="by" id="byRole" type="radio" value="byRole" checked> <label>按角色审批</label>
     <INPUT name="by" id="byUser" type="radio" value="byUser"> <label>按人员审批</label>
 
-	<label> 域:</label>
-	<select id="domains" style="width: 80px; margin-right: 5px;"></select>
+	<select id="domains" style="width: 80px; margin: 0 5px 0 20px;"></select>
 	<button id="saveBtn" class="tssbutton blue small">保存到域</button>
 </div>
 
 <script type="text/javascript">
 
 	var wf_def = parent.wf_def || "{}",
-		curr_record_id = parent.curr_record_id;
+		curr_record_id = parent.curr_record_id || 0;
 
 	var workflow, to, cc, trans;
 	init(wf_def);
@@ -90,7 +89,7 @@
     });
 	
 	var roleIds = [], roles = [], roleMap = {},
-		userCodes = [], userNames = [], userMap = {};
+		userCodes = [], userNames = [], userMap = {}, domainUsers = [];
 	$.get("/tss/auth/service/roles", {}, function(data) {
 		data.each(function(i, r) {
 			roleIds.push( r[0] );
@@ -123,11 +122,22 @@
 
 	var elIds = ['sp1', 'sp2', 'sp3', 'zs', 'cc'];
 	function initForm(byUser) {
+		var _userCodes = userCodes, 
+			_userNames = userNames;
+		if( domainUsers.length && byUser) {
+			_userCodes = [];
+			_userNames = [];
+			domainUsers.each(function(i, u){
+				_userNames.push(u[1]);
+				_userCodes.push(u[0]);
+			});
+		}
+
 		elIds.each( function(i, elId){
 			xform.updateField(elId, [
 	            {"name": "mode", "value": "combotree"},
-	            {"name": "texts", "value": (byUser ? userNames:roles).join('|')},
-	            {"name": "values", "value": (byUser ? userCodes:roleIds).join('|')}
+	            {"name": "texts", "value": (byUser ? _userNames : roles).join('|')},
+	            {"name": "values", "value": (byUser ? _userCodes : roleIds).join('|')}
 	        ]);
 		});
 
@@ -137,12 +147,16 @@
 			updateField(xform, toId + "_tj", r.when||'');
 		});
 
-		cc.each(function(i, r){
-			updateField(xform, "cc", byUser ? r.user : r.roleId);
+		var _cc = [], _trans = [];
+		cc.each(function(i, x){
+			_cc.push(byUser ? x.user : x.roleId)
 		});
-		trans.each(function(i, r){
-			updateField(xform, "zs", byUser ? r.user : r.roleId);   
+		_cc.length && updateField(xform, "cc", _cc.join(","));
+
+		trans.each(function(i, x){
+			_trans.push(byUser ? x.user : x.roleId)
 		});
+		_trans.length && updateField(xform, "zs", _trans.join(","));
 
 		$1( byUser ? "byUser" : "byRole" ).checked = true;
 	}
@@ -156,18 +170,29 @@
     });
 
     $1("domains").onchange = function(e) { 
-    	var domain = this.value; 
+    	var domain = this.value;
+    	domainUsers = []; 
+
     	$.get("/tss/auth/rc/wf/domain", {"domain": domain, "recordId": curr_record_id}, function(result) {
 	 		init( result ? result.define : wf_def );
 
-	 		initForm( workflow.by === 'byUser' );
+	 		$.get("/tss/auth/service/domainuser", {domain: domain, field: "loginName, u.userName"}, function(data) {
+				domainUsers = data;
+				initForm( workflow.by === 'byUser' );
+			});
 		});
     }
 
+    if(!curr_record_id) {
+    	$("#saveBtn, #domains").hide();
+    }
     $("#saveBtn").click(function() {
         var domain = $("#domains").value(); 
         if( !domain ) {
         	return $.alert("请选择企业域");
+        }
+        if( !curr_record_id ) {
+        	return $.alert("请先保存创建当前流程数据表，再设置域");
         }
 
     	$.post("/tss/auth/rc/wf/domain", {"domain": domain, "recordId": curr_record_id, "define": wf_def}, function(result) {

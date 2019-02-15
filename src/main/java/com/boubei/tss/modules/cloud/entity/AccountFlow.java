@@ -23,6 +23,8 @@ import com.boubei.tss.util.MathUtil;
 @SequenceGenerator(name = "account_flow_seq", sequenceName = "account_flow_seq", initialValue = 1, allocationSize = 10)
 public class AccountFlow implements IEntity {
 	
+	public static final String PAYMENT0 = "系统赠送";
+	
 	@Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "account_flow_seq")
 	private Long id;
@@ -33,7 +35,7 @@ public class AccountFlow implements IEntity {
 	
 	private String type;    // 费用类型：充值/短信费/查单费/系统使用费/报表定制费/接口对接费/卖打印机
 	
-	private String payment; // 支付方式：微信支付、支付宝支付、系统扣款、对公转账、对私转账
+	private String payment; // 支付方式：微信支付、支付宝支付、系统扣款、系统赠送、对公转账、对私转账
 	
 	private String order_no; // 关联的订单号
 	
@@ -50,7 +52,7 @@ public class AccountFlow implements IEntity {
 	
 	public AccountFlow() { }
 	
-	public AccountFlow(Account account, AbstractProduct product, String type) {
+	public AccountFlow(Account account, AbstractProduct product, String type, String remark) {
 		this.setAccount_id(account.getId());
 		this.setOrder_no(product.co.getOrder_no());
 		this.setPay_man(product.payer);
@@ -58,6 +60,7 @@ public class AccountFlow implements IEntity {
 		this.setPayment(product.payType);
 		this.setSn(SerialNOer.get("AF", true));
 		this.setType(type);
+		this.setRemark(remark);
 		
 		Double balance = MathUtil.addDoubles(account.getBalance(), this.getMoney());
 		this.setBalance(balance);

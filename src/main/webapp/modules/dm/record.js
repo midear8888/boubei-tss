@@ -298,7 +298,7 @@ function loadRecordDetail(isCreate, type, readonly, isPage) {
 			if( !isCreate && type == "1" ) preview();
 
 			wf_def = (xform.getData("workflow")||"").revertEntry();
-			curr_record_id = treeNodeID;
+			curr_record_id = isCreate ? 0 : treeNodeID;
 			$("#designerForm>iframe").attr("src", "record_wf_designer.html");
 		},
 		onexception : function() { 

@@ -32,8 +32,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.boubei.tss.EX;
-import com.boubei.tss.cache.Cacheable;
-import com.boubei.tss.cache.Pool;
 import com.boubei.tss.cache.extension.CacheHelper;
 import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.DMUtil;
@@ -91,14 +89,10 @@ public class _Recorder extends ProgressActionSupport {
 			throw new BusinessException(EX.parse(EX.DM_09, recordId, Arrays.asList(permitOptions).toString()));
 		}
 
-		Pool cache = CacheHelper.getLongCache();
-		String cacheKey = "_db_record_" + recordId;
-		if (!cache.contains(cacheKey)) {
-			cache.putObject(cacheKey, recordService.getDB(recordId));
-		}
+		_Database _db = recordService.getDB(recordId);
+		CacheHelper.getLongCache().putObject("_db_record_" + recordId, _db);
 
-		Cacheable cacheItem = cache.getObject(cacheKey);
-		return (_Database) cacheItem.getValue();
+		return _db;
 	}
 
 	@RequestMapping("/id")
@@ -486,7 +480,7 @@ public class _Recorder extends ProgressActionSupport {
 		String errorMsg = op + " error: " + firstCause;
 		errorMsg = errorMsg.replaceAll("com.boubei.tss.framework.exception.BusinessException: ", "");
 
-		log.error(errorMsg);
+		log.error(errorMsg, e);
 		throw new BusinessException(errorMsg);
 	}
 

@@ -363,7 +363,7 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
 	public String getWorkflow() {
 		// 优先取 dm_workflow_def 里的定义
 		String sql = "select define from dm_workflow_def where domain=? and tableId =?";
-		Object _workflow = SQLExcutor.queryVL(sql, "define", this.id, Environment.getDomain());
+		Object _workflow = SQLExcutor.queryVL(sql, "define", Environment.getDomain(), this.id);
 		return (String) EasyUtils.checkNull(_workflow, workflow);
 	}
 

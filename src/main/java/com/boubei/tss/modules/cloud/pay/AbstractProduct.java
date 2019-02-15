@@ -59,6 +59,10 @@ public abstract class AbstractProduct {
 		return md.getModule();
 	}
 	
+	public String toflowRemark(){
+		return null;
+	}
+	
 	public void init() {
 		
 	}
@@ -129,15 +133,15 @@ public abstract class AbstractProduct {
 
 	// 创建充值流水
 	protected void createIncomeFlow(Account account) {
-		AccountFlow flow = new AccountFlow(account, this, PRODUCT_RECHARGE);
+		AccountFlow flow = new AccountFlow(account, this, PRODUCT_RECHARGE, null);
 		flow.setMoney(co.getMoney_real());
 		
 		commonDao.create(flow);
 	}
-
+	
 	// 创建扣款流水
 	protected void createBuyFlow(Account account) {
-		AccountFlow flow = new AccountFlow(account, this, this.getName());
+		AccountFlow flow = new AccountFlow(account, this, this.getName(), this.toflowRemark());
 		flow.setMoney(-co.getMoney_real());
 
 		commonDao.create(flow);

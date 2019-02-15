@@ -41,6 +41,7 @@ public class WFUtil {
 			throw new BusinessException(rcName + " workflow parse error: " + e.getMessage());
 		}
 		
+		rules.remove("by");
 		for(String key : rules.keySet()) {
 			List<Map<String, String>> list = rules.get(key);
 			for( Map<String, String> m : list ) {
