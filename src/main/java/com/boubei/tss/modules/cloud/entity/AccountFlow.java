@@ -13,7 +13,6 @@ import javax.persistence.Table;
 import com.boubei.tss.framework.persistence.IEntity;
 import com.boubei.tss.modules.cloud.pay.AbstractProduct;
 import com.boubei.tss.modules.sn.SerialNOer;
-import com.boubei.tss.util.MathUtil;
 
 /**
  * 域账户流水
@@ -61,10 +60,6 @@ public class AccountFlow implements IEntity {
 		this.setSn(SerialNOer.get("AF", true));
 		this.setType(type);
 		this.setRemark(remark);
-		
-		Double balance = MathUtil.addDoubles(account.getBalance(), this.getMoney());
-		this.setBalance(balance);
-		account.setBalance(balance);
 	}
 
 	public Long getId() {

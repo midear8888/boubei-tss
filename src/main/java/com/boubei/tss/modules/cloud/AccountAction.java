@@ -29,7 +29,6 @@ public class AccountAction {
 			return (Account) accounts.get(0);
 		}
 		
-		
 		Account account = new Account();
 		account.setBalance(0D);
 		account.setId(-999L);

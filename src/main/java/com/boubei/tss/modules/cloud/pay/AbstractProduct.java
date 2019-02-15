@@ -20,6 +20,7 @@ import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.service.IUserService;
 import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
+import com.boubei.tss.util.MathUtil;
 
 public abstract class AbstractProduct {
 	
@@ -59,7 +60,7 @@ public abstract class AbstractProduct {
 		return md.getModule();
 	}
 	
-	public String toflowRemark(){
+	protected String toflowRemark(){
 		return null;
 	}
 	
@@ -134,15 +135,21 @@ public abstract class AbstractProduct {
 	// 创建充值流水
 	protected void createIncomeFlow(Account account) {
 		AccountFlow flow = new AccountFlow(account, this, PRODUCT_RECHARGE, null);
-		flow.setMoney(co.getMoney_real());
-		
-		commonDao.create(flow);
+		createFlow(account, flow, co.getMoney_real());
 	}
 	
 	// 创建扣款流水
 	protected void createBuyFlow(Account account) {
 		AccountFlow flow = new AccountFlow(account, this, this.getName(), this.toflowRemark());
-		flow.setMoney(-co.getMoney_real());
+		createFlow(account, flow, -co.getMoney_real());
+	}
+	
+	private void createFlow(Account account, AccountFlow flow, Double deltaMoney) {
+		flow.setMoney(deltaMoney);
+		
+		Double balance = MathUtil.addDoubles(account.getBalance(), deltaMoney);
+		flow.setBalance(balance);
+		account.setBalance(balance);
 
 		commonDao.create(flow);
 	}
@@ -164,8 +171,6 @@ public abstract class AbstractProduct {
 			commonDao.create(sa);
 
 			// 创建策略角色对应关系
-			if( EasyUtils.isNullOrEmpty(md.getRoles()) ) continue;
-			
 			List<Long> roleIds = md.roles();
 			for (Long roleId : roleIds) {
 				RoleUser ru = new RoleUser();

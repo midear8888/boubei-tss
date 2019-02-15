@@ -19,7 +19,7 @@ public abstract class AbstractSMS {
 	
 	private Logger log = Logger.getLogger(this.getClass());
  
-    protected ICommonService commService = Global.getCommonService();
+    protected ICommonService commService;
     
     /** 异常信息转换器实现类类名属性名 */
     static final String SMS_CLASS_NAME = "class.name.SMS";
@@ -30,6 +30,7 @@ public abstract class AbstractSMS {
         if (instance == null) {
             String className = ParamConfig.getAttribute(SMS_CLASS_NAME, DefaultSMS.class.getName());
             instance = (AbstractSMS) BeanUtil.newInstanceByName(className);
+            instance.commService = Global.getCommonService();
         }
         return instance;
     }

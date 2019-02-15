@@ -57,7 +57,7 @@ public class ModuleOrderAction {
 
 	@RequestMapping(value = "/order/price/query")
 	@ResponseBody
-	public Object queryPrice(CloudOrder co) {
+	public CloudOrder queryPrice(CloudOrder co) {
 		return cloudService.calMoney(co);
 	}
 

@@ -162,26 +162,26 @@ public class CloudServiceImpl implements CloudService, AfterPayService{
 		co = (CloudOrder) commonDao.create(co);
 		co.setOrder_no(co.getOrder_date().getTime() + "-" + co.getId());
 		
-		calMoney(co); // 价格以后台计算为准，防止篡改（同时检查前后台的报价是否一致）
+		if(co.getModule_id() != null) {
+			calMoney(co); // 价格以后台计算为准，防止篡改（同时检查前后台的报价是否一致）
+		}
 		
 		return co;
 	}
 	
 	@SuppressWarnings("unchecked")
 	private void selfRegister(CloudOrder mo) {
-		Map<String,String> map;
+		Map<String,String> map = new HashMap<>();
 		try {  
   			map = new ObjectMapper().readValue(mo.getParams(), HashMap.class);
 		} 
-    	catch (Exception e) {  
-			throw new BusinessException(" cloud order error, params = " + mo.getParams(), e);
-  	    } 
+		catch (Exception e) { } 
 		
 		// 校验短信验证码smsCode
     	String smsCode = map.get("smsCode");
     	String mobile  = map.get("phone");
     	if( EasyUtils.isNullOrEmpty(smsCode) || !AbstractSMS.create().checkCode(mobile, smsCode) ) {
-    		throw new BusinessException("短信验证码校验失败，请重新输入");
+    		throw new BusinessException("短信验证码校验失败，请重新输入。");
     	}
         
         // 注册账号
@@ -241,7 +241,7 @@ public class CloudServiceImpl implements CloudService, AfterPayService{
 		@SuppressWarnings("unchecked")
 		List<RoleUser> rus = (List<RoleUser>) commonDao.getEntities(" from RoleUser where strategyId = ?", strategyId);
 		for (RoleUser ru : rus) {
-			if (roleIDList.contains(ru.getId().toString())) {
+			if (roleIDList.contains(ru.getRoleId().toString())) {
 				ru.setUserId(userId);
 			} else {
 				ru.setUserId(sa.getBuyerId());

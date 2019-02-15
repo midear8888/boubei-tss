@@ -80,8 +80,6 @@ public class CloudOrder extends ARecordTable {
 	public void setId(Long id) {
 		this.id = id;
 	}
-
-	
 	
 	public String getType() {
 		return type;

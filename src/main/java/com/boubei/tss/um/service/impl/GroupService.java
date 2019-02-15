@@ -220,12 +220,19 @@ public class GroupService implements IGroupService {
             historyMap.put(roleGroup.getRoleId(), roleGroup);
         }
         
+        // 检查操作人是否对角色有管理权限
+        List<?> editableRoles = findEditableRoles();
+        List<Long> editableRoleIds = new ArrayList<Long>();
+        for(Object o : editableRoles) {
+        	editableRoleIds.add( ((Role)o).getId() );
+        }
+        
         if ( !EasyUtils.isNullOrEmpty(roleIdsStr) ) {
             String[] roleIds = roleIdsStr.split(",");
             for (String temp : roleIds) {
                 // 如果historyMap里面没有，则新增用户组对角色的关系; 如果historyMap里面有，则从历史记录中移出；剩下的将被删除
                 Long roleId = Long.valueOf(temp);
-                if (historyMap.remove(roleId) == null) {
+                if (historyMap.remove(roleId) == null && editableRoleIds.contains(roleId)) {
                     RoleGroup role2Group = new RoleGroup();
                     role2Group.setRoleId(roleId);
                     role2Group.setGroupId(groupId);

@@ -169,12 +169,13 @@ public class RecordAction extends BaseActionSupport {
     @RequestMapping(value = "/wf/domain", method = RequestMethod.POST)
     @ResponseBody
     public Object saveWFDef4Domain(Long recordId, String domain, String define) {
-    	WFDefine wfDefine = quueryWFDef4Domain(recordId, domain);
+    	WFDefine wfDefine = queryWFDef4Domain(recordId, domain);
     	if(wfDefine.getId() != null) {
     		wfDefine.setDefine(define);
     		commService.update(wfDefine);
     	} 
     	else {
+    		wfDefine.setId(null);
     		wfDefine.setDefine(define);
     		wfDefine.setDomain(domain);
     		wfDefine.setTableId(recordId);
@@ -186,7 +187,7 @@ public class RecordAction extends BaseActionSupport {
     
     @RequestMapping(value = "/wf/domain", method = RequestMethod.GET)
     @ResponseBody
-    public WFDefine quueryWFDef4Domain(Long recordId, String domain) {
+    public WFDefine queryWFDef4Domain(Long recordId, String domain) {
     	List<?> list = commService.getList("from WFDefine where tableId = ? and domain = ? ", recordId, domain);
     	if( list.isEmpty() ) {
     		String def = recordService.getRecord(recordId).getWorkflow();
