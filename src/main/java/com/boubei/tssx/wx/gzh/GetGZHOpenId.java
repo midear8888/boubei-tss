@@ -66,7 +66,7 @@ public class GetGZHOpenId extends HttpServlet {
 		String hql = "from GZHPhone where openid = ? and appid = ?";
 		List<?> bindPhones = Global.getCommonService().getList(hql, openId, appId);
 		if (bindPhones.size() == 1) {
-			response.getWriter().println("已绑定");
+			response.getWriter().println("已绑定 openid=" + openId);
 		} else {
 			response.getWriter().println(openId);
 		}
