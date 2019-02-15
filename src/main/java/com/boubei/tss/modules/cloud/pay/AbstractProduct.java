@@ -56,18 +56,6 @@ public abstract class AbstractProduct {
 		return product;
 	}
 	
-	public String getName() {
-		return md.getModule();
-	}
-	
-	protected String toflowRemark(){
-		return null;
-	}
-	
-	public void init() {
-		
-	}
-	
 	public void beforeOrder(CloudOrder co) {
 		
 	}
@@ -92,21 +80,35 @@ public abstract class AbstractProduct {
 		if (!CloudOrder.NEW.equals(co.getStatus())) {
 			throw new BusinessException("订单" + co.getStatus());
 		}
-		if (!real_money.equals(co.getMoney_cal())) {
-			throw new BusinessException( "订单金额不符" );
-		}
 		
 		co.setMoney_real(real_money);
-		co.setPay_date(new Date());
-		co.setStatus(CloudOrder.PAYED);
-		commonDao.update(co);
+		if ( real_money < co.getMoney_cal() ) {
+			co.setRemark( "订单金额不符" );
+			co.setStatus(CloudOrder.PART_PAYED);
+		} 
+		else {
+			co.setStatus(CloudOrder.PAYED);
+			
+			handle();
+			init();
+		}
 		
-		handle();
+		co.setPay_date(new Date());
+		commonDao.update(co);
 	}
 	
 	protected abstract void handle();
 	
-
+	protected void init() { }
+	
+	public String getName() {
+		return md.getModule();
+	}
+	
+	protected String toflowRemark(){
+		return null;
+	}
+	
 	protected Account getAccount() {
 		return getAccount(userId);
 	}
@@ -120,7 +122,6 @@ public abstract class AbstractProduct {
 		Account account = new Account();
 		account.setBalance(0D);
 		account.setBelong_user(userService.getUserById(userId));
-		account.setDomain(co.getDomain());
 		account = (Account) commonDao.create(account);
 		
 		return account;

@@ -1,8 +1,9 @@
 package com.boubei.tss.modules.cloud.pay;
 
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang.time.DateUtils;
 
@@ -21,16 +22,15 @@ public class RenewalfeeOrderHandler extends AbstractProduct {
 	
 	public void beforeOrder(CloudOrder co) {
 		String subAuthorizeIds = co.getParams();
-		List<SubAuthorize> subAuthorizes = (List<SubAuthorize>) commonDao.getEntities(" from SubAuthorize where id in (" + subAuthorizeIds + ")");
-		List<String> module_ids = new ArrayList<>();
+		String hql = " from SubAuthorize where id in (" + subAuthorizeIds + ")";
+		List<SubAuthorize> subAuthorizes = (List<SubAuthorize>) commonDao.getEntities(hql);
+		Set<String> module_ids = new HashSet<>();
 		for (SubAuthorize subAuthorize : subAuthorizes) {
 			String[] name = subAuthorize.getName().split("_");
 			String module_id = name[0];
-			if (!module_ids.contains(module_id)) {
-				module_ids.add(module_id);
-			}
+			module_ids.add(module_id);
 			if (!subAuthorize.getBuyerId().equals( Environment.getUserId() )) {
-				throw new BusinessException("您不能操作别的用户的可分配资源！");
+				throw new BusinessException("您不能续费其它用户购买的账号！");
 			}
 		}
 		
@@ -38,7 +38,7 @@ public class RenewalfeeOrderHandler extends AbstractProduct {
 			throw new BusinessException("您不能同时续费多个产品，请分开续费！");
 		}
 		
-		Long module_id = EasyUtils.obj2Long( module_ids.get(0) );
+		Long module_id = EasyUtils.obj2Long( module_ids.toArray()[0] );
 		co.setModule_id(module_id);
 		co.setAccount_num(subAuthorizes.size());
 		commonDao.update(co);
@@ -48,16 +48,13 @@ public class RenewalfeeOrderHandler extends AbstractProduct {
  
 	protected void handle() {
 		// 获取订单信息
-		String subAuthorizeIds = co.getParams();
-		List<SubAuthorize> subAuthorizes = (List<SubAuthorize>) commonDao.getEntities(" from SubAuthorize where id in (" + subAuthorizeIds + ")");
+		String hql = " from SubAuthorize where id in (" + co.getParams() + ")";
+		List<SubAuthorize> subAuthorizes = (List<SubAuthorize>) commonDao.getEntities(hql);
 		Date now = new Date();
-		for (SubAuthorize subAuthorize : subAuthorizes) {
- 
-			if (subAuthorize.getEndDate().before(now)) {
-				subAuthorize.setEndDate( now );
-			}
-			subAuthorize.setEndDate(DateUtils.addMonths(subAuthorize.getEndDate(), co.getMonth_num()));
-			subAuthorize.setDisabled(0);
+		for (SubAuthorize strategy : subAuthorizes) {
+			Date endDate = new Date( Math.max(strategy.getEndDate().getTime(), now.getTime()) );
+			strategy.setEndDate(DateUtils.addMonths(endDate, co.getMonth_num()));
+			strategy.setDisabled(0);
 		}
 
 		createFlows( getAccount() );

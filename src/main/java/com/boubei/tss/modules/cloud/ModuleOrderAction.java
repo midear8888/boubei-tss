@@ -70,7 +70,7 @@ public class ModuleOrderAction {
 		CloudOrder mo = (CloudOrder) commonService.getEntity(CloudOrder.class, id);
 		mo.setRebate(rebate);
 		mo.setDerate(derate);
-		mo.setMoney_real(mo.getMoney_cal() * rebate - derate);
+		mo.setMoney_cal(mo.getMoney_cal() * rebate - derate);
 
 		commonService.update(mo);
 	}

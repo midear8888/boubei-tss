@@ -84,7 +84,7 @@ public class ExceptionEncoder {
              * 在一次请求中(如下载附件出现异常时)，同时调用response.getOutputStream() 和 response.getWriter()将会报错：
              *   getOutputStream() has already been called for this response 
              */
-            PrintWriter out;
+            PrintWriter out = null;
             try {
             	out = response.getWriter();
             } catch( Exception e ) {

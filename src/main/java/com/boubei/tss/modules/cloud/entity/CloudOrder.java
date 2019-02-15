@@ -27,9 +27,10 @@ import com.boubei.tss.dm.record.ARecordTable;
 @SequenceGenerator(name = "module_order_seq", sequenceName = "module_order_seq", initialValue = 1, allocationSize = 10)
 public class CloudOrder extends ARecordTable {
 
-	public final static String NEW = "待付款";
-	public final static String CANCELED = "已取消";
-	public final static String PAYED = "已付款";
+	public final static String NEW        = "待付款";
+	public final static String CANCELED   = "已取消";
+	public final static String PAYED      = "已付款";
+	public final static String PART_PAYED = "部分付款";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO, generator = "module_order_seq")
@@ -68,6 +69,8 @@ public class CloudOrder extends ARecordTable {
 	private Double rebate;     // 折扣
 	private Double derate;     // 减免
 	private String params;     // 更多参数
+	
+	private String remark;  // 备注
 
 	public Serializable getPK() {
 		return this.getId();
@@ -201,4 +204,11 @@ public class CloudOrder extends ARecordTable {
 		this.invite_user_id = invite_user_id;
 	}
 
+	public String getRemark() {
+		return remark;
+	}
+
+	public void setRemark(String remark) {
+		this.remark = remark;
+	}
 }

@@ -32,8 +32,6 @@ public class Account implements IEntity {
 	@ManyToOne
 	private User belong_user;
 	
-	private String domain;
-	
 	private Double balance;        // 余额
 	
 	private Double balance_freeze; // 冻结余额
@@ -52,14 +50,6 @@ public class Account implements IEntity {
 
 	public void setId(Long id) {
 		this.id = id;
-	}
-
-	public String getDomain() {
-		return domain;
-	}
-
-	public void setDomain(String domain) {
-		this.domain = domain;
 	}
 
 	public Double getBalance() {

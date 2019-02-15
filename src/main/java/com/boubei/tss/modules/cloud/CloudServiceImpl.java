@@ -159,6 +159,7 @@ public class CloudServiceImpl implements CloudService, AfterPayService{
 		
 		co.setProduct(product.getName());
 		co.setStatus(CloudOrder.NEW);
+		co.setOrder_date(new Date());
 		co = (CloudOrder) commonDao.create(co);
 		co.setOrder_no(co.getOrder_date().getTime() + "-" + co.getId());
 		
@@ -199,8 +200,8 @@ public class CloudServiceImpl implements CloudService, AfterPayService{
         	user = userService.getUserByLoginName(mobile);
         }
         
-        user.setUserName( EasyUtils.checkNull( map.get("user_name"), user.getUserName() ).toString() );
-    	user.setUdf( EasyUtils.checkNull(map.get("company_name"), user.getUdf() ).toString() );
+        user.setUserName( (String) EasyUtils.checkNull( map.get("user_name"), user.getUserName() ) );
+    	user.setUdf( (String) EasyUtils.checkNull(map.get("company_name"), user.getUdf() ));
         
         // 模拟登录
         apiService.mockLogin(user.getLoginName());

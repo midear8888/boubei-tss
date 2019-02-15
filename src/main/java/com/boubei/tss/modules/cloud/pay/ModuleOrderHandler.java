@@ -17,11 +17,19 @@ public class ModuleOrderHandler extends AbstractProduct {
 	protected void handle() {
 
 		/* 注册企业域，并将用户移动到新建的域下作为域管理员。
-		 * 判断user是否已经是域管理员，是的话无需再注册域; 回调时user非登录状态 
+		 * 判断user是否已经是域管理员（非自注册域），是的话无需再注册域; 回调时user非登录状态 
 		 */
-		List<Long> hasRoles = loginService.getRoleIdsByUserId(user.getId());
-		if( !hasRoles.contains( UMConstants.DOMAIN_ROLE_ID) ) {
+		Long buyerID = user.getId();
+		String domain;
+		
+		List<Long> hasRoles = loginService.getRoleIdsByUserId(buyerID);
+		List<?> groups = loginService.getGroupsByUserId(buyerID);
+		if( groups.size() == 1 || (groups.size() > 1 && !hasRoles.contains( UMConstants.DOMAIN_ROLE_ID)) ) {
 			userService.regBusiness(user, user.getUdf());
+			domain = user.getDomain();
+		} 
+		else {
+			domain = co.getDomain();
 		}
 
 		// 创建模块授权策略
@@ -29,8 +37,6 @@ public class ModuleOrderHandler extends AbstractProduct {
 		createSubAuthorize();
 
 		// 如果此时还没有选择 试用模块， 在此创建 ModuleUser 映射关系
-		String domain = user.getDomain();
-
 		String hql = "from ModuleUser where userId = ? and moduleId = ? and domain = ?";
 		List<?> list = commonDao.getEntities(hql, userId, module_id, domain);
 		if (list.isEmpty()) {
@@ -40,10 +46,6 @@ public class ModuleOrderHandler extends AbstractProduct {
 		}
 
 		createFlows( getAccount() );
-	}
-	
-	public String getName() {
-		return md.getModule();
 	}
 
 }
