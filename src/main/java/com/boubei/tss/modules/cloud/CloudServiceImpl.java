@@ -142,12 +142,27 @@ public class CloudServiceImpl implements CloudService, AfterPayService{
 	
 /************************************* cloud order **************************************/
 	
+	@SuppressWarnings("unchecked")
 	public CloudOrder createOrder(CloudOrder co) {
+		Map<String,String> map = new HashMap<>();
+		try {  
+  			map = new ObjectMapper().readValue(co.getParams(), HashMap.class);
+		} 
+		catch (Exception e) { }
+		
 		if( Environment.isAnonymous() ) {
-			selfRegister(co);
+			selfRegister(co, map);
 		}
 		
-		co.setCreator(Environment.getUserCode());
+		String userCode = (String) EasyUtils.checkNull(map.get("phone"), Environment.getUserCode());
+		User user = userService.getUserByLoginName(userCode);
+		user.setUserName( (String) EasyUtils.checkNull( map.get("user_name"), user.getUserName() ) );
+    	user.setUdf( (String) EasyUtils.checkNull(map.get("company_name"), user.getUdf() ));
+    	commonDao.update(user);
+    	// 模拟登录
+        apiService.mockLogin(userCode);
+		
+		co.setCreator(userCode);
 		
 		if( EasyUtils.isNullOrEmpty(co.getType()) ){
 			co.setType(ModuleOrderHandler.class.getName());
@@ -170,14 +185,7 @@ public class CloudServiceImpl implements CloudService, AfterPayService{
 		return co;
 	}
 	
-	@SuppressWarnings("unchecked")
-	private void selfRegister(CloudOrder mo) {
-		Map<String,String> map = new HashMap<>();
-		try {  
-  			map = new ObjectMapper().readValue(mo.getParams(), HashMap.class);
-		} 
-		catch (Exception e) { } 
-		
+	private void selfRegister(CloudOrder mo, Map<String,String> map) {
 		// 校验短信验证码smsCode
     	String smsCode = map.get("smsCode");
     	String mobile  = map.get("phone");
@@ -197,14 +205,7 @@ public class CloudServiceImpl implements CloudService, AfterPayService{
         } 
         catch(Exception e) {
         	// 手机号已经注册过了
-        	user = userService.getUserByLoginName(mobile);
         }
-        
-        user.setUserName( (String) EasyUtils.checkNull( map.get("user_name"), user.getUserName() ) );
-    	user.setUdf( (String) EasyUtils.checkNull(map.get("company_name"), user.getUdf() ));
-        
-        // 模拟登录
-        apiService.mockLogin(user.getLoginName());
 	}
 	
 	public CloudOrder calMoney(CloudOrder mo) {

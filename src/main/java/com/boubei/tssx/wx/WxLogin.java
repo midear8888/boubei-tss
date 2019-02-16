@@ -148,10 +148,9 @@ public class WxLogin extends HttpServlet {
         			if( list.size() > 0 ) {
         				Group customerGroup = (Group) list.get(0);
             			userService.moveUser(userId, customerGroup.getId());
-            			
-            			apiService.mockLogin( user.getLoginName() ); // 重新登录一下
         			}
         		}
+				apiService.mockLogin( user.getLoginName() ); // 重新登录一下
         	}
         }
         
