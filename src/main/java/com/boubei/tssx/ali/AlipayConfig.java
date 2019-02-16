@@ -5,7 +5,7 @@ import com.boubei.tss.util.EasyUtils;
 
 public class AlipayConfig {
 
-	static String Char_Set = "utf-8";
+	static String CAHR_SET = "utf-8";
 	static String Sign_Type = "RSA2";
 
 	String appid;

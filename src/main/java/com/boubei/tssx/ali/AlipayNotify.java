@@ -51,17 +51,21 @@ public class AlipayNotify extends HttpServlet {
 
 			if (signVerified && "TRADE_SUCCESS".equals(trade_status)) {
 
-				System.out.println("ali access, out_trade_no = " + map.get("out_trade_no"));
-
-				AlipayLog log = new AlipayLog();
+				String order_no = map.get("out_trade_no");
+				System.out.println("alipay callback, out_trade_no = " + order_no);
+				
 				map.remove("version");
+				
+				AlipayLog log = new AlipayLog();
 				BeanUtil.setDataToBean(log, map);
 				commService.create(log);
 
+				// 没有传 afterPaySuccess 则不启动回调，用于cloud模块以外地方回调
 				if (!EasyUtils.isNullOrEmpty(iAfterPayBean)) {
 					AfterPayService afterPayService = (AfterPayService) Global.getBean(iAfterPayBean);
-					afterPayService.handle(map.get("out_trade_no"), EasyUtils.obj2Double(map.get("receipt_amount")), map.get("buyer_id"), payType,
-							map);
+					Double receipt_amount = EasyUtils.obj2Double(map.get("receipt_amount"));
+					String buyer_id = map.get("buyer_id");
+					afterPayService.handle(order_no, receipt_amount, buyer_id, payType, map);
 				}
 
 				response.getWriter().println("success");

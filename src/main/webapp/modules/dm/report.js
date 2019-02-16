@@ -399,9 +399,10 @@ function testRestfulReportService() {
         cur_api.method = "POST";
         cur_api._href = "p2_1";
 
+        params = params||{};
         params.rows = 10;
         params.page = 1;
-        cur_params = JSON.stringify( params||{} ),
+        cur_params = JSON.stringify( params ),
 
         $.openIframePanel("testServicePanel", "调试数据服务接口【" +nodeName+ "】", 1000, 600, "../../more/api_test.html");
 /*

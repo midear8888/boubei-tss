@@ -26,7 +26,8 @@ import com.boubei.tss.util.EasyUtils;
 public class AlipayAPI {
 	static final String afterPaySuccess = "afterPaySuccess";
 	/**
-	 * PC场景下单并支付
+	 * PC场景下单并支付.
+	 * 
 	 * appid 应用编号
 	 * out_trade_no 商户订单号
 	 * product_code 销售产品码
@@ -41,18 +42,24 @@ public class AlipayAPI {
 	public void pagepay(HttpServletRequest request, HttpServletResponse response) throws Exception {
 		
 		Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
-		AlipayConfig alipay = new AlipayConfig( requestMap.remove("appid") );
+		String appid = requestMap.remove("appid");
+		String return_url = requestMap.get("return_url");
+		String _afterPaySuccess = requestMap.get(afterPaySuccess);
 		
-		AlipayClient aClient = new DefaultAlipayClient(alipay.getUrl(), alipay.appid, alipay.getPrivateKey(), "json", AlipayConfig.Char_Set, alipay.getAlipayKey(), AlipayConfig.Sign_Type); //获得初始化的AlipayClient
+		// 获得初始化的AlipayClient
+		AlipayConfig alipay = new AlipayConfig( appid );
+		AlipayClient aClient = new DefaultAlipayClient(alipay.getUrl(), alipay.appid, 
+				alipay.getPrivateKey(), "json", AlipayConfig.CAHR_SET, 
+				alipay.getAlipayKey(), AlipayConfig.Sign_Type); 
+		
 	    AlipayTradePagePayRequest aRequest = new AlipayTradePagePayRequest(); // 创建API对应的request
-	    aRequest.setNotifyUrl(alipay.getNotifyUrl(requestMap.get(afterPaySuccess))); // 在公共参数中设置回跳和通知地址
-	    aRequest.setReturnUrl(requestMap.get("return_url"));
-	    String bizcontent = EasyUtils.obj2Json(requestMap);
-	    aRequest.setBizContent(bizcontent); // 填充业务参数
+		aRequest.setNotifyUrl(alipay.getNotifyUrl(_afterPaySuccess)); // 在公共参数中设置回跳和通知地址
+		aRequest.setReturnUrl(return_url);
+	    aRequest.setBizContent( EasyUtils.obj2Json(requestMap) ); // 填充业务参数
  
 	    String form = aClient.pageExecute(aRequest).getBody(); // 调用SDK生成表单
 	    
-	    response.setContentType("text/html;charset=" + AlipayConfig.Char_Set);
+	    response.setContentType("text/html;charset=" + AlipayConfig.CAHR_SET);
 	    response.getWriter().write(form); // 直接将完整的表单html输出到页面
 	    response.getWriter().flush();
 	    response.getWriter().close();
@@ -60,42 +67,40 @@ public class AlipayAPI {
 	
 	/**
 	 * 下单查询
-	 * appid 应用编号
-	 * out_trade_no 商户订单号
-	 * @throws IOException
+	 * 	appid 应用编号
+	 * 	out_trade_no 商户订单号
 	 */
+	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/query")
 	@ResponseBody
-	public void query(HttpServletRequest request, HttpServletResponse response) throws AlipayApiException, IOException {
+	public void query(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		
         Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
-		AlipayConfig alipay = new AlipayConfig( requestMap.remove("appid") );
+		String appid = requestMap.remove("appid");
 		
-		AlipayClient aClient = new DefaultAlipayClient(alipay.getUrl(), alipay.appid, alipay.getPrivateKey(),
-				"json", AlipayConfig.Char_Set, alipay.getAlipayKey(), AlipayConfig.Sign_Type); // 获得初始化的AlipayClient
+		// 获得初始化的AlipayClient
+		AlipayConfig alipay = new AlipayConfig( appid );
+		AlipayClient aClient = new DefaultAlipayClient(alipay.getUrl(), alipay.appid, 
+				alipay.getPrivateKey(), "json", AlipayConfig.CAHR_SET, 
+				alipay.getAlipayKey(), AlipayConfig.Sign_Type); 
+		
 	    AlipayTradeQueryRequest aRequest = new AlipayTradeQueryRequest(); // 创建API对应的request
-	    
-        String bizcontent = EasyUtils.obj2Json(requestMap);
-	    aRequest.setBizContent(bizcontent);
+	    aRequest.setBizContent( EasyUtils.obj2Json(requestMap) );
 	    
 	    try {
 			AlipayTradeQueryResponse ret = aClient.execute(aRequest);
-			response.setContentType("text/plain;charset=UTF-8");
-			
-			@SuppressWarnings("unchecked")
 			Map<Object, Object> map = new ObjectMapper().readValue(ret.getBody(), Map.class);
-			
-			@SuppressWarnings("unchecked")
 			Map<Object, Object> trade_map = (Map<Object, Object>) map.get("alipay_trade_query_response");
 			
+			String msg;
 			if("10000".equals(trade_map.get("code")) && "TRADE_SUCCESS".equals(trade_map.get("trade_status"))){
-				
-				response.getWriter().println("{\"code\": \"success\", \"data\": \"支付成功\"}");
-				
+				msg = "{\"code\": \"success\", \"data\": \"支付成功\"}";
+			} else{
+				msg = "{\"code\": \"fail\", \"errorMsg\": \"" + trade_map.get("msg") + "\"}";
 			}
-			else{
-				response.getWriter().println("{\"code\": \"fail\", \"errorMsg\": \"" + trade_map.get("msg") + "\"}");
-			}
+			
+			response.setContentType("text/plain;charset=UTF-8");
+			response.getWriter().println(msg);
 			
 		} catch (AlipayApiException e) {
 			throw new BusinessException(e.getMessage(), e);

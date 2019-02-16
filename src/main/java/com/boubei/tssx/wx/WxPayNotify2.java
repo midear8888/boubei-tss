@@ -32,10 +32,9 @@ public class WxPayNotify2 extends HttpServlet {
 
 		System.out.println("wx access, out_trade_no = " + out_trade_no);
 		
-		if (!EasyUtils.isNullOrEmpty(iAfterPayBean)) {
-			AfterPayService afterPayService = (AfterPayService) Global.getBean(iAfterPayBean);
-			afterPayService.handle(out_trade_no, receipt_amount, "self", "微信", null);
-		}
+		iAfterPayBean = (String) EasyUtils.checkNull(iAfterPayBean, "CloudService");
+		AfterPayService afterPayService = (AfterPayService) Global.getBean(iAfterPayBean);
+		afterPayService.handle(out_trade_no, receipt_amount, "self", "微信", null);
 
 	}
 }

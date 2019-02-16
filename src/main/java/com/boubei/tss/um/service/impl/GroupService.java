@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import com.boubei.tss.EX;
 import com.boubei.tss.framework.exception.BusinessException;
+import com.boubei.tss.framework.sso.Anonymous;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.modules.cloud.entity.ModuleDef;
 import com.boubei.tss.modules.param.ParamConstants;
@@ -70,7 +71,8 @@ public class GroupService implements IGroupService {
          * （注：只适合定价为0的免费模块，付费的需要域管理员通过使用转授策略把购买的模块角色赋予域用户）
          */
         String hql = "select o from ModuleDef o, ModuleUser mu where mu.moduleId = o.id and mu.userId = ? and o.status in ('opened') ";
-        List<ModuleDef> modules = (List<ModuleDef>) roleDao.getEntities(hql, Environment.getUserId());
+        Long userId = (Long) EasyUtils.checkNull(Environment.getUserId(), Anonymous._ID);
+		List<ModuleDef> modules = (List<ModuleDef>) roleDao.getEntities(hql, userId);
         for(ModuleDef module : modules ) {
         	Double price = EasyUtils.obj2Double(module.getPrice());
 			if( price > 0 ) continue;
