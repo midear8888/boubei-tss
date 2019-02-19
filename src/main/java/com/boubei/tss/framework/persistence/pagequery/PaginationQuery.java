@@ -83,17 +83,13 @@ public abstract class PaginationQuery {
         page.setTotalRows(getTotalRows(queryQl, properties));
         
         // 获取当前页数据记录集
-        int firstResult = page.getFirstResult();
-        if (firstResult >= 0) {
-            Query query = createQuery(queryQl.replace("order by 1", ""));
-            query.setFirstResult(firstResult);
-            query.setMaxResults(page.getPageSize());
-            
-            // 为查询语句设置相应的参数
-            setProperties4Query(query, properties);
-            
-            page.setItems( query.getResultList() );
-        }
+        Query query = createQuery(queryQl.replace("order by 1", ""));
+        query.setFirstResult(page.getFirstResult());
+        query.setMaxResults(page.getPageSize());
+        
+        // 为查询语句设置相应的参数
+        setProperties4Query(query, properties);
+        page.setItems( query.getResultList() );
 
         return page;
     }

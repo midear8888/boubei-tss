@@ -808,8 +808,9 @@ public abstract class _Database {
 				continue;
 			}
 			
-			// Admin 可以查询其它域下的数据, 用户也可以查看本域下已逻辑删除的数据（BB@--）
-			if( "domain".equals(key) && (Environment.isAdmin() || valueStr.startsWith(Environment.getDomainOrign() + deletedTag)) ) { 
+			// Admin或匿名可浏览的表 可以查询指定域下的数据, 用户也可以查看本域下已逻辑删除的数据（BB@--）
+			String _deletedTag = Environment.getDomainOrign() + deletedTag;
+			if( "domain".equals(key) && (Environment.isAdmin() || anonymousVisiable || valueStr.startsWith(_deletedTag)) ) { 
 				condition += " and domain = ? ";
 				paramsMap.put(paramsMap.size() + 1, valueStr);
 				pointedDomain = true;

@@ -51,6 +51,7 @@ import com.boubei.tss.framework.Config;
 import com.boubei.tss.framework.SecurityUtil;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.exception.ExceptionEncoder;
+import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.persistence.pagequery.PageInfo;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.web.display.grid.DefaultGridNode;
@@ -78,6 +79,7 @@ public class _Recorder extends ProgressActionSupport {
 	@Autowired RecordService recordService;
 	@Autowired WFService wfService;
 	@Autowired ILoginService loginSerivce;
+	@Autowired ICommonService commService;
 
 	_Database getDB(Long recordId, String... permitOptions) {
 		// 检测当前用户对当前录入表是否有指定的操作权限
@@ -952,8 +954,7 @@ public class _Recorder extends ProgressActionSupport {
 	
 	// for 不支持method=DELETE的客户端，微信小程序等
 	@RequestMapping(value = "/attach/del/{id}", method = RequestMethod.POST)
-	public void deleteAttach4WX(HttpServletRequest request, HttpServletResponse response, 
-			@PathVariable("id") Long id) {
+	public void deleteAttach4WX(HttpServletRequest request, HttpServletResponse response, @PathVariable("id") Long id) {
 		deleteAttach(request, response, id);
 	}
 
@@ -980,6 +981,32 @@ public class _Recorder extends ProgressActionSupport {
 		String rcName = record.getName();
 		AccessLogRecorder.outputAccessLog("record-" + record.getId(), "下载附件", rcName + "_" + id, new HashMap<String, String>(),
 				System.currentTimeMillis());
+	}
+	
+	@RequestMapping(value = "/attach/top/{id}", method = RequestMethod.POST)
+	@ResponseBody
+	public RecordAttach setTop(@PathVariable("id") Long id) {
+		RecordAttach attach = recordService.getAttach(id);
+		Long recordId = attach.getRecordId();
+		
+		// 检查用户对当前附件所属记录是否有编辑权限
+		Long itemId = attach.getItemId();
+		checkRowEditable(recordId, itemId);
+		
+		attach.setSeqNo(1);
+		commService.update(attach);
+		
+		List<?> list = recordService.getAttachList(recordId, itemId);
+		int index = 2;
+		for( Object obj : list ) {
+			RecordAttach _attach = (RecordAttach) obj;
+			if( !_attach.getId().equals(id) ) {
+				_attach.setSeqNo(index++);
+				commService.update(_attach);
+			}
+		}
+		
+		return attach;
 	}
 
 	/************************************* check permissions：安全级别 >= 6 才启用 **************************************/

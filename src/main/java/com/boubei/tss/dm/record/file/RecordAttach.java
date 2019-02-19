@@ -179,6 +179,7 @@ public class RecordAttach implements IEntity, IGridNode {
 		map.put("uploadUser", this.uploadUser);
 		map.put("url", this.getDownloadUrl());
 		map.put("_url", "<a href='" + this.getDownloadUrl() + "' target='_blank'>查看</a>");
+		map.put("topOpt", "<a href='javascript:void(0)' onclick='setTop(" + this.getPK() + ")'>置顶</a>");
 		map.put("delOpt", "<a href='javascript:void(0)' onclick='delAttach(" + this.getPK() + ")'>删除</a>");
 		map.put("hitCount", this.getHitCount());
 		return map;

@@ -27,7 +27,7 @@ import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.MathUtil;
 
-public class AliyunSMS extends AbstractSMS{
+public class AliyunSMS extends AbstractSMS {
 	
 	private Logger log = Logger.getLogger(this.getClass());
  
@@ -49,13 +49,7 @@ public class AliyunSMS extends AbstractSMS{
     	return (AliyunSMS) cacheItem.getValue();
     }
     
-    private String getConfig(String code, String defaultVal) {
-    	String val 	= (String) Environment.getDomainInfo("domain_" + code); 
-        val = (String) EasyUtils.checkNull(val, ParamConfig.getAttribute(code, defaultVal) ); 
-        return val;
-    }
-    
-    private AliyunSMS() {
+    public AliyunSMS() {
     	// 可自助调整超时时间
         System.setProperty("sun.net.client.defaultConnectTimeout", "10000");
         System.setProperty("sun.net.client.defaultReadTimeout", "10000");
@@ -78,6 +72,11 @@ public class AliyunSMS extends AbstractSMS{
         commService = Global.getCommonService();
     }
     
+    private String getConfig(String code, String defaultVal) {
+    	String val 	= (String) Environment.getDomainInfo("domain_" + code); 
+        val = (String) EasyUtils.checkNull(val, ParamConfig.getAttribute(code, defaultVal) ); 
+        return val;
+    }
    
     /**
      * 按照短信模板发送短信
@@ -130,8 +129,6 @@ public class AliyunSMS extends AbstractSMS{
         return ssr;
     }
     
-   
-    
     // 发送随机数验证码
     public SendSmsResponse sendRandomNum(String phone) {
     	int randomKey = MathUtil.randomInt(899999) + 100000;
@@ -145,8 +142,6 @@ public class AliyunSMS extends AbstractSMS{
 		
 		return ssr;
     }
-    
-   
     
     public QuerySendDetailsResponse querySendDetails(String phone, String bizId) throws ClientException {
         QuerySendDetailsRequest request = new QuerySendDetailsRequest();

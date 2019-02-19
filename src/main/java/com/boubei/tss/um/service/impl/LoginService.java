@@ -253,14 +253,19 @@ public class LoginService implements ILoginService {
  
     public List<OperatorDTO> getUsersByRoleId(Long roleId) {
     	String domain = Environment.getDomainOrign();
-        String hql = "select distinct u from ViewRoleUser ru, User u, GroupUser gu, Group g" +
+        String hql = "select distinct u, g.decode from ViewRoleUser ru, User u, GroupUser gu, Group g" +
                 " where ru.id.userId = u.id and ru.id.roleId = ? " +
                 " 	and u.id = gu.userId and gu.groupId = g.id and g.groupType = 1 " +
                 "  and g.domain " + (domain != null ? " = '"+ domain + "'" : " is null" ) +
-                " order by u.id desc ";
+                " order by g.decode desc, u.id desc ";
         
-		List<User> data = (List<User>) groupDao.getEntities( hql, roleId);
-        return translateUserList2DTO(data);
+		List<?> data = (List<User>) groupDao.getEntities( hql, roleId);
+		List<User> users = new ArrayList<User>();
+		for(Object obj : data) {
+			users.add((User) ((Object[])obj)[0]);
+		}
+		
+        return translateUserList2DTO(users);
     }
     
     public List<?> getUsersByDomain(String domain, String field, Long logonUserId) {

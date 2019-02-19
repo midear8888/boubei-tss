@@ -219,15 +219,14 @@ public class WFServiceImpl implements WFService {
 		
 		for(OperatorDTO dto : list) {
 			String userCode = dto.getLoginName();
-			
+			// 剔除域管理员账号
 			if( domainUsers.contains(userCode) ) continue;
 			
-			// 剔除域管理员账号
 			result.add( new String[]{ userCode, dto.getUserName()} );
 			
 			// 只取一个同类角色的用户作为审批人，比如部门经理
 			if( justOne ) {
-				// 如果用户拥有此角色且其所在组为提交人所在组（或父组），则优先使用
+				// 如果用户拥有此角色且其所在组为提交人所在组（或父组，优先用子组里的），则优先使用
 				List<Object[]> fatherGroups = loginSerivce.getGroupsByUserId(dto.getId());
 				if( fatherGroups.size() > 0 ) {
 					Object[] lastGroup = fatherGroups.get( fatherGroups.size() - 1 );

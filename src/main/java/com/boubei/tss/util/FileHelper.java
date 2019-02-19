@@ -702,6 +702,7 @@ public class FileHelper {
 				fileExt = "jpeg"; 
 	        }
 			response.setContentType("image/" + fileExt); 
+			response.setHeader("Cache-control", "max-age=3600");
 		}
 		else if(fileExt.equals("pdf")) {
 			response.setContentType("application/pdf"); 

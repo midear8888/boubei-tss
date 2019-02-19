@@ -17,11 +17,13 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 
+import com.boubei.tss.PX;
 import com.boubei.tss.dm.record.RecordService;
 import com.boubei.tss.dm.report.Report;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.web.servlet.AfterUpload;
+import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
 import com.boubei.tss.util.Imager;
@@ -35,8 +37,12 @@ public class CreateAttach implements AfterUpload {
 	public static int getAttachType(String filepath) {
 		int type;
 		if( FileHelper.isImage(filepath) ) {
-			// 对超过1M的图片进行压缩
-			try { Imager.zoomImage(filepath, 1024); } catch (Exception e) { }
+			// 对超过MAX_PIC_SIZE(默认1M)的图片进行压缩
+			try { 
+				int maxPicSize = Integer.parseInt( ParamManager.getValue(PX.MAX_PIC_SIZE, "1024") );
+				Imager.zoomImage(filepath, maxPicSize); 
+			} 
+			catch (Exception e) { }
 			
 			type = RecordAttach.ATTACH_TYPE_PIC;
 		} else {

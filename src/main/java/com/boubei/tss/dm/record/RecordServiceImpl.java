@@ -203,7 +203,7 @@ public class RecordServiceImpl implements RecordService {
 	}
 
 	public List<?> getAttachList(Long recordId, Long itemId) {
-		String hql = "from RecordAttach o where o.recordId = ? and o.itemId = ?";
+		String hql = "from RecordAttach o where o.recordId = ? and o.itemId = ? order by seqNo";
 		return recordDao.getEntities(hql, recordId, itemId);
 	}
 

@@ -67,10 +67,12 @@ $(function() {
 
 URL_ATTACH_LIST   = AUTH_PATH + "xdata/attach/xml/";
 URL_ATTACH_DELETE = AUTH_PATH + "xdata/attach/";
+URL_ATTACH_SETTOP = AUTH_PATH + "xdata/attach/top/";
 
 if( IS_TEST ) {
     URL_ATTACH_LIST   = "data/record_attach_list.xml?";
     URL_ATTACH_DELETE = "data/_success.xml?";
+    URL_ATTACH_SETTOP = "data/_success.xml?";
 }
 
 function manageAttach(lineId) {       
@@ -125,6 +127,7 @@ function addAttach(id, type, name, url, uploadUser) {
         "name": name, 
         "url": url, 
         "_url": "<a href='" + url + "' target='_blank'>查看</a>", 
+        "topOpt": "<a href='javascript:void(0)' onclick='setTop(" + id + ")'>置顶</a>", 
         "delOpt": "<a href='javascript:void(0)' onclick='delAttach(" + id + ")'>删除</a>", 
         "uploadUser": uploadUser,
         "uploadDate": $.now(true),
@@ -144,6 +147,14 @@ function delAttach() {
             }
         });
     });
+}
+
+function setTop(attachId) {
+    tssJS.post(URL_ATTACH_SETTOP + attachId, {}, function(attach) {
+            manageAttach(attach.itemId, "row");
+            tssJS.showWaitingLayer(); // 继续遮罩
+        }
+    );
 }
 
 </SCRIPT>

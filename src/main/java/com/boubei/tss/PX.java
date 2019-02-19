@@ -114,4 +114,7 @@ public interface PX {
 	/** 导入XLSX文件大小上限, 单位K */
 	static String MAX_XLSX_SIZE  = "MAX_XLSX_SIZE";
 	
+	/** 导入图片文件大小上限，超出则进行压缩, 单位K */
+	static String MAX_PIC_SIZE  = "MAX_PIC_SIZE";
+	
 }

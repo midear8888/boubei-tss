@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.boubei.tss.util.EasyUtils;
+
 /**
  * 分页信息结果
  */
@@ -36,7 +38,7 @@ public class PageInfo {
 
     /** 获取记录集 */
     public List<?> getItems() {
-        return items == null ? new ArrayList<Object>() : items;
+        return  (List<?>) EasyUtils.checkNull(items, new ArrayList<Object>());
     }
 
     /** 设置记录集 */
@@ -59,8 +61,7 @@ public class PageInfo {
 		if (  pageNum <= 0 ) {
 			return 1;
 		}  
-		int totalPages = getTotalPages();
-		return totalPages < pageNum ? totalPages : pageNum;
+		return pageNum;
 	}
     
     /**

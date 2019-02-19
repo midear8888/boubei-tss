@@ -59,7 +59,7 @@ public class OperatorDTO implements IPWDOperator, Serializable {
     }
     
     public String toString() {
-    	return id + ", " + loginName + ", " + userName;
+    	return "(" + id + ", " + loginName + ", " + userName + ")";
     }
 
     /**
