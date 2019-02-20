@@ -36,8 +36,12 @@ public class MessageService implements IMessageService {
 	@Autowired ILoginService loginService;
 	@Autowired private ICommonDao commonDao;
 	@Autowired private IGroupDao groupDao;
- 
+	
 	public void sendMessage(String title, String content, String receivers){
+		sendMessage(title, content, receivers, "提醒", "低");
+	}
+ 
+	public void sendMessage(String title, String content, String receivers, String category, String level){
 		
 		if( EasyUtils.isNullOrEmpty(receivers) ) return;
     	
@@ -59,6 +63,8 @@ public class MessageService implements IMessageService {
 			temp.setReceiver(receiverId);
 			temp.setTitle( title );
 			temp.setContent( content );
+			temp.setCategory(category);
+			temp.setLevel(level);
 			
 			temp.setSenderId(Environment.getUserId());
 			temp.setSender(Environment.getUserName());

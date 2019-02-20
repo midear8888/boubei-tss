@@ -50,6 +50,9 @@ public class Message implements IEntity, IGridNode {
 	
 	private Date   sendTime;    // 发送时间
 	private Date   readTime;    // 读取时间
+	
+	private String category;   // 消息分类
+	private String level;      // 重要等级
  
 	public String toString() {
 		return WFUtil.toString(this);
@@ -140,6 +143,8 @@ public class Message implements IEntity, IGridNode {
 		map.put("status", readed() ? 1 : 0);
 		map.put("sender", sender);
 		map.put("senderId", senderId);
+		map.put("category", this.getCategory());
+		map.put("level", this.getLevel());
 		map.put("sendTime", this.sendTime);
 		map.put("opts", "<a href='javascript:void(0)' onclick='showMsgInfo("+this.id+")'>查看</a>&nbsp;/&nbsp;" +
 				"<a href='javascript:void(0)' onclick='replyMsg("+this.id+")'>回复</a>&nbsp;/&nbsp;" +
@@ -150,5 +155,21 @@ public class Message implements IEntity, IGridNode {
 	
 	public boolean readed() {
 		return this.readTime != null;
+	}
+
+	public String getCategory() {
+		return category;
+	}
+
+	public void setCategory(String category) {
+		this.category = category;
+	}
+
+	public String getLevel() {
+		return level;
+	}
+
+	public void setLevel(String level) {
+		this.level = level;
 	}
 }

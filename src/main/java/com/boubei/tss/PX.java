@@ -16,6 +16,7 @@ package com.boubei.tss;
  * subTitle = Be your own data hero  登录页小标题
  * index_logo = logo-scm.png   LOGO路径
  * mobile_menu = 72    移动端菜单组ID
+ * domain_page 默认域管理员登录后首页， 初次注册后登录可强制进入domain.html：http://ip/tss/bi.html?domain_page=domain.html
  */
 public interface PX {
 	

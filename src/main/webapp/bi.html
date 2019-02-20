@@ -251,6 +251,12 @@ function openLevelOne(group, firstTime) {
     }
 }
 
+// 设置默认域管理员登录后首页， 初次注册后登录可强制进入domain.html：http://ip/tss/bi.html?domain_page=domain.html
+var domain_page = tssJS.Query.get("domain_page");
+!domain_page && getParam("domain_page", function(result) {
+    domain_page = result;
+});
+
 </script>
 
 </head>

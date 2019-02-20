@@ -83,7 +83,8 @@ if( _default ) {
 } 
 else {
 	var roles = parent.userHas[1];
-	_default = ( group == "-1" || !(roles.contains(-8) || roles.contains(-9) || roles.contains(-1)) ) ? "" : "domain.html";
+	var domain_page = parent.domain_page || "domain.html";
+	_default = ( group == "-1" || !(roles.contains(-8) || roles.contains(-9) || roles.contains(-1)) ) ? "" : domain_page;
 }
 
 function resourceUrl(resource) {

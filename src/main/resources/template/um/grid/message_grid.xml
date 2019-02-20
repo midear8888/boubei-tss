@@ -4,8 +4,10 @@
 		<column name="id" display="none"/>
 		<column name="_title" display="none"/>
 		<column name="senderId" display="none"/>
-		<column name="title"    caption="标题"  width="200px" showTitle="false"/>
-		<column name="content"  caption="内容"  width="400px" showTitle="false"/>
+		<column name="title"    caption="标题"  width="180px" showTitle="false"/>
+		<column name="content"  caption="内容"  width="300px" showTitle="false"/>
+		<column name="category" caption="消息分类" width="60px"/>
+		<column name="level"    caption="重要等级" width="60px"/>
 		<column name="status"   caption="是否已阅" values="1|0" texts="已阅|未读" width="60px"/>
 		<column name="sender"   caption="发送人" width="60px"/>
 		<column name="sendTime" caption="发送时间" mode="date" pattern="yyyy-MM-dd HH:mm:ss" width="100px"/>

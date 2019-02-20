@@ -250,13 +250,17 @@ public class LoginService implements ILoginService {
         }
         return translateUserList2DTO(users);
     }
- 
+    
     public List<OperatorDTO> getUsersByRoleId(Long roleId) {
     	String domain = Environment.getDomainOrign();
+    	return getUsersByRoleId(roleId, domain);
+    }
+ 
+    public List<OperatorDTO> getUsersByRoleId(Long roleId, String domain) {
         String hql = "select distinct u, g.decode from ViewRoleUser ru, User u, GroupUser gu, Group g" +
                 " where ru.id.userId = u.id and ru.id.roleId = ? " +
                 " 	and u.id = gu.userId and gu.groupId = g.id and g.groupType = 1 " +
-                "  and g.domain " + (domain != null ? " = '"+ domain + "'" : " is null" ) +
+                "  and g.domain " + (!EasyUtils.isNullOrEmpty(domain) ? " = '"+ domain + "'" : " is null" ) +
                 " order by g.decode desc, u.id desc ";
         
 		List<?> data = (List<User>) groupDao.getEntities( hql, roleId);
@@ -336,8 +340,10 @@ public class LoginService implements ILoginService {
 			String temp = receiver[j];
 			
 			// 判断配置的是否已经是email，如不是，作为loginName处理
-			if(temp.endsWith("@tssRole")) { // 角色
-				List<OperatorDTO> list = getUsersByRoleId(parseID(temp));
+			int index = temp.indexOf("@tssRole");
+			if(index > 0) { // 角色
+				String domain = temp.substring(index + 8).replaceFirst("@", "");
+				List<OperatorDTO> list = getUsersByRoleId(parseID(temp), domain);
 				for(OperatorDTO user : list) {
 					addUserEmail2List(user, emails, ids);
 				}

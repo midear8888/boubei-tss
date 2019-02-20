@@ -23,6 +23,7 @@ public interface IMessageService {
 	 * @param message
 	 */
 	void sendMessage(String title, String content, String receivers);
+	void sendMessage(String title, String content, String receivers, String category, String level);
 	
 	/**
 	 * 查看短消息 并将标志位改成已读

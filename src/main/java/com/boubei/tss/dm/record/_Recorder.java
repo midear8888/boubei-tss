@@ -92,6 +92,8 @@ public class _Recorder extends ProgressActionSupport {
 		}
 
 		_Database _db = recordService.getDB(recordId);
+		
+		// TODO 可按 recordId + domain 进行缓存
 		CacheHelper.getLongCache().putObject("_db_record_" + recordId, _db);
 
 		return _db;

@@ -140,6 +140,7 @@ public interface ILoginService {
      * @return List
      */
     List<OperatorDTO> getUsersByRoleId(Long roleId);
+    List<OperatorDTO> getUsersByRoleId(Long roleId, String domain);
     
     /**
      * 查找指定域下的所有用户，按【域 + 登录用户】进行缓存（开发者域的域名相同，需要用logonUserId来区分是哪个开发者）
@@ -165,7 +166,7 @@ public interface ILoginService {
 	 * 读取用户联系方式：
 	 * 1、ID列表，用于站内消息
 	 * 2、邮件列表，支持loginName，email，角色，用户组，辅助组、参数宏。
-	 * 如： lovejava@163.com,BL01037,-1@tssRole,-2@tssGroup,${JK}
+	 * 如： lovejava@163.com,BL01037,12@tssRole@domain,6@tssGroup,${JK}
 	 * 
      * @param receiverStr
      * @param justID  站内信按用户ID发送

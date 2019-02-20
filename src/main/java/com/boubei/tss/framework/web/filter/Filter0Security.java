@@ -144,7 +144,7 @@ public class Filter0Security implements Filter {
 			rep.sendRedirect(THE_404_URL);
 		} else {
 			rep.setContentType("application/json;charset=UTF-8");
-			rep.getWriter().println("{\"code\": \"TSS-404\", \"errorMsg\": \"资源不存在或限制访问\"}");
+			rep.getWriter().println("{\"code\": \"TSS-404\", \"errorMsg\": \"资源不存在或限制访问, by Filter0\"}");
 		}
 	}
  

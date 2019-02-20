@@ -33,6 +33,8 @@ import com.boubei.tss.modules.param.ParamConstants;
   {'label':'广告位图片','type':'file','code':'ggpic'},
   {'label':'联系方式','code':'contact_info','width':'350','height':'90'}
 ]
+
+ TODO 定制获取logo等字段的接口，for匿名访问
  */
 @Entity
 @Table(name = "x_domain")
