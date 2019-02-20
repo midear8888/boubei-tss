@@ -229,6 +229,10 @@
 		    	xform.updateDataExternal("title", decodeURI(title));    
     			xform.updateData( $1("title") );
 		    }
+
+		    setTimeout(function(){
+		    	$(".ke-container").width("");
+		    }, 500);
         }
         
 		$.ajax({ url: url, method: "GET", onresult: onresult });
@@ -355,7 +359,7 @@
 			<iframe name='fileUpload' style='display:none;'></iframe>
 		</div>
 		<div class="attach">
-			<Grid id="attachGrid"></Grid>
+			<Grid id="attachGrid" height="90"></Grid>
 		</div>
 		<div class="bts">
 			<input type="button" value="保 存" class="tssbutton small blue" id="btSave"/> 

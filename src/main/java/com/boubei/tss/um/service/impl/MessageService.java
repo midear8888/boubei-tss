@@ -28,7 +28,7 @@ import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.um.service.IMessageService;
 import com.boubei.tss.util.EasyUtils;
  
-@Service
+@Service("MessageService")
 public class MessageService implements IMessageService {
 	
 	Logger log = Logger.getLogger(this.getClass());

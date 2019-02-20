@@ -77,8 +77,22 @@ public class WxRegister extends HttpServlet {
         	return;
         }
         if ( WXUtil.isNull(openId) ) {
-        	response.getWriter().println(  WXUtil.returnCode(405) );
-        	return;
+        	String appId = request.getParameter("appId");
+        	String jscode = request.getParameter("jscode");
+        	if( appId != null && jscode != null) {
+        		try {
+            		openId = new WXUtil().getOpenId(jscode, appId);
+            	} catch (Exception e) {
+            		log.error("WXUtil.getOpenId failed: " + e.getMessage());
+            		response.getWriter().println( WXUtil.returnCode(503, e.getMessage()) );
+            		return;
+            	}
+        	}
+        	
+        	if ( WXUtil.isNull(openId) ) {
+        		response.getWriter().println(  WXUtil.returnCode(405) );
+        		return;
+        	}
         }
         
         // 验证码注册（mode=phone）：校验短信验证码smsCode
