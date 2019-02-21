@@ -40,7 +40,8 @@ public class CreateAttach implements AfterUpload {
 			// 对超过MAX_PIC_SIZE(默认1M)的图片进行压缩
 			try { 
 				int maxPicSize = Integer.parseInt( ParamManager.getValue(PX.MAX_PIC_SIZE, "1024") );
-				Imager.zoomImage(filepath, maxPicSize); 
+				Imager.zoomImage(filepath, maxPicSize);
+				Imager.zoomImage(filepath, maxPicSize); // 初次压缩后还是大于maxPicSize则再压缩一次
 			} 
 			catch (Exception e) { }
 			

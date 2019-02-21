@@ -38,7 +38,7 @@ public class MessageService implements IMessageService {
 	@Autowired private IGroupDao groupDao;
 	
 	public void sendMessage(String title, String content, String receivers){
-		sendMessage(title, content, receivers, "提醒", "低");
+		sendMessage(title, content, receivers, Message.CATEGORY_NOTIFY, Message.LEVEL_LIST[0]);
 	}
  
 	public void sendMessage(String title, String content, String receivers, String category, String level){

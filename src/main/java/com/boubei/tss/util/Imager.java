@@ -95,19 +95,19 @@ public class Imager {
     
     /*
      * 图片按比率缩放
-     * size为文件大小, 单位 K
+     * maxPicSize为文件大小上限, 单位 K
      */
-	public static void zoomImage(String src, Integer size) throws Exception {
+	public static void zoomImage(String src, Integer maxPicSize) throws Exception {
 		File srcFile = new File(src);
 		long fileSize = srcFile.length();
 		String subfix = FileHelper.getFileSuffix(srcFile.getName());
 		List<String> list = Arrays.asList( "jpg,jpeg,bmp,gif".split(",") ); // 这些格式支持有损压缩，png等不支持
 		
-		if (fileSize <= size * 1024 || !list.contains(subfix.toLowerCase()))  { // 文件本身已小于size（K）时，不做缩放
+		if (fileSize <= maxPicSize * 1024 || !list.contains(subfix.toLowerCase()))  { // 文件本身已小于size（K）时，不做缩放
 			return;
 		}
 			
-		Double rate = (size * 1024.0) / fileSize; // 获取长宽缩放比例
+		Double rate = (maxPicSize * 1024.0) / fileSize; // 获取长宽缩放比例
 		rate = Math.max(rate, 0.5);
 
 		BufferedImage bufImg = ImageIO.read(srcFile);

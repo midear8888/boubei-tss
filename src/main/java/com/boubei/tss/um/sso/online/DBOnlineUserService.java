@@ -61,6 +61,9 @@ public class DBOnlineUserService implements IOnlineUserManager {
         	
         	ou.setSessionId(sessionId);
         	ou.setLoginCount( EasyUtils.obj2Int(ou.getLoginCount()) + 1 );
+        	ou.setLoginTime(new Date());
+        	ou.setClientIp(Environment.getClientIp());
+        	ou.setOrigin( Environment.getOrigin() );
         }
         
         // 设置域信息（每次登陆domain可能已经发生了变化，重新设置）

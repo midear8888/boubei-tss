@@ -33,6 +33,11 @@ import com.boubei.tss.framework.web.display.grid.IGridNode;
 @Table(name = "um_message")
 @SequenceGenerator(name = "message_sequence", sequenceName = "message_sequence", initialValue = 1000, allocationSize = 10)
 public class Message implements IEntity, IGridNode {
+	
+	public static final String CATEGORY_NOTIFY = "提醒";
+	public static final String CATEGORY_ALERT  = "警告";
+	
+	public static final String[] LEVEL_LIST  = {"低", "中", "高"};
     
 	@Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "message_sequence")

@@ -29,6 +29,7 @@ public class MessageQueryCondition extends MacrocodeQueryCondition {
 	private Date searchTime1;
 	private Date searchTime2;
 	private String category;
+	private String level;
 	private String read;
 
 	public Map<String, Object> getConditionMacrocodes() {
@@ -41,10 +42,12 @@ public class MessageQueryCondition extends MacrocodeQueryCondition {
 		map.put("${searchTime1}", " and o.sendTime >= :searchTime1");
 		map.put("${searchTime2}", " and o.sendTime <= :searchTime2");
 		map.put("${category}", " and o.category = :category");
+		map.put("${level}", " and o.level = :level");
+		
 		if (!EasyUtils.isNullOrEmpty(read)) {
 			if("no".equals(read)){
 				map.put("${read}", " and 'no' = :read and o.readTime is null");
-			}else if("yes".equals(read)){
+			} else {
 				map.put("${read}", " and 'yes' = :read and o.readTime is not null");
 			}
 		}
@@ -115,5 +118,12 @@ public class MessageQueryCondition extends MacrocodeQueryCondition {
 	public void setRead(String read) {
 		this.read = read;
 	}
-	
+
+	public String getLevel() {
+		return level;
+	}
+
+	public void setLevel(String level) {
+		this.level = level;
+	}
 }
