@@ -152,6 +152,19 @@ public class WXUtil {
 		return sessionKey;
 	}
 	
+	public String _getOpenId (String jscode, String appId) throws IOException {
+		String result = getOpenId(jscode, appId);
+		
+		Map<String, String> map = (new ObjectMapper()).readValue(result, Map.class);
+		
+		String openid = map.get("openid");
+		if( openid == null) {
+			throw new BusinessException( map.toString() );
+		}
+		
+		return openid;
+	}
+	
 	public String getAccessToken (String appId) throws HttpException, IOException {
 		
 		String secret = ParamManager.getValue(appId, null);

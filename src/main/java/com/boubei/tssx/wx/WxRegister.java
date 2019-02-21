@@ -80,13 +80,7 @@ public class WxRegister extends HttpServlet {
         	String appId = request.getParameter("appId");
         	String jscode = request.getParameter("jscode");
         	if( appId != null && jscode != null) {
-        		try {
-            		openId = new WXUtil().getOpenId(jscode, appId);
-            	} catch (Exception e) {
-            		log.error("WXUtil.getOpenId failed: " + e.getMessage());
-            		response.getWriter().println( WXUtil.returnCode(503, e.getMessage()) );
-            		return;
-            	}
+        		openId = new WXUtil()._getOpenId(jscode, appId);
         	}
         	
         	if ( WXUtil.isNull(openId) ) {
