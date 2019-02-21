@@ -416,7 +416,7 @@ public class EasyUtils {
 	 * @return
 	 */
 	public static Double eval(String reader, Map<String, ?> params) {
-		if (reader.indexOf("$") > -1) {
+		if (reader.indexOf("<#if") > -1) {
 			reader = fmParse(reader, params);
 		}
 		
