@@ -84,6 +84,15 @@ public class MessageAction extends BaseActionSupport {
         print( new String[]{"MsgList", "PageInfo"}, new Object[]{gridEncoder, pi} );
     }
     
+    @RequestMapping(value = "/list/json/{page}", method = RequestMethod.POST)
+    @ResponseBody
+    public List<?> listMessages2Json(MessageQueryCondition condition, @PathVariable int page) {
+        condition.getPage().setPageNum(page);
+        PageInfo pi = messageService.getInboxList(condition);
+        
+        return pi.getItems();
+    }
+    
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     @ResponseBody
     public Message getMessage(@PathVariable("id") Long id) {

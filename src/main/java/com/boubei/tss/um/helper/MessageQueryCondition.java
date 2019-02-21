@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.boubei.tss.framework.persistence.pagequery.MacrocodeQueryCondition;
+import com.boubei.tss.util.EasyUtils;
 
 /**
  * 站内信查询条件对象
@@ -27,6 +28,8 @@ public class MessageQueryCondition extends MacrocodeQueryCondition {
 	private String content; // 站内信内容
 	private Date searchTime1;
 	private Date searchTime2;
+	private String category;
+	private String read;
 
 	public Map<String, Object> getConditionMacrocodes() {
 		Map<String, Object> map = new HashMap<String, Object>(); // 无需关心域，消息都是按接收人过滤
@@ -37,6 +40,14 @@ public class MessageQueryCondition extends MacrocodeQueryCondition {
 		map.put("${content}", " and o.content like :content");
 		map.put("${searchTime1}", " and o.sendTime >= :searchTime1");
 		map.put("${searchTime2}", " and o.sendTime <= :searchTime2");
+		map.put("${category}", " and o.category = :category");
+		if (!EasyUtils.isNullOrEmpty(read)) {
+			if("no".equals(read)){
+				map.put("${read}", " and 'no' = :read and o.readTime is null");
+			}else if("yes".equals(read)){
+				map.put("${read}", " and 'yes' = :read and o.readTime is not null");
+			}
+		}
 		
 		return map;
 	}
@@ -88,4 +99,21 @@ public class MessageQueryCondition extends MacrocodeQueryCondition {
 	public void setReceiverId(Long receiverId) {
 		this.receiverId = receiverId;
 	}
+
+	public String getCategory() {
+		return category;
+	}
+
+	public void setCategory(String category) {
+		this.category = category;
+	}
+
+	public String getRead() {
+		return read;
+	}
+
+	public void setRead(String read) {
+		this.read = read;
+	}
+	
 }
