@@ -208,7 +208,7 @@ public class CloudServiceImpl implements CloudService, AfterPayService{
         user.setTelephone(mobile);
         user.setBelongUserId(mo.getInvite_user_id());
         user.setUserName(mobile);
-        user.setOrignPassword(map.get("password"));
+        user.setPassword(map.get("password"));
         try {
         	userService.regUser(user, true);
         } 
