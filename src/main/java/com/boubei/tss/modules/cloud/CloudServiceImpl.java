@@ -68,6 +68,7 @@ public class CloudServiceImpl implements CloudService, AfterPayService{
 		sa.setName(def.getId() + "_" + def.getModule() + "_test"); // name: 模块ID_模块名称_购买序号
 		sa.setStartDate(new Date());
 		sa.setOwnerId( Environment.getUserId() );
+		sa.setBuyerId( Environment.getUserId() );
 		
 		Calendar calendar = new GregorianCalendar();
         Object try_days = EasyUtils.checkNull(def.getTry_days(), 31);
