@@ -23,10 +23,7 @@ import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.MathUtil;
 
 public abstract class AbstractProduct {
-	
-	
-	
-	
+
 	protected static ICommonDao commonDao = (ICommonDao) Global.getBean("CommonDao");
 	protected IUserService userService = (IUserService) Global.getBean("UserService");
 	protected CloudService cloudService = (CloudService) Global.getBean("CloudService");
@@ -40,26 +37,25 @@ public abstract class AbstractProduct {
 	public String payer;
 	public User user;
 
-	
 	public static AbstractProduct createBean(String out_trade_no) {
 		String cloudOrderId = out_trade_no.split("-")[1];
 		CloudOrder co = (CloudOrder) commonDao.getEntity(CloudOrder.class, EasyUtils.obj2Long(cloudOrderId));
 		return createBean(co);
 	}
-	
+
 	public static AbstractProduct createBean(CloudOrder co) {
 		AbstractProduct product = (AbstractProduct) BeanUtil.newInstanceByName(co.getType());
 		product.co = co;
-		if(co.getModule_id() != null) {
+		if (co.getModule_id() != null) {
 			product.md = (ModuleDef) commonDao.getEntity(ModuleDef.class, co.getModule_id());
 		}
 		return product;
 	}
-	
+
 	public void beforeOrder(CloudOrder co) {
-		
+
 	}
-	
+
 	/**
 	 * 购买付款后初始化实现
 	 * 
@@ -80,43 +76,43 @@ public abstract class AbstractProduct {
 		if (!CloudOrder.NEW.equals(co.getStatus())) {
 			throw new BusinessException("订单" + co.getStatus());
 		}
-		
+
 		co.setMoney_real(real_money);
-		if ( real_money < co.getMoney_cal() ) {
-			co.setRemark( "订单金额不符" );
+		if (real_money < co.getMoney_cal()) {
+			co.setRemark("订单金额不符");
 			co.setStatus(CloudOrder.PART_PAYED);
-		} 
-		else {
+		} else {
 			co.setStatus(CloudOrder.PAYED);
-			
+
 			handle();
 			init();
 		}
-		
+
 		co.setPay_date(new Date());
 		commonDao.update(co);
 	}
-	
+
 	protected abstract void handle();
-	
-	protected void init() { }
-	
-	public String getName(){
+
+	protected void init() {
+	}
+
+	public String getName() {
 		return md.getModule();
 	}
-	
-	protected String toflowType(){
+
+	protected String toflowType() {
 		return AccountFlow.TYPE0;
 	}
-	
-	protected String toflowRemark(){
+
+	protected String toflowRemark() {
 		return null;
 	}
-	
+
 	protected Account getAccount() {
 		return getAccount(userId);
 	}
-	
+
 	protected Account getAccount(Long userId) {
 		List<?> accounts = commonDao.getEntities(" from Account where belong_user.id = ?", userId);
 		if (accounts.size() > 0) {
@@ -127,7 +123,7 @@ public abstract class AbstractProduct {
 		account.setBalance(0D);
 		account.setBelong_user(userService.getUserById(userId));
 		account = (Account) commonDao.create(account);
-		
+
 		return account;
 	}
 
@@ -142,16 +138,16 @@ public abstract class AbstractProduct {
 		AccountFlow flow = new AccountFlow(account, this, AccountFlow.TYPE1, null);
 		createFlow(account, flow, co.getMoney_real());
 	}
-	
+
 	// 创建扣款流水
 	protected void createBuyFlow(Account account) {
 		AccountFlow flow = new AccountFlow(account, this, this.toflowType(), this.toflowRemark());
 		createFlow(account, flow, -co.getMoney_real());
 	}
-	
+
 	private void createFlow(Account account, AccountFlow flow, Double deltaMoney) {
 		flow.setMoney(deltaMoney);
-		
+
 		Double balance = MathUtil.addDoubles(account.getBalance(), deltaMoney);
 		flow.setBalance(balance);
 		account.setBalance(balance);
@@ -167,7 +163,7 @@ public abstract class AbstractProduct {
 			sa.setName(md.getId() + "_" + md.getModule() + "_" + i); // name=模块ID_模块名称_购买序号
 			sa.setOwnerId(userId);
 			sa.setBuyerId(userId);
-			
+
 			Calendar calendar = new GregorianCalendar();
 			calendar.add(Calendar.MONTH, mouth_num);
 			sa.setEndDate(calendar.getTime());
