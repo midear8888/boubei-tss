@@ -22,6 +22,9 @@ import com.boubei.tss.modules.sn.SerialNOer;
 @SequenceGenerator(name = "account_flow_seq", sequenceName = "account_flow_seq", initialValue = 1, allocationSize = 10)
 public class AccountFlow implements IEntity {
 	
+	public final static String TYPE0 = "系统使用费";
+	public final static String TYPE1 = "充值";
+	
 	public static final String PAYMENT0 = "系统赠送";
 	
 	@Id

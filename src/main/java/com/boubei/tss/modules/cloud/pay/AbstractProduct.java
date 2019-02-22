@@ -24,8 +24,8 @@ import com.boubei.tss.util.MathUtil;
 
 public abstract class AbstractProduct {
 	
-	public final static String PRODUCT_RECHARGE = "充值";
-	public final static String PRODUCT_RENEWALFEE = "续费";
+	
+	
 	
 	protected static ICommonDao commonDao = (ICommonDao) Global.getBean("CommonDao");
 	protected IUserService userService = (IUserService) Global.getBean("UserService");
@@ -101,8 +101,12 @@ public abstract class AbstractProduct {
 	
 	protected void init() { }
 	
-	public String getName() {
+	public String getName(){
 		return md.getModule();
+	}
+	
+	protected String toflowType(){
+		return AccountFlow.TYPE0;
 	}
 	
 	protected String toflowRemark(){
@@ -135,13 +139,13 @@ public abstract class AbstractProduct {
 
 	// 创建充值流水
 	protected void createIncomeFlow(Account account) {
-		AccountFlow flow = new AccountFlow(account, this, PRODUCT_RECHARGE, null);
+		AccountFlow flow = new AccountFlow(account, this, AccountFlow.TYPE1, null);
 		createFlow(account, flow, co.getMoney_real());
 	}
 	
 	// 创建扣款流水
 	protected void createBuyFlow(Account account) {
-		AccountFlow flow = new AccountFlow(account, this, this.getName(), this.toflowRemark());
+		AccountFlow flow = new AccountFlow(account, this, this.toflowType(), this.toflowRemark());
 		createFlow(account, flow, -co.getMoney_real());
 	}
 	
