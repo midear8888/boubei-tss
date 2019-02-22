@@ -204,7 +204,7 @@ public class WxAPI {
 	protected String getDomain(HttpServletRequest request) {
 		Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
 		String domain = requestMap.get("domain");
-		return EasyUtils.obj2String( "0".equals(domain) ? domain : Environment.getDomain() );  // null --> 空字符串
+		return EasyUtils.obj2String( "0".equals(domain) ? domain : Environment.getDomainOrign() );  // null --> 空字符串
 	}
 	
 	protected void createWxCode(HttpServletResponse response, String appId, String url, JSONObject json) throws Exception {
