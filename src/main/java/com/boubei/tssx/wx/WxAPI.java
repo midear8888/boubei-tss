@@ -223,7 +223,7 @@ public class WxAPI {
 		String imgName = appId + "_Q.png";
 		String imgPath = DataExport.getExportPath() + "/" + imgName;
 		WXUtil.save2Image( postMethod.getResponseBodyAsStream(), imgPath );
-		FileHelper.downloadFile(response, imgPath, imgName);
+		FileHelper.downloadFile(response, imgPath, imgName, true);
 	}
 	
 	@RequestMapping("/wftables")

@@ -37,10 +37,15 @@ public class APIServiceImpl implements APIService {
 	
 	@SuppressWarnings("unchecked")
 	public List<String> searchTokes(String uName, String resource, String type) {
-		String hql = " select token from UserToken where user=? and resource=? and type=? and expireTime > ?";
 		Date now = new Date();
+		
+		String hql = " select token from UserToken where user=? and resource=? and type=? and expireTime > ?";
 		List<String> tokens = (List<String>) userDao.getEntities(hql, uName, resource, type, now );
 		tokens.addAll( (List<String>) userDao.getEntities(hql, Anonymous._CODE, resource, type, now ) );
+		
+		/* 专门用于SSO的令牌，一个用户可以有多个（比如一个手机号通过多个小程序登录同一后台，每个小程序的openId都可登录）*/
+		hql = " select token from UserToken where user=? and type='SSO' and expireTime > ?";
+		tokens.addAll( (List<String>) userDao.getEntities(hql, uName, resource, type, now ) );
 		
 		/*
 		 *  把用户的MD5密码也作为令牌，如果和uToken对的上，给予通过（适用于开放数据表链接给第三方用户录入，此时不宜逐个给用户发放令牌）

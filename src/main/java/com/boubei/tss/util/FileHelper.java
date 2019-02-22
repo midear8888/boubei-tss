@@ -689,6 +689,10 @@ public class FileHelper {
 	}
 	
 	public static void downloadFile(HttpServletResponse response, String filePath, String fileName) throws IOException {
+		downloadFile(response, filePath, fileName, false);
+	}
+	
+	public static void downloadFile(HttpServletResponse response, String filePath, String fileName, boolean disableCache) throws IOException {
 		File file = new File(filePath);
 		if(fileName == null) {
 			fileName = file.getName();
@@ -702,7 +706,9 @@ public class FileHelper {
 				fileExt = "jpeg"; 
 	        }
 			response.setContentType("image/" + fileExt); 
-			response.setHeader("Cache-control", "max-age=3600");
+			if( !disableCache ) {
+				response.setHeader("Cache-control", "max-age=3600");
+			}
 		}
 		else if(fileExt.equals("pdf")) {
 			response.setContentType("application/pdf"); 

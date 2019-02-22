@@ -100,22 +100,30 @@ public class CloudServiceImpl implements CloudService, AfterPayService{
 	 * 避免域用户需要重新选择模块才能获取新角色（先【结束试用】，再【我要试用】）
 	 * 注：模块角色减少时，本方法只能去掉域管理员的角色；域管理员也已经把角色授给了其它域成员的话，则无法收回
 	 */
+	@SuppressWarnings("unchecked")
 	public void refreshModuleUserRoles( Long module ) {
-		// 先清除由当前模块产生的域用户对角色关系
-		commonDao.deleteAll( commonDao.getEntities("from RoleUser where moduleId = ?", module) );
-		
-		List<?> domainUserIds = commonDao.getEntities("select userId from ModuleUser where moduleId = ?", module);
+		// 模块被多少域用户购买使用
+		List<Long> userIds = (List<Long>) commonDao.getEntities("select userId from ModuleUser where moduleId = ?", module);
+		List<RoleUser> ruList = (List<RoleUser>) commonDao.getEntities("from RoleUser where moduleId = ?", module);
+		String hql3 = "select id from SubAuthorize where name like ? and buyerId = ?";
 		
 		ModuleDef def = (ModuleDef) commonDao.getEntity(ModuleDef.class, module);
 		for(Long roleId : def.roles()) {
-			for( Object obj : domainUserIds ) {
-				Long domainUserId = EasyUtils.obj2Long(obj);
+			for( Long domainUserId : userIds ) {
 				
-				RoleUser ru  = new RoleUser();
-				ru.setRoleId( roleId );
-				ru.setUserId( domainUserId );
-				ru.setModuleId( module );
-				commonDao.create(ru);
+				// 当前域用户已经获得的模块策略
+				List<Long> strategyIds = (List<Long>) commonDao.getEntities(hql3, module+"_%", domainUserId);
+				for(Long strategyId : strategyIds) {
+					RoleUser ru  = new RoleUser();
+					ru.setRoleId( roleId );
+					ru.setUserId( domainUserId );
+					ru.setModuleId( module );
+					ru.setStrategyId(strategyId);
+					
+					if( !ruList.contains(ru) ) {
+						commonDao.create(ru);
+					}
+				}
 			}
 		}
 	}

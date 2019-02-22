@@ -22,6 +22,8 @@ import com.boubei.tss.um.dao.IUserDao;
 import com.boubei.tss.um.entity.Group;
 import com.boubei.tss.um.entity.GroupUser;
 import com.boubei.tss.um.entity.User;
+import com.boubei.tss.um.entity.UserToken;
+import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tssx.wx.gzh.GZHPhone;
 
@@ -37,6 +39,12 @@ public class WxServiceImpl implements WxService {
 	public User getUserByAuthToken(String authToken) {
 		String sql = "from User where authToken = ? order by id desc";
     	List<?> users = userDao.getEntities(sql, authToken);
+    	if( users.size() > 0 ) {
+    		return (User)users.get(0);
+    	}
+    	
+    	sql = "select u from User u, UserToken ut where u.loginName = ut.user and ut.type = 'SSO' and ut.token = ? order by u.id desc";
+    	users = userDao.getEntities(sql, authToken);
     	return users.size() > 0 ? (User) users.get(0) : null;
 	}
 	
@@ -84,8 +92,22 @@ public class WxServiceImpl implements WxService {
 	}
 
 	public void bindOpenID(User user, String openID) {
-		user.setAuthToken(openID);
-		userDao.update(user);
+		if(user.getAuthToken() == null) {
+			user.setAuthToken(openID);
+			userDao.update(user);
+		} 
+		else {
+			String userCode = user.getLoginName();
+			UserToken ut = new UserToken();
+			ut.setCreator(userCode);
+			ut.setUser(userCode);
+			ut.setToken(openID);
+			ut.setResource("WX_OPEN_ID");
+			ut.setType("SSO");
+			ut.setExpireTime( DateUtil.parse("2099-12-31") );
+			userDao.createObject(ut);
+		}
+		
 	}
 	
 	public User getBelongUser(String belong) {
