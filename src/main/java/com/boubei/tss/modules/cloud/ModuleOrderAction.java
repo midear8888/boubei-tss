@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.boubei.tss.dm.DMUtil;
+import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.modules.cloud.entity.CloudOrder;
@@ -97,10 +98,14 @@ public class ModuleOrderAction {
 	@RequestMapping(value = "/order/payed/{order_no}", method = RequestMethod.POST)
 	@ResponseBody
 	public void payedOrders(@PathVariable String order_no) {
-		AfterPayService afterPayService = (AfterPayService) cloudService;
-		List<?> list = commonService.getList(" from CloudOrder where order_no = ?", order_no);
-		CloudOrder co = (CloudOrder) list.get(0);
-		
-		afterPayService.handle(order_no, co.getMoney_cal(), "admin", "线下", null);
+		if(Environment.isAdmin()){
+			AfterPayService afterPayService = (AfterPayService) cloudService;
+			List<?> list = commonService.getList(" from CloudOrder where order_no = ?", order_no);
+			CloudOrder co = (CloudOrder) list.get(0);
+			
+			afterPayService.handle(order_no, co.getMoney_cal(), "admin", "线下", null);
+		}else{
+			throw new BusinessException("权限不足！");
+		}
 	}
 }
