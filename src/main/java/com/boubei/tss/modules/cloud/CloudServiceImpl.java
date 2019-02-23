@@ -43,103 +43,106 @@ import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
 
 @Service("CloudService")
-public class CloudServiceImpl implements CloudService, AfterPayService{
-	
-	@Autowired ICommonDao commonDao;
-	@Autowired IUserService userService;
-	@Autowired APIService apiService;
-	
+public class CloudServiceImpl implements CloudService, AfterPayService {
+
+	@Autowired
+	ICommonDao commonDao;
+	@Autowired
+	IUserService userService;
+	@Autowired
+	APIService apiService;
+
 	protected Logger log = Logger.getLogger(this.getClass());
-		
-/************************************* cloud module **************************************/
-	
+
+	/************************************* cloud module **************************************/
+
 	public void selectModule(Long user, Long module) {
 		checkIsDomainAdmin();
 		ModuleDef def = (ModuleDef) commonDao.getEntity(ModuleDef.class, module);
-		
+
 		// 创建 ModuleUser映射关系
 		ModuleUser mu = new ModuleUser(user, module);
-		mu.setDomain( Environment.getDomainOrign() );
-		
+		mu.setDomain(Environment.getDomainOrign());
+
 		commonDao.create(mu);
-		
+
 		// 生成一个转授策略
 		SubAuthorize sa = new SubAuthorize();
-		sa.setName(def.getId() + "_" + def.getModule() + "_test"); // name: 模块ID_模块名称_购买序号
+		sa.setName(def.getId() + "_" + def.getModule() + "_test"); // name:
+																	// 模块ID_模块名称_购买序号
 		sa.setStartDate(new Date());
-		sa.setOwnerId( Environment.getUserId() );
-		sa.setBuyerId( Environment.getUserId() );
-		
+		sa.setOwnerId(Environment.getUserId());
+		sa.setBuyerId(Environment.getUserId());
+
 		Calendar calendar = new GregorianCalendar();
-        Object try_days = EasyUtils.checkNull(def.getTry_days(), 31);
+		Object try_days = EasyUtils.checkNull(def.getTry_days(), 31);
 		calendar.add(Calendar.DAY_OF_YEAR, EasyUtils.obj2Int(try_days));
 		sa.setEndDate(calendar.getTime());
 		commonDao.create(sa);
-		
+
 		// 设置转授权限给当前域管理员
-		for(Long roleId : def.roles()) {
-			RoleUser ru  = new RoleUser();
-			ru.setRoleId( roleId );
+		for (Long roleId : def.roles()) {
+			RoleUser ru = new RoleUser();
+			ru.setRoleId(roleId);
 			ru.setUserId(user);
 			ru.setStrategyId(sa.getId());
 			ru.setModuleId(module);
 			commonDao.create(ru);
 		}
 	}
-	
+
 	/**
 	 * 检查当前用户是否为域管理员，只有域管理员可以选择或取消功能模块
 	 */
 	private void checkIsDomainAdmin() {
-		if( !Environment.isDomainUser() ) {
+		if (!Environment.isDomainUser()) {
 			throw new BusinessException(EX.MODULE_1);
 		}
 	}
-	
+
 	/**
 	 * 域用户选择模块后，获得了模块所含的角色；当模块新添加了角色后，自动刷给域用户。
 	 * 避免域用户需要重新选择模块才能获取新角色（先【结束试用】，再【我要试用】）
 	 * 注：模块角色减少时，本方法只能去掉域管理员的角色；域管理员也已经把角色授给了其它域成员的话，则无法收回
 	 */
 	@SuppressWarnings("unchecked")
-	public void refreshModuleUserRoles( Long module ) {
+	public void refreshModuleUserRoles(Long module) {
 		// 模块被多少域用户购买使用
 		List<Long> userIds = (List<Long>) commonDao.getEntities("select userId from ModuleUser where moduleId = ?", module);
 		List<RoleUser> ruList = (List<RoleUser>) commonDao.getEntities("from RoleUser where moduleId = ?", module);
 		String hql3 = "select id from SubAuthorize where name like ? and buyerId = ?";
-		
+
 		ModuleDef def = (ModuleDef) commonDao.getEntity(ModuleDef.class, module);
-		for(Long roleId : def.roles()) {
-			for( Long domainUserId : userIds ) {
-				
+		for (Long roleId : def.roles()) {
+			for (Long domainUserId : userIds) {
+
 				// 当前域用户已经获得的模块策略
-				List<Long> strategyIds = (List<Long>) commonDao.getEntities(hql3, module+"_%", domainUserId);
-				for(Long strategyId : strategyIds) {
-					RoleUser ru  = new RoleUser();
-					ru.setRoleId( roleId );
-					ru.setUserId( domainUserId );
-					ru.setModuleId( module );
+				List<Long> strategyIds = (List<Long>) commonDao.getEntities(hql3, module + "_%", domainUserId);
+				for (Long strategyId : strategyIds) {
+					RoleUser ru = new RoleUser();
+					ru.setRoleId(roleId);
+					ru.setUserId(domainUserId);
+					ru.setModuleId(module);
 					ru.setStrategyId(strategyId);
-					
-					if( !ruList.contains(ru) ) {
+
+					if (!ruList.contains(ru)) {
 						commonDao.create(ru);
 					}
 				}
 			}
 		}
 	}
-	
-	public void unSelectModule( Long user, Long module ) {
+
+	public void unSelectModule(Long user, Long module) {
 		checkIsDomainAdmin();
-		
-		commonDao.deleteAll( commonDao.getEntities("from RoleUser where userId=? and moduleId=?", user, module) );
-		commonDao.deleteAll( commonDao.getEntities("from ModuleUser where userId=? and moduleId=?", user, module) );
+
+		commonDao.deleteAll(commonDao.getEntities("from RoleUser where userId=? and moduleId=?", user, module));
+		commonDao.deleteAll(commonDao.getEntities("from ModuleUser where userId=? and moduleId=?", user, module));
 	}
-	
+
 	public List<?> listSelectedModules(Long user) {
-		String hql = "select o from ModuleDef o, ModuleUser mu " +
-				" where mu.moduleId = o.id and mu.userId = ? and o.status in ('opened', 'closed')" +
-				" order by o.id desc ";
+		String hql = "select o from ModuleDef o, ModuleUser mu " + " where mu.moduleId = o.id and mu.userId = ? and o.status in ('opened', 'closed')"
+				+ " order by o.id desc ";
 		return commonDao.getEntities(hql, user);
 	}
 
@@ -147,108 +150,111 @@ public class CloudServiceImpl implements CloudService, AfterPayService{
 		String hql = "select o from ModuleDef o where o.status in ('opened') order by o.seqno asc, o.id desc ";
 		return commonDao.getEntities(hql);
 	}
-	
-	
-/************************************* cloud order **************************************/
-	
+
+	/************************************* cloud order **************************************/
+
 	@SuppressWarnings("unchecked")
 	public CloudOrder createOrder(CloudOrder co) {
-		Map<String,String> map = new HashMap<>();
-		try {  
-  			map = new ObjectMapper().readValue(co.getParams(), HashMap.class);
-		} 
-		catch (Exception e) { }
-		
-		if( Environment.isAnonymous() ) {
+		Map<String, String> map = new HashMap<>();
+		try {
+			map = new ObjectMapper().readValue(co.getParams(), HashMap.class);
+		} catch (Exception e) {
+		}
+
+		if (Environment.isAnonymous()) {
 			selfRegister(co, map);
 		}
-		
+
 		String userCode = (String) EasyUtils.checkNull(map.get("phone"), Environment.getUserCode());
+		
 		User user = userService.getUserByLoginName(userCode);
-		user.setUserName( (String) EasyUtils.checkNull( map.get("user_name"), user.getUserName() ) );
-    	user.setUdf( (String) EasyUtils.checkNull(map.get("company_name"), user.getUdf() ));
-    	commonDao.update(user);
-    	// 模拟登录
-        apiService.mockLogin(userCode);
-		
+		user.setUserName((String) EasyUtils.checkNull(map.get("user_name"), user.getUserName()));
+		user.setUdf((String) EasyUtils.checkNull(map.get("company_name"), user.getUdf()));
+		commonDao.update(user);
+		// 模拟登录
+		if(Environment.isAnonymous()){
+			apiService.mockLogin(userCode);
+		}
+
 		co.setCreator(userCode);
-		
-		if( EasyUtils.isNullOrEmpty(co.getType()) ){
+
+		if (EasyUtils.isNullOrEmpty(co.getType())) {
 			co.setType(ModuleOrderHandler.class.getName());
 		}
-		
+
 		AbstractProduct product = AbstractProduct.createBean(co);
-				
+
 		product.beforeOrder(co);
-		
+
 		co.setProduct(product.getName());
 		co.setStatus(CloudOrder.NEW);
 		co.setOrder_date(new Date());
 		co = (CloudOrder) commonDao.create(co);
 		co.setOrder_no(co.getOrder_date().getTime() + "-" + co.getId());
-		
-		if(co.getModule_id() != null) {
+
+		if (co.getModule_id() != null) {
 			calMoney(co); // 价格以后台计算为准，防止篡改（同时检查前后台的报价是否一致）
 		}
-		
+
 		return co;
 	}
-	
-	private void selfRegister(CloudOrder mo, Map<String,String> map) {
+
+	private void selfRegister(CloudOrder mo, Map<String, String> map) {
 		// 校验短信验证码smsCode
-    	String smsCode = map.get("smsCode");
-    	String mobile  = map.get("phone");
-    	if( EasyUtils.isNullOrEmpty(smsCode) || !AbstractSMS.create().checkCode(mobile, smsCode) ) {
-    		throw new BusinessException("短信验证码校验失败，请重新输入。");
-    	}
-        
-        // 注册账号
-        User user = new User();
-        user.setLoginName(mobile);
-        user.setTelephone(mobile);
-        user.setBelongUserId(mo.getInvite_user_id());
-        user.setUserName(mobile);
-        user.setPassword(map.get("password"));
-        try {
-        	userService.regUser(user, true);
-        } 
-        catch(Exception e) {
-        	// 手机号已经注册过了
-        }
-	}
-	
-	public CloudOrder calMoney(CloudOrder mo) {
-		ModuleDef md = (ModuleDef) commonDao.getEntity(ModuleDef.class, mo.getModule_id());
-		
-		mo.setPrice( md.getPrice() );
-		
-		Map<String, Object> params = BeanUtil.getProperties(mo);
-		Double money = EasyUtils.eval(md.getPrice_def(), params);
-		
-		if(mo.getRebate() != null ) {
-			money *= mo.getRebate();
+		String smsCode = map.get("smsCode");
+		String mobile = map.get("phone");
+		if (EasyUtils.isNullOrEmpty(smsCode) || !AbstractSMS.create().checkCode(mobile, smsCode)) {
+			throw new BusinessException("短信验证码校验失败，请重新输入。");
 		}
-		if(mo.getDerate() != null) {
-			money -= mo.getDerate();
+
+		List<?> users = commonDao.getEntities(" from User where ? in (loginName, telephone, email)", mobile);
+
+		if (users.size() > 0) {
+			return;
 		}
-		
-		mo.setMoney_cal( (double)Math.round(money*100) / 100 );
-		
-		return mo;
+
+		// 注册账号
+		User user = new User();
+		user.setLoginName(mobile);
+		user.setTelephone(mobile);
+		user.setBelongUserId(mo.getInvite_user_id());
+		user.setUserName(mobile);
+		user.setPassword(map.get("password"));
+		userService.regUser(user, true);
 	}
 
-	public void handle( String order_no, Double real_money, String payer,String payType, Map<?, ?> trade_map) {
+	public CloudOrder calMoney(CloudOrder co) {
+		ModuleDef md = (ModuleDef) commonDao.getEntity(ModuleDef.class, co.getModule_id());
+
+		co.setPrice(md.getPrice());
+
+		Map<String, Object> params = BeanUtil.getProperties(co);
+		Double money = EasyUtils.eval(md.getPrice_def(), params);
+
+		if (co.getRebate() != null) {
+			money *= co.getRebate();
+		}
+		if (co.getDerate() != null) {
+			money -= co.getDerate();
+		}
+
+		co.setMoney_cal((double) Math.round(money * 100) / 100);
+
+		return co;
+	}
+
+	public void handle(String order_no, Double real_money, String payer, String payType, Map<?, ?> trade_map) {
 		AbstractProduct iAfterPay = AbstractProduct.createBean(order_no);
 		iAfterPay.afterPay(trade_map, real_money, payer, payType);
 	}
-	
+
 	public void setSubAuthorizeRoles(Long userId, String roleIds, Long strategyId) {
 		SubAuthorize sa = (SubAuthorize) commonDao.getEntity(SubAuthorize.class, strategyId);
 		sa.setOwnerId(userId);
 		commonDao.update(sa);
-		
+
 		List<?> roleIDList = Arrays.asList(roleIds.split(","));
-			
+
 		@SuppressWarnings("unchecked")
 		List<RoleUser> rus = (List<RoleUser>) commonDao.getEntities(" from RoleUser where strategyId = ?", strategyId);
 		for (RoleUser ru : rus) {

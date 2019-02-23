@@ -78,6 +78,9 @@ public class ModuleOrderAction {
 	@RequestMapping(value = "/order/list", method = RequestMethod.GET)
 	@ResponseBody
 	public List<?> listOrders() {
+		if(Environment.isAdmin()){
+			return commonService.getList(" from CloudOrder order by id desc");
+		}
 		String hql = "from CloudOrder where creator = ? order by id desc";
 		return commonService.getList(hql, Environment.getUserCode());
 	}
