@@ -11,10 +11,6 @@ public class RechargeOrderHandler extends AbstractProduct {
 	public String getName(){
 		return AccountFlow.TYPE1;
 	}
-	
-	protected String toflowType() {
-		return AccountFlow.TYPE1;
-	}
 
 	protected void handle() {
 		Account account = getAccount();

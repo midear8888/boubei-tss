@@ -17,6 +17,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
@@ -68,6 +69,8 @@ public class CloudOrder extends ARecordTable {
 	private Double money_real; // 实付金额
 	private Double rebate;     // 折扣
 	private Double derate;     // 减免
+	
+	@Lob
 	private String params;     // 更多参数
 	
 	private String remark;  // 备注

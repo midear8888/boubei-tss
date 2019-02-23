@@ -120,7 +120,13 @@ function fixICON(icon) {
 function initMenu() {
 	$("#nav").accordion({animate:true, fit:true, border:false});
 
-	var selectedPanelname = '', index = 0;
+	var selectedPanelname = '', index = 0, count = 0;
+
+	$.each(_menus, function(i, menu1) {
+		count += 1 + (menu1.children ? menu1.children.length : 0);
+	})
+	var collapsed = count > 16; // 菜单个数 > 16 个，默认收缩手风琴
+
 	$.each(_menus, function(i, menu1) {
 		var menu1Name =  fixICON(menu1[5] ||'icon icon-triangle-right' ) +  menu1[1];
 		// 没有任何报表的二级目录将被过滤掉
@@ -143,9 +149,11 @@ function initMenu() {
 	    });
 		menuHTML.push('</ul>');
 
-		$('#nav').accordion('add', {
+      	$('#nav').accordion('add', {
 			title: menu1Name,
 			content: menuHTML.join('\n'),
+			collapsed: collapsed, 
+			collapsible: collapsed
       	});
 
 		if( index==0 ) selectedPanelname = menu1Name;
