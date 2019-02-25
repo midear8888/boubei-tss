@@ -41,7 +41,6 @@ public class RenewalfeeOrderHandler extends AbstractProduct {
 		Long module_id = EasyUtils.obj2Long(module_ids.toArray()[0]);
 		co.setModule_id(module_id);
 		co.setAccount_num(subAuthorizes.size());
-		commonDao.update(co);
 
 		this.md = (ModuleDef) commonDao.getEntity(ModuleDef.class, module_id);
 	}
