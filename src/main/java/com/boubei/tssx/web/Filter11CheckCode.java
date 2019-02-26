@@ -39,7 +39,7 @@ import com.boubei.tss.util.MathUtil;
 /**
  * 验证码（图形验证码、短信验证码等）过滤器.
  */
-@WebFilter(filterName = "Filter11CheckCode", urlPatterns = {"/*"})
+//@WebFilter(filterName = "Filter11CheckCode", urlPatterns = {"/*"})
 public class Filter11CheckCode implements Filter {
 	
     Logger log = Logger.getLogger(Filter11CheckCode.class);

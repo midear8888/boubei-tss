@@ -38,7 +38,7 @@ public class SqlConfig {
 	static Map<String, Object> sqlNestFmParams = new HashMap<String, Object>(); // SQL嵌套解析用
 	
 	public static String getScript(String sqlCode) {
-		if( cache.contains(SQL_CONFIG_INIT) ) {
+		if( !cache.contains(SQL_CONFIG_INIT) ) {
 			File sqlDir = new File(URLUtil.getResourceFileUrl("script").getPath());
 			List<File> sqlFiles = FileHelper.listFilesByTypeDeeply("xml", sqlDir);
 			
