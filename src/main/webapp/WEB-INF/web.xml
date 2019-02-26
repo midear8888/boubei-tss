@@ -137,6 +137,15 @@
 	    <url-pattern>/img/api/*</url-pattern>
 	    <url-pattern>/api/*</url-pattern>
 	</filter-mapping>
+	
+	<filter>  
+	    <filter-name>Filter11CheckCode</filter-name>  
+	    <filter-class>com.boubei.tssx.web.Filter11CheckCode</filter-class>   
+	</filter> 
+	<filter-mapping>
+	    <filter-name>Filter11CheckCode</filter-name>
+	    <url-pattern>/*</url-pattern>
+	</filter-mapping>
 
 	
 	<servlet>

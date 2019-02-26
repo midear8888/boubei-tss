@@ -47,7 +47,7 @@ public class ParamConfig {
             value = ParamManager.getValue(code);
         } catch(Exception e) { }
         
-        return (String) EasyUtils.checkNull(value, Config.getAttribute(code), defaultVal);
+        return (String) EasyUtils.checkNullI(value, Config.getAttribute(code), defaultVal);
     }
 }
 

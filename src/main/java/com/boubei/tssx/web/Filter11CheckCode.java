@@ -20,7 +20,6 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -58,7 +57,7 @@ public class Filter11CheckCode implements Filter {
     		// 检查有没有携带验证码，如果没有，则返回登录人的账号、手机号码给请求页面，页面弹框，用户点击获取短信验证码，然后输入验证码重新发送请求
     		String ckCode = req.getParameter(SSOConstants.RANDOM_KEY);
     		if(ckCode == null) {
-    			rep.getWriter().println( "need_sms_check_code" );
+    			rep.getWriter().print( "need_sms_check_code" );
     			return;
     		}
     		
@@ -67,14 +66,14 @@ public class Filter11CheckCode implements Filter {
     			telephone = Environment.getUserCode();
     		}
     		if( !AbstractSMS.isChinaPhoneLegal(telephone) ) {
-    			rep.getWriter().println( "当前操作需要手机短信验证，您没有维护手机号，请先添加。"  );
+    			print(rep, "当前操作需要手机短信验证，您没有维护手机号，请先添加。");
     			return;
     		}
         	
     		Object ckInSession = session.getAttribute(SSOConstants.RANDOM_KEY);
             if(ckCode != null || ckInSession != null) {
             	if( !EasyUtils.obj2String(ckInSession).equals(ckCode) ) {
-            		rep.getWriter().println( "短信验证码校验失败，请重新输入" );
+            		print(rep, "短信验证码校验失败，请重新输入" );
             		return;
             	}
             } 
@@ -86,7 +85,7 @@ public class Filter11CheckCode implements Filter {
     		if(ckCode == null) {
     			String email = (String) Environment.getUserInfo("email");
     			if( EasyUtils.isNullOrEmpty(email) ) {
-        			rep.getWriter().println( "当前操作需要邮箱验证，您没有维护邮箱，请先添加。"  );
+    				print(rep, "当前操作需要邮箱验证，您没有维护邮箱，请先添加。");
         			return;
         		}
     			
@@ -96,7 +95,7 @@ public class Filter11CheckCode implements Filter {
 	        	String info = "您的验证码为：" + randomKey;
 	        	MailUtil.sendHTML("验证码确认", info, new String[] { email }, MailUtil.DEFAULT_MS);
 	        	
-	        	rep.getWriter().println( "need_email_check_code"  );
+	        	rep.getWriter().print( "need_email_check_code"  );
 	        	return;
     		}
     	}
@@ -106,7 +105,7 @@ public class Filter11CheckCode implements Filter {
     		// 检查有没有携带验证码，如果没有，则返回needIMGCode标识给请求页面，页面上弹框请求/tss/img/api/ck/randomKey
     		String ckCode = req.getParameter(SSOConstants.RANDOM_KEY);
     		if(ckCode == null) {
-    			rep.getWriter().println( "need_img_check_code" );
+    			rep.getWriter().print( "need_img_check_code" );
     			return;
     		}
     		
@@ -114,7 +113,7 @@ public class Filter11CheckCode implements Filter {
             if(ckCode != null || ckInSession != null) {
             	if( !EasyUtils.obj2String(ckInSession).equals(ckCode) ) {
             		session.removeAttribute(SSOConstants.RANDOM_KEY); // 一次验证不成功，就要重新生成验证码(在生成图片验证码时)
-            		rep.getWriter().println( "need_img_check_code" );
+            		rep.getWriter().print( "need_img_check_code" );
             		return;
             	}
             } 
@@ -122,6 +121,11 @@ public class Filter11CheckCode implements Filter {
         
         // 无需验证码 或 校验通过
         chain.doFilter(request, response);
+    }
+    
+    private void print(HttpServletResponse response, String msg) throws IOException {
+    	response.setContentType("text/html;charset=utf-8");
+		response.getWriter().print("<Response><script>tssJS('#abn').text('" +msg+ "')</script></Response>");
     }
     
     private boolean checkURLList(String url_config, String servletPath) {

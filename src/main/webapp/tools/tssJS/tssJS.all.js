@@ -1272,18 +1272,6 @@
             request.setFormContent(arg.formNode);
         }
 
-        if( (request.method||"").toUpperCase() == 'GET') { // 将params里参数拼到url
-            $.each(request.params, function(key, val) {
-                if(request.url.indexOf("?") < 0) {
-                    request.url += '?';
-                } else {
-                    request.url += '&';
-                }
-                request.url += key+ "=" + val;
-            });
-            request.url = encodeURI( request.url );
-        }
-
         request.ondata = arg.ondata || request.ondata;
         request.onresult = arg.onresult || request.onresult;
         request.onsuccess = arg.onsuccess || request.onsuccess;
@@ -1531,10 +1519,10 @@
                     }
                 }
 
+                this.packageRequestParams();
                 this.xmlhttp.open(this.method, this.url, this.async);
                  
                 this.setTimeout(); // 增加超时判定
-                this.packageRequestParams();
                 this.customizeRequestHeader();
 
                 this.xmlhttp.send(this.requestBody);
@@ -1576,6 +1564,20 @@
 
         /* 对发送数据进行封装，以XML格式发送 */
         packageRequestParams: function() {
+            if( (this.method||"").toUpperCase() == 'GET') { // 将params里参数拼到url
+                var url = this.url;
+                $.each(this.params, function(key, val) {
+                    if(url.indexOf("?") < 0) {
+                        url += '?';
+                    } else {
+                        url += '&';
+                    }
+                    url += key+ "=" + val;
+                });
+                this.url = encodeURI( url );
+                return;
+            }
+
             var contentXml = $.parseXML("<" + _XML_NODE_REQUEST_ROOT+"/>");
             var contentXmlRoot = contentXml.documentElement;
          
@@ -1632,6 +1634,22 @@
         onload: function(response) {
             this.responseText = response.responseText;
 
+            var _this = this;
+            if(this.responseText === 'need_sms_check_code') {
+                $.checkSMSCode(function(randomKey) {
+                    _this.addParam("randomKey", randomKey);
+                    _this.send();
+                });
+                return;
+            }
+            if(this.responseText === 'need_img_check_code') {
+                $.checkIMGCode(function(randomKey) {
+                    _this.addParam("randomKey", randomKey);
+                    _this.send();
+                });
+                return;
+            }
+
             //远程(200) 或 本地(0)才允许
             var httpStatus = response.status; 
             if(httpStatus != _HTTP_RESPONSE_STATUS_LOCAL_OK && httpStatus != _HTTP_RESPONSE_STATUS_REMOTE_OK) {
@@ -1648,7 +1666,7 @@
             }
 
             // JSON数据：因json的请求返回数据非XML格式，但出异常时异常信息是XML格式，所以如果没有异常，则直接执行ondata
-            if(this.type == "json" && this.responseText.indexOf("<Error>") < 0) {
+            if(this.type == "json" && this.responseText.indexOf("<Error>") < 0 && this.responseText.indexOf("<script>") < 0) {
                 this.ondata();
                 return;
             }
@@ -1656,6 +1674,13 @@
             // XML数据：解析返回结果，判断是success、error or 普通XML数据
             var rp = new HTTP_Response_Parser(this.responseText);
             this.responseXML = rp.xmlValueDom;
+
+            // 当返回数据中含脚本内容则自动执行
+            var script = this.getNodeValue("script");
+            if( script ) {
+                $.createScript(script); // 创建script元素并添加到head中.
+                return;
+            }
 
             if(rp.result.dataType == _HTTP_RESPONSE_DATA_TYPE_EXCEPTION) {
                 new Message_Exception(rp.result, this);
@@ -1666,12 +1691,6 @@
             else {
                 this.ondata();
                 this.onresult();
-
-                // 当返回数据中含脚本内容则自动执行
-                var script = this.getNodeValue("script");
-                if( script ) {
-                    $.createScript(script); // 创建script元素并添加到head中.
-                }
             }
         },
 
@@ -2184,7 +2203,7 @@
 
     // content：内容，deinput：输入框的默认值，title：对话框标题，callback：回调函数
     $.prompt = function(content, title, callback, deinput, isPasswd){
-        var type = isPasswd ? "password" : "type";
+        var type = isPasswd ? "password" : "text";
         var boxEl = popupBox(title || '输入框', callback);
         $(".content", boxEl).addClass("prompt");
         $(".content .message", boxEl).html( (content || "请输入：") + ':<br><input type="' +type+ '">' );
@@ -2201,6 +2220,41 @@
         $(".btbox .ok", boxEl).click(ok);
         $(".btbox .cancel", boxEl).click(closeBox);
     };
+
+    $.checkSMSCode = function(callback){
+        var boxEl = popupBox('校验验证码', callback);
+        $(".content", boxEl).addClass("prompt");
+        $(".content .message", boxEl).html('请输入手机短信验证码:<br><br><input type="text" style="width:150px"><button id="ckcode">获取验证码</button><br><h2 id="abn"></h2>' );
+        $(".btbox", boxEl).html($(".btbox", boxEl).html() + '<input type="button" value="取 消" class="cancel">');  
+        $(boxEl).center();      
+
+        function ok() {
+            var value = $(".content .message input", boxEl).value();
+            if( !value || value.trim().length === 0 ) return;
+
+            callback && callback(value);
+            setTimeout(closeBox, 2000);
+        }
+        $(".btbox .ok", boxEl).click(ok);
+        $(".btbox .cancel", boxEl).click(closeBox);
+
+        $("#ckcode").click(function(){
+            $('#ckcode').attr('disabled', true)
+            $.ajax({
+                url : "/tss/checkMobile.in"
+            });
+
+            var waitSeconds = 60;
+            var interval = setInterval(function(){
+                $('#ckcode').text( waitSeconds-- + '秒后重新获取' );
+                if(waitSeconds <= 0){
+                    $('#ckcode').text("获取验证码");
+                    $('#ckcode').attr('disabled', false);
+                    clearInterval(interval);
+                }
+            }, 1000)
+        });
+    }
 
 })(tssJS);
 

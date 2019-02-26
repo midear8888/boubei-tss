@@ -25,7 +25,6 @@ import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.sso.SSOConstants;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.web.display.ErrorMessageEncoder;
-import com.boubei.tss.framework.web.display.SuccessMessageEncoder;
 import com.boubei.tss.framework.web.display.XmlPrintWriter;
 import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.service.IUserService;
@@ -77,9 +76,6 @@ public class CheckMobile extends HttpServlet {
             		int randomKey = EasyUtils.obj2Int(ssr.getMessage());
                     
         			request.getSession(true).setAttribute(SSOConstants.RANDOM_KEY, randomKey);
-                	
-                	SuccessMessageEncoder encoder = new SuccessMessageEncoder("请速去手机短信查取修改密码的验证码。");
-                    encoder.print(new XmlPrintWriter(response.getWriter()));
             	}
 			} 
 		}
