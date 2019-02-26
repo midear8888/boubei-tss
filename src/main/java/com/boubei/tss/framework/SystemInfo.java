@@ -65,7 +65,7 @@ public class SystemInfo {
 		return new Object[] { result };
 	}
 	
-	/** 剔除在线用户 */
+	/** 切换用户 */
 	@RequestMapping(value = "/su", method = RequestMethod.PUT)
 	@ResponseBody
 	public Object su(String target) {	
@@ -77,6 +77,7 @@ public class SystemInfo {
 			commonService.delete(DBOnlineUser.class, ((DBOnlineUser)o).getId() );
 		}
 		
+		// Admin切换用户不踢人
 		Context.sessionMap.get(sessionId).setAttribute("domain_multiLogin", ParamConstants.TRUE);
 		String token = apiService.mockLogin(target);
 		return token;

@@ -62,7 +62,7 @@ public abstract class AbstractSMS {
      * @return
      */
     public boolean checkCode(String mobile, Object code) {
-    	Date from = DateUtil.subDays(new Date(), 10.0/(24*60));
+    	Date from = DateUtil.subDays(new Date(), 6.0/(24*60));
     	List<?> list = commService.getList(" from SMSLog where phonenum = ? and randomnum = ? and createTime > ? ", 
     			mobile, EasyUtils.obj2Int(code), from);
     	

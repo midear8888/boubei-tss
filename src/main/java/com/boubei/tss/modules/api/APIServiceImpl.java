@@ -3,6 +3,8 @@ package com.boubei.tss.modules.api;
 import java.util.Date;
 import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,8 +76,9 @@ public class APIServiceImpl implements APIService {
         LoginCustomizerFactory.instance().getCustomizer().execute();
         
         // 设置Cookie
-        HttpClientUtil.setCookie(Context.getResponse(), RequestContext.USER_TOKEN, token);
-        HttpClientUtil.setCookie(Context.getResponse(), RequestContext.JSESSIONID, sessionId);
+        HttpServletResponse response = Context.getResponse();
+		HttpClientUtil.setCookie(response, RequestContext.USER_TOKEN, token);
+        HttpClientUtil.setCookie(response, RequestContext.JSESSIONID, sessionId);
         
         // 注册在线用户库
         IOnlineUserManager onlineUserManager = OnlineUserManagerFactory.getManager();

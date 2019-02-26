@@ -68,8 +68,8 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 
 		// 生成一个转授策略
 		SubAuthorize sa = new SubAuthorize();
-		sa.setName(def.getId() + "_" + def.getModule() + "_test"); // name:
-																	// 模块ID_模块名称_购买序号
+		sa.setName(def.getId() + "_" + def.getModule() + "_" + user); // name:
+																	// 模块ID_模块名称_购买人_购买序号
 		sa.setStartDate(new Date());
 		sa.setOwnerId(Environment.getUserId());
 		sa.setBuyerId(Environment.getUserId());

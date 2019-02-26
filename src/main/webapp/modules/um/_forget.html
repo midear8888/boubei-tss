@@ -279,6 +279,7 @@
             return $("#telephone").notice("手机号码不能为空");
         }
 
+        $('#btn2').attr('disabled', true)
         $.ajax({
             url : "/tss/checkMobile.in",
             headers: {"appCode": FROMEWORK_CODE, "anonymous": "true"},
@@ -287,6 +288,16 @@
                 $("#d3").show(true);
             }
         });
+
+        var waitSeconds = 60;
+        var interval = setInterval(function(){
+            $('#btn2').text( '等待' + waitSeconds-- + '秒' );
+            if(waitSeconds <= 0){
+                $('#btn2').text("获取验证码");
+                $('#btn2').removeAttr('disabled');
+                clearInterval(interval);
+            }
+        }, 1000)
     });
 
 </script>

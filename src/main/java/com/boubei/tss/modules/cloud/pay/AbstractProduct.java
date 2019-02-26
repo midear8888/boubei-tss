@@ -160,7 +160,7 @@ public abstract class AbstractProduct {
 		int mouth_num = co.getMonth_num();
 		for (int i = 0; i < account_num; i++) {
 			SubAuthorize sa = new SubAuthorize();
-			sa.setName(md.getId() + "_" + md.getModule() + "_" + i); // name=模块ID_模块名称_购买序号
+			sa.setName(md.getId() + "_" + md.getModule() + "_" + userId + "_" + (i+1) ); // name=模块ID_模块名称_购买人_购买序号
 			sa.setOwnerId(userId);
 			sa.setBuyerId(userId);
 

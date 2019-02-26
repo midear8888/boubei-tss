@@ -29,6 +29,8 @@ import com.boubei.tss.util.XMLDocUtil;
 
 public class SqlConfig {
 	
+	private static final String SQL_CONFIG_INIT = "SQL_CONFIG_INIT";
+
 	private static final Logger log = Logger.getLogger(SqlConfig.class);
 	
 	static Pool cache = CacheHelper.getNoDeadCache();
@@ -36,7 +38,7 @@ public class SqlConfig {
 	static Map<String, Object> sqlNestFmParams = new HashMap<String, Object>(); // SQL嵌套解析用
 	
 	public static String getScript(String sqlCode) {
-		if( sqlNestFmParams.isEmpty() ) {
+		if( cache.contains(SQL_CONFIG_INIT) ) {
 			File sqlDir = new File(URLUtil.getResourceFileUrl("script").getPath());
 			List<File> sqlFiles = FileHelper.listFilesByTypeDeeply("xml", sqlDir);
 			
@@ -51,6 +53,7 @@ public class SqlConfig {
 					cache.putObject(code, sql);
 				}
 			}
+			cache.putObject(SQL_CONFIG_INIT, true);
 		}
 		
 		Cacheable cacheItem = cache.getObject(sqlCode);

@@ -92,8 +92,8 @@ public class AliyunSMS extends AbstractSMS {
     		return null;
     	}
     	
-    	// 检查和最近一条短信的时间间隔，如有100秒内已经发送过的验证码，则不再重新发送（防止使坏）
-    	Date from = DateUtil.subDays(new Date(), 1.6/(24*60)); // 96秒
+    	// 检查和最近一条短信的时间间隔，如有60秒内已经发送过的验证码，则不再重新发送（防止使坏）
+    	Date from = DateUtil.subDays(new Date(), 1.0/(24*60)); // 60秒
     	List<?> list = commService.getList(" from SMSLog where phonenum = ? and createTime > ? ", phone, from);
     	if( list.size() > 0 ) {
     		return null;

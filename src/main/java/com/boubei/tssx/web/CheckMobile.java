@@ -21,7 +21,9 @@ import javax.servlet.http.HttpServletResponse;
 import com.aliyuncs.dysmsapi.model.v20170525.SendSmsResponse;
 import com.boubei.tss.EX;
 import com.boubei.tss.framework.Global;
+import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.sso.SSOConstants;
+import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.web.display.ErrorMessageEncoder;
 import com.boubei.tss.framework.web.display.SuccessMessageEncoder;
 import com.boubei.tss.framework.web.display.XmlPrintWriter;
@@ -46,15 +48,20 @@ public class CheckMobile extends HttpServlet {
     }
  
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String accout = request.getParameter("loginName");
+		String account = request.getParameter("loginName");
 		String mobile = request.getParameter("telephone");
 		
+		if( Context.isOnline() ) {
+			account = Environment.getUserCode();
+        	mobile = (String) Environment.getUserInfo("telephone");
+        }
+		
 		IUserService service = (IUserService) Global.getBean("UserService");
-		User user = service.getUserByLoginName(accout);
+		User user = service.getUserByLoginName(account);
 		
 		response.setContentType("text/html;charset=UTF-8");
 		if ( user == null ) {
-			ErrorMessageEncoder encoder = new ErrorMessageEncoder( EX.parse(EX.U_41, accout) );
+			ErrorMessageEncoder encoder = new ErrorMessageEncoder( EX.parse(EX.U_41, account) );
 			encoder.print(new XmlPrintWriter(response.getWriter()));
 		} 
 		else {

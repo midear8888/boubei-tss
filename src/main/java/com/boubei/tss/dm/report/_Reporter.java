@@ -209,7 +209,7 @@ public class _Reporter extends BaseActionSupport {
         exportPath = Excel.csv2Excel(exportPath);
         
         // 记录导出日志
-         BusinessLogger.log("网页数据导出", name, Environment.getUserCode() + "导出了网页数据：" + fileName, null, start);
+        BusinessLogger.log("网页数据导出", name, Environment.getUserCode() + "导出了网页数据：" + fileName, null, start);
         
         return new String[] { fileName };
     }
