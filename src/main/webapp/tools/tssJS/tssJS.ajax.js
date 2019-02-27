@@ -396,15 +396,9 @@ CONTEXTPATH = "tss";
             this.responseText = response.responseText;
 
             var _this = this;
-            if(this.responseText === 'need_sms_check_code') {
-                $.checkSMSCode(function(randomKey) {
-                    _this.addParam("randomKey", randomKey);
-                    _this.send();
-                });
-                return;
-            }
-            if(this.responseText === 'need_img_check_code') {
-                $.checkIMGCode(function(randomKey) {
+            if( ['need_sms_check_code','need_email_check_code','need_img_check_code'].contains(this.responseText) ) {
+                var codeType = _this.responseText;
+                $.checkCode(codeType, function(randomKey) {
                     _this.addParam("randomKey", randomKey);
                     _this.send();
                 });
