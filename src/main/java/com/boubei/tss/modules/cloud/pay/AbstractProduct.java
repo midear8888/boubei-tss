@@ -121,6 +121,7 @@ public abstract class AbstractProduct {
 
 		Account account = new Account();
 		account.setBalance(0D);
+		account.setBalance_freeze(0D);
 		account.setBelong_user(userService.getUserById(userId));
 		account = (Account) commonDao.create(account);
 

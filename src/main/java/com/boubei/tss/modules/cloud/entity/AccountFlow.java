@@ -44,7 +44,16 @@ public class AccountFlow implements IEntity {
 	private Double money;   // 金额
 	
 	private Double balance; // 余额（后）
+	private Double balance_freeze; // 冻结余额（后）
 	
+	public Double getBalance_freeze() {
+		return balance_freeze;
+	}
+
+	public void setBalance_freeze(Double balance_freeze) {
+		this.balance_freeze = balance_freeze;
+	}
+
 	private Date   pay_time; // 入账时间
 	
 	private String pay_man; // 操作人
@@ -63,6 +72,8 @@ public class AccountFlow implements IEntity {
 		this.setSn(SerialNOer.get("AF", true));
 		this.setType(type);
 		this.setRemark(remark);
+		this.setBalance(account.getBalance());
+		this.setBalance_freeze(account.getBalance_freeze());
 	}
 
 	public Long getId() {
