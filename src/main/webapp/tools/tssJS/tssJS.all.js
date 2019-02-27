@@ -887,8 +887,11 @@
             $.waitingLayerCount ++;
         },
 
-        hideWaitingLayer: function() {
+        hideWaitingLayer: function(all) {
             $.waitingLayerCount && $.waitingLayerCount --;
+            if(all) {
+                $.waitingLayerCount = 0;
+            }
 
             var waitingObj = $("#_waiting");
             if( waitingObj.length > 0 && $.waitingLayerCount <= 0 ) {
@@ -1635,15 +1638,9 @@
             this.responseText = response.responseText;
 
             var _this = this;
-            if(this.responseText === 'need_sms_check_code') {
-                $.checkSMSCode(function(randomKey) {
-                    _this.addParam("randomKey", randomKey);
-                    _this.send();
-                });
-                return;
-            }
-            if(this.responseText === 'need_img_check_code') {
-                $.checkIMGCode(function(randomKey) {
+            if( ['need_sms_check_code','need_email_check_code','need_img_check_code'].contains(this.responseText) ) {
+                var codeType = _this.responseText;
+                $.checkCode(codeType, function(randomKey) {
                     _this.addParam("randomKey", randomKey);
                     _this.send();
                 });
@@ -2153,9 +2150,9 @@
         return $box[0];
     },
 
-    closeBox = function() {
+    closeBox = function(all) {
         $("#alert_box").hide().remove();
-        $.hideWaitingLayer();
+        $.hideWaitingLayer(all);
     };
 
     // content：内容，title：对话框标题  
@@ -2221,10 +2218,20 @@
         $(".btbox .cancel", boxEl).click(closeBox);
     };
 
-    $.checkSMSCode = function(callback){
-        var boxEl = popupBox('校验验证码', callback);
+    $.checkCode = function(codeType, callback){
+        var boxEl = popupBox('当前操作需要校验验证码', callback);
         $(".content", boxEl).addClass("prompt");
-        $(".content .message", boxEl).html('请输入手机短信验证码:<br><br><input type="text" style="width:150px"><button id="ckcode">获取验证码</button><br><h2 id="abn"></h2>' );
+        var _html;
+        if(codeType === 'need_sms_check_code') {
+            _html = '请输入收到的手机短信验证码:<br><br><input type="text" style="width:150px"><button id="ckcode">获取验证码</button>';
+        }
+        if(codeType === 'need_email_check_code') {
+            _html = '请到您注册的邮箱里读取验证码并输入:<br><br><input type="text" style="width:150px">';
+        }
+        if(codeType === 'need_img_check_code') {
+            _html = '请输入图形验证码:<br><br><input type="text" style="width:150px;margin-right:30px;"><img id="imgcode" style="vertical-align: middle;" src=""/>';
+        }
+        $(".content .message", boxEl).html( _html + '<br><h2 id="_abn_" style="color: red;"></h2>' );
         $(".btbox", boxEl).html($(".btbox", boxEl).html() + '<input type="button" value="取 消" class="cancel">');  
         $(boxEl).center();      
 
@@ -2233,10 +2240,13 @@
             if( !value || value.trim().length === 0 ) return;
 
             callback && callback(value);
-            setTimeout(closeBox, 2000);
+
+            $(this).attr('disabled', true);
+            $('#_abn_').text( "正在校验......" );
+            setTimeout( function() { closeBox(true); }, 2000);
         }
         $(".btbox .ok", boxEl).click(ok);
-        $(".btbox .cancel", boxEl).click(closeBox);
+        $(".btbox .cancel", boxEl).click( function() { closeBox(true); } );
 
         $("#ckcode").click(function(){
             $('#ckcode').attr('disabled', true)
@@ -2253,6 +2263,12 @@
                     clearInterval(interval);
                 }
             }, 1000)
+        });
+
+        var img_url = "/tss/img/api/ck/randomKey?";
+        $("#imgcode").attr("src", img_url + $.now());
+        $("#imgcode").click(function(){
+            $(this).attr("src", img_url + $.now());
         });
     }
 

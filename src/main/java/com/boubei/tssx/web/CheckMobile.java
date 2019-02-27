@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.aliyuncs.dysmsapi.model.v20170525.SendSmsResponse;
 import com.boubei.tss.EX;
 import com.boubei.tss.framework.Global;
+import com.boubei.tss.framework.sms.AbstractSMS;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.sso.SSOConstants;
 import com.boubei.tss.framework.sso.context.Context;
@@ -53,6 +54,9 @@ public class CheckMobile extends HttpServlet {
 		if( Context.isOnline() ) {
 			account = Environment.getUserCode();
         	mobile = (String) Environment.getUserInfo("telephone");
+        	if( !AbstractSMS.isChinaPhoneLegal(mobile) ) {
+        		mobile = account;
+    		}
         }
 		
 		IUserService service = (IUserService) Global.getBean("UserService");
@@ -65,8 +69,11 @@ public class CheckMobile extends HttpServlet {
 		} 
 		else {
             String _mobile = user.getTelephone();
-            if ( EasyUtils.isNullOrEmpty(_mobile) || !_mobile.equals(mobile)  ) {
-                ErrorMessageEncoder encoder = new ErrorMessageEncoder("手机号码有误或者您没有设置手机号码");
+            if( !AbstractSMS.isChinaPhoneLegal(_mobile) ) {
+            	_mobile = user.getLoginName();
+    		}
+            if ( EasyUtils.isNullOrEmpty(_mobile) || !_mobile.equals(mobile) || !AbstractSMS.isChinaPhoneLegal(mobile)  ) {
+                ErrorMessageEncoder encoder = new ErrorMessageEncoder("手机号码有误或者您账号没有设置正确的手机号码");
                 encoder.print(new XmlPrintWriter(response.getWriter()));
             } 
             else {
