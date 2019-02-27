@@ -13,6 +13,8 @@ import com.boubei.tss.um.service.ILoginService;
 public class ModuleOrderHandler extends AbstractProduct {
 	
 	protected ILoginService loginService = (ILoginService) Global.getBean("LoginService");
+	
+	public String domain;
 
 	protected void handle() {
 
@@ -20,7 +22,6 @@ public class ModuleOrderHandler extends AbstractProduct {
 		 * 判断user是否已经是域管理员（非自注册域），是的话无需再注册域; 回调时user非登录状态 
 		 */
 		Long buyerID = user.getId();
-		String domain;
 		
 		List<Long> hasRoles = loginService.getRoleIdsByUserId(buyerID);
 		List<?> groups = loginService.getGroupsByUserId(buyerID);
