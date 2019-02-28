@@ -78,12 +78,13 @@ public class ReportServiceImpl implements ReportService {
     	return reportId;
 	}
     
-	public Long getReportId(String fname, Object idCodeName, int type) {
+    public List<?> getReportIds(String fname, Object idCodeName, int type) {
 		String hql = "select o.id from Report o where o." +fname+ " = ? and type = ? order by o.id desc";
-		List<?> list = reportDao.getEntities(hql, idCodeName, type); 
-		if( list.size() > 1 ) {
-			throw new BusinessException( EX.parse(EX.DM_31, list.size(), fname, idCodeName) );
-		}
+		return reportDao.getEntities(hql, idCodeName, type); 
+    }
+    
+	public Long getReportId(String fname, Object idCodeName, int type) {
+		List<?> list = getReportIds(fname, idCodeName, type); 
 		return list.isEmpty() ? null : (Long) list.get(0);
 	}
 	
@@ -109,13 +110,24 @@ public class ReportServiceImpl implements ReportService {
         	report.setDisabled( ParamConstants.TRUE ); // 报表默认为停用，组看父组的状态
         }
         
+        checkReportCode(report, 0);
+        
 		report.setSeqNo(reportDao.getNextSeqNo(parentId));
         reportDao.create(report);
 
         return report;
     }
     
+    // 检查同code的报表是否已经存在，是的话提示改code
+    void checkReportCode(Report report, int limit) {
+        String code = report.getCode();
+		if(code != null && this.getReportIds("code", code, Report.TYPE1).size() > 0) {
+        	throw new BusinessException(EX.parse(EX.DM_33, code));
+        }
+    }
+    
     public void updateReport(Report report) {
+    	checkReportCode(report, 1);
     	reportDao.refreshEntity(report);
     }
     

@@ -106,8 +106,8 @@ public class EX {
 	public static String DM_28 = "任务与定时器【${x1}】类型不匹配，任务类型：${x2}，Job类型：${x3}";
 	public static String DM_29 = "其中有${x1}行数据校验出异常，请点<a href=\"/tss/data/download?filename=${x2}\" target=\"_blank\">【异常记录】</a>下载查看。";
 	public static String DM_30 = "没有数据，所有满足条件的日期（或明细）都已经执行过了";
-	public static String DM_31 = "找到${x1}个${x2}=${x3}的Report节点，需要保证唯一";
 	public static String DM_32 = "字段【${x1}】在数据表中不存在";
+	public static String DM_33 = "编码为【${x1}】的数据服务已经存在，请修改编码后再保存";
 	
 	public static String F_01 = "【${x1}】参数有误，第 ${x2} 个参数值为Null！";
 	public static String F_02 = "排序节点和目标节点不属于同一层的节点（父节点不一致），不能排序。";

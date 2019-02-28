@@ -38,9 +38,15 @@ import com.boubei.tss.util.MathUtil;
 
 /**
  * 验证码（图形验证码、短信验证码等）过滤器.
- * 结合 tssJS：ajax的判断 及 checkCode方法。
  * 
- * $.get("/tss/si/test", {sessionId: $.Cookie.getValue("JSESSIONID")}, function(){});
+ * 启用本Filter步骤：
+ * 1、web.xml 里配置，拦截 /*
+ * 2、系统参数配置拦截名单： 
+ * 			短信验证  url.ck_sms.list 
+ * 			邮件验证  url.ck_email.list
+ * 		    图形码验证 url.ck_img.list
+ * 3、调试，如：tssJS.get("/tss/si/test", { }, function(){ });
+ *    注：需要结合tssJS框架使用 （结合 tssJS：ajax的判断 及 checkCode方法）
  */
 //@WebFilter(filterName = "Filter11CheckCode", urlPatterns = {"/*"})
 public class Filter11CheckCode implements Filter {

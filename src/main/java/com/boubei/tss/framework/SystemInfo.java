@@ -78,7 +78,7 @@ public class SystemInfo {
 		}
 		
 		// Admin切换用户不踢人
-		Context.sessionMap.get(sessionId).setAttribute("domain_multiLogin", ParamConstants.TRUE);
+		Context.sessionMap.get(sessionId).setAttribute("domain_multilogin", ParamConstants.TRUE);
 		String token = apiService.mockLogin(target);
 		return token;
 	}
