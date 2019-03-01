@@ -40,7 +40,8 @@ public abstract class AbstractProduct {
 	public static AbstractProduct createBean(String out_trade_no) {
 		String cloudOrderId = out_trade_no.split("-")[1];
 		CloudOrder co = (CloudOrder) commonDao.getEntity(CloudOrder.class, EasyUtils.obj2Long(cloudOrderId));
-		if(!out_trade_no.equals(co.getOrder_no())) return null;
+		if (!out_trade_no.equals(co.getOrder_no()))
+			return null;
 		return createBean(co);
 	}
 
@@ -53,7 +54,14 @@ public abstract class AbstractProduct {
 		return product;
 	}
 
-	public void beforeOrder(CloudOrder co) {
+	public void beforeOrder() {
+		if (md != null && md.getMax_account() != null && co.getAccount_num() != null && co.getAccount_num() > md.getMax_account()) {
+			throw new BusinessException("该产品最大只支持该买" + md.getMax_account() + "个账号！");
+		}
+		beforeOrderInit();
+	}
+
+	public void beforeOrderInit() {
 
 	}
 
@@ -162,7 +170,7 @@ public abstract class AbstractProduct {
 		int mouth_num = co.getMonth_num();
 		for (int i = 0; i < account_num; i++) {
 			SubAuthorize sa = new SubAuthorize();
-			sa.setName(md.getId() + "_" + md.getModule() + "_" + userId + "_" + (i+1) ); // name=模块ID_模块名称_购买人_购买序号
+			sa.setName(md.getId() + "_" + md.getModule() + "_" + userId + "_" + (i + 1)); // name=模块ID_模块名称_购买人_购买序号
 			sa.setOwnerId(userId);
 			sa.setBuyerId(userId);
 

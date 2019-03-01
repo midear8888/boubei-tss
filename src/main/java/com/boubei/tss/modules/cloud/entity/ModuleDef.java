@@ -83,6 +83,16 @@ public class ModuleDef extends ARecordTable {
 	
 	@Column(length = 800)
 	private String remark;   // 模块备注
+	
+	private Integer max_account;
+
+	public Integer getMax_account() {
+		return max_account;
+	}
+
+	public void setMax_account(Integer max_account) {
+		this.max_account = max_account;
+	}
 
 	public List<Long> roles() {
 		List<Long> roleIds = new ArrayList<Long>();

@@ -1086,7 +1086,7 @@ public class _Recorder extends ProgressActionSupport {
 		params.put("creator", Environment.getUserCode());
 
 		_Database _db = getDB(recordId);
-		SQLExcutor ex = _db.select(1, 1, params);
+		SQLExcutor ex = _db.select(1, 1, params); /* 此处用select不用get，select还会拼上domain条件，get不会；用户如果变化了域，将看不到以前域的数据 */
 		return !ex.result.isEmpty() || checkInRecycleBin(_db, params);
 	}
 	

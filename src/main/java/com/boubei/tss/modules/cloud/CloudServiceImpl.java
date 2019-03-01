@@ -184,7 +184,7 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 
 		AbstractProduct product = AbstractProduct.createBean(co);
 
-		product.beforeOrder(co);
+		product.beforeOrder();
 
 		co.setProduct(product.getName());
 		co.setStatus(CloudOrder.NEW);
