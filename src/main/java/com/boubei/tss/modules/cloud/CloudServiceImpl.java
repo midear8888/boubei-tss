@@ -147,7 +147,7 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 	}
 
 	public List<?> listAvaliableModules() {
-		String hql = "select o from ModuleDef o where o.status in ('opened') order by o.seqno asc, o.id desc ";
+		String hql = "from ModuleDef o where o.status in ('opened') order by o.seqno asc, o.id desc ";
 		return commonDao.getEntities(hql);
 	}
 

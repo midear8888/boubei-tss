@@ -31,7 +31,7 @@ import com.boubei.tss.util.BeanUtil;
 
 @Controller
 @RequestMapping("/cloud")
-public class ModuleOrderAction {
+public class CloudAction {
 
 	@Autowired private CloudService cloudService;
 	@Autowired private ICommonService commonService;
@@ -87,8 +87,9 @@ public class ModuleOrderAction {
 
 	@RequestMapping(value = "/modules", method = RequestMethod.GET)
 	@ResponseBody
-	public List<?> listAvaliableModules() {
-		return cloudService.listAvaliableModules();
+	public List<?> listSaleableModules() {
+		String hql = "from ModuleDef o where o.status in ('opened') and price > 0 order by o.seqno asc, o.id desc ";
+		return commonService.getList(hql);
 	}
 	
 	/**
