@@ -217,8 +217,7 @@ public class WxAPI {
 		postMethod.setRequestEntity(re);
 		
 		HttpClient httpClient = new HttpClient();
-		httpClient.executeMethod(postMethod);
-//		log.debug( postMethod.getResponseBodyAsString() );
+		httpClient.executeMethod(postMethod);   // log.debug( postMethod.getResponseBodyAsString() );
 		
 		String imgName = appId + "_Q.png";
 		String imgPath = DataExport.getExportPath() + "/" + imgName;

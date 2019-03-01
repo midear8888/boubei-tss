@@ -71,14 +71,15 @@ public class SystemInfo {
 	public Object su(String target) {	
 		if( !Environment.isAdmin() ) return null;
 		
+		// 先删除当前Admin账号的在线用户记录
 		String sessionId = Context.getRequestContext().getSessionId();
 		List<?> list = commonService.getList("from DBOnlineUser where sessionId = ?", sessionId);
 		for(Object o : list) {
 			commonService.delete(DBOnlineUser.class, ((DBOnlineUser)o).getId() );
 		}
 		
-		// Admin切换用户不踢人
-		Context.sessionMap.get(sessionId).setAttribute("domain_multilogin", ParamConstants.TRUE);
+		// Admin切换用户不踢人 
+		Context.sessionMap.get(sessionId).setAttribute("admin_su", ParamConstants.TRUE);
 		String token = apiService.mockLogin(target);
 		return token;
 	}

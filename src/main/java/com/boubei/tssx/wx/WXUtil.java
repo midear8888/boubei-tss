@@ -205,6 +205,8 @@ public class WXUtil {
 		FileOutputStream fos = null;
 		try {
 			File file = new File(imgFile); // 可以是任何图片格式.jpg,.png等
+			new File(file.getParent()).mkdirs();
+			
 			fos = new FileOutputStream(file);
 			byte[] b = new byte[1024];
 			int nRead = 0;

@@ -91,6 +91,8 @@ public class DBOnlineUserService implements IOnlineUserManager {
     	
     	// 检查域信息配置，判断当前用户所在域是否支持一个账号多地同时登陆（API call 也不踢人）
     	Object multilogin = Environment.getDomainInfo("multilogin");
+    	multilogin = EasyUtils.checkNull(multilogin, Environment.getInSession("admin_su"));
+    	
 		if( ParamConstants.TRUE.equals( multilogin ) || Context.getRequestContext().isApiCall() ) {
     		String hql = " from DBOnlineUser o where o.userId = ? and o.origin = ? and clientIp = ? ";
             return dao.getEntities(hql, userId, Environment.getOrigin(), Environment.getClientIp());
