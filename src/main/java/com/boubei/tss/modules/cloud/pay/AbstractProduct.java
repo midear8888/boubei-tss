@@ -40,6 +40,7 @@ public abstract class AbstractProduct {
 	public static AbstractProduct createBean(String out_trade_no) {
 		String cloudOrderId = out_trade_no.split("-")[1];
 		CloudOrder co = (CloudOrder) commonDao.getEntity(CloudOrder.class, EasyUtils.obj2Long(cloudOrderId));
+		if(!out_trade_no.equals(co.getOrder_no())) return null;
 		return createBean(co);
 	}
 
