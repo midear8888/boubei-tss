@@ -83,7 +83,6 @@ public class API {
 		String code = requestMap.get("code");
 		String content = requestMap.get("content");
 		String udf1 = requestMap.get("udf1");
-		BusinessLogger.log(table, code, content, udf1,System.currentTimeMillis());
+		BusinessLogger.log(table, code, content, udf1, System.currentTimeMillis());
 	}
-	
 }
