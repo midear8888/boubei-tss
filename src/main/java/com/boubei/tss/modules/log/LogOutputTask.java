@@ -28,8 +28,8 @@ public class LogOutputTask extends Output2DBTask implements Serializable {
 
 	protected Statement createRecords(Connection conn) throws SQLException {
     	String insertSql = "insert into component_log" +
-                "(operatorId, operatorName, operatorIP, operationCode, operateTable, operateTime, content, methodExcuteTime, operatorBrowser) " +
-                "values(?, ?, ?, ?, ?, ?, ?, ?, ?)"; 
+                "(operatorId, operatorName, operatorIP, operationCode, operateTable, operateTime, content, methodExcuteTime, operatorBrowser, udf1) " +
+                "values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"; 
 
         PreparedStatement pstmt = conn.prepareStatement(insertSql); 
         for ( Object temp : records ) {
@@ -47,6 +47,7 @@ public class LogOutputTask extends Output2DBTask implements Serializable {
 			pstmt.setString(index++, content.substring(0, Math.min(content.length(), 2000)) );
             pstmt.setInt(index++, dto.getMethodExcuteTime() == null ? 0 : dto.getMethodExcuteTime());
             pstmt.setString(index++, dto.getOperatorBrowser());
+            pstmt.setString(index++, dto.getUdf1());
             
             pstmt.execute();
         }

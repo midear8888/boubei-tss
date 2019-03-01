@@ -4,13 +4,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.dml.SQLExcutor;
+import com.boubei.tss.modules.log.BusinessLogger;
 import com.boubei.tss.portal.helper.MenuDTO;
 import com.boubei.tss.portal.service.INavigatorService;
 import com.boubei.tss.um.service.ILoginService;
@@ -65,4 +70,20 @@ public class API {
 	public Map<String, String> getUsers() {
 		return loginService.getUsersMap();
 	}
+	
+	/**
+	 * http://localhost:9000/tss/api/log
+	 * 记录日志
+	 */
+	@RequestMapping(value = "/log", method = RequestMethod.POST)
+	@ResponseBody
+	public void createLog(HttpServletRequest request) {
+		Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
+		String table = requestMap.get("table");
+		String code = requestMap.get("code");
+		String content = requestMap.get("content");
+		String udf1 = requestMap.get("udf1");
+		BusinessLogger.log(table, code, content, udf1,System.currentTimeMillis());
+	}
+	
 }
