@@ -53,10 +53,10 @@ public class DBOnlineUserService implements IOnlineUserManager {
         else {
         	ou = (DBOnlineUser) list.get(0);
         	
-        	// 移动端登录不干扰PC端
+        	// 移动端登录/API访问, 不干扰PC端
         	HttpSession session = Context.sessionMap.get(ou.getSessionId());
-        	if( !URLUtil.isWeixin() && session != null && !Context.getRequestContext().isApiCall() ) {
-        		session.invalidate(); // 销毁当前用户已经登录的session
+        	if( session != null && !URLUtil.isWeixin() && !Context.getRequestContext().isApiCall() ) {
+        		session.invalidate(); // 销毁当前用户已经登录的session，控制账号在多地登录
         	}
         	
         	ou.setSessionId(sessionId);

@@ -61,6 +61,7 @@ public class ModuleDef extends ARecordTable {
 	private String price_def; // 优惠定义，eg: {mouth: 1,6,12,24,36|1,0.95,0.9,0.75,0.5, accout:1,7|300,0}
 	
 	private Integer try_days = 31; // 试用天数, 如果=0，表示不支持试用
+	private Integer max_account;  // 购买账号个数限制（eg：面向个人的EFF一次最多只能买一个账号）
 	
 	/*
 	 * 模块自定义初始化接口地址，在企业域用户选择此模块时自动调用，以完成模块初始化
@@ -69,14 +70,6 @@ public class ModuleDef extends ARecordTable {
 	private String product_class; // 自定义实现类
 	
 	private Double cashback_ratio; // 返现比率 10% 请填写 10
-	
-	public Double getCashback_ratio() {
-		return cashback_ratio;
-	}
-
-	public void setCashback_ratio(Double cashback_ratio) {
-		this.cashback_ratio = cashback_ratio;
-	}
 
 	@Column(length = 800)
 	private String description; // 模块描述
@@ -84,16 +77,6 @@ public class ModuleDef extends ARecordTable {
 	@Column(length = 800)
 	private String remark;   // 模块备注
 	
-	private Integer max_account;
-
-	public Integer getMax_account() {
-		return max_account;
-	}
-
-	public void setMax_account(Integer max_account) {
-		this.max_account = max_account;
-	}
-
 	public List<Long> roles() {
 		List<Long> roleIds = new ArrayList<Long>();
 		String[] array = EasyUtils.obj2String(roles).split(",");
@@ -263,5 +246,21 @@ public class ModuleDef extends ARecordTable {
 
 	public void setProduct_class(String product_class) {
 		this.product_class = product_class;
+	}
+	
+	public Double getCashback_ratio() {
+		return cashback_ratio;
+	}
+
+	public void setCashback_ratio(Double cashback_ratio) {
+		this.cashback_ratio = cashback_ratio;
+	}
+
+	public Integer getMax_account() {
+		return max_account;
+	}
+
+	public void setMax_account(Integer max_account) {
+		this.max_account = max_account;
 	}
 }

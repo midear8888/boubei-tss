@@ -9,7 +9,6 @@ import org.apache.commons.lang.time.DateUtils;
 
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.Environment;
-import com.boubei.tss.modules.cloud.entity.CloudOrder;
 import com.boubei.tss.modules.cloud.entity.ModuleDef;
 import com.boubei.tss.um.entity.SubAuthorize;
 import com.boubei.tss.util.EasyUtils;
@@ -20,15 +19,18 @@ import com.boubei.tss.util.EasyUtils;
 @SuppressWarnings("unchecked")
 public class RenewalfeeOrderHandler extends AbstractProduct {
 
-	public void beforeOrder(CloudOrder co) {
+	protected void beforeOrderInit() {
 		String subAuthorizeIds = co.getParams();
 		String hql = " from SubAuthorize where id in (" + subAuthorizeIds + ")";
 		List<SubAuthorize> subAuthorizes = (List<SubAuthorize>) commonDao.getEntities(hql);
+		
 		Set<String> module_ids = new HashSet<>();
+		Set<String> module_Names = new HashSet<>();
 		for (SubAuthorize subAuthorize : subAuthorizes) {
 			String[] name = subAuthorize.getName().split("_");
-			String module_id = name[0];
-			module_ids.add(module_id);
+			module_ids.add(name[0]);
+			module_Names.add(name[1]);
+			
 			if (!subAuthorize.getBuyerId().equals(Environment.getUserId())) {
 				throw new BusinessException("您不能续费其它用户购买的账号！");
 			}
@@ -40,6 +42,7 @@ public class RenewalfeeOrderHandler extends AbstractProduct {
 
 		Long module_id = EasyUtils.obj2Long(module_ids.toArray()[0]);
 		co.setModule_id(module_id);
+		co.setProduct( EasyUtils.list2Str(module_Names) );
 		co.setAccount_num(subAuthorizes.size());
 
 		this.md = (ModuleDef) commonDao.getEntity(ModuleDef.class, module_id);

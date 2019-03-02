@@ -156,42 +156,40 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 	@SuppressWarnings("unchecked")
 	public CloudOrder createOrder(CloudOrder co) {
 		Map<String, String> map = new HashMap<>();
-		try {
-			map = new ObjectMapper().readValue(co.getParams(), HashMap.class);
-		} catch (Exception e) {
-		}
+		try { map = new ObjectMapper().readValue(co.getParams(), HashMap.class); } catch (Exception e) { }
 
+		// 自注册账号
 		if (Environment.isAnonymous()) {
 			selfRegister(co, map);
 		}
 
-		String userCode = (String) EasyUtils.checkNull(map.get("phone"), Environment.getUserCode());
+		// for 购买时补充填写用户信息
+		String phone    = map.get("phone");
+		String userName = map.get("user_name");
+		String orgName  = map.get("company_name");
 		
+		String userCode = (String) EasyUtils.checkNull(phone, Environment.getUserCode());
 		User user = userService.getUserByLoginName(userCode);
-		user.setUserName((String) EasyUtils.checkNull(map.get("user_name"), user.getUserName()));
-		user.setUdf((String) EasyUtils.checkNull(map.get("company_name"), user.getUdf()));
+		user.setUserName((String) EasyUtils.checkNull(userName, user.getUserName()));
+		user.setUdf((String) EasyUtils.checkNull(orgName, user.getUdf()));
 		commonDao.update(user);
+		
 		// 模拟登录
 		if(Environment.isAnonymous()){
 			apiService.mockLogin(userCode);
 		}
 
 		co.setCreator(userCode);
-
-		if (EasyUtils.isNullOrEmpty(co.getType())) {
-			co.setType(ModuleOrderHandler.class.getName());
-		}
-
+		co.setType( (String) EasyUtils.checkNull(co.getType(), ModuleOrderHandler.class.getName()) );
 		AbstractProduct product = AbstractProduct.createBean(co);
-
 		product.beforeOrder();
 
 		co.setProduct(product.getName());
 		co.setStatus(CloudOrder.NEW);
 		co.setOrder_date(new Date());
 		co = (CloudOrder) commonDao.create(co);
+		
 		co.setOrder_no(co.getOrder_date().getTime() + "-" + co.getId());
-
 		if (co.getModule_id() != null) {
 			calMoney(co); // 价格以后台计算为准，防止篡改（同时检查前后台的报价是否一致）
 		}

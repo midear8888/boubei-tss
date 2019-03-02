@@ -30,40 +30,51 @@ public abstract class AbstractProduct {
 
 	public CloudOrder co;
 	public ModuleDef md;
-	public Long userId;
-	public String userCode;
 	public Map<?, ?> trade_map;
 	public String payType;
 	public String payer;
+	
 	public User user;
+	public Long userId;
+	public String userCode;
 
+	/**
+	 * out_trade_no: 时间戳_coID
+	 */
 	public static AbstractProduct createBean(String out_trade_no) {
-		String cloudOrderId = out_trade_no.split("-")[1];
-		CloudOrder co = (CloudOrder) commonDao.getEntity(CloudOrder.class, EasyUtils.obj2Long(cloudOrderId));
-		if (!out_trade_no.equals(co.getOrder_no()))
+		Long coId = EasyUtils.obj2Long( out_trade_no.split("-")[1] );
+		CloudOrder co = (CloudOrder) commonDao.getEntity(CloudOrder.class, coId);
+		if( !out_trade_no.equals(co.getOrder_no()) ) {
 			return null;
+		}
 		return createBean(co);
 	}
 
 	public static AbstractProduct createBean(CloudOrder co) {
-		AbstractProduct product = (AbstractProduct) BeanUtil.newInstanceByName(co.getType());
-		product.co = co;
-		if (co.getModule_id() != null) {
-			product.md = (ModuleDef) commonDao.getEntity(ModuleDef.class, co.getModule_id());
+		String productClazz = co.getType();
+		AbstractProduct product = (AbstractProduct) BeanUtil.newInstanceByName(productClazz);
+		
+		Long module_id = co.getModule_id();
+		if (module_id != null) {
+			product.md = (ModuleDef) commonDao.getEntity(ModuleDef.class, module_id);
 		}
+		
+		product.co = co;
 		return product;
 	}
 
 	public void beforeOrder() {
-		if (md != null && md.getMax_account() != null && co.getAccount_num() != null && co.getAccount_num() > md.getMax_account()) {
-			throw new BusinessException("该产品最大只支持该买" + md.getMax_account() + "个账号！");
+		if ( md != null && co != null ) {
+			Integer max_account = (Integer) EasyUtils.checkNull(md.getMax_account(), 99999);
+			Integer account_num = EasyUtils.obj2Int( co.getAccount_num() );
+			if(account_num > max_account) {
+				throw new BusinessException("该产品一次只支持购买最多" + md.getMax_account() + "个账号!");
+			}
 		}
 		beforeOrderInit();
 	}
 
-	public void beforeOrderInit() {
-
-	}
+	protected  void beforeOrderInit() { }
 
 	/**
 	 * 购买付款后初始化实现
@@ -103,7 +114,8 @@ public abstract class AbstractProduct {
 
 	protected abstract void handle();
 
-	protected void init() {
+	protected void init() { 
+		
 	}
 
 	public String getName() {

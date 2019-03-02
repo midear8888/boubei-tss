@@ -121,7 +121,7 @@ public class ReportServiceImpl implements ReportService {
     // 检查同code的报表是否已经存在，是的话提示改code
     void checkReportCode(Report report, int limit) {
         String code = report.getCode();
-		if(code != null && this.getReportIds("code", code, Report.TYPE1).size() > 0) {
+		if(code != null && this.getReportIds("code", code, Report.TYPE1).size() > limit) {
         	throw new BusinessException(EX.parse(EX.DM_33, code));
         }
     }
