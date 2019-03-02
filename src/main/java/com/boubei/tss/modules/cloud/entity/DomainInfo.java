@@ -68,6 +68,13 @@ public class DomainInfo extends ARecordTable {
 	private String contact_info;
 	
 	private Boolean kd100;
+	private String type;
+	public String getType() {
+		return type;
+	}
+	public void setType(String type) {
+		this.type = type;
+	}
 	private String udf1;
 	private String udf2;
 	private String udf3;

@@ -256,7 +256,7 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 		@SuppressWarnings("unchecked")
 		List<RoleUser> rus = (List<RoleUser>) commonDao.getEntities(" from RoleUser where strategyId = ?", strategyId);
 		for (RoleUser ru : rus) {
-			if (roleIDList.contains(ru.getRoleId().toString())) {
+			if (roleIDList.contains(ru.getId().toString())) {
 				ru.setUserId(userId);
 			} else {
 				ru.setUserId(sa.getBuyerId());
