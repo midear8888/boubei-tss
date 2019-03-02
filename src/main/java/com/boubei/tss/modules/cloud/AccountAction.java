@@ -57,8 +57,8 @@ public class AccountAction {
 
 	@RequestMapping(value = "/subauthorize/role", method = RequestMethod.POST)
 	@ResponseBody
-	public Boolean setSubAuthorizeRoles(Long userId, String roleIds, Long strategyId) {
-		service.setSubAuthorizeRoles(userId, roleIds, strategyId);
+	public Boolean setSubAuthorizeRoles(Long userId, String ruIds, Long strategyId) {
+		service.setSubAuthorizeRoles(userId, ruIds, strategyId);
 		return true;
 	}
 

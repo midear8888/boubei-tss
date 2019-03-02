@@ -246,17 +246,17 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 		iAfterPay.afterPay(trade_map, real_money, payer, payType);
 	}
 
-	public void setSubAuthorizeRoles(Long userId, String roleIds, Long strategyId) {
+	public void setSubAuthorizeRoles(Long userId, String ruIds, Long strategyId) {
 		SubAuthorize sa = (SubAuthorize) commonDao.getEntity(SubAuthorize.class, strategyId);
 		sa.setOwnerId(userId);
 		commonDao.update(sa);
 
-		List<?> roleIDList = Arrays.asList(roleIds.split(","));
+		List<?> ruIDList = Arrays.asList(ruIds.split(","));
 
 		@SuppressWarnings("unchecked")
 		List<RoleUser> rus = (List<RoleUser>) commonDao.getEntities(" from RoleUser where strategyId = ?", strategyId);
 		for (RoleUser ru : rus) {
-			if (roleIDList.contains(ru.getId().toString())) {
+			if (ruIDList.contains(ru.getId().toString())) {
 				ru.setUserId(userId);
 			} else {
 				ru.setUserId(sa.getBuyerId());
