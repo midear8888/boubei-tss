@@ -56,7 +56,7 @@ import com.github.wxpay.sdk.WXPay;
 import com.github.wxpay.sdk.WXPayUtil;
 
 @Controller
-@RequestMapping("/wx/api")
+@RequestMapping({"/wx/api", "/auth/wx/api"})
 public class WxAPI {
 	
 	Logger log = Logger.getLogger(this.getClass());
