@@ -40,7 +40,7 @@ public class UserDao extends BaseDao<User> implements IUserDao {
 
         Long deletedUserId = user.getId();
         deleteAll(findUser2GroupByUserId(deletedUserId)); // 用户对组
-        deleteAll(findUser2RoleByUserId(deletedUserId));  // 用户对角色
+        deleteAll(findRoleUserByUserId(deletedUserId));  // 用户对角色
 		
 		return user;
 	}
@@ -101,7 +101,7 @@ public class UserDao extends BaseDao<User> implements IUserDao {
 		return getEntities("from GroupUser o where o.userId = ? ", userId);
 	}
 
-	public List<?> findUser2RoleByUserId(Long userId) {
+	public List<?> findRoleUserByUserId(Long userId) {
 		return getEntities("from RoleUser o where o.id.userId = ? and o.strategyId is null", userId);
 	}
 

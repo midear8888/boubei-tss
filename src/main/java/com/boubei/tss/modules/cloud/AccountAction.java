@@ -52,7 +52,7 @@ public class AccountAction {
 	@RequestMapping(value = "/subauthorize/role", method = RequestMethod.GET)
 	@ResponseBody
 	public List<?> querySubAuthorizeRoles(Long strategyId) {
-		return commService.getList("select u, r.name from RoleUser u, Role r where u.strategyId = ? and u.roleId = r.id", strategyId);
+		return commService.getList("select ru, r.name from RoleUser ru, Role r where ru.strategyId = ? and ru.roleId = r.id", strategyId);
 	}
 
 	@RequestMapping(value = "/subauthorize/role", method = RequestMethod.POST)

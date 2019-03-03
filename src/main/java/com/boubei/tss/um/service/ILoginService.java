@@ -104,7 +104,9 @@ public interface ILoginService {
     List<String> getRoleNames(Collection<Long> roleIds);
     
     @Cached(cyclelife = CacheLife.SHORT)
-    List<Object[]> getAssistGroupIdsByUserId(Long userId);
+    List<Object[]> getAssistGroups(Long userId);
+    
+    Object[] getMainGroup(Long userId);
 
     /**
      * 根据用户获取用户所在组织关系

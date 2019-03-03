@@ -60,7 +60,7 @@ public interface IUserDao extends IDao<User>{
 	 * @param userId
 	 * @return List
 	 */
-	List<?> findUser2RoleByUserId(Long userId);
+	List<?> findRoleUserByUserId(Long userId);
 
 	/**
 	 * <p>

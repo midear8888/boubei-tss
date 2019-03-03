@@ -11,7 +11,7 @@
         <column caption="入职日期" name="birthday" mode="date" width="80px"/>
         <column caption="拥有角色" name="roleNames" width="150px"/>
 		<column caption="所属组织" name="groupName" width="80px"/>
-		<column caption="组域" name="domain" width="60px"/>
+		<column caption="所属域" name="domain" width="60px"/>
 		
 		<column caption="用户ID" name="id" display="none"/>
 		<column caption="所属组织ID" name="groupId" display="none"/>

@@ -3,6 +3,9 @@ package com.boubei.tssx.ali;
 import com.boubei.tss.modules.param.ParamConfig;
 import com.boubei.tss.util.EasyUtils;
 
+/**
+ * 系统参数配置：ALIPAY_APPID
+ */
 public class AlipayConfig {
 
 	static String CAHR_SET = "utf-8";

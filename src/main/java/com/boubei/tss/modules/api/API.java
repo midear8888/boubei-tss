@@ -15,10 +15,16 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.dml.SQLExcutor;
+import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.framework.sso.SSOConstants;
 import com.boubei.tss.modules.log.BusinessLogger;
 import com.boubei.tss.portal.helper.MenuDTO;
 import com.boubei.tss.portal.service.INavigatorService;
+import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.service.ILoginService;
+import com.boubei.tss.um.service.IUserService;
+import com.boubei.tss.util.BeanUtil;
+import com.boubei.tss.util.EasyUtils;
 
 /**
  * 远程调用接口。
@@ -30,6 +36,7 @@ public class API {
 	
 	@Autowired ILoginService loginService;
 	@Autowired INavigatorService menuService;
+	@Autowired IUserService userService;
 	
 	@RequestMapping("/menu/json/{id}")
 	@ResponseBody
@@ -84,5 +91,36 @@ public class API {
 		String content = requestMap.get("content");
 		String udf1 = requestMap.get("udf1");
 		BusinessLogger.log(table, code, content, udf1, System.currentTimeMillis());
+	}
+	
+	/** 指定人员特定的岗位, 用于特定的页面添加账号及角色：客户管理、司机管理等 */
+	@RequestMapping(value = "/setUserRole", method = RequestMethod.POST)
+	@ResponseBody
+	public User setRole4User(HttpServletRequest request, String userCode, String roles) {
+		Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
+		
+		User user = userService.getUserByLoginName(userCode);
+		String groupStr;
+		
+		if( user != null ) {
+			Long userID = user.getId();
+			
+			List<Long> exsitRoles = loginService.getRoleIdsByUserId(userID);
+			List<Object[]> groups = loginService.getAssistGroups(userID);
+			groups.add( loginService.getMainGroup(userID) );
+			
+			groupStr = EasyUtils.list2Str(groups, 0);
+			roles += "," + EasyUtils.list2Str(exsitRoles);
+		} 
+		else {
+			user = new User();
+			user.setLoginName(userCode);
+			groupStr = Environment.getInSession(SSOConstants.USER_GROUP_ID) + ""; // 创建用户到当前创建人所在组下
+		}
+		
+		BeanUtil.setDataToBean(user, requestMap);
+		userService.createOrUpdateUser(user, groupStr, roles);
+		
+		return user;
 	}
 }

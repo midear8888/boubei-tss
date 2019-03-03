@@ -284,7 +284,7 @@
             url : "/tss/checkMobile.in",
             headers: {"appCode": FROMEWORK_CODE, "anonymous": "true"},
             params : {"loginName": loginName, "telephone": telephone},
-            onsuccess : function() { 
+            ondata : function() { 
                 $("#d3").show(true);
             }
         });

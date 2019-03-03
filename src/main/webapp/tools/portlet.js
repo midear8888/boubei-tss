@@ -18,23 +18,23 @@ function getParam(key, callback) {
 }
 
 function initUserInfo(callback) {
-	$.ajax({
-		url : "/tss/auth/user/operatorInfo",
-		method : "POST",
-		onresult : function() {
-			var userName = this.getNodeValue("name");
-			$("#userInfo").html(userName || '个人信息');
+    $.ajax({
+        url : "/tss/auth/user/operatorInfo",
+        method : "POST",
+        onresult : function() {
+            var userName = this.getNodeValue("name");
+            $("#userInfo").html(userName || '个人信息');
 
-			callback();
-		}
-	});
+            callback();
+        }
+    });
 }
 
 function su() {
     $.prompt("请输入您要切换的账号", "切换账号", function(value) {
         if ( $.isNullOrEmpty(value) ) return alert("账号不能为空");
         $.ajax({
-            url: "/tss/si/su",
+            url: "/tss/si/su?uName=Admin&uSign=1", // 装作API CALL，避免踢人
             method: "PUT",
             params: {"sessionId": $.Cookie.getValue("JSESSIONID"), "target": value},
             ondata: function() { 
@@ -45,17 +45,17 @@ function su() {
 }
 
 function logout() {
-	$.ajax({
-		url : "/tss/logout.in",
-		method : "GET",
-		onsuccess : function() { 
-			$.Cookie.del("token", "");
-			$.Cookie.del("token", "/");
-			$.Cookie.del("token", "/tss");
-			$.Cookie.del("token", "/tss/");
-			location.href = "/tss/login.html";
-		}
-	});
+    $.ajax({
+        url : "/tss/logout.in",
+        method : "GET",
+        onsuccess : function() { 
+            $.Cookie.del("token", "");
+            $.Cookie.del("token", "/");
+            $.Cookie.del("token", "/tss");
+            $.Cookie.del("token", "/tss/");
+            location.href = "/tss/login.html";
+        }
+    });
 }
 
 function dbsx() {
@@ -74,14 +74,14 @@ function dbsx() {
 
 /* 禁止鼠标右键 
 (function() {
-	document.oncontextmenu = function(ev) {
-		ev = ev || window.event;
-		var srcElement = $.Event.getSrcElement(ev);
-		var tagName = srcElement.tagName.toLowerCase();
-		if("input" != tagName && "textarea" != tagName) {
-			$.Event.cancel(ev);            
-		}
-	}
+    document.oncontextmenu = function(ev) {
+        ev = ev || window.event;
+        var srcElement = $.Event.getSrcElement(ev);
+        var tagName = srcElement.tagName.toLowerCase();
+        if("input" != tagName && "textarea" != tagName) {
+            $.Event.cancel(ev);            
+        }
+    }
 })();
 */
 

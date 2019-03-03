@@ -77,7 +77,7 @@ public class PermissionServiceImpl implements PermissionService {
             if ( EasyUtils.isNullOrEmpty(resource2Opts) ) continue; 
             
 			int index = resource2Opts.indexOf("|");
-			Long resourceId = Long.valueOf(resource2Opts.substring(0, index));
+			Long resourceId = Long.valueOf(resource2Opts.substring(0, index).trim());
 			String optStates = resource2Opts.substring(index + 1);
             for (int i = 0; i < operationIds.size(); i++) {
                 /* 0:没打勾, 1:仅此节点, 2:此节点并包含所有子节点, 3:禁用未选中 4:禁用已选中 */

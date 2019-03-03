@@ -67,8 +67,8 @@ public class DBOnlineUserService implements IOnlineUserManager {
         }
         
         // 设置域信息（每次登陆domain可能已经发生了变化，重新设置）
-        String hql = "from Group where id in (select groupId from GroupUser where userId = ?) and groupType = " + Group.MAIN_GROUP_TYPE;
-    	List<?> groups = dao.getEntities(hql, userId);
+        String hql = "from Group where id in (select groupId from GroupUser where userId = ?) and groupType = ?";
+    	List<?> groups = dao.getEntities(hql, userId, Group.MAIN_GROUP_TYPE);
     	if( groups.size() > 0 ) {
     		Group group = (Group) groups.get(0);
         	ou.setDomain(group.getDomain());

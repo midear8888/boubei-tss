@@ -216,7 +216,7 @@ public class UserService implements IUserService{
 
     /* 用户对角色 */
     private void saveUser2Role(Long userId, String roleIdsStr) {
-        List<?> user2Roles = userDao.findUser2RoleByUserId(userId);
+        List<?> user2Roles = userDao.findRoleUserByUserId(userId);
         Map<Long, Object> historyMap = new HashMap<Long, Object>(); //把老的组对用户记录做成一个map，以"userId"为key
         for (Object temp : user2Roles) {
             RoleUser roleUser = (RoleUser) temp;
