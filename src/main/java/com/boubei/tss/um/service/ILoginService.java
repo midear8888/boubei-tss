@@ -103,7 +103,6 @@ public interface ILoginService {
     
     List<String> getRoleNames(Collection<Long> roleIds);
     
-    @Cached(cyclelife = CacheLife.SHORT)
     List<Object[]> getAssistGroups(Long userId);
     
     Object[] getMainGroup(Long userId);
