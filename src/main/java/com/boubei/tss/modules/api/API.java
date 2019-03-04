@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.dml.SQLExcutor;
+import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.sso.SSOConstants;
 import com.boubei.tss.modules.log.BusinessLogger;
@@ -23,7 +24,6 @@ import com.boubei.tss.portal.service.INavigatorService;
 import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.um.service.IUserService;
-import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
 
 /**
@@ -37,6 +37,7 @@ public class API {
 	@Autowired ILoginService loginService;
 	@Autowired INavigatorService menuService;
 	@Autowired IUserService userService;
+	@Autowired ICommonService commService;
 	
 	@RequestMapping("/menu/json/{id}")
 	@ResponseBody
@@ -94,15 +95,17 @@ public class API {
 	}
 	
 	/** 指定人员特定的岗位, 用于特定的页面添加账号及角色：客户管理、司机管理等 */
+	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/setUserRole", method = RequestMethod.POST)
 	@ResponseBody
-	public User setRole4User(HttpServletRequest request, String userCode, String roles) {
+	public User setRole4User(HttpServletRequest request, String userCode, String group, String roles) {
 		Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
 		
 		User user = userService.getUserByLoginName(userCode);
 		String groupStr;
 		
-		if( user != null ) {
+		// 只能修改自己域下用户，修改别的域已存在的用户会报账号已存在
+		if( user != null && loginService.getUsersMap().containsKey(userCode) ) {
 			Long userID = user.getId();
 			
 			List<Long> exsitRoles = loginService.getRoleIdsByUserId(userID);
@@ -115,10 +118,17 @@ public class API {
 		else {
 			user = new User();
 			user.setLoginName(userCode);
-			groupStr = Environment.getInSession(SSOConstants.USER_GROUP_ID) + ""; // 创建用户到当前创建人所在组下
+			user.setPassword(userCode);
+			
+	        String hql = "select id from Group where domain = ? and name = ? order by decode asc";
+			List<Object> list = (List<Object>) commService.getList(hql, Environment.getDomain(), EasyUtils.checkNull(group, "noGroup__"));
+			list.addAll( commService.getList(hql, Environment.getDomain(), Environment.getInSession(SSOConstants.USER_GROUP)) );
+			
+			groupStr = list.get(0) + ""; // 创建用户到当前创建人所在组下
 		}
 		
-		BeanUtil.setDataToBean(user, requestMap);
+		user.setUserName(requestMap.get("userName"));
+		user.setUdf(requestMap.get("udf"));
 		userService.createOrUpdateUser(user, groupStr, roles);
 		
 		return user;

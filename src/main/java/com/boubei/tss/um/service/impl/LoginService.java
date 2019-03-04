@@ -175,7 +175,12 @@ public class LoginService implements ILoginService {
     
     public List<Long> saveUserRolesAfterLogin(Long logonUserId, List<Long> roleIds) {
     	
-    	userDao.executeHQL("delete RoleUserMapping o where o.id.userId = ?",  logonUserId);
+    	String hql = "from RoleUserMapping o where o.id.userId = ?";
+		List<RoleUserMapping> exsits = (List<RoleUserMapping>) userDao.getEntities(hql,  logonUserId);
+    	Map<Long, RoleUserMapping> history = new HashMap<Long, RoleUserMapping>();
+    	for(RoleUserMapping rum : exsits) {
+    		history.put(rum.getId().getRoleId(), rum);
+    	}
         
         // 默认插入一条【匿名角色】给每一个登录用户
     	if( !roleIds.contains(UMConstants.ANONYMOUS_ROLE_ID) ) {
@@ -184,15 +189,18 @@ public class LoginService implements ILoginService {
         Set<Long> roleSet = new HashSet<Long>( roleIds ); // 去重
         
         for(Long roleId : roleSet) {
-			RoleUserMappingId id = new RoleUserMappingId();
-			id.setUserId(logonUserId);
-			id.setRoleId(roleId);
-			
-			RoleUserMapping entity = new RoleUserMapping();
-			entity.setId(id);
-			
-			userDao.createObject(entity);
+        	if( history.remove(roleId) == null ) {
+        		RoleUserMappingId id = new RoleUserMappingId();
+    			id.setUserId(logonUserId);
+    			id.setRoleId(roleId);
+    			
+    			RoleUserMapping entity = new RoleUserMapping();
+    			entity.setId(id);
+    			
+    			userDao.createObject(entity);
+        	}
 		}
+        userDao.deleteAll( history.values() );
         
         return roleIds;
 	}
