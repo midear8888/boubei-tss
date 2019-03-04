@@ -90,7 +90,7 @@ public class MonitorUtil {
 		String ret = MonitorUtil.visitHttpUrl(url);
 		if(ret == null 
 				|| (!ret.startsWith("[") && !ret.endsWith("]"))
-				|| (!EasyUtils.isNullOrEmpty(expectWord) && ret.indexOf(expectWord) < 0) 
+				|| (!EasyUtils.isNullOrEmpty(expectWord) && ret.indexOf(expectWord.trim()) < 0) 
 			) {
 			recordErrLog("Restful Url", "URL【" +url+ "】访问结果异常，ret = " + ret);
 		}
