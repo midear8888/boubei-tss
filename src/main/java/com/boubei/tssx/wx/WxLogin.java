@@ -157,7 +157,7 @@ public class WxLogin extends HttpServlet {
 		log.debug("3. mock login in ");
 		
 		List<Object[]> groups = loginService.getGroupsByUserId(userId);  //List<[groupId, groupName]>，截掉"主用户组"
-		List<Object[]> assistGroups = loginService.getAssistGroupIdsByUserId(userId); // List<[groupId, groupName]>
+		List<Object[]> assistGroups = loginService.getAssistGroups(userId); // List<[groupId, groupName]>
 		
 		HttpSession session = Context.getRequestContext().getSession();
 		Object roles = session.getAttribute(SSOConstants.USER_ROLES_S);
