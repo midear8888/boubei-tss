@@ -33,7 +33,7 @@ var params_ = {
 params_.data = JSON.stringify(params_.data).replace(/#/g,"%23"), 
 params_.miniprogram = JSON.stringify(params_.miniprogram);
 
-$.ajax({
+tssJS.ajax({
     url: '/tss/wx/api/sendgzhmsg?uName=BD0000&uToken=oKYA65HP9aMry2lgcQgyorxYXasU',  
     headers: {appCode:'BD'},    
     params: params_,   
