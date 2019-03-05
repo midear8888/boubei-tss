@@ -35,6 +35,7 @@ import com.boubei.tss.modules.cloud.entity.ModuleUser;
 import com.boubei.tss.modules.cloud.pay.AbstractProduct;
 import com.boubei.tss.modules.cloud.pay.AfterPayService;
 import com.boubei.tss.modules.cloud.pay.ModuleOrderHandler;
+import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.um.entity.RoleUser;
 import com.boubei.tss.um.entity.SubAuthorize;
 import com.boubei.tss.um.entity.User;
@@ -158,9 +159,10 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 		Map<String, String> map = new HashMap<>();
 		try { map = new ObjectMapper().readValue(co.getParams(), HashMap.class); } catch (Exception e) { }
 
+		Boolean isNewUser = false;
 		// 自注册账号
 		if (Environment.isAnonymous()) {
-			selfRegister(co, map);
+			isNewUser = selfRegister(co, map);
 		}
 
 		// for 购买时补充填写用户信息
@@ -193,11 +195,17 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 		if (co.getModule_id() != null) {
 			calMoney(co); // 价格以后台计算为准，防止篡改（同时检查前后台的报价是否一致）
 		}
+		
+		// 停用用户，支付后启用
+		if(isNewUser){
+			user.setDisabled(ParamConstants.TRUE);
+			commonDao.update(user);
+		}
 
 		return co;
 	}
 
-	private void selfRegister(CloudOrder mo, Map<String, String> map) {
+	private Boolean selfRegister(CloudOrder mo, Map<String, String> map) {
 		// 校验短信验证码smsCode
 		String smsCode = map.get("smsCode");
 		String mobile = map.get("phone");
@@ -208,7 +216,7 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 		List<?> users = commonDao.getEntities(" from User where ? in (loginName, telephone, email)", mobile);
 
 		if (users.size() > 0) {
-			return;
+			return false;
 		}
 
 		// 注册账号
@@ -218,8 +226,8 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 		user.setBelongUserId(mo.getInvite_user_id());
 		user.setUserName(mobile);
 		user.setPassword(map.get("password"));
-		user.setDisabled(1);
 		userService.regUser(user, true);
+		return true;
 	}
 
 	public CloudOrder calMoney(CloudOrder co) {
