@@ -70,6 +70,7 @@ public class AlipayAPI {
 			aRequest.setReturnUrl(return_url);
 			requestMap.put("product_code", "FAST_INSTANT_TRADE_PAY");
 		    aRequest.setBizContent( EasyUtils.obj2Json(requestMap) ); // 填充业务参数
+		    
 		    return aClient.pageExecute(aRequest).getBody();
 		}else if("wap".equals(method)){
 			AlipayTradeWapPayRequest aRequest = new AlipayTradeWapPayRequest(); // 创建API对应的request
@@ -77,6 +78,7 @@ public class AlipayAPI {
 			aRequest.setReturnUrl(return_url);
 			requestMap.put("product_code", "QUICK_WAP_PAY");
 		    aRequest.setBizContent( EasyUtils.obj2Json(requestMap) ); // 填充业务参数
+		    
 		    return aClient.pageExecute(aRequest).getBody();
 		}else if("app".equals(method)){
 			AlipayTradeAppPayRequest aRequest = new AlipayTradeAppPayRequest(); // 创建API对应的request
@@ -84,6 +86,7 @@ public class AlipayAPI {
 			aRequest.setReturnUrl(return_url);
 			requestMap.put("product_code", "QUICK_MSECURITY_PAY");
 		    aRequest.setBizContent( EasyUtils.obj2Json(requestMap) ); // 填充业务参数
+		    
 		    return aClient.pageExecute(aRequest).getBody();
 		}
 		return null;

@@ -90,6 +90,7 @@ public abstract class AbstractProduct {
 		this.payer = payer;
 
 		this.user = (User) commonDao.getEntities(" from User where loginName = ?", co.getCreator()).get(0);
+		
 		this.userId = user.getId();
 		this.userCode = user.getLoginName();
 
@@ -103,7 +104,9 @@ public abstract class AbstractProduct {
 			co.setStatus(CloudOrder.PART_PAYED);
 		} else {
 			co.setStatus(CloudOrder.PAYED);
-
+			this.user.setDisabled(0);
+			commonDao.update(this.user);
+			
 			handle();
 			init();
 		}
