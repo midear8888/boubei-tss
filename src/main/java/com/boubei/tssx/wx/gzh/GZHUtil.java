@@ -37,6 +37,7 @@ tssJS.ajax({
     url: '/tss/wx/api/sendgzhmsg?uName=BD0000&uToken=oKYA65HP9aMry2lgcQgyorxYXasU',  
     headers: {appCode:'BD'},    
     params: params_,   
+    method: "GET",
     success: function(data){
         console.log( data)
     } 

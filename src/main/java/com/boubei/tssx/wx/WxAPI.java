@@ -634,11 +634,8 @@ public class WxAPI {
 	
 	/**
 	 * 公众号发送模板消息
-	 * 向www.boudata.com环境转本信息，需要在BD的白名单里，且请求要求位GET（POST乱码了）
 	 * 
-	 * @param request
-	 * @param response
-	 * @throws IOException
+	 * 注：向www.boudata.com环境转本信息，需要在BD的白名单里，且请求要求位GET（POST乱码了）
 	 */
 	@RequestMapping(value = "/sendgzhmsg")
 	@ResponseBody
