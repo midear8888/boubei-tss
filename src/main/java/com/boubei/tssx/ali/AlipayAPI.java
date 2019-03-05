@@ -56,7 +56,7 @@ public class AlipayAPI {
 				alipay.getAlipayKey(), AlipayConfig.Sign_Type); 
 		
 	    String form = createForm(aClient,requestMap, return_url, _afterPaySuccess, alipay, method); // 调用SDK生成表单
-	    
+	    System.out.println(form);
 	    response.setContentType("text/html;charset=" + AlipayConfig.CAHR_SET);
 	    response.getWriter().write(form); // 直接将完整的表单html输出到页面
 	    response.getWriter().flush();
