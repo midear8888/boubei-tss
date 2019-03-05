@@ -18,7 +18,6 @@ import com.boubei.tss.cache.Cacheable;
 import com.boubei.tss.cache.Pool;
 import com.boubei.tss.cache.extension.CacheHelper;
 import com.boubei.tss.framework.Global;
-import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.sms.AbstractSMS;
 import com.boubei.tss.framework.sms.SMSLog;
 import com.boubei.tss.framework.sso.Environment;
@@ -33,7 +32,6 @@ public class AliyunSMS extends AbstractSMS {
  
     String sms_sign;
     IAcsClient acsClient;
-    ICommonService commService;
     
     private static Pool cache = CacheHelper.getLongCache();
     
