@@ -11,6 +11,7 @@
 package com.boubei.tssx.wx.gzh;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -59,6 +60,14 @@ public class GZHBindPhone extends HttpServlet {
 
 		if (!EasyUtils.isNullOrEmpty(mobile) && (EasyUtils.isNullOrEmpty(smsCode) || !AliyunSMS.instance().checkCode(mobile, smsCode))) {
 			response.getWriter().println(WXUtil.returnCode(406));
+			return;
+		}
+		
+		// 判断该 微信号是否已经绑定手机号
+		String hql = "from GZHPhone where openid = ? and appid = ?";
+		List<?> bindPhones = Global.getCommonService().getList(hql, openId, appId);
+		// 若已经存在 则 跳出 不新增
+		if (bindPhones.size() > 0) {
 			return;
 		}
 
