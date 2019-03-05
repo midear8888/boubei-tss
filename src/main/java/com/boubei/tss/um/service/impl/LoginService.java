@@ -99,14 +99,6 @@ public class LoginService implements ILoginService {
     	userDao.refreshEntity(user);
 	}
 	
-	public void setLastLoginTime(Long userId) {
-		User user = userDao.getEntity(userId);
-		user.setLastLogonTime(new Date());
-		user.setLogonCount( EasyUtils.obj2Int(user.getLogonCount()) + 1 );
-		
-		userDao.refreshEntity(user);
-	}
-	
 	public Object resetPassword(Long userId, String passwd) {
 		User user = userDao.getEntity(userId);
 		String token = InfoEncoder.simpleEncode(userId.toString(), MathUtil.randomInt(12));

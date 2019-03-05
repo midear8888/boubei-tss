@@ -3,9 +3,7 @@
 	<declare sequence="true" header="checkbox">
 		<column caption="头像" name="icon" mode="image" width="40px"/>
 		<column caption="账号" name="loginName" width="80px" sortable="true" highlightCol="true"/>
-		<!--
-		<column caption="账号状态" name="disabled" values="1|0" texts="停用|启用" width="55px"/>
-		-->
+		<column caption="账号状态" name="disabled" values="1|0" texts="停用|启用" width="55px" display="none"/>
 		<column caption="姓名" name="userName" width="80px"/>
         <column caption="手机" name="telephone" width="80px"/>
         <column caption="电子邮件" name="email" width="100px"/>

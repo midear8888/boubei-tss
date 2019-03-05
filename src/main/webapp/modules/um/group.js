@@ -421,7 +421,7 @@
         var treeNode = $.T("tree").getActiveTreeNode();
         var treeID   = isAddGroup ? newGroupID : treeNode.id;
         var treeName = isAddGroup ? "用户组" : treeNode.name;      
-        var parentID = isAddGroup ? treeNode.id : treeNode.parent.id;       
+        var parentID = isAddGroup ? treeNode.id : treeNode.attrs.parentId;       
         var groupType = treeNode.getAttribute("groupType");
 
         var phases = [];

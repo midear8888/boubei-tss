@@ -399,7 +399,7 @@ public class UserAction extends BaseActionSupport {
 	}
 	
 	public static Object[] getUserHas() {
-		Object[] userHas = new Object[16];
+		Object[] userHas = new Object[17];
 		userHas[0] = Environment.getInSession("GROUPS_MAIN");  //List 不含"主用户组"
 		userHas[1] = Environment.getOwnRoles(); // List<roleId>
 		userHas[2] = Environment.getUserId();
@@ -416,6 +416,7 @@ public class UserAction extends BaseActionSupport {
 		userHas[13]= Environment.getInSession(SSOConstants.USER_MODULE_C);
 		userHas[14]= Environment.getInSession(SSOConstants.USER_MODULE_N);
 		userHas[15]= Environment.getUserGroup();
+		userHas[16]= Environment.getUserGroupId();
 		
 		return userHas;
 	}

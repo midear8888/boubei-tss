@@ -47,11 +47,6 @@ public interface ILoginService {
 	void recordPwdErrorCount(String loginName, int currCount);
 	
 	/**
-	 * 设置用户最后登录系统的时间
-	 */
-	void setLastLoginTime(Long userId);
-    
-	/**
 	 * 重新设置密码。
 	 * 
 	 * @param userId

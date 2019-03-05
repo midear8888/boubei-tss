@@ -36,6 +36,7 @@ import com.boubei.tss.modules.cloud.pay.AbstractProduct;
 import com.boubei.tss.modules.cloud.pay.AfterPayService;
 import com.boubei.tss.modules.cloud.pay.ModuleOrderHandler;
 import com.boubei.tss.modules.param.ParamConstants;
+import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.entity.RoleUser;
 import com.boubei.tss.um.entity.SubAuthorize;
 import com.boubei.tss.um.entity.User;
@@ -174,6 +175,7 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 		User user = userService.getUserByLoginName(userCode);
 		user.setUserName((String) EasyUtils.checkNull(userName, user.getUserName()));
 		user.setUdf((String) EasyUtils.checkNull(orgName, user.getUdf()));
+		user.setDisabled(ParamConstants.FALSE); // 第一次下单没有支付，账号在自注册域，状态停用；第二次再重新下单先启用
 		commonDao.update(user);
 		
 		// 模拟登录
@@ -196,8 +198,8 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 			calMoney(co); // 价格以后台计算为准，防止篡改（同时检查前后台的报价是否一致）
 		}
 		
-		// 停用用户，支付后启用
-		if(isNewUser){
+		// 如果是下单生成的自注册新用户，则先停用，支付后启用
+		if( isNewUser || UMConstants.SELF_REGISTER_GROUP_ID.equals(Environment.getUserGroupId()) ){
 			user.setDisabled(ParamConstants.TRUE);
 			commonDao.update(user);
 		}

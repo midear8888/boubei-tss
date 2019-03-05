@@ -45,6 +45,17 @@ public class UserDao extends BaseDao<User> implements IUserDao {
 		return user;
 	}
 	
+	public void setLastLoginTime(Long userId) {
+		try {
+			User user = getEntity(userId);
+			user.setLastLogonTime(new Date());
+			user.setLogonCount( EasyUtils.obj2Int(user.getLogonCount()) + 1 );
+			
+			refreshEntity(user);
+		} 
+    	catch( Exception e ) { }
+	}
+	
     public void checkUserAccout(User user) {
     	boolean isNew = user.getId() == null;
     	

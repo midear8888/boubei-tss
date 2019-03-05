@@ -14,6 +14,7 @@ import com.boubei.tss.modules.cloud.entity.Account;
 import com.boubei.tss.modules.cloud.entity.AccountFlow;
 import com.boubei.tss.modules.cloud.entity.CloudOrder;
 import com.boubei.tss.modules.cloud.entity.ModuleDef;
+import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.um.entity.RoleUser;
 import com.boubei.tss.um.entity.SubAuthorize;
 import com.boubei.tss.um.entity.User;
@@ -104,7 +105,9 @@ public abstract class AbstractProduct {
 			co.setStatus(CloudOrder.PART_PAYED);
 		} else {
 			co.setStatus(CloudOrder.PAYED);
-			this.user.setDisabled(0);
+			
+			// 购买成功，正式启用用户（if新用户）
+			this.user.setDisabled(ParamConstants.FALSE);
 			commonDao.update(this.user);
 			
 			handle();

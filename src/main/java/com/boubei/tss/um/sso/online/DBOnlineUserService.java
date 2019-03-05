@@ -19,11 +19,11 @@ import javax.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.boubei.tss.framework.persistence.ICommonDao;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.sso.online.IOnlineUserManager;
 import com.boubei.tss.modules.param.ParamConstants;
+import com.boubei.tss.um.dao.IUserDao;
 import com.boubei.tss.um.entity.Group;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.URLUtil;
@@ -34,7 +34,7 @@ import com.boubei.tss.util.URLUtil;
 @Service("DBOnlineUserService")
 public class DBOnlineUserService implements IOnlineUserManager {
 	
-	@Autowired private ICommonDao dao;
+	@Autowired private IUserDao dao;
 	
     /*     
      * 如果在线用户库中没有相同的用户存在， 则在在线用户库中添加此记录。
@@ -48,7 +48,9 @@ public class DBOnlineUserService implements IOnlineUserManager {
         DBOnlineUser ou;
         if( list.isEmpty() ) {
         	ou = new DBOnlineUser(userId, sessionId, appCode, token, userName);
-        	dao.create(ou);
+        	dao.createObject(ou);
+        	
+        	dao.setLastLoginTime(userId);
         } 
         else {
         	ou = (DBOnlineUser) list.get(0);
@@ -56,7 +58,9 @@ public class DBOnlineUserService implements IOnlineUserManager {
         	// 移动端登录/API访问, 不干扰PC端
         	HttpSession session = Context.sessionMap.get(ou.getSessionId());
         	if( session != null && !URLUtil.isWeixin() && !Context.getRequestContext().isApiCall() ) {
-        		session.invalidate(); // 销毁当前用户已经登录的session，控制账号在多地登录
+        		session.invalidate(); // 销毁当前用户已经登录的session（登录在其它电脑上的），控制账号在多地登录
+        		
+        		dao.setLastLoginTime(userId);
         	}
         	
         	ou.setSessionId(sessionId);

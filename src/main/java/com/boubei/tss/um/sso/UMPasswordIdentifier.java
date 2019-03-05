@@ -77,11 +77,6 @@ public class UMPasswordIdentifier extends BaseUserIdentifier {
 			loginSuccess("Logon by UM ");
 		}
 		
-		try {
-			loginservice.setLastLoginTime(operator.getId());
-		} 
-    	catch( Exception e ) { }
-		
 		return operator;
     }
     

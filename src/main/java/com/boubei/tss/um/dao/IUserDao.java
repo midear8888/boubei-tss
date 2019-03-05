@@ -23,6 +23,11 @@ public interface IUserDao extends IDao<User>{
 	 * @param id
 	 */
 	User removeUser(User user);
+	
+	/**
+	 * 设置用户最后登录系统的时间
+	 */
+	void setLastLoginTime(Long userId);
 
 	/**
 	 * <p>

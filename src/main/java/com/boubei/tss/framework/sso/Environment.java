@@ -124,6 +124,10 @@ public class Environment {
     	return (String) Environment.getInSession(SSOConstants.USER_GROUP);
     }
     
+    public static Long getUserGroupId() {
+    	return (Long) Environment.getInSession(SSOConstants.USER_GROUP_ID);
+    }
+    
     public static String getDomainOrign() {
     	return (String) getInSession(SSOConstants.USER_DOMAIN);
     }
