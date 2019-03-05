@@ -20,7 +20,7 @@ public class AlipayTest extends AbstractTest4 {
 		request.addParameter("total_amount", "1");
 		request.addParameter("subject", "1234");
 		request.addParameter("body", "1234");
-		alipay.pagepay(request, response);
+		alipay.pagepay(request, response, "pc");
 		
 		request = new MockHttpServletRequest();
 		response = new MockHttpServletResponse();

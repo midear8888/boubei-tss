@@ -8,14 +8,17 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;
 import com.alipay.api.DefaultAlipayClient;
+import com.alipay.api.request.AlipayTradeAppPayRequest;
 import com.alipay.api.request.AlipayTradePagePayRequest;
 import com.alipay.api.request.AlipayTradeQueryRequest;
+import com.alipay.api.request.AlipayTradeWapPayRequest;
 import com.alipay.api.response.AlipayTradeQueryResponse;
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.framework.exception.BusinessException;
@@ -37,9 +40,9 @@ public class AlipayAPI {
 	 * http://127.0.0.1:9000/tss/alipay/api/pagepay?appid=2018051160132356&out_trade_no=1000000&product_code=FAST_INSTANT_TRADE_PAY&total_amount=1&subject=1234&body=1234
 	 * https://www.boudata.com/tss/alipay/api/pagepay?appid=2018051160132356&out_trade_no=1000005&product_code=FAST_INSTANT_TRADE_PAY&total_amount=0.01&subject=%E6%94%AF%E4%BB%98&body=%E6%94%AF%E4%BB%98%E5%86%85%E5%AE%B9
 	 */
-	@RequestMapping(value = "/pagepay")
+	@RequestMapping(value = "/pay/{method}")
 	@ResponseBody
-	public void pagepay(HttpServletRequest request, HttpServletResponse response) throws Exception {
+	public void pagepay(HttpServletRequest request, HttpServletResponse response, @PathVariable("method") String method) throws Exception {
 		
 		Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
 		String appid = requestMap.remove("appid");
@@ -52,17 +55,38 @@ public class AlipayAPI {
 				alipay.getPrivateKey(), "json", AlipayConfig.CAHR_SET, 
 				alipay.getAlipayKey(), AlipayConfig.Sign_Type); 
 		
-	    AlipayTradePagePayRequest aRequest = new AlipayTradePagePayRequest(); // 创建API对应的request
-		aRequest.setNotifyUrl(alipay.getNotifyUrl(_afterPaySuccess)); // 在公共参数中设置回跳和通知地址
-		aRequest.setReturnUrl(return_url);
-	    aRequest.setBizContent( EasyUtils.obj2Json(requestMap) ); // 填充业务参数
- 
-	    String form = aClient.pageExecute(aRequest).getBody(); // 调用SDK生成表单
+	    String form = createForm(aClient,requestMap, return_url, _afterPaySuccess, alipay, method); // 调用SDK生成表单
 	    
 	    response.setContentType("text/html;charset=" + AlipayConfig.CAHR_SET);
 	    response.getWriter().write(form); // 直接将完整的表单html输出到页面
 	    response.getWriter().flush();
 	    response.getWriter().close();
+	}
+
+	private String createForm(AlipayClient aClient,Map<String, String> requestMap, String return_url, String _afterPaySuccess, AlipayConfig alipay, String method) throws Exception{
+		if("pc".equals(method)){
+			AlipayTradePagePayRequest aRequest = new AlipayTradePagePayRequest(); // 创建API对应的request
+			aRequest.setNotifyUrl(alipay.getNotifyUrl(_afterPaySuccess)); // 在公共参数中设置回跳和通知地址
+			aRequest.setReturnUrl(return_url);
+			requestMap.put("product_code", "FAST_INSTANT_TRADE_PAY");
+		    aRequest.setBizContent( EasyUtils.obj2Json(requestMap) ); // 填充业务参数
+		    return aClient.pageExecute(aRequest).getBody();
+		}else if("wap".equals(method)){
+			AlipayTradeWapPayRequest aRequest = new AlipayTradeWapPayRequest(); // 创建API对应的request
+			aRequest.setNotifyUrl(alipay.getNotifyUrl(_afterPaySuccess)); // 在公共参数中设置回跳和通知地址
+			aRequest.setReturnUrl(return_url);
+			requestMap.put("product_code", "QUICK_WAP_PAY");
+		    aRequest.setBizContent( EasyUtils.obj2Json(requestMap) ); // 填充业务参数
+		    return aClient.pageExecute(aRequest).getBody();
+		}else if("app".equals(method)){
+			AlipayTradeAppPayRequest aRequest = new AlipayTradeAppPayRequest(); // 创建API对应的request
+			aRequest.setNotifyUrl(alipay.getNotifyUrl(_afterPaySuccess)); // 在公共参数中设置回跳和通知地址
+			aRequest.setReturnUrl(return_url);
+			requestMap.put("product_code", "QUICK_MSECURITY_PAY");
+		    aRequest.setBizContent( EasyUtils.obj2Json(requestMap) ); // 填充业务参数
+		    return aClient.pageExecute(aRequest).getBody();
+		}
+		return null;
 	}
 	
 	/**
