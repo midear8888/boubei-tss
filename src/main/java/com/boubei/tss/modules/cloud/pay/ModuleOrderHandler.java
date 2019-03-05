@@ -6,30 +6,31 @@ import com.boubei.tss.framework.Global;
 import com.boubei.tss.modules.cloud.entity.ModuleUser;
 import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.service.ILoginService;
+import com.boubei.tss.util.EasyUtils;
 
 /**
  * @author hank 购买模块成功后续操作
  */
 public class ModuleOrderHandler extends AbstractProduct {
-	
+
 	protected ILoginService loginService = (ILoginService) Global.getBean("LoginService");
-	
+
 	public String domain;
 
 	protected void handle() {
 
-		/* 注册企业域，并将用户移动到新建的域下作为域管理员。
-		 * 判断user是否已经是域管理员（非自注册域），是的话无需再注册域; 回调时user非登录状态 
+		/*
+		 * 注册企业域，并将用户移动到新建的域下作为域管理员。 判断user是否已经是域管理员（非自注册域），是的话无需再注册域;
+		 * 回调时user非登录状态
 		 */
 		Long buyerID = user.getId();
-		
+
 		List<Long> hasRoles = loginService.getRoleIdsByUserId(buyerID);
 		List<?> groups = loginService.getGroupsByUserId(buyerID);
-		if( groups.size() == 1 || (groups.size() > 1 && !hasRoles.contains( UMConstants.DOMAIN_ROLE_ID)) ) {
-			userService.regBusiness(user, user.getUdf());
+		if (groups.size() == 1 || (groups.size() > 1 && !hasRoles.contains(UMConstants.DOMAIN_ROLE_ID))) {
+			userService.regBusiness(user, EasyUtils.checkNull(user.getUdf(), user.getLoginName()).toString());
 			domain = user.getDomain();
-		} 
-		else {
+		} else {
 			domain = co.getDomain();
 		}
 
@@ -46,7 +47,7 @@ public class ModuleOrderHandler extends AbstractProduct {
 			commonDao.create(mu);
 		}
 
-		createFlows( getAccount() );
+		createFlows(getAccount());
 	}
 
 }
