@@ -70,8 +70,7 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 
 		// 生成一个转授策略
 		SubAuthorize sa = new SubAuthorize();
-		sa.setName(def.getId() + "_" + def.getModule() + "_" + user); // name:
-																	// 模块ID_模块名称_购买人_购买序号
+		sa.setName(def.getId() + "_" + def.getModule() + "_" + user + "_try"); /* name:模块ID_模块名称_购买人_购买序号 */
 		sa.setStartDate(new Date());
 		sa.setOwnerId(Environment.getUserId());
 		sa.setBuyerId(Environment.getUserId());
@@ -138,8 +137,20 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 	public void unSelectModule(Long user, Long module) {
 		checkIsDomainAdmin();
 
-		commonDao.deleteAll(commonDao.getEntities("from RoleUser where userId=? and moduleId=?", user, module));
-		commonDao.deleteAll(commonDao.getEntities("from ModuleUser where userId=? and moduleId=?", user, module));
+		// 不能删除购买获得的策略（按照策略的命名判断）
+		String hql = "from SubAuthorize where name like ?";
+		List<?> list = commonDao.getEntities(hql, module + "\\_%\\_" + user + "_try");
+		if(list.size() > 0) {
+			SubAuthorize sa = (SubAuthorize) list.get(0);
+			commonDao.deleteAll(commonDao.getEntities("from RoleUser where strategyId=?", sa.getId()));
+			commonDao.delete(sa);
+			
+			// 使用策略删除后，没有其他的RoleUser了，则删除 ModuleUser
+			List<?> temp = commonDao.getEntities("from RoleUser where userId=? and moduleId=?", user, module);
+			if( temp.isEmpty() ) {
+				commonDao.deleteAll(commonDao.getEntities("from ModuleUser where userId=? and moduleId=?", user, module));
+			}
+		}
 	}
 
 	public List<?> listSelectedModules(Long user) {

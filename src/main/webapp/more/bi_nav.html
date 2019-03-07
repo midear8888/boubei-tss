@@ -123,7 +123,8 @@ function initMenu() {
 	var selectedPanelname = '', index = 0, count = 0;
 
 	$.each(_menus, function(i, menu1) {
-		count += 1 + (menu1.children ? menu1.children.length : 0);
+		count += (menu1.children && menu1.children.length ? menu1.children.length + 1 : 0);
+
 	})
 	var collapsed = count > 16; // 菜单个数 > 16 个，默认收缩手风琴
 

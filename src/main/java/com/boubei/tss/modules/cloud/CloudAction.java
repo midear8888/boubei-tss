@@ -28,6 +28,7 @@ import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.modules.cloud.entity.CloudOrder;
 import com.boubei.tss.modules.cloud.pay.AfterPayService;
 import com.boubei.tss.util.BeanUtil;
+import com.boubei.tss.util.EasyUtils;
 
 @Controller
 @RequestMapping("/cloud")
@@ -97,13 +98,16 @@ public class CloudAction {
 	 */
 	@RequestMapping(value = "/order/payed/{order_no}", method = RequestMethod.POST)
 	@ResponseBody
-	public void payedOrders(@PathVariable String order_no) {
+	public void payedOrders(@PathVariable String order_no, Double money_real) {
 		if( !Environment.isAdmin() ) return;
 		
 		AfterPayService afterPayService = (AfterPayService) cloudService;
 		List<?> list = commonService.getList(" from CloudOrder where order_no = ?", order_no);
 		CloudOrder co = (CloudOrder) list.get(0);
 		
-		afterPayService.handle(order_no, co.getMoney_cal(), "admin", "线下", null);
+		money_real = (Double) EasyUtils.checkNull(money_real, co.getMoney_cal());
+		co.setMoney_real(money_real);
+		
+		afterPayService.handle(order_no, money_real, "admin", "线下", null);
 	}
 }

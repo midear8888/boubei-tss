@@ -50,7 +50,7 @@ public class SubAuthorize extends OperateInfo implements IEntity, ITreeNode, IXF
     private Long buyerId;  // 策略购买人
     
     @Column(nullable = false)  
-	private String name;       // 名称:策略名称，如果是购买模块所获策略，则name=模块ID_模块名称_购买序号
+	private String name;       // 名称:策略名称，如果是购买模块所获策略，则name=模块ID_模块名称_购买人ID_购买序号
 	private Date   startDate;  // 开始时间 
 	private Date   endDate;    // 结束时间 
 	

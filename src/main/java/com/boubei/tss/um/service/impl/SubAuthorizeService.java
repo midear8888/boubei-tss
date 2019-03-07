@@ -99,12 +99,12 @@ public class SubAuthorizeService implements ISubAuthorizeService {
      * 在角色用户关系表中保存 策略对用户，策略对角色的信息。
      * 策略可以授予用户、用户组、也可以授予角色，或者三者兼有。
      * </p>
-     * @param strategy
+     * @param sa
      * @param roleIdsStr
      * @param userIdsStr
      */
-    private void saveRule2User(SubAuthorize strategy, String roleIdsStr, String userIdsStr) {
-        Long subauthId = strategy.getId();
+    private void saveRule2User(SubAuthorize sa, String roleIdsStr, String userIdsStr) {
+        Long subauthId = sa.getId();
 		List<?> roleUsers = roleDao.getRoleUserByStrategy(subauthId);
         Map<String, RoleUser> historyMap = new HashMap<String, RoleUser>(); // 把老的转授记录放入一个map, 以"roleId_userId"为key
         for (Object temp : roleUsers) { 
@@ -117,7 +117,7 @@ public class SubAuthorizeService implements ISubAuthorizeService {
             String[] userIds = userIdsStr.split(",");
             for (String roleId : roleIds) {
                 for (String userId : userIds) {
-                    saveRoleUser(historyMap, roleId, userId, subauthId);
+                    saveRoleUser(historyMap, roleId, userId, sa);
                 }
             }
         } 
@@ -126,16 +126,16 @@ public class SubAuthorizeService implements ISubAuthorizeService {
         roleDao.deleteAll(historyMap.values());
     }
     
-    private void saveRoleUser(Map<String, RoleUser> historyMap, String roleId, String userId, Long subauthId){
+    private void saveRoleUser(Map<String, RoleUser> historyMap, String roleId, String userId, SubAuthorize sa){
         // 如果老的转授记录里面有，则从历史记录中移出
         RoleUser roleUser = historyMap.remove(roleId + "_" + userId); 
         
-        //如果老的转授记录里面没有，则新增
-        if (roleUser == null) { 
+        //如果老的转授记录里面没有，则新增 (如果是购买产生的策略，则不再创建新的roleUser)
+        if (roleUser == null && sa.getBuyerId() == null) { 
             roleUser = new RoleUser();
             roleUser.setRoleId(Long.valueOf(roleId));
             roleUser.setUserId(Long.valueOf(userId));
-            roleUser.setStrategyId(subauthId);
+            roleUser.setStrategyId(sa.getId());
             roleDao.createObject(roleUser);
         } 
     }
