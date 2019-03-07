@@ -18,6 +18,7 @@ import org.springframework.stereotype.Repository;
 import com.boubei.tss.EX;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.BaseDao;
+import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.um.dao.IUserDao;
 import com.boubei.tss.um.entity.GroupUser;
@@ -47,6 +48,8 @@ public class UserDao extends BaseDao<User> implements IUserDao {
 	
 	public void setLastLoginTime(Long userId) {
 		try {
+			if( Context.getRequestContext().isApiCall() ) return;
+			
 			User user = getEntity(userId);
 			user.setLastLogonTime(new Date());
 			user.setLogonCount( EasyUtils.obj2Int(user.getLogonCount()) + 1 );
