@@ -214,11 +214,13 @@ public class WFServiceImpl implements WFService {
 		Group inGroup = commonDao.getEntity( (Long) Environment.getInSession(SSOConstants.USER_GROUP_ID) );
 		List<OperatorDTO> list = loginSerivce.getUsersByRoleId(roleId);
 		
+		// 取出当前域管理员账号
+		List<?> domainUsers = commonDao.getEntities("select creator from DomainInfo where domain=?", Environment.getDomain());
+		
 		for(OperatorDTO dto : list) {
 			String userCode = dto.getLoginName();
-			
-			// 剔除名称和域编码一致的域管理员账号（比如：CX、BD，其它购买生成的域管理员不剔除）
-			if( Environment.getDomain().equals(userCode) ) continue;
+			// 剔除域管理员账号
+			if( domainUsers.contains(userCode) ) continue;
 			
 			result.add( new String[]{ userCode, dto.getUserName()} );
 			

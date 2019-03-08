@@ -146,8 +146,9 @@ public class GroupService implements IGroupService {
 	    	domain = Environment.getDomainOrign();
 	    } 
 		else {
-	    	// 控制注册时域名必须为英文字母或数字，方便小程序传递域参数; 或者字符数 > 7
-		    if( !Pattern.compile("[a-z|A-Z|0-9]+").matcher(domain).matches() || domain.length() > 7 ) {
+	    	// 控制注册时域名必须为英文字母或数字，方便小程序传递域参数
+			Pattern p = Pattern.compile("[a-z|A-Z|0-9]+");  
+		    if( !p.matcher(domain).matches() ) {
 		    	domain = "G" + group.getId();
 		    }
 	    }
