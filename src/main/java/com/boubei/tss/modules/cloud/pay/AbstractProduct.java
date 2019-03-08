@@ -14,6 +14,7 @@ import com.boubei.tss.modules.cloud.entity.Account;
 import com.boubei.tss.modules.cloud.entity.AccountFlow;
 import com.boubei.tss.modules.cloud.entity.CloudOrder;
 import com.boubei.tss.modules.cloud.entity.ModuleDef;
+import com.boubei.tss.modules.param.ParamConfig;
 import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.um.entity.RoleUser;
 import com.boubei.tss.um.entity.SubAuthorize;
@@ -21,6 +22,7 @@ import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.service.IUserService;
 import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
+import com.boubei.tss.util.MailUtil;
 import com.boubei.tss.util.MathUtil;
 
 public abstract class AbstractProduct {
@@ -112,6 +114,10 @@ public abstract class AbstractProduct {
 			
 			handle();
 			init();
+			MailUtil.send("用户付款通知", 
+					"用户：" + user.getLoginName() + " 付款" + co.getMoney_real() + "元 【" + co.getProduct() + "】",
+					ParamConfig.getAttribute("NOTIFY_AFTER_PAY_LIST","boubei@163.com").split(","),
+					MailUtil.DEFAULT_MS);
 		}
 
 		co.setPay_date(new Date());
