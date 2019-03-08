@@ -40,6 +40,8 @@ public abstract class AbstractProduct {
 	public User user;
 	public Long userId;
 	public String userCode;
+	
+	public static String ignoreMoneyDiffPayer = "admin";
 
 	/**
 	 * out_trade_no: 时间戳_coID
@@ -102,7 +104,7 @@ public abstract class AbstractProduct {
 		}
 
 		co.setMoney_real(real_money);
-		if (real_money < co.getMoney_cal()) {
+		if (real_money < co.getMoney_cal() && !ignoreMoneyDiffPayer.equals(payer)) {
 			co.setRemark("订单金额不符");
 			co.setStatus(CloudOrder.PART_PAYED);
 		} else {
@@ -115,9 +117,11 @@ public abstract class AbstractProduct {
 			handle();
 			init();
 			MailUtil.send("用户付款通知", 
-					"用户：" + user.getUserName() + "付款" + co.getMoney_real() + "元" 
+								"用户：" + user.getUserName() 
+							+ "\n付款：" + co.getMoney_real() + "元" 
+							+ "\n产品：" + co.getProduct()
 							+ "\n账号：" + co.getCreator()
-							+ "\n具体参数：" + EasyUtils.obj2String(co.getParams()),
+							+ "\n参数：" + EasyUtils.obj2String(co.getParams()),
 					ParamConfig.getAttribute("NOTIFY_AFTER_PAY_LIST","boubei@163.com").split(","),
 					MailUtil.DEFAULT_MS);
 		}
