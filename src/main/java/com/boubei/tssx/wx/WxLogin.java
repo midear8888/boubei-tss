@@ -164,7 +164,8 @@ public class WxLogin extends HttpServlet {
 		
 		// 记录登陆成功的日志信息
 		IBusinessLogger businessLogger = ((IBusinessLogger) Global.getBean("BusinessLogger"));
-		Log log = new Log(user.getUserName(), roles + " | " + EasyUtils.list2Str(groups, 1) );
+		String content = roles + " | " + EasyUtils.list2Str(groups, 1);
+		Log log = new Log(user.getUserName(), content.replace("$匿名角色,", "") );
         log.setOperateTable( "用户登录（微信）" );
         log.setOperatorBrowser("微信");
         businessLogger.output(log);

@@ -80,6 +80,8 @@ public abstract class AbstractSMS {
      * 大陆手机号码11位数，匹配格式. 
      */
     public static boolean isChinaPhoneLegal(String phone) {  
+    	if(EasyUtils.isNullOrEmpty(phone)) return false;
+    	
         String regExp = "^[1][3,4,5,6,7,8,9][0-9]{9}$";  
         Pattern p = Pattern.compile(regExp);  
         Matcher m = p.matcher(phone);  
