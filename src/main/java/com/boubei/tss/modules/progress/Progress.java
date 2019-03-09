@@ -68,7 +68,7 @@ public class Progress {
         long curComplete = completed - this.completed; 
         
         //本次执行结束离上次执行结束的时间
-        long curConsumeTime = Math.max(1000, (System.currentTimeMillis() - previousTime) ); 
+        long curConsumeTime = Math.max(1, (System.currentTimeMillis() - previousTime) ); 
         
         if (curComplete != 0) {
             // 计算剩余完成时间

@@ -139,11 +139,6 @@
 	            {"name": "texts", "value": (byUser ? _userNames : roles).join('|')},
 	            {"name": "values", "value": (byUser ? _userCodes : roleIds).join('|')}
 	        ]);
-
-			// 值清空
-	        updateField(xform, elId, null);
-	        var tjel = toId + "_tj";
-	        $("#" + tjel).length && updateField(xform, tjel, null); 
 		});
 
 		to.each(function(i, r){
@@ -171,7 +166,7 @@
     });
 
     $("#byUser").click(function() {
-        initForm(true);
+		initForm(true);
     });
 
     $1("domains").onchange = function(e) { 

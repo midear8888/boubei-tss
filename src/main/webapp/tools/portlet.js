@@ -110,7 +110,7 @@ function openUrl(url, dialog) {
         sonWindow.openPalette && sonWindow.openPalette();
     }
 
-    $(".tssIFrame").addClass("hidden").removeClass("open");
+    $(".tssIFrame").addClass("hidden").removeClass("open").css("background", "white");
     $iframe.removeClass("hidden").addClass("open");
 }
 

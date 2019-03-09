@@ -104,7 +104,7 @@ public class WxAPI {
 	@RequestMapping(value = "/users_ex_customer")
 	@ResponseBody
 	public Map<Object, String> getUsersExcludeCustomer() {
-		String field = "id, u.userName, g.name groupName";
+		String field = "id, u.userName, g.name";
 		List<?> list = loginService.getUsersByDomain(Environment.getDomain(), field, Environment.getUserId());
 		
 		Map<Object, String> map = new HashMap<Object, String>();
