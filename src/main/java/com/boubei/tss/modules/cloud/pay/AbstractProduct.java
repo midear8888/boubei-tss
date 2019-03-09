@@ -119,7 +119,7 @@ public abstract class AbstractProduct {
 			init();
 			
 			String[] receivers = ParamConfig.getAttribute(PX.NOTIFY_AFTER_PAY_LIST, "boubei@163.com").split(",");
-			MailUtil.send("用户购买模块付款通知", 
+			MailUtil.send("用户付款通知", 
 								"用户：" + user.getUserName() 
 							+ "\n付款：" + co.getMoney_real() + "元" 
 							+ "\n产品：" + co.getProduct()
