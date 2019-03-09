@@ -75,13 +75,16 @@ public class GroupService implements IGroupService {
 		List<ModuleDef> modules = (List<ModuleDef>) roleDao.getEntities(hql, userId);
         for(ModuleDef module : modules ) {
         	Double price = EasyUtils.obj2Double(module.getPrice());
-			if( price > 0 ) continue;
+        	boolean moduleFreeUse = price <= 0;
         	
         	String[] roles = module.getRoles().split(",");
     		for(String role : roles) {
     			Long roleId = EasyUtils.obj2Long(role);
 				Role r = roleDao.getEntity(roleId);
 				if(r != null) {
+					boolean roleFreeUse = EasyUtils.obj2String(r.getDescription()).indexOf("freeUse") >= 0;
+					if( !moduleFreeUse && !roleFreeUse) continue;
+					
 					roleDao.evict(r);
     				r.setName( r.getName() + "(" + module.getModule() + ")" );
     				set.add( r );

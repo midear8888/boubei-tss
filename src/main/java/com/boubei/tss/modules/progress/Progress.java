@@ -58,7 +58,7 @@ public class Progress {
     }
     
     public synchronized void add(long change) {
-        setCompleted(completed + change);
+        setCompleted(this.completed + change);
     }
 
     private void setCompleted(long completed) {
@@ -68,14 +68,14 @@ public class Progress {
         long curComplete = completed - this.completed; 
         
         //本次执行结束离上次执行结束的时间
-        long curConsumeTime = Math.max(1, (System.currentTimeMillis() - previousTime) / 1000); 
+        long curConsumeTime = Math.max(1000, (System.currentTimeMillis() - previousTime) ); 
         
         if (curComplete != 0) {
             // 计算剩余完成时间
-            this.estimateTime = (total - completed) * curConsumeTime/ curComplete; 
+            this.estimateTime = (total - completed) * curConsumeTime/ curComplete / 1000; 
 
             // 根据上一阶段的时间计算下一次取进度的时间间隔，如果大于60秒，则按60秒取；如果小于2秒，则按2秒取
-            long estimateTotalTime = total * curConsumeTime / curComplete;
+            long estimateTotalTime = total * curConsumeTime / curComplete / 1000;
             long delay = estimateTotalTime / DEFAULT_LOAD_TIMES;
             this.delay = Math.min(delay, MAX_LOAD_SCHEDULE_TIME);
             this.delay = Math.max(this.delay, DEFAULT_LOAD_SCHEDULE_TIME);

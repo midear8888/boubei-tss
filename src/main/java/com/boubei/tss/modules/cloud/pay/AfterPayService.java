@@ -13,4 +13,5 @@ public interface AfterPayService {
 	 * @return
 	 */
 	void handle(String order_no, Double real_money, String payer, String payType, Map<?, ?> map);
+	
 }

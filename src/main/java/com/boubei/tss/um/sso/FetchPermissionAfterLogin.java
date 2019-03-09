@@ -149,8 +149,9 @@ public class FetchPermissionAfterLogin implements ILoginCustomizer {
         loadGroups(logonUserId, session);
     	
     	// 记录登陆成功的日志信息
-    	Object loginMsg = session.getAttribute("LOGIN_MSG");
+    	Object loginMsg = session.getAttribute(SSOConstants.LOGIN_MSG);
     	if( !Environment.isAnonymous() && loginMsg != null ) {
+    		session.removeAttribute(SSOConstants.LOGIN_MSG); // remove，以免refresh userHas时反复记录登录日志
         	BusinessLogger.log("用户登录", Environment.getUserName(), loginMsg, null, start);
     	}
     }

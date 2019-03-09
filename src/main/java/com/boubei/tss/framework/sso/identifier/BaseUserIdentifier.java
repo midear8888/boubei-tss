@@ -19,6 +19,7 @@ import com.boubei.tss.framework.exception.UserIdentificationException;
 import com.boubei.tss.framework.sso.IOperator;
 import com.boubei.tss.framework.sso.IUserIdentifier;
 import com.boubei.tss.framework.sso.IdentityCard;
+import com.boubei.tss.framework.sso.SSOConstants;
 import com.boubei.tss.framework.sso.TokenUtil;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.sso.online.OnlineUserManagerFactory;
@@ -65,6 +66,6 @@ public abstract class BaseUserIdentifier implements IUserIdentifier {
 	
 	protected void loginSuccess(String msg) {
 		HttpSession session = Context.getRequestContext().getSession();
-		session.setAttribute("LOGIN_MSG", msg);
+		session.setAttribute(SSOConstants.LOGIN_MSG, msg);
 	}
 }

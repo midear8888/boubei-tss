@@ -111,6 +111,7 @@ public interface PX {
 	
 	/** 维护用于邮件推送的配置（收件人列表）*/
 	static String EMAIL_MACRO  = "EmailMacros";
+	static String NOTIFY_AFTER_PAY_LIST  = "NOTIFY_AFTER_PAY_LIST";
 	
 	/** 导入XLSX文件大小上限, 单位K */
 	static String MAX_XLSX_SIZE  = "MAX_XLSX_SIZE";

@@ -101,6 +101,23 @@ public class WxAPI {
 		return loginService.getUsersMap();
 	}
 	
+	@RequestMapping(value = "/users_ex_customer")
+	@ResponseBody
+	public Map<String, String> getUsersExcludeCustomer() {
+		String field = "loginName, u.userName, g.name groupName";
+		List<?> list = loginService.getUsersByDomain(Environment.getDomain(), field, Environment.getUserId());
+		
+		Map<String, String> map = new HashMap<String, String>();
+		for( Object obj : list ) {
+			Object[] objs = (Object[]) obj;
+			boolean userInCustomer = "customer".equals(objs[2]);
+			if( !userInCustomer ) {
+				map.put((String)objs[0], (String)objs[1]);
+			}
+		}
+		return map;
+	}
+	
 	@RequestMapping(value = "/users/id2name")
 	@ResponseBody
 	public Map<Long, String> getUsersI() {

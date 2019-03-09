@@ -71,6 +71,12 @@ span.max, span.min { display: none; }
 
 window.history.forward(1);  // 产生一个“前进”的动作，以抵消浏览器后退功能
 
+// 设置默认域管理员登录后首页， 初次注册后登录可强制进入domain.html：http://ip/tss/bi.html?domain_page=domain.html
+var domain_page = tssJS.Query.get("domain_page");
+
+// 购买模块后返回首页，先刷新登录信息，再请求菜单
+var refreshUserHas = tssJS.Query.get("refreshUserHas");
+
 /* 用户信息初始化  */
 var roles = [], userHas, isSelfDomain = false;
 $(function(){
@@ -92,7 +98,12 @@ $(function(){
     }
 
     dbsx();
-    getBIMenu();
+
+    if( refreshUserHas ) {
+        tssJS.get("/tss/auth/user/has?refreshFlag=true", {}, function(info) { getBIMenu(); });
+    } else {
+        getBIMenu();
+    }
 
     getParam("index_logo", function(result) {
         result && $(".top .logo img").attr("src", result);
@@ -228,11 +239,11 @@ function buildMenu(reports, records, p) {
 
     getParam("domain_page", function(result) {
         domain_page = domain_page || result;
-        openLevelOne(fisrtGroup, true); // 默认打开第一个报表
+        openLevelOne(fisrtGroup); // 默认打开第一个报表
     });
 }
 
-function openLevelOne(group, firstTime) {
+function openLevelOne(group) {
     globalValiable.list = level_2_menus[group];
 
     !fisrtResource && globalValiable.list.each( function(i, _item) {
@@ -246,17 +257,13 @@ function openLevelOne(group, firstTime) {
     } );
 
     // 域管理员/开发者 初次默认打开引导页， 普通用户不需要
-    if( firstTime && (roles.contains(-8) || roles.contains(-9) || isSelfDomain) ) {
+    if( roles.contains(-8) || roles.contains(-9) || isSelfDomain ) {
         openUrl('more/bi_nav.html?group=' + group);
     }
     else {
         openUrl('more/bi_nav.html?group=' + group + (fisrtResource ? "&_default="+fisrtResource : "") );
     }
 }
-
-// 设置默认域管理员登录后首页， 初次注册后登录可强制进入domain.html：http://ip/tss/bi.html?domain_page=domain.html
-var domain_page = tssJS.Query.get("domain_page");
-
 
 </script>
 

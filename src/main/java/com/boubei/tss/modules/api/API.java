@@ -127,7 +127,8 @@ public class API {
 			groupStr = list.get(0) + ""; // 创建用户到当前创建人所在组下
 		}
 		
-		user.setUserName(requestMap.get("userName"));
+		user.setUserName( (String) EasyUtils.checkNull(requestMap.get("userName"), user.getUserName()) );
+		user.setTelephone( (String) EasyUtils.checkNull(requestMap.get("mobile"), user.getTelephone()) );
 		user.setUdf(requestMap.get("udf"));
 		userService.createOrUpdateUser(user, groupStr, roles);
 		

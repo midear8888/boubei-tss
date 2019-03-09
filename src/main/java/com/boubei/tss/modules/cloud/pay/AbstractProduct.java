@@ -6,6 +6,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 
+import com.boubei.tss.PX;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.ICommonDao;
@@ -14,6 +15,7 @@ import com.boubei.tss.modules.cloud.entity.Account;
 import com.boubei.tss.modules.cloud.entity.AccountFlow;
 import com.boubei.tss.modules.cloud.entity.CloudOrder;
 import com.boubei.tss.modules.cloud.entity.ModuleDef;
+import com.boubei.tss.modules.param.ParamConfig;
 import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.um.entity.RoleUser;
 import com.boubei.tss.um.entity.SubAuthorize;
@@ -21,6 +23,7 @@ import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.service.IUserService;
 import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
+import com.boubei.tss.util.MailUtil;
 import com.boubei.tss.util.MathUtil;
 
 public abstract class AbstractProduct {
@@ -38,6 +41,8 @@ public abstract class AbstractProduct {
 	public User user;
 	public Long userId;
 	public String userCode;
+	
+	public static String ignoreMoneyDiffPayer = "admin";
 
 	/**
 	 * out_trade_no: 时间戳_coID
@@ -100,7 +105,7 @@ public abstract class AbstractProduct {
 		}
 
 		co.setMoney_real(real_money);
-		if (real_money < co.getMoney_cal()) {
+		if (real_money < co.getMoney_cal() && !ignoreMoneyDiffPayer.equals(payer)) {
 			co.setRemark("订单金额不符");
 			co.setStatus(CloudOrder.PART_PAYED);
 		} else {
@@ -112,6 +117,15 @@ public abstract class AbstractProduct {
 			
 			handle();
 			init();
+			
+			String[] receivers = ParamConfig.getAttribute(PX.NOTIFY_AFTER_PAY_LIST, "boubei@163.com").split(",");
+			MailUtil.send("用户购买模块付款通知", 
+								"用户：" + user.getUserName() 
+							+ "\n付款：" + co.getMoney_real() + "元" 
+							+ "\n产品：" + co.getProduct()
+							+ "\n账号：" + co.getCreator()
+							+ "\n参数：" + EasyUtils.obj2String(co.getParams()),
+					receivers, MailUtil.DEFAULT_MS);
 		}
 
 		co.setPay_date(new Date());

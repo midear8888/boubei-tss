@@ -85,7 +85,7 @@ function dbsx() {
 })();
 */
 
-function openUrl(url, dialog, title) {
+function openUrl(url, dialog) {
     if (url == "#") return;
 
     var id = "if" + tssJS.hashCode(url);

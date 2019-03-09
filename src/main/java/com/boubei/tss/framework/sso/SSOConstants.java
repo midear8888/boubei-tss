@@ -58,4 +58,6 @@ public interface SSOConstants {
     public static final String RANDOM_KEY  = "randomKey";
     public static final String LOGIN_CHECK_KEY = "loginCheckKey";
     public static final String SMS_CHECK_KEY = "smsCheckKey";
+    
+    public static final String LOGIN_MSG = "LOGIN_MSG";
 }
