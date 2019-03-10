@@ -416,7 +416,9 @@ public abstract class _Database {
         	if( !exsited ) {
         		// 先查询是否已有数据，不允许在一个有数据的表里增加非空列
 				String fieldDef = getFiledDef(fDefs1, existedCount > 0);
-    			SQLExcutor.excute("alter table " + this.table + " add " + fieldDef, newDS); 
+				try {
+					SQLExcutor.excute("alter table " + this.table + " add " + fieldDef, newDS); 
+				} catch(Exception e) { }
         	}
 		}
 		

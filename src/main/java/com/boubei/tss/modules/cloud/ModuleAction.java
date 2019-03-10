@@ -10,11 +10,8 @@
 
 package com.boubei.tss.modules.cloud;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -24,12 +21,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.boubei.tss.dm.dml.SQLExcutor;
-import com.boubei.tss.dm.record.Record;
-import com.boubei.tss.dm.report.Report;
 import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.sso.Environment;
-import com.boubei.tss.framework.sso.SSOConstants;
-import com.boubei.tss.modules.cloud.entity.ModuleDef;
 import com.boubei.tss.util.EasyUtils;
 
 @Controller
@@ -59,7 +52,6 @@ public class ModuleAction {
 	/**
 	 * 当前用户所在域选用的模块里含有的资源列表（报表、录入表），用以过滤资源菜单
 	 */
-	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/limitresources")
 	@ResponseBody
 	public Object[] limitResource() {
@@ -67,49 +59,8 @@ public class ModuleAction {
 		if( EasyUtils.isNullOrEmpty(domain) ) { // 非域账号无需判断
 			return new Object[] {};
 		}
-		
-		Set<Long> reports = new LinkedHashSet<Long>();
-		Set<Long> records = new LinkedHashSet<Long>();
-		
-		String hql = "from ModuleDef where id in (select moduleId from ModuleUser where domain = ? " +
-				" or userId in (" +Environment.getInSession(SSOConstants.USERIDS_OF_DOMAIN)+ ") )";
-		String hql1 = "select distinct p.resourceId from ReportPermission p  where p.operationId = ? and p.roleId in ("; 
-		String hql2 = "select distinct p.resourceId from RecordPermission p  where p.operationId = ? and p.roleId in ("; 
-		
-		List<ModuleDef> list = (List<ModuleDef>) commonService.getList(hql, domain);
-		List<Long> ownRoles = new ArrayList<>(Environment.getOwnRoles());
-		for(ModuleDef md : list) {
-			String roles = (String) EasyUtils.checkNull( md.getRoles(), "-999");
-			
-			// 查出模块 roles 拥有查看权限的所有报表、录入表，如果模块没有单独指定报表、录入表列表，则取roles所有
-			if( md.reports().isEmpty() ) {
-				reports.addAll( (List<Long>) commonService.getList( hql1 + roles+ ")", Report.OPERATION_VIEW) );
-			} else {
-				reports.addAll( md.reports() );
-			}
-			
-			if( md.records().isEmpty() ) {
-				String _hql2 =  hql2 + roles+ ")"; 
-				records.addAll(  (List<Long>) commonService.getList( _hql2, Record.OPERATION_VDATA)  );
-				records.addAll(  (List<Long>) commonService.getList( _hql2, Record.OPERATION_CDATA)  );
-			} else {
-				records.addAll( md.records() );
-			}
-			
-			String[] _roles = roles.split(",");
-			for(String _role: _roles) {
-				ownRoles.remove( EasyUtils.obj2Long(_role) );
-			}
-		}
-		
-		String roles = (String) EasyUtils.checkNull( EasyUtils.list2Str(ownRoles), "-999");
-		reports.addAll( (List<Long>) commonService.getList( hql1 + roles+ ")", Report.OPERATION_VIEW) );
-		
-		String _hql2 =  hql2 + roles+ ")"; 
-		records.addAll( (List<Long>) commonService.getList( _hql2, Record.OPERATION_VDATA) );
-		records.addAll( (List<Long>) commonService.getList( _hql2, Record.OPERATION_CDATA) );
-	        
-		return new Object[] { reports, records };
+
+		return new Object[] { service.limitReports(), service.limitRecords() };
 	}
 	
 	@RequestMapping(value = "/{module}", method = RequestMethod.POST)

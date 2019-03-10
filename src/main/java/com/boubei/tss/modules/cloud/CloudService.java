@@ -11,6 +11,7 @@
 package com.boubei.tss.modules.cloud;
 
 import java.util.List;
+import java.util.Set;
 
 import com.boubei.tss.modules.cloud.entity.CloudOrder;
 
@@ -32,4 +33,8 @@ public interface CloudService {
 	void refreshModuleUserRoles(Long module);
 
 	void setSubAuthorizeRoles(Long userId, String roleIds, Long strategyId);
+	
+	Set<Long> limitReports();
+	
+	Set<Long> limitRecords();
 }

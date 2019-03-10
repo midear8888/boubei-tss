@@ -44,6 +44,7 @@ import com.boubei.tss.dm.report.ReportService;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.sso.SSOConstants;
 import com.boubei.tss.framework.sso.context.Context;
+import com.boubei.tss.modules.cloud.CloudService;
 import com.boubei.tss.modules.param.ParamConfig;
 import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.modules.timer.JobService;
@@ -64,6 +65,8 @@ public class WxAPI {
 	@Autowired RecordService recordService;
 	@Autowired ReportService reportService;
 	@Autowired WFService wfService;
+	@Autowired CloudService cloudService;
+	
 	@Autowired ILoginService loginService; 
 	@Autowired JobService jobService;
 	@Autowired WxService wxService;
@@ -248,13 +251,16 @@ public class WxAPI {
     	List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
     	
     	List<Record> list = recordService.getRecordables();
+    	Set<Long> limits = cloudService.limitRecords();
     	Map<Object, Object> countMap = wfService.getMyWFCount();
     	for(Record record : list) {
     		boolean isWFRecord = WFUtil.checkWorkFlow(record.getWorkflow());
-    		if(!record.isActive() || !isWFRecord ) continue;
-    		
-    		String wxicon = DMUtil.getExtendAttr(record.getRemark(), "wxicon");
-    		if( wxicon == null && !ParamConstants.TRUE.equals(record.getMobilable()) ) continue;
+    		if( !record.isActive() 
+    				|| !isWFRecord 
+    				|| !ParamConstants.TRUE.equals(record.getMobilable())
+    				|| !limits.contains(record.getId()) ) {
+    			continue;
+    		}
     		
     		Map<String, Object> item = new HashMap<String, Object>();
     		Long id = record.getId();
@@ -281,9 +287,17 @@ public class WxAPI {
     	Set<Record> set = new LinkedHashSet<>();
     	set.addAll(recordService.getRecordables());
     	set.addAll(recordService.getVisiables());
+    	
+    	Set<Long> limits = cloudService.limitRecords();
+    	
     	for(Record record : set) {
     		boolean isWFRecord = WFUtil.checkWorkFlow(record.getWorkflow());
-    		if( !ParamConstants.TRUE.equals(record.getMobilable()) || !record.isActive() || isWFRecord ) continue;
+    		if( !ParamConstants.TRUE.equals(record.getMobilable()) 
+    				|| !record.isActive() 
+    				|| isWFRecord
+    				|| !limits.contains(record.getId()) ) {
+    			continue;
+    		}
     		
     		Map<String, Object> item = new HashMap<String, Object>();
     		Long id = record.getId();
@@ -308,9 +322,12 @@ public class WxAPI {
     	List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
     	
     	List<Report> list = reportService.getAllReport();
+    	Set<Long> limits = cloudService.limitRecords();
     	for(Report report : list) {
-    		if( !report.isActive() || report.isGroup() 
-    				|| !ParamConstants.TRUE.equals(report.getMobilable()) ) {
+    		if( !report.isActive() 
+    				|| report.isGroup() 
+    				|| !ParamConstants.TRUE.equals(report.getMobilable())
+    				|| !limits.contains(report.getId()) ) {
     			continue;
     		}
     		

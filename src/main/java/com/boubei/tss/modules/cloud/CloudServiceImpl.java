@@ -10,13 +10,16 @@ T * Created [2016-06-22] by Jon.King
 
 package com.boubei.tss.modules.cloud;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -24,6 +27,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.boubei.tss.EX;
+import com.boubei.tss.dm.record.Record;
+import com.boubei.tss.dm.report.Report;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.ICommonDao;
 import com.boubei.tss.framework.sms.AbstractSMS;
@@ -44,6 +49,7 @@ import com.boubei.tss.um.service.IUserService;
 import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
 
+@SuppressWarnings("unchecked")
 @Service("CloudService")
 public class CloudServiceImpl implements CloudService, AfterPayService {
 
@@ -90,6 +96,8 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 			ru.setModuleId(module);
 			commonDao.create(ru);
 		}
+		
+		// TODO 执行模块自定义类的init方法，对模块进行初始化
 	}
 
 	/**
@@ -106,7 +114,6 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 	 * 避免域用户需要重新选择模块才能获取新角色（先【结束试用】，再【我要试用】）
 	 * 注：模块角色减少时，本方法只能去掉域管理员的角色；域管理员也已经把角色授给了其它域成员的话，则无法收回
 	 */
-	@SuppressWarnings("unchecked")
 	public void refreshModuleUserRoles(Long module) {
 		// 模块被多少域用户购买使用
 		List<Long> userIds = (List<Long>) commonDao.getEntities("select userId from ModuleUser where moduleId = ?", module);
@@ -164,9 +171,75 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 		return commonDao.getEntities(hql);
 	}
 
+	public Set<Long> limitReports() {
+		String domain = Environment.getDomainOrign();
+		Set<Long> reports = new LinkedHashSet<Long>();
+		
+		String hql = "from ModuleDef where id in (select moduleId from ModuleUser where domain = ?)";
+		String hql1 = "select distinct p.resourceId from ReportPermission p  where p.operationId = ? and p.roleId in ("; 
+		
+		List<ModuleDef> list = (List<ModuleDef>) commonDao.getEntities(hql, domain);
+		List<Long> ownRoles = new ArrayList<>(Environment.getOwnRoles());
+		for(ModuleDef md : list) {
+			String roles = (String) EasyUtils.checkNull( md.getRoles(), "-999");
+			
+			// 查出模块 roles 拥有查看权限的所有报表、录入表，如果模块没有单独指定报表、录入表列表，则取roles所有
+			if( md.reports().isEmpty() ) {
+				reports.addAll( (List<Long>) commonDao.getEntities( hql1 + roles+ ")", Report.OPERATION_VIEW) );
+			} else {
+				reports.addAll( md.reports() );
+			}
+			
+			String[] _roles = roles.split(",");
+			for(String _role: _roles) {
+				ownRoles.remove( EasyUtils.obj2Long(_role) );
+			}
+		}
+		
+		String roles = (String) EasyUtils.checkNull( EasyUtils.list2Str(ownRoles), "-999");
+		reports.addAll( (List<Long>) commonDao.getEntities( hql1 + roles+ ")", Report.OPERATION_VIEW) );
+
+		return reports;
+	}
+	
+	public Set<Long> limitRecords() {
+		String domain = Environment.getDomainOrign();
+		Set<Long> records = new LinkedHashSet<Long>();
+		
+		String hql = "from ModuleDef where id in (select moduleId from ModuleUser where domain = ?)";
+		String hql2 = "select distinct p.resourceId from RecordPermission p  where p.operationId = ? and p.roleId in ("; 
+		
+		List<ModuleDef> list = (List<ModuleDef>) commonDao.getEntities(hql, domain);
+		List<Long> ownRoles = new ArrayList<>(Environment.getOwnRoles());
+		for(ModuleDef md : list) {
+			String roles = (String) EasyUtils.checkNull( md.getRoles(), "-999");
+			
+			// 查出模块 roles 拥有查看权限的所有报表、录入表，如果模块没有单独指定报表、录入表列表，则取roles所有
+			if( md.records().isEmpty() ) {
+				String _hql2 =  hql2 + roles+ ")"; 
+				records.addAll(  (List<Long>) commonDao.getEntities( _hql2, Record.OPERATION_VDATA)  );
+				records.addAll(  (List<Long>) commonDao.getEntities( _hql2, Record.OPERATION_CDATA)  );
+			} else {
+				records.addAll( md.records() );
+			}
+			
+			String[] _roles = roles.split(",");
+			for(String _role: _roles) {
+				ownRoles.remove( EasyUtils.obj2Long(_role) );
+			}
+		}
+		
+		String roles = (String) EasyUtils.checkNull( EasyUtils.list2Str(ownRoles), "-999");
+		
+		String _hql2 =  hql2 + roles+ ")"; 
+		records.addAll( (List<Long>) commonDao.getEntities( _hql2, Record.OPERATION_VDATA) );
+		records.addAll( (List<Long>) commonDao.getEntities( _hql2, Record.OPERATION_CDATA) );
+	        
+		return records;
+	}
+	
 	/************************************* cloud order **************************************/
 
-	@SuppressWarnings("unchecked")
 	public CloudOrder createOrder(CloudOrder co) {
 		Map<String, String> map = new HashMap<>();
 		try { map = new ObjectMapper().readValue(co.getParams(), HashMap.class); } catch (Exception e) { }
@@ -275,7 +348,6 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 
 		List<?> ruIDList = Arrays.asList(ruIds.split(","));
 
-		@SuppressWarnings("unchecked")
 		List<RoleUser> rus = (List<RoleUser>) commonDao.getEntities(" from RoleUser where strategyId = ?", strategyId);
 		for (RoleUser ru : rus) {
 			if (ruIDList.contains(ru.getId().toString())) {

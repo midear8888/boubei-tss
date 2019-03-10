@@ -65,7 +65,6 @@ public class ModuleDef extends ARecordTable {
 	
 	/*
 	 * 模块自定义初始化接口地址，在企业域用户选择此模块时自动调用，以完成模块初始化
-	 * TODO 如果是模块购买，init_url的逻辑写到 init()方法 里
 	 */
 	private String product_class; // 自定义实现类
 	

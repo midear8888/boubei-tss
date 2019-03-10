@@ -89,15 +89,17 @@ function initList() {
       $li.find("div.issue").text(item.creator + " 发布于 " + (item.updateTime||item.createTime).split(" ")[0]);
 
       // 购买按钮
-      var price = item.price || 100;
-      $li.find("div.module>.bts>button:nth-child(1)").css("display", "inline-block").click( function() {  buy(item.id, item.init_url); });
+      var price = item.price || 0;
+      $li.find("div.module>.bts>button:nth-child(1)")
+        .css("display", price <= 0 ? "none" : "inline-block")
+        .click( function() {  buy(item.id); });
       $li.find("div.module>.bts>button:nth-child(1) .price").text("￥" + price + " ");
 
       // 没有试用期的模块需要购买才能使用
       if( item.try_days > 0 || true) {
         $li.find("div.module>.bts>button:nth-child(2)").css("display", "inline-block")
           .click( function() {
-            selectModule(item.id, "POST", item.init_url);
+            selectModule(item.id, "POST");
           });
       }
     });
@@ -105,6 +107,10 @@ function initList() {
     initSelected();
 
   }, "GET");
+}
+
+function buy(moduleId) {
+  location.href = "pay/index.html?id=" + moduleId;
 }
 
 function initSelected() {
@@ -128,12 +134,9 @@ function initSelected() {
     }, "GET");
 }
 
-function selectModule(moduleId, method, initURL) {
+function selectModule(moduleId, method) {
     $.post("/tss/auth/module/" + moduleId, {}, function(result) {
         if(result === 'Success') {
-            if( initURL ) {
-              $.post(initURL, {}, function(res) {  console.log(res); });
-            }
             refresh();
         }
     }, method);

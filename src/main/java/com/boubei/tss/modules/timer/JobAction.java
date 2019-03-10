@@ -62,12 +62,12 @@ public class JobAction {
 	public Object exucteJob(@PathVariable String key) {
 		Object tag = 0;
 		try {
-			Long id = Long.parseLong(key);   // 按Job id查询，通常是在Job列表页面里，没有业务关联性；防止反复点击
+			Long id = Long.parseLong(key);   // 按Job【id】查询，通常是在Job列表页面里，没有业务关联性；防止反复点击
 			JobDef jobDef = (JobDef) commonService.getEntity(JobDef.class, id);
 			tag = jobDef.getCustomizeInfo(); // 按Job的参数来缓存 
 		} 
 		catch(Exception e) {
-			tag = System.currentTimeMillis();  // 按Job Code刷新通常是跟着业务逻辑（比如人员组织角色变动了需要同步，需要实时）
+			tag = System.currentTimeMillis();  // 按Job【Code】刷新通常是跟着业务逻辑（比如人员组织角色变动了需要同步，需要实时）
 		}
 		
 		return jobService.excuteJob(key, tag); 
