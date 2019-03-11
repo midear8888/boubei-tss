@@ -1,6 +1,6 @@
 # deploy to my mac localhost
 
-TOMCAT_HOME="/Users/jinpujun/Desktop/tomcat7063"
+TOMCAT_HOME="/Users/JK/Desktop/tomcat7063"
 
 #找到tomcat进程的id并kill掉
 ps -ef |grep tomcat7063  |awk {'print $2'} | sed -e "s/^/kill -9 /g" | sh -

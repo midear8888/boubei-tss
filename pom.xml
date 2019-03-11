@@ -25,16 +25,6 @@
 	</properties>
 
 	<dependencies>
-		<!-- 1、all: 基于TSS 2、client: 围绕TSS -->
-		<!-- TSS dependency 
-		<dependency>
-			<groupId>com.boubei</groupId>
-			<artifactId>tss</artifactId>
-			<version>${tss.version}</version>
-			<classifier>all</classifier>  
-		</dependency>		
-		-->
-		
 		<!-- tss dependencies start -->
 		<!-- BASE dependency -->
 		<dependency>
@@ -600,57 +590,7 @@
     </repositories>
     
 	<profiles>
-		<profile>
-			<id>ebi</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
-			<properties>
-				<environment>ebi</environment>
-				<security.level>6</security.level>
-				<job.enable>true</job.enable>
-				<log.level>info</log.level>
-				<db.username>tssbiu1</db.username>
-				<db.password>www.boubei.com</db.password>
-				<db.url>127.0.0.1:3306/ebi</db.url>
-				<tomcat.url>ebi.boubei.com</tomcat.url>
-			</properties>
-		</profile>
-		
-		<profile>
-			<id>xbi</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
-			<properties>
-				<environment>xbi</environment>
-				<security.level>6</security.level>
-				<job.enable>true</job.enable>
-				<log.level>info</log.level>
-				<db.username>tssbiu1</db.username>
-				<db.password>www.boubei.com</db.password>
-				<db.url>127.0.0.1:3306/xbi</db.url>			
-				<tomcat.url>xbi.boubei.com</tomcat.url>
-			</properties>
-		</profile>
-		
-		<profile>
-			<id>demo</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
-			<properties>
-				<environment>demo</environment>
-				<security.level>6</security.level>
-				<job.enable>true</job.enable>
-				<log.level>info</log.level>
-				<db.username>tssbiu1</db.username>
-				<db.password>www.boubei.com</db.password>
-				<db.url>127.0.0.1:3306/demo</db.url>			
-				<tomcat.url>demo.boubei.com</tomcat.url>
-			</properties>
-		</profile>
-
+	
 		<!-- eg: mvn clean install  -Pxxx -Dmaven.test.skip=true -->
 		<profile>
 			<id>dev</id>
