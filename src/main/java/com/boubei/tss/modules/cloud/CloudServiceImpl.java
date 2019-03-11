@@ -172,7 +172,7 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 	}
 
 	public Set<Long> limitReports() {
-		String domain = Environment.getDomainOrign();
+		String domain = Environment.getDomain();
 		Set<Long> reports = new LinkedHashSet<Long>();
 		
 		String hql = "from ModuleDef where id in (select moduleId from ModuleUser where domain = ?)";
@@ -203,7 +203,7 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 	}
 	
 	public Set<Long> limitRecords() {
-		String domain = Environment.getDomainOrign();
+		String domain = Environment.getDomain();
 		Set<Long> records = new LinkedHashSet<Long>();
 		
 		String hql = "from ModuleDef where id in (select moduleId from ModuleUser where domain = ?)";
