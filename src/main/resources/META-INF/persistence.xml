@@ -9,7 +9,6 @@
 		
 		<!-- 实体映射 -->
 		<mapping-file>META-INF/orm-tss.xml</mapping-file>
-		<mapping-file>META-INF/orm-tssx.xml</mapping-file>
 		 
 		<properties>
 			<!-- 使用spring配置里的 generateDdl=true，这里的无效
