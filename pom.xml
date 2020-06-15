@@ -19,7 +19,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<tss.version>4.4</tss.version>
 		<jdk.version>1.7</jdk.version>
-		<spring.version>3.2.18.RELEASE</spring.version>
+		<spring.version>5.2.7.RELEASE</spring.version>
 		<hibernate.version>3.5.1-Final</hibernate.version>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
 	</properties>
