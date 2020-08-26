@@ -49,7 +49,7 @@ public class DecodeInterceptor extends MatchByDaoMethodNameInterceptor {
                     /* 移动时维护(修复)所有子节点的decode值。不包括节点自身 
                      * oldDecode == null 说明为新增出来的节点，肯定没有子节点，也就没必要维护子节点了
                      * */
-                    if(methodName.startsWith("move") && oldDecode != null) {
+                    if(methodName.startsWith("move") && oldDecode != null && !oldDecode.equals(entity.getDecode())) {
                         repairChildrenDecode(entity, oldDecode, dao);
                     }
                 }
@@ -61,13 +61,12 @@ public class DecodeInterceptor extends MatchByDaoMethodNameInterceptor {
 	}
 	
     /**
-     * 移动时维护所有子节点的decode值.不包括节点自身
+     * 移动时维护所有子节点的decode值.
      * @param entity
      * @param oldDecode
      */
     void repairChildrenDecode(IDecodable entity, String oldDecode, IDao<IEntity> dao){
         String newDecode = entity.getDecode();
-        if(oldDecode.equals(newDecode)) return;
  
         List<?> list = dao.getEntities("from " + entity.getClass().getName() + " o where o.decode like ?", oldDecode + "%" );
         DecodeUtil.repairSubNodeDecode(list, oldDecode, newDecode);

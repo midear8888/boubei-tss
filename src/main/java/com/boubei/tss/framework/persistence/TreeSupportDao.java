@@ -165,8 +165,8 @@ public class TreeSupportDao<T extends IDecodable> extends BaseDao<T> implements 
             throw new BusinessException(EX.F_02);
         }
         
-        Integer sourceSeqNo = sourceItem.getSeqNo();
-        Integer targetSeqNo = targetItem.getSeqNo();
+        int sourceSeqNo = EasyUtils.obj2Int(sourceItem.getSeqNo());
+        int targetSeqNo = EasyUtils.obj2Int(targetItem.getSeqNo());
         int tag = (sourceSeqNo < targetSeqNo ? 1 : -1);
     
         List<T> returnList = new ArrayList<T>();

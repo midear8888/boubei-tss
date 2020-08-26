@@ -43,17 +43,16 @@ import com.boubei.tss.framework.web.display.grid.IGridNode;
 import com.boubei.tss.framework.web.display.tree.ITreeTranslator;
 import com.boubei.tss.framework.web.display.tree.LevelTreeParser;
 import com.boubei.tss.framework.web.display.tree.TreeEncoder;
+import com.boubei.tss.framework.web.display.tree.TreeNode;
 import com.boubei.tss.framework.web.display.xform.XFormEncoder;
 import com.boubei.tss.framework.web.display.xmlhttp.XmlHttpEncoder;
 import com.boubei.tss.framework.web.mvc.BaseActionSupport;
-import com.boubei.tss.modules.api.APIService;
 import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.entity.Group;
 import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.entity.permission.GroupPermission;
 import com.boubei.tss.um.entity.permission.GroupResource;
 import com.boubei.tss.um.permission.PermissionHelper;
-import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.um.service.IUserService;
 import com.boubei.tss.um.sso.online.DBOnlineUser;
 import com.boubei.tss.util.DateUtil;
@@ -65,10 +64,8 @@ import com.boubei.tss.util.XMLDocUtil;
 public class UserAction extends BaseActionSupport {
 
 	@Autowired private IUserService userService;
-	@Autowired private ILoginService loginService;
 	@Autowired private ICommonService commonService;
-	@Autowired private APIService apiService;
-
+	
     /**
      * 获取一个User（用户）对象的明细信息、用户对用户组信息、用户对角色的信息
      */
@@ -91,6 +88,16 @@ public class UserAction extends BaseActionSupport {
             // 用户已经对应的角色
             Object userRoles = data.get("User2RoleExistTree");
 			existRoleTree = new TreeEncoder(userRoles);
+			existRoleTree.setTranslator(new ITreeTranslator() {
+                public Map<String, Object> translate(Map<String, Object> attribute) {
+                	String name = (String) attribute.get("name");
+					if( name.indexOf("转授）") >= 0 ) {
+						attribute.put(TreeNode.TREENODE_ATTR_CANSELECTED, TreeNode.DISABLED);
+					}
+                    return attribute;
+                }
+            });
+			existRoleTree.setRootCanSelect(false);
         }
         else {
             data =  userService.getInfo4CreateNewUser(groupId);
@@ -208,6 +215,14 @@ public class UserAction extends BaseActionSupport {
 		}
 	}
 	
+	@RequestMapping(value = "/deeprm/{groupId}/{userId}", method = RequestMethod.DELETE)
+	@ResponseBody
+	public void deepDeleteUser(@PathVariable("groupId") Long groupId, @PathVariable("userId")  Long userId) {
+		if( !Environment.isAdmin() ) return;
+
+		userService.deepDeleteUser(groupId, userId);
+	}
+	
 	/**
 	 * 搜索用户
 	 */
@@ -235,14 +250,29 @@ public class UserAction extends BaseActionSupport {
     }
 	
 	private void showUserGrid(PageInfo pi) {
-		String hql = "select distinct r.name from ViewRoleUser o, Role r " +
-				" where o.id.roleId = r.id and o.id.userId = ? ";
         
 		List<?> items = pi.getItems();
+		String userIds = EasyUtils.objAttr2Str(items, "id");
+		
+		String hql = "select distinct o.id.userId, r.name, r.decode "
+				+ " from ViewRoleUser o, Role r " +
+				" where o.id.roleId = r.id and o.id.userId in (" +EasyUtils.checkNull(userIds, 0)+ ") order by r.decode ";
+		
+		List<?> list = commonService.getList(hql);
+		Map<Long, List<String>> map = new HashMap<>();
+		for(Object o : list) {
+			Object[] row = (Object[]) o;
+			Long userId = (Long) row[0];
+			List<String> roleList = map.get(userId);
+			if( roleList == null ) {
+				map.put(userId, roleList = new ArrayList<String>());
+			}
+			roleList.add( (String)row[1] );
+		}
+		
 		for(Object o : items) {
 			User u = (User) o;
-			List<?> list = commonService.getList(hql, u.getId());
-			u.setRoleNames( EasyUtils.list2Str(list) );
+			u.setRoleNames( EasyUtils.list2Str( map.get(u.getId()) ) );
 		}
 		
         GridDataEncoder gridEncoder = new GridDataEncoder(items, UMConstants.MAIN_USER_GRID);
@@ -325,7 +355,7 @@ public class UserAction extends BaseActionSupport {
      */
     @RequestMapping("/online/1")
     public void getOnlineUserInfo(HttpServletResponse response) {
-        Collection<?> list = commonService.getList("from DBOnlineUser order by loginTime desc");
+        Collection<?> list = commonService.getList("from DBOnlineUser order by domain, loginTime desc");
         
         List<IGridNode> dataList = new ArrayList<IGridNode>();
         for(Object item : list) {
@@ -385,7 +415,7 @@ public class UserAction extends BaseActionSupport {
 	/** 用户所属组织、角色等信息的json接口 */
 	@RequestMapping(value = "/has", method = RequestMethod.GET)
 	@ResponseBody
-	public Object[] getUserHas(String refreshFlag) {
+	public synchronized Object[] getUserHas(String refreshFlag) {
 		if( Config.TRUE.equals(refreshFlag) ) {
 			// 刷新用户的缓存信息
 	        CacheHelper.flushCache(CacheLife.SHORT.toString(), "ByUserId(" +Environment.getUserId()+ ")");
@@ -399,7 +429,7 @@ public class UserAction extends BaseActionSupport {
 	}
 	
 	public static Object[] getUserHas() {
-		Object[] userHas = new Object[17];
+		Object[] userHas = new Object[18];
 		userHas[0] = Environment.getInSession("GROUPS_MAIN");  //List 不含"主用户组"
 		userHas[1] = Environment.getOwnRoles(); // List<roleId>
 		userHas[2] = Environment.getUserId();
@@ -417,6 +447,7 @@ public class UserAction extends BaseActionSupport {
 		userHas[14]= Environment.getInSession(SSOConstants.USER_MODULE_N);
 		userHas[15]= Environment.getUserGroup();
 		userHas[16]= Environment.getUserGroupId();
+		userHas[17]= Environment.getInSession(SSOConstants.SON_GROUP_TREE);
 		
 		return userHas;
 	}

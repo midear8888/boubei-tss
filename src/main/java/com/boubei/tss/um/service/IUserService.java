@@ -76,6 +76,8 @@ public interface IUserService {
         )
     void deleteUser(Long groupId, Long userId);
     
+    void deepDeleteUser(Long groupId, Long userId);
+    
     /**
      * 启用停用用户
      * @param loginUserId
@@ -91,6 +93,7 @@ public interface IUserService {
      * @param id
      * @param groupId
      */
+    @Logable(operateObject="用户", operateInfo=" 移动用户 (userId: ${args[0]}, groupId: ${args[1]}) ")
     void moveUser(Long id, Long groupId);
 
     /**
@@ -155,7 +158,8 @@ public interface IUserService {
      * 域账号自注册
      */
     @Logable(operateObject="用户注册", operateInfo=" 域用户（${args[1]}, ${args[0]}）完成注册。")
-	void regBusiness(User user, String domain);
+    void regBusiness(User user, String domain);
+	void regBusiness(User user, String domain, Long parent);
 	
     /**
      * 开发者自注册

@@ -24,16 +24,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.boubei.tss.EX;
-import com.boubei.tss.cache.extension.CacheHelper;
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.ddl._Database;
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.record.Record;
+import com.boubei.tss.dm.record.RecordService;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.pagequery.MacrocodeQueryCondition;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.sso.SSOConstants;
 import com.boubei.tss.um.dao.IGroupDao;
+import com.boubei.tss.um.dao.IUserDao;
 import com.boubei.tss.um.entity.Group;
 import com.boubei.tss.um.helper.dto.OperatorDTO;
 import com.boubei.tss.um.service.ILoginService;
@@ -53,7 +54,9 @@ public class WFServiceImpl implements WFService {
 	
 	@Autowired ILoginService loginSerivce;
 	@Autowired IMessageService msgService;
+	@Autowired IUserDao userDao;
 	@Autowired IGroupDao commonDao;
+	@Autowired RecordService recordService;
  
 	public WFStatus getWFStatus(Long tableId, Long itemId) {
 		List<?> list = commonDao.getEntities("from WFStatus where tableId = ? and itemId = ? ", tableId, itemId);
@@ -62,17 +65,21 @@ public class WFServiceImpl implements WFService {
 	
 	
 	/** 物理删除记录时，也要删除流程状态数据 */
-	public void removeWFStatus(Long tableId, Long itemId) {
+	public void removeWFStatus(Long tableId, Long itemId, Map<String, Object> item) {
 		WFStatus wfStatus = getWFStatus(tableId, itemId);
 		if( wfStatus != null ) {
 			commonDao.delete( wfStatus );
+			
+			wfStatus.setCurrentStatus(WFStatus.REMOVED);
+			fireWFEvent(wfStatus, tableId, item);
 		}
 	}
 	
 	/** 当前流到登录用户的流程汇总 */
 	public Map<Object, Object> getMyWFCount() {
 		String sql = "SELECT tableId record, count(*) num FROM dm_workflow_status " +
-				" where nextProcessor = ? and currentStatus in ('" +WFStatus.NEW+ "', '" +WFStatus.APPROVING+ "') group by tableId";
+				" where nextProcessor = ? and currentStatus in ('" +WFStatus.NEW+ "','" +WFStatus.APPROVING+ "','" +WFStatus.TRANS+ "') " +
+				" group by tableId";
 		List<Map<String, Object>> list = SQLExcutor.queryL(sql, Environment.getUserCode());
 
 		Map<Object, Object> result = new HashMap<Object, Object>();
@@ -87,10 +94,9 @@ public class WFServiceImpl implements WFService {
 		return getUserList(wfStatus.getTrans());
 	}
 	
-	public void calculateWFStatus(Long itemId, _Database _db) {
+	public boolean calculateWFStatus(Long itemId, _Database _db) {
 		
-		String wfDefine = _db.wfDefine;
-		if( !WFUtil.checkWorkFlow(wfDefine) ) return;
+		if( !WFUtil.checkWorkFlow(_db.wfDefine) ) return false;
 		
 		Map<String, Object> item = _db.get(itemId);
 		
@@ -114,7 +120,7 @@ public class WFServiceImpl implements WFService {
 			wfLog.setProcessResult(WFStatus.APPLIED);
 			commonDao.createObject(wfLog);
 		} else {
-			if( WFStatus.AUTO_PASSED.equals(wfStatus.getCurrentStatus()) ) {
+			if( wfStatus.isAutoPassed() ) {
 				wfStatus.setCurrentStatus(WFStatus.NEW); // 自动通过的需要重新设置流程状态为 待审批
 			}
 			
@@ -139,7 +145,7 @@ public class WFServiceImpl implements WFService {
 			context.put(label, item.get(code)); // 流程条件支持按Label解析
 		}
 		
-		Map<String, List<Map<String, String>>> rules = WFUtil.parseWorkflow(wfDefine, context, _db.recordName);
+		Map<String, List<Map<String, String>>> rules = WFUtil.parseWorkflow(_db.wfDefine, context, _db.recordName);
 		
 		List<Map<String, String>> to = rules.get("to");
 		List<Map<String, String>> cc = rules.get("cc");
@@ -168,6 +174,8 @@ public class WFServiceImpl implements WFService {
 		wfStatus.setTrans(  EasyUtils.list2Str(transs)  );
 		
 		updateWFStatus(wfStatus, isCreate);
+		
+		return true;
 	}
 	
 	/**
@@ -178,14 +186,19 @@ public class WFServiceImpl implements WFService {
 		Set<String> users = new LinkedHashSet<String>();
 		if(rule == null) return new ArrayList<>();
 		
+		
 		for(Map<String, String> m : rule) {
 			if(m == null || (m.containsKey("when") && !"true".equals(m.get("when"))) ) {
 				continue;
 			}
 			
 			String user = m.get("user"); // 直接指定具体个人为审批人，使用loginName
-			if( !EasyUtils.isNullOrEmpty(user) ) {
-				users.add( user );
+			if( !EasyUtils.isNullOrEmpty(user) ) { 
+				try {
+					userDao.getUserByAccount(user, true);  // 检测用户是否存在 且 是否还启用着（要求可登陆的账号）
+					users.add( user );
+				} 
+				catch(Exception e) { }
 			}
 			
 			String role = m.get("roleId"); // 或角色，优先使用和申请人同组的主管
@@ -218,17 +231,17 @@ public class WFServiceImpl implements WFService {
 			String userCode = dto.getLoginName();
 			
 			// 剔除名称和域编码一致的域管理员账号（比如：CX、BD，其它购买生成的域管理员不剔除）
-			if( Environment.getDomain().equals(userCode) ) continue;
+			if( userCode.equals(Environment.getDomain()) || userCode.endsWith("_manager") ) continue;
 			
 			result.add( new String[]{ userCode, dto.getUserName()} );
 			
 			// 只取一个同类角色的用户作为审批人，比如部门经理
 			if( justOne ) {
 				// 如果用户拥有此角色且其所在组为提交人所在组（或父组，优先用子组里的），则优先使用
-				List<Object[]> fatherGroups = loginSerivce.getGroupsByUserId(dto.getId());
+				List<Group> fatherGroups = loginSerivce.getGroupsByUserId(dto.getId());
 				if( fatherGroups.size() > 0 ) {
-					Object[] lastGroup = fatherGroups.get( fatherGroups.size() - 1 );
-					String decode = (String) lastGroup[3];
+					Group lastGroup = fatherGroups.get( fatherGroups.size() - 1 );
+					String decode = lastGroup.getDecode();
 		        	
 		        	if( inGroup != null && inGroup.getDecode().startsWith( decode ) ) {
 		        		int size = result.size();
@@ -265,7 +278,7 @@ public class WFServiceImpl implements WFService {
 			condition = EasyUtils.fmParse(_condition, params);
 		}
 		String hsql = "from WFStatus where ( 1=0 " +condition+ " )  and tableId = ? and currentStatus ";
-		String currStatus = params.get("currStatus");
+		String currStatus = params.remove("wf_status"); // 按流程状态查询
 		if( currStatus != null ) {
 			hsql += " = ? ";
 		} else {
@@ -286,17 +299,20 @@ public class WFServiceImpl implements WFService {
     	}
     	
     	itemIds.add(-999L); // 防止id条件为空把所有记录都查出来了
-    	params.put("id", EasyUtils.list2Str(itemIds));
+    	String ids = (String) EasyUtils.checkNull(params.get("ids"), EasyUtils.list2Str(itemIds)); // 前台可能已传入了指定的ids
+    	params.put("ids", ids);
     	SQLExcutor ex = _db.select(page, pagesize, params, isApprover);
-    	params.remove("id");
+    	params.remove("ids");
 		List<Map<String, Object>> items = ex.result;
 		
-		Map<String, String> usersMap = loginSerivce.getUsersMap();
+		Map<String, String> usersMap = loginSerivce.getUsersMap(Environment.getDomain());
     	
     	// 加上每一行的流程状态： 审批中、已通过、已撤销、已驳回、已转审
     	for(Map<String, Object> item : items) {
     		Object itemId = item.get("id");
 			WFStatus wfStatus = statusMap.get(itemId);
+			wfStatus = (WFStatus) EasyUtils.checkNull(wfStatus, new WFStatus());
+			
 			item.put("wfstatus", wfStatus.getCurrentStatus());
 			item.put("wfapplier", wfStatus.getApplierName());
 			item.put("wfapplyTime", item.get("createtime"));
@@ -335,7 +351,7 @@ public class WFServiceImpl implements WFService {
 		}
 		itemIds.add(-999L);
 		
-		Map<String, String> usersMap = loginSerivce.getUsersMap();
+		Map<String, String> usersMap = loginSerivce.getUsersMap(Environment.getDomain());
 		List<?> statusList = commonDao.getEntities("from WFStatus where tableId = ? and itemId in (" +EasyUtils.list2Str(itemIds)+ ") ", _db.recordId);
     	
     	for(Object obj : statusList) {
@@ -386,6 +402,7 @@ public class WFServiceImpl implements WFService {
 				if( !wfStatus.processorList().contains(to) ) {
 					WFLog log = new WFLog();
 					log.setProcessor( EasyUtils.attr2Str(getUserList(to), "username") );
+					log.setProcessorCode(to);
 					log.setProcessResult(WFStatus.UNAPPROVE);
 					
 					logs.add(log);
@@ -529,13 +546,8 @@ public class WFServiceImpl implements WFService {
 		Long itemId = wfStatus.getItemId();
 		
 		// 触发审批流程操作自定义事件（审批通过、驳回、撤销等都可以自定义相应事件）
-		Record record = (Record) commonDao.getEntity(Record.class, tableId);
-		_Database db = (_Database) CacheHelper.getLongCache().getObject("_db_record_" + tableId).getValue();
-		
-		String wfEventClazz = DMUtil.getExtendAttr(record.getRemark(), "wfEventClass");
-		wfEventClazz = (String) EasyUtils.checkNull(wfEventClazz, WFEventN.class.getName());
-		WFEvent we = (WFEvent) BeanUtil.newInstanceByName(wfEventClazz);
-		we.after(wfStatus, db);
+		_Database db = recordService._getDB(tableId);
+		fireWFEvent(wfStatus, tableId, db.get(itemId));
 		
 		// 发送站内信请求
 		String url = "javascript:void(0)"; // "'/tss/modules/dm/recorder.html?id=" +tableId+ "&itemId=" +itemId+ "' target='_blank'";
@@ -551,5 +563,16 @@ public class WFServiceImpl implements WFService {
 		String title = wfStatus.getApplierName() + "的【" + tableName + "】待您审批";
 		String content = title + "，<a href=\"" +url+ "\" onclick=\"" +onclick+ "\">点击打开处理</a>";
 		msgService.sendMessage(title, content, wfStatus.getNextProcessor());
+	}
+
+
+	private void fireWFEvent(WFStatus wfStatus, Long tableId, Map<String, Object> item) {
+		Record record = (Record) commonDao.getEntity(Record.class, tableId);
+		_Database db = recordService._getDB(tableId);
+		
+		String wfEventClazz = DMUtil.getExtendAttr(record.getRemark(), "wfEventClass");
+		wfEventClazz = (String) EasyUtils.checkNull(wfEventClazz, WFEventN.class.getName());
+		WFEvent we = (WFEvent) BeanUtil.newInstanceByName(wfEventClazz);
+		we.after(item, wfStatus, db);
 	}
 }

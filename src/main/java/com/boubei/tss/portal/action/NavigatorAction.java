@@ -68,12 +68,14 @@ public class NavigatorAction extends BaseActionSupport {
     /** 刷新一下参数的缓存 */
 	@RequestMapping("/cache/{key}")
     public void flushCache(HttpServletResponse response, @PathVariable("key") Object key) {
-		flushMenuCache();
+		CacheHelper.flushCache(CacheLife.SHORT.toString(), key.toString());
+		
         printSuccessMessage();
     }
 	
 	private void flushMenuCache() {
-		CacheHelper.flushCache(CacheLife.SHORT.toString(), "NavigatorDao.getMenuItems");
+		CacheHelper.flushCache(CacheLife.SHORT.toString(), "menu");
+		CacheHelper.flushCache(CacheLife.SHORT.toString(), "Menu");
 	}
     
 	/**

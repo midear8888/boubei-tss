@@ -20,7 +20,6 @@ import org.springframework.stereotype.Component;
 import com.boubei.tss.EX;
 import com.boubei.tss.cms.CMSConstants;
 import com.boubei.tss.cms.entity.Article;
-import com.boubei.tss.cms.entity.Channel;
 import com.boubei.tss.cms.service.IChannelService;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.modules.progress.Progress;
@@ -48,9 +47,8 @@ public class PublishManger implements Progressable {
 	    String operation = CMSConstants.OPERATION_PUBLISH;
 	    List<Long> permitedList = PermissionHelper.getInstance().getResourceIdsByOperation(appId, resourceType, operation);
 	    
-	    Channel channel = channelService.getChannelById(channelId);
 	    if ( !permitedList.contains(channelId) ) {
-            throw new BusinessException( EX.parse(EX.CMS_4, channelId, channel.getName()));
+            throw new BusinessException( EX.parse(EX.CMS_4, channelId));
         }
 	}
 

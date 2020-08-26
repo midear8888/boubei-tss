@@ -12,20 +12,16 @@ package com.boubei.tss.portal.engine;
 
 import java.io.File;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 
-import com.boubei.tss.PX;
+import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.web.mvc.BaseActionSupport;
-import com.boubei.tss.modules.param.Param;
-import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.portal.PortalConstants;
 import com.boubei.tss.util.FileHelper;
 import com.boubei.tss.util.URLUtil;
@@ -83,7 +79,7 @@ public abstract class FMSupportAction extends BaseActionSupport {
          * 因为是每次请求都新建一个FreemarkerParser，所以不会存在多线程问题。
          */
         parser.putParameters(request.getParameterMap()); 
-        parser.putParameters(getUserDefineParams()); 
+        parser.putParameters(DMUtil.getUserDefineParams()); 
         
         return parser;
     }
@@ -100,20 +96,6 @@ public abstract class FMSupportAction extends BaseActionSupport {
             }
         }
         return null;
-    }
-    
-    // 获取用户自定义的Freemarker解析参数
-    protected Map<String, String> getUserDefineParams(){
-        Map<String, String> paramsMap = new HashMap<String, String>();
-        try{
-            List<Param> params = ParamManager.getComboParam(PX.USER_DEFINED_PARAMS);
-            for( Param p : params ){
-                paramsMap.put(p.getText(), p.getValue());
-            }
-        } catch(Exception e) {
-            //do nothing
-        }
-        return paramsMap;
     }
 
 }

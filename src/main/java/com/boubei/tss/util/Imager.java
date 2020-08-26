@@ -118,4 +118,24 @@ public class Imager {
 		
 		ImageIO.write((BufferedImage) Itemp, subfix, srcFile);
 	}
+	
+	public static String markSLPic(File picFile, int size) {
+		String slPicDir = picFile.getParent() + "/sl";
+		
+		// 检查缩略图是否已存在
+		String slPicPath = slPicDir + "/" + picFile.getName();
+		if( new File(slPicPath).exists() ) {
+			return slPicPath;
+		}
+		
+		try {
+			slPicPath = FileHelper.copyFile( new File(slPicDir), picFile, true, false);
+			Imager.zoomImage(slPicPath, size); // 缩略图大小，不超过size
+			Imager.zoomImage(slPicPath, size);
+			return slPicPath;
+		} 
+		catch (Exception e) {
+			return picFile.getPath(); // 如果缩略失败，则还是采用原图片
+		}
+	}
 }

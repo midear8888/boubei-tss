@@ -10,6 +10,8 @@
 
 package com.boubei.tss.framework.web.listener;
 
+import java.util.Date;
+
 import javax.servlet.annotation.WebListener;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
@@ -38,20 +40,19 @@ public class SessionDestroyedListener implements HttpSessionListener {
         HttpSession session = event.getSession();
         
         // 设置 session 的过期时间
-        if(session.isNew()){
-            String configValue = ParamConfig.getAttribute(PX.SESSION_CYCLELIFE_CONFIG);
-            try {
-            	int cycleLife = Integer.parseInt(configValue);
-				session.setMaxInactiveInterval(cycleLife); // 以秒为单位
-            } 
-            catch(Exception e) { }
-        }
+        try {
+        	String configValue = ParamConfig.getAttribute(PX.SESSION_CYCLELIFE_CONFIG);
+        	int cycleLife = Integer.parseInt(configValue);
+			session.setMaxInactiveInterval(cycleLife); // 以秒为单位
+        } 
+        catch(Exception e) { }
         
         String sessionId = session.getId();
         String appCode = Context.getApplicationContext().getCurrentAppCode();
         log.debug("应用【" + appCode + "】里 sessionId为：" + sessionId
                 + " 的session创建完成，有效期为：" + session.getMaxInactiveInterval() + " 秒 ");
         
+        session.setAttribute("sessionCTime", new Date());
         Context.sessionMap.put(sessionId, session);
     }
  
@@ -64,14 +65,10 @@ public class SessionDestroyedListener implements HttpSessionListener {
         
         // 注销在线用户库中对应记录信息，去除登陆用户身份证card信息
     	IOnlineUserManager ouManager = OnlineUserManagerFactory.getManager();
-		try {
-			String token = ouManager.logout(appCode, sessionId);
-			if(token != null) {
-            	Context.destroyIdentityCard(token);
-            }
-		} catch(Exception e) {
-			log.error("注销过期session时出错了：" + e.getMessage());
-		}
+    	String token = ouManager.logout(appCode, sessionId);
+		if(token != null) {
+        	Context.destroyIdentityCard(token);
+        }
 		
 		Context.sessionMap.remove(sessionId);
     }

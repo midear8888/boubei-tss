@@ -11,7 +11,6 @@
 package com.boubei.tss.dm.ext;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,14 +18,13 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import com.boubei.tss.dm.record.Record;
 import com.boubei.tss.dm.record.RecordService;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.web.servlet.AfterUpload;
+import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
 
@@ -56,9 +54,12 @@ public class ImportRecord implements AfterUpload {
 		return "parent.alert('成功导入" +count+ "个数据表定义.');parent.loadInitData();";
 	}
 
-	// 参考Param模块的【复制】操作
-	public int createRecords(String json, String dataSource, Long groupId)
-			throws IOException, JsonParseException, JsonMappingException {
+	/**
+	 * 参考Param模块的【复制】操作;
+	 * 
+	 * 如果同名 且 同ID 的已存在，则覆盖； 通常是一个环境复制到另外一个环境
+	 */
+	public int createRecords(String json, String dataSource, Long groupId) throws Exception {
 		
         int count = 0;
     	Map<Long, Long> idMapping = new HashMap<Long, Long>();
@@ -69,15 +70,6 @@ public class ImportRecord implements AfterUpload {
             Record record = new ObjectMapper().readValue(EasyUtils.obj2Json(obj), Record.class);
             Long oldId = record.getId();
             
-            record.setId(null);
-            if ( i == 0 ) {
-                record.setParentId(groupId);
-            } else {
-                Long parentId = idMapping.get(record.getParentId());
-                parentId = (Long) EasyUtils.checkNull(parentId, groupId);
-				record.setParentId(parentId);
-            }
-            
             if( Record.TYPE1 == record.getType() ) {
             	count ++;
             	record.setDatasource(dataSource);
@@ -86,11 +78,24 @@ public class ImportRecord implements AfterUpload {
                 record.setTable( table.substring(table.indexOf(".") + 1) ); // 去掉表空间|schema
             }
             
-            Integer status = record.getDisabled();
-            recordService.createRecord(record);
-            
-            record.setDisabled(status);
-            recordService.updateRecord(record);
+            String hql = "from Record where name = ? and (id = ? or table = ?)";
+            List<?> exists = Global.getCommonService().getList(hql, record.getName(), oldId, EasyUtils.obj2String(record.getTable()));
+            if( exists.isEmpty() ) {
+            	Integer status = record.getDisabled();
+            	record.setId(null);
+            	Long parentId = idMapping.get( record.getParentId() );
+				record.setParentId( (Long) EasyUtils.checkNull(parentId, groupId) );
+				
+                recordService.createRecord(record);
+                
+                record.setDisabled(status); // 因默认创建分组都是停用状态，但导入分组不需要，保留原来状态
+                recordService.updateRecord(record);
+            }
+            else {
+            	Record old = (Record) exists.get(0);
+            	BeanUtil.copy( old, record, new String[]{"id", "lockVersion","createTime", "creatorName", "decode", "seqNo", "levelNo", "group"} );
+            	recordService.updateRecord(old);
+            }
             
             idMapping.put(oldId, record.getId());
         }

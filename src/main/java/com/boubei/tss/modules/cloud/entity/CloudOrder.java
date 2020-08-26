@@ -20,6 +20,7 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import com.boubei.tss.dm.record.ARecordTable;
 
@@ -28,52 +29,55 @@ import com.boubei.tss.dm.record.ARecordTable;
 @SequenceGenerator(name = "module_order_seq", sequenceName = "module_order_seq", initialValue = 1, allocationSize = 10)
 public class CloudOrder extends ARecordTable {
 
-	public final static String NEW        = "待付款";
-	public final static String CANCELED   = "已取消";
-	public final static String PAYED      = "已付款";
+	public final static String NEW = "待付款";
+	public final static String CANCELED = "已取消";
+	public final static String PAYED = "已付款";
 	public final static String PART_PAYED = "部分付款";
+	
+	public final static String PAYTYPE_1 = "余额";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO, generator = "module_order_seq")
 	private Long id;
 
-	private String product; 
-	
-	public String getProduct() {
-		return product;
-	}
-
-	public void setProduct(String product) {
-		this.product = product;
-	}
+	private String product;
 
 	@Column(nullable = false)
-	private String type;
-	
+	private String type;  // 订单类型：自定义实现类
+
 	private Long invite_user_id; // 邀请人
-
 	private Long module_id;
-
 	private Integer account_num;
-
 	private Integer month_num;
 
 	private String order_no; // 订单号 编码规则=时间戳-id
 	private Date order_date = new Date();
-	private Date pay_date;
+	
 
 	private String status = NEW; // 待付款、取消、已付款
 
 	private Double price;
-	private Double money_cal;  // 应付金额
-	private Double money_real; // 实付金额
-	private Double rebate;     // 折扣
-	private Double derate;     // 减免
+	private Double money_cal; // 应付金额
 	
+	private Double rebate; // 折扣
+	private Double derate; // 减免
+
+	private String appid; // (小程序)应用ID
+	private String mchid; // (微信)商户号
+
 	@Lob
-	private String params;     // 更多参数
+	private String params; // 更多参数
+	private String remark; // 备注
 	
-	private String remark;  // 备注
+	private Date pay_date;
+	private String pay_type;
+	private Double money_real; // 实付金额
+	
+	@Transient
+	public Boolean singleSubAuthorize = false;
+	
+	@Transient
+	public Boolean checkSMS = true;
 
 	public Serializable getPK() {
 		return this.getId();
@@ -86,7 +90,7 @@ public class CloudOrder extends ARecordTable {
 	public void setId(Long id) {
 		this.id = id;
 	}
-	
+
 	public String getType() {
 		return type;
 	}
@@ -214,4 +218,38 @@ public class CloudOrder extends ARecordTable {
 	public void setRemark(String remark) {
 		this.remark = remark;
 	}
+
+	public String getAppid() {
+		return appid;
+	}
+
+	public void setAppid(String appid) {
+		this.appid = appid;
+	}
+
+	public String getProduct() {
+		return product;
+	}
+
+	public void setProduct(String product) {
+		this.product = product;
+	}
+
+	public String getPay_type() {
+		return pay_type;
+	}
+
+	public void setPay_type(String pay_type) {
+		this.pay_type = pay_type;
+	}
+
+	public String getMchid() {
+		return mchid;
+	}
+
+	public void setMchid(String mchid) {
+		this.mchid = mchid;
+	}
+	
+	
 }

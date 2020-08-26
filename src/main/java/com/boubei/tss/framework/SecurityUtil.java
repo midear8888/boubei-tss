@@ -10,12 +10,21 @@
 
 package com.boubei.tss.framework;
 
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.boubei.tss.PX;
+import com.boubei.tss.cache.Cacheable;
+import com.boubei.tss.cache.Pool;
+import com.boubei.tss.cache.extension.CacheHelper;
+import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.framework.web.filter.Filter8APITokenCheck;
+import com.boubei.tss.modules.param.ParamConfig;
 import com.boubei.tss.util.EasyUtils;
+import com.boubei.tss.util.URLUtil;
 
 /**
  * 设置一个安全级别的配置参数，依据相应级别来判断是否要进行XSS清理等安全操作
@@ -107,5 +116,63 @@ public class SecurityUtil {
         value = scriptPattern.matcher(value).replaceAll("");
         
         return value;
+    }
+    
+    /**
+     * 控制单个IP对单个资源的请求频次，及最短间隔时间
+     * 
+     * DENY_MASS_ATTACK = true
+     * MIN_REQUEST_INTERVAL = 100  两次访问间隔不能超过 100ms，默认 0
+     * MAX_HTTP_REQUEST = 600      每分钟访问不能超过600次，即10次/秒； 默认 180
+     * 
+     */
+    public static void denyMassAttack(HttpServletRequest request) {
+    	if( !"true".equals(ParamConfig.getAttribute(PX.DENY_MASS_ATTACK, "false")) ) {
+    		return;
+    	}
+    	
+    	String servletPath = request.getServletPath();
+    	if( servletPath.indexOf(".") > 0 && !servletPath.endsWith(".do") && !servletPath.endsWith(".in") ) {
+    		return; // 忽略js、css、图片等， 除了 .in, .do, .html外，其它带“.”的均忽略
+    	}
+    	
+    	/* 
+    	 * IP白名单内不受限制
+    	 * IP黑名单内拒绝访问
+    	 */
+		Set<String> clientIps = URLUtil.getClientIps(request);
+    	String blackIPs = ParamConfig.getAttribute(PX.IP_BLACK_LIST, "");
+    	String whiteIPs = ParamConfig.getAttribute(PX.IP_WHITE_LIST, "");
+    	for( String ip : clientIps) {
+    		if(blackIPs.indexOf(ip) >= 0) {
+    			throw new BusinessException("request denied", 403);
+    		}
+    		if(whiteIPs.indexOf(ip) >= 0) {
+    			return;
+    		}
+    	}
+		
+		Pool cache = CacheHelper.getShortCache();
+    	String uName = Filter8APITokenCheck.getInfo(request, "uName_ALIAS", "uName");
+		String key = EasyUtils.obj2String(uName) + "@" + EasyUtils.list2Str(clientIps) + ":" + servletPath;
+    	Cacheable item = cache.getObject(key);
+    	if( item == null ) {
+    		item = cache.putObject(key, new Object());
+    	}
+    	long firstCall = item.getBirthday(), lastPreCall = item.getPreAccessed(), lastCall = item.getAccessed();
+    	int hit = item.getHit();
+    	
+    	// 同一接口两次访问时间间隔不得小于 MIN_REQUEST_INTERVAL
+    	int interval = EasyUtils.obj2Int(ParamConfig.getAttribute(PX.MIN_REQUEST_INTERVAL, "0")); 
+    	if( hit > 10 && lastCall - lastPreCall < interval ) {
+    		throw new BusinessException("Request too fast, please try again later"); // 请求太快，请稍后再试！
+    	}
+    	
+    	// 每分钟（即60*1000微秒）内请求同一接口次数不得超过 MAX_HTTP_REQUEST （ 默认 每秒不超过 180/60 = 3次， 300ms/次）
+    	int maxHttpReqs = EasyUtils.obj2Int(ParamConfig.getAttribute(PX.MAX_HTTP_REQUEST, "180"));
+    	float minitus = Math.max(1, (lastCall - firstCall) / 1000);
+    	if( hit / minitus  > maxHttpReqs) {
+    		throw new BusinessException("Requests per minute are too frequent, please try again later"); // 每分钟请求过于频繁，请稍后再试！
+    	}
     }
 }

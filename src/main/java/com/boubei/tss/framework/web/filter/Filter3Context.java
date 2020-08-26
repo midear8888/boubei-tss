@@ -89,11 +89,9 @@ public class Filter3Context implements Filter {
 			/* 请求结束后销毁Context；如果出现了异常，Filter2CatchException里会进行销毁操作 */
 			Context.destroy(); 
 		} 
-		catch (BusinessServletException e) {
-			throw e;
-		}
 		catch (Exception e) {
-			throw new BusinessServletException(e);
+			Object _e = EasyUtils.checkTrue(e instanceof BusinessServletException, e, new BusinessServletException(e));
+			throw (BusinessServletException) _e;
 		} 
 	}
 }

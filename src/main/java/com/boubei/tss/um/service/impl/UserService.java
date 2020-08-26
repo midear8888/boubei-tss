@@ -12,9 +12,7 @@ package com.boubei.tss.um.service.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +35,6 @@ import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.pagequery.PageInfo;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.sso.context.Context;
-import com.boubei.tss.modules.api.APIService;
 import com.boubei.tss.modules.cloud.entity.DomainInfo;
 import com.boubei.tss.modules.param.Param;
 import com.boubei.tss.modules.param.ParamConfig;
@@ -52,6 +49,7 @@ import com.boubei.tss.um.entity.GroupUser;
 import com.boubei.tss.um.entity.Message;
 import com.boubei.tss.um.entity.Role;
 import com.boubei.tss.um.entity.RoleUser;
+import com.boubei.tss.um.entity.SubAuthorize;
 import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.entity.permission.RolePermission;
 import com.boubei.tss.um.helper.UMQueryCondition;
@@ -60,6 +58,7 @@ import com.boubei.tss.um.service.IGroupService;
 import com.boubei.tss.um.service.IRoleService;
 import com.boubei.tss.um.service.IUserService;
 import com.boubei.tss.um.sso.UMPasswordIdentifier;
+import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 
 @Service("UserService")
@@ -70,7 +69,6 @@ public class UserService implements IUserService{
 	@Autowired private IGroupDao groupDao;
 	
 	@Autowired private IGroupService groupService;
-	@Autowired private APIService apiService;
 	@Autowired private IRoleService  roleService;
 	@Autowired private ReportService reportService;
 	@Autowired private RecordService recordService;
@@ -111,6 +109,17 @@ public class UserService implements IUserService{
         		userDao.deleteAll( userDao.getEntities(" from ModuleDef where creator = ?", loginName) );
         	}
         }
+	}
+	
+	public void deepDeleteUser(Long groupId, Long userId) {
+		User user = this.getUserById(userId);
+
+		userDao.executeHQL("delete from SubAuthorize where buyerId = ?", userId);
+		userDao.executeHQL("delete from Account where belong_user = ?", user);
+		
+		this.deleteUser(groupId, userId);
+		
+		userDao.executeHQL("delete from CloudOrder where creator = ?", user.getLoginName());
 	}
 
 	public User getUserById(Long id) {
@@ -169,6 +178,7 @@ public class UserService implements IUserService{
             user.setOrignPassword( password );
             user.setAccountLife(null);
             user.setAuthMethod( UMPasswordIdentifier.class.getName() );
+            user.setOrigin(Environment.getUserName());
             
             user = userDao.create(user);
             userId = user.getId();
@@ -186,11 +196,28 @@ public class UserService implements IUserService{
         saveUser2Group(userId, groupIdsStr);
         saveUser2Role (userId, roleIdsStr);
         
+        // 检查被操作用户是否为域管理员，域管理员不能移动到域组以外的组
+        checkDomainAdmin(userId);
+        
+        Group mGroup = groupDao.findMainGroupByUserId(userId);
+        groupDao.evict(mGroup);
+		userDao.recordUserLog(user, mGroup, "save");
+        
         // 刷新用户的缓存信息
         CacheHelper.flushCache(CacheLife.SHORT.toString(), "ByUserId(" +userId+ ")");
+        CacheHelper.flushCache(CacheLife.SHORT.toString(), "ByLoginName(" +user.getLoginName()+ ")");
+        CacheHelper.flushCache(CacheLife.SHORTER.toString(), "getUsers");
 	}
 	
-    /** 用户对组 */
+    private void checkDomainAdmin(Long userId) {
+		String hql1 = "select g from GroupUser gu, Group g where gu.userId = ? and gu.groupId = g.id and (g.levelNo = 4 or g.domainRoot = 1)";
+		List<?> list = userDao.getEntities(hql1, userId);
+		if( Environment.isDomainAdmin() && Environment.getUserId().equals(userId) &&list.isEmpty() ) {
+			throw new BusinessException(EX.U_52);
+		}
+	}
+
+	/** 用户对组 */
     private void saveUser2Group(Long userId, String groupIdsStr) {
         List<?> user2Groups = userDao.findUser2GroupByUserId(userId);
         Map<Long, Object> historyMap = new HashMap<Long, Object>(); //把老的组对用户记录做成一个map，以"userId"为key
@@ -202,6 +229,8 @@ public class UserService implements IUserService{
         if ( !EasyUtils.isNullOrEmpty(groupIdsStr) ) {
             String[] groupIds = groupIdsStr.split(",");
             for (String temp : groupIds) {
+            	if(EasyUtils.isNullOrEmpty(temp)) continue;
+            	
                 // 如果historyMap里面没有，则新增用户组对用户的关系；如果historyMap里面有，则从历史记录中移出；剩下的将被删除
                 Long groupId = Long.valueOf(temp);
                 if (historyMap.remove(groupId) == null) { 
@@ -233,6 +262,8 @@ public class UserService implements IUserService{
         if ( !EasyUtils.isNullOrEmpty(roleIdsStr) ) {
             String[] roleIds = roleIdsStr.split(",");
             for (String temp : roleIds) {
+            	if(EasyUtils.isNullOrEmpty(temp)) continue;
+            	
                 // 如果historyMap里面没有，则新增用户组对用户的关系；如果historyMap里面有，则从历史记录中移出；剩下的将被删除
                 Long roleId = Long.valueOf(temp);
                 
@@ -277,9 +308,39 @@ public class UserService implements IUserService{
     public Map<String, Object> getInfo4UpdateExsitUser(Long userId) {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("UserInfo", userDao.getEntity(userId));
-        map.put("User2RoleTree", groupService.findEditableRoles());
         map.put("User2GroupExistTree", groupDao.findGroupsByUserId(userId));
-        map.put("User2RoleExistTree", userDao.findRolesByUserId(userId));
+        
+        List<?> list = userDao.findRolesByUserId(userId);
+        
+        List<Role> roles1 = new ArrayList<Role>();
+        List<Role> roles2 = new ArrayList<Role>();
+        for( Object o : list ) {
+        	Object[] objs  = (Object[]) o;
+        	Role r = (Role) objs[0];
+        	if( roles1.contains(r) ) continue;
+        	
+        	Long saId = (Long)objs[1];
+			if( saId != null ) {
+        		SubAuthorize sa = (SubAuthorize) userDao.getEntity(SubAuthorize.class, saId);
+        		
+        		// 有效期内，且所有人为当前指定用户
+				if( sa != null && sa.getEndDate().after(new Date()) && userId.equals(sa.getOwnerId())) {
+        			User buyer = userDao.getEntity( sa._buyer() );
+        			Role copy = new Role();
+            		String saer = (String) EasyUtils.checkTrue(buyer.getId().equals(sa.getOwnerId()), "", buyer.getUserName());
+					copy.setName(r.getName() + "（" +saer + "转授）");  // 转授的角色在保存用户时忽略
+            		roles2.add(copy);
+            		
+            		roles1.add(r);
+        		}
+        	} 
+			else {
+				roles2.add(r);
+				roles1.add(r);
+        	}
+        }
+		map.put("User2RoleExistTree", roles2);
+		map.put("User2RoleTree", groupService.findEditableRoles());
         return map;
     }
 	
@@ -319,6 +380,11 @@ public class UserService implements IUserService{
         
         GroupUser groupUser = new GroupUser(userId, groupId);
         userDao.createObject(groupUser);
+        
+        checkDomainAdmin(userId);
+        Group targetGroup = groupDao.getEntity(groupId);
+        groupDao.evict(targetGroup);
+		userDao.recordUserLog( userDao.getEntity(userId) , targetGroup, "move");
 	}
 	
 	// 判断用户是否过期
@@ -378,14 +444,17 @@ public class UserService implements IUserService{
 	/************************************* register module **************************************/
 	
 	public void regBusiness(User user, String domain) {
-		Group domainGroup = groupService.createDomainGroup(domain);
+		regBusiness(user, domain, null);
+	}
+	public void regBusiness(User user, String domain, Long parent) {
+		Group domainGroup = groupService.createDomainGroup(domain, parent);
     	Long newDomainGroupId = domainGroup.getId();
 		user.setGroupId(newDomainGroupId);
 		user.setDomain( domainGroup.getDomain() );
     	
     	// 默认创建一个客户组【customer】，小程序默认注册在各个域的客户组下
     	Group customerGroup = new Group();
-    	customerGroup.setName("customer");
+    	customerGroup.setName(Group.CUSTOMER_GROUP);
     	customerGroup.setGroupType(Group.MAIN_GROUP_TYPE);
     	customerGroup.setParentId( newDomainGroupId );
     	groupService.createNewGroup(customerGroup, "", "");
@@ -395,36 +464,46 @@ public class UserService implements IUserService{
     	info.setName( domainGroup.getName() );
     	info.setDomain( domainGroup.getDomain() );
     	info.setCreateTime(new Date());
-    	info.setKd100(true);
-    	info.setPrefix( domainGroup.getId().toString() );
-    	
+    	info.setCreator( user.getLoginName() );
     	userDao.createObject(info);
     	
+    	info.setPrefix(null); // 不再是domainGroupId 或 info.id, 没有意义
     	info.setCreator( user.getLoginName() );
     	userDao.update(info);
     	
     	// 域账号兼有开发者功能
     	if( "REG_BDEV".equals( ParamConfig.getAttribute(PX.REGABLE) ) ) {
 			this.regDeveloper(user);
-			
-			// 给与开发者角色，默认开发者角色需要$开发域下才有
-			RoleUser ru = new RoleUser();
-			ru.setRoleId(UMConstants.DEV_ROLE_ID);
-			ru.setUserId(user.getId());
-			roleDao.createObject(ru);
+			setRole2User(user, UMConstants.DEV_ROLE_ID); // 给与开发者角色，默认开发者角色需要$开发域下才有
 		} 
     	else {
     		// 判断用户是否已存在，则直接移动到当前新域下（适用于用户购买账号生成域）
-    		if(user.getId() != null) {
-    			this.moveUser(user.getId(), newDomainGroupId);
-    		} else {
+    		Long userId = user.getId();
+			if(userId != null) {
+    			this.moveUser(userId, newDomainGroupId);
+    			setRole2User(user, UMConstants.DOMAIN_ROLE_ID); // 给与域管理员角色（普通用户升级为独立域的场景）
+    			userDao.recordUserLog( user, domainGroup, "设为域管理员" );
+    			
+    			// 刷新此用户的用户组织、角色、菜单等缓存
+    			CacheHelper.flushCache(CacheLife.SHORT.toString(), "ByUserId(" +userId+ ")");
+    	        CacheHelper.flushCache(CacheLife.SHORT.toString(), "ByLoginName(" +user.getLoginName()+ ")");
+    	        CacheHelper.flushCache(CacheLife.SHORT.toString(), "getMenuItems");
+    		} 
+    		else {
     			this.regUser(user);
     		}
 		}
 	}
  
+	private void setRole2User(User user, Long role) {
+		RoleUser ru = new RoleUser();
+ 		ru.setRoleId(role);
+ 		ru.setUserId(user.getId());
+ 		roleDao.createObject(ru);
+	}
+	
 	public void regUser(User user) {
-		regUser(user,false);
+		regUser(user, false);
 	}
 	
 	public void regUser(User user, boolean regByOrder) {
@@ -444,10 +523,9 @@ public class UserService implements IUserService{
         createUser2Group(user.getId(), user.getGroupId());
         
         // 所有用户默认授予“域管理员”角色，包括个人用户，其域为“自注册域”
- 		RoleUser ru = new RoleUser();
- 		ru.setRoleId(UMConstants.DOMAIN_ROLE_ID);
- 		ru.setUserId(user.getId());
- 		roleDao.createObject(ru);
+        setRole2User(user, UMConstants.DOMAIN_ROLE_ID);
+        
+        userDao.recordUserLog(user, groupDao.findMainGroupByUserId(user.getId()), "reg");
  		
  		// 发送一条欢迎消息
  		Message msg = new Message();
@@ -455,9 +533,6 @@ public class UserService implements IUserService{
 		msg.setReceiver(user.getLoginName());
 		msg.setTitle("欢迎您来到它山石的世界！");
 		msg.setContent(ParamManager.getValue("welcomeMsg", ""));
-		msg.setSenderId(Environment.getUserId());
-		msg.setSender("");
-		msg.setSendTime(new Date());
 		roleDao.createObject(msg);
     }
 	
@@ -473,7 +548,7 @@ public class UserService implements IUserService{
 		this.regUser(user);
 		
 		// 借用Admin的权限完成下面资源的注册
-		String token = apiService.mockLogin("Admin");
+		String token = userDao.mockLogin("Admin");
     	PermissionHelper ph = PermissionHelper.getInstance();
     	
     	Role rGroup = new Role();
@@ -486,9 +561,7 @@ public class UserService implements IUserService{
 		myRole.setName("$" + user.getUserName());
 		myRole.setParentId(rGroup.getId());
 		myRole.setStartDate(new Date());
-		Calendar calendar = new GregorianCalendar();
-        calendar.add(UMConstants.ROLE_LIFE_TYPE, UMConstants.ROLE_LIFE_TIME);
-        myRole.setEndDate(calendar.getTime());
+        myRole.setEndDate( DateUtil.addYears(UMConstants.ROLE_LIFE_TIME) );
 		roleService.saveRole2UserAndRole2Group(myRole, user.getId()+"", "");
 		ph.createPermission(myRole.getId(), rGroup, UMConstants.ROLE_VIEW_OPERRATION, 2, 0, 0, RolePermission.class.getName());
 		ph.createPermission(myRole.getId(), rGroup, UMConstants.ROLE_EDIT_OPERRATION, 2, 0, 0, RolePermission.class.getName());

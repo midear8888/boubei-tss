@@ -20,7 +20,7 @@ public interface WFService {
 	
 	WFStatus getWFStatus(Long tableId, Long itemId);
 	
-	void removeWFStatus(Long tableId, Long itemId);
+	void removeWFStatus(Long tableId, Long itemId, Map<String, Object> item);
 	
 	Map<Object, Object> getMyWFCount();
 
@@ -32,7 +32,7 @@ public interface WFService {
 
 	List<String> getUsers(List<Map<String, String>> rule, boolean justOne);
 
-	void calculateWFStatus(Long itemId, _Database _db);
+	boolean calculateWFStatus(Long itemId, _Database _db);
 	
 	String approve(Long recordId, Long id, String opinion);
 	

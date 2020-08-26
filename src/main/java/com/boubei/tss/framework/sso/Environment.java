@@ -51,7 +51,7 @@ public class Environment {
 		return UMConstants.ROBOT_USER_ID.equals( Environment.getUserId() );
 	}
 	
-	public static boolean isDomainUser() {
+	public static boolean isDomainAdmin() {
 		return getOwnRoles().contains(UMConstants.DOMAIN_ROLE_ID);
 	}
 	
@@ -85,6 +85,14 @@ public class Environment {
         return card.getLoginName();
     }
     
+    public static Long getNotnullUserId() {
+    	return (Long) EasyUtils.checkNull( getUserId(), Anonymous._ID);
+    }
+    
+    public static String getNotnullUserCode() {
+    	return (String) EasyUtils.checkNull(Environment.getUserCode(), Anonymous._CODE);
+    }
+    
     /**
      * 获取用户姓名
      */
@@ -94,6 +102,11 @@ public class Environment {
             return null;
         }
         return card.getUserName();
+    }
+    
+    public static String getDomainCN() {
+        String domain = EasyUtils.obj2String(getInSession(SSOConstants.USER_DOMAIN_CN));
+		return domain.substring(0, Math.min(domain.length(), 4));
     }
     
     public static Object getUserInfo(String field) {
@@ -128,6 +141,14 @@ public class Environment {
     	return (Long) Environment.getInSession(SSOConstants.USER_GROUP_ID);
     }
     
+    public static boolean inGroup(String group, boolean up) {
+    	if( up ) {
+    		List<?> fatherGroups = (List<?>) Environment.getInSession("GROUPS_MAIN_NAME");
+    		return fatherGroups.contains(group);
+    	}
+		return group.equals( getUserGroup() );
+    }
+
     public static String getDomainOrign() {
     	return (String) getInSession(SSOConstants.USER_DOMAIN);
     }

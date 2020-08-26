@@ -27,10 +27,11 @@ public class TimeWrapper implements Cacheable, Serializable {
 	private static final long serialVersionUID = 430479804348050166L;
 	
 	private Object key, value;
-	private long death = 0; // 如果death = 0，则元素永不过期
-	private long accessed; // 记录元素最后一次被访问的时间
+	private long death = 0;   // 如果death = 0，则元素永不过期
+	private long accessed;    // 记录元素最后一次被访问的时间
+	private long preAccessed; // 记录元素最后第二次被访问的时间，以此计算访问间隔时间
 	private long birthday;
-	private int  hit = 0;    // 对象的点击次数
+	private int  hit = 0;     // 对象的点击次数
 	private long hitLong = 0; // 对象的被使用时间
 
 	/**
@@ -48,6 +49,7 @@ public class TimeWrapper implements Cacheable, Serializable {
 		this.key = key;
 		this.value = value;
 		
+		this.preAccessed = 0;
 		this.birthday = this.accessed = System.currentTimeMillis();
 		setCyclelife(cycleLife);
 	}
@@ -82,11 +84,16 @@ public class TimeWrapper implements Cacheable, Serializable {
 	}
 
 	public synchronized void updateAccessed() {
+		this.preAccessed = this.accessed;
 		this.accessed = System.currentTimeMillis();
 	}
 
 	public long getAccessed() {
 		return this.accessed;
+	}
+	
+	public long getPreAccessed() {
+		return this.preAccessed;
 	}
 	
 	public String getDeath() {

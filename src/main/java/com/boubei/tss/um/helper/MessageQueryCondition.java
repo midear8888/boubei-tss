@@ -23,9 +23,10 @@ import com.boubei.tss.util.EasyUtils;
 public class MessageQueryCondition extends MacrocodeQueryCondition {
 
 	private Long   receiverId;
-	private String sender;  // 发件人
-	private String title;   // 站内信标题
-	private String content; // 站内信内容
+	private Long   senderId; // 发件人ID
+	private String sender;   // 发件人姓名
+	private String title;    // 站内信标题
+	private String content;  // 站内信内容
 	private Date searchTime1;
 	private Date searchTime2;
 	private String category;
@@ -36,6 +37,7 @@ public class MessageQueryCondition extends MacrocodeQueryCondition {
 		Map<String, Object> map = new HashMap<String, Object>(); // 无需关心域，消息都是按接收人过滤
 		
 		map.put("${receiverId}", " and o.receiverId = :receiverId");
+		map.put("${senderId}", " and o.senderId = :senderId");
 		map.put("${sender}", " and o.sender = :sender");
 		map.put("${title}", " and o.title like :title");
 		map.put("${content}", " and o.content like :content");
@@ -125,5 +127,13 @@ public class MessageQueryCondition extends MacrocodeQueryCondition {
 
 	public void setLevel(String level) {
 		this.level = level;
+	}
+
+	public Long getSenderId() {
+		return senderId;
+	}
+
+	public void setSenderId(Long senderId) {
+		this.senderId = senderId;
 	}
 }

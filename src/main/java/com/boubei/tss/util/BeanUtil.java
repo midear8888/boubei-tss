@@ -22,6 +22,7 @@ import java.util.Set;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.log4j.Logger;
 
+import com.boubei.tss.framework.exception.BusinessException;
 import com.thoughtworks.xstream.XStream;
 
 /**
@@ -128,16 +129,15 @@ public class BeanUtil {
             }
             
             try {
-            	if (value == null || (!String.class.equals(clazz) && "".equals(value))) {
+            	if (clazz.equals(Date.class) && (value instanceof String)) {
+                    value = DateUtil.parse((String) value);
+                }
+            	if (value == null || (!String.class.equals(clazz) && EasyUtils.isNullOrEmpty(value))) {
                 	if( !ignoreNull ) {
                 		PropertyUtils.setProperty(bean, propertyName, null);
                 	}
                     continue;
                 }
-                if (clazz.equals(Date.class) && (value instanceof String)) {
-                    value = DateUtil.parse((String) value);
-                }
-                
             	if (value.getClass().equals(clazz) || clazz.isAssignableFrom(value.getClass())) { 
                     PropertyUtils.setProperty(bean, propertyName, value);
                 } 
@@ -145,8 +145,9 @@ public class BeanUtil {
                     PropertyUtils.setProperty(bean, propertyName, 
                     		clazz.getConstructor( String.class ).newInstance( value.toString() ));
                 }
-            } catch (Exception e) {
-                throw new RuntimeException( "属性名：" + propertyName + " 设置到实体中时出错", e);
+            }
+            catch (Exception e) {
+                throw new BusinessException( "设置对象" +bean.getClass().getSimpleName()+ "属性【" + propertyName + "】=【" + value + "】出错了，请检查", e);
             }
         }
     }
@@ -191,7 +192,7 @@ public class BeanUtil {
     public static Class<?> createClassByName(String className) {
         try {
             return Class.forName(className);
-        } catch (ClassNotFoundException e) {
+        } catch (Exception e) {
             throw new RuntimeException("实体: " + className + " 无法加载", e);
         }
     }

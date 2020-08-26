@@ -53,22 +53,28 @@ public class ExceptionEncoder {
             be = convertor.convert(be);
 
             boolean needRelogin = false, needPrint = true;
+            String errorCode = null;
             if(be instanceof IBusinessException){
                 IBusinessException e = (IBusinessException) be;
                 needRelogin = e.needRelogin();
                 needPrint = e.needPrint();
+                errorCode = EasyUtils.obj2String(e.errorCode());
                 
 				if(needPrint) {
                     printErrorMessage(be);
                 }
             }
             
-            String beMsg = getFirstCause(be).getMessage();
+            Throwable firstCause = getFirstCause(be);
+			String beMsg = firstCause.getMessage();
             if( needPrint && !needRelogin ) {
+            	printStackTrace(firstCause);
             	String userName = Environment.getUserName();
-            	log.warn( userName + ", thread=" +  Environment.threadID()
+            	log.warn( userName + "," +  Environment.getUserCode()
+            			+ ", thread=" +  Environment.threadID()
 						+ ", request url: " + rc.getRequest().getServletPath() 
 						+ ", request params:" + DMUtil.getRequestMap(rc.getRequest(), false)
+						+ ", origin: " + Environment.getOrigin()
 						+ ", errMsg = " + beMsg);
             }
             
@@ -98,7 +104,7 @@ public class ExceptionEncoder {
             else { // HTTP JSON: 默认用json格式往response写入异常信息
             	beMsg = EasyUtils.obj2String(beMsg);
             	beMsg = (String) EasyUtils.checkNull(beMsg, be.getMessage());
-            	out.println("{\"code\": \"TSS-500\", \"errorMsg\": \"" + beMsg.replaceAll("\"", "`") + ".\"}");
+            	out.println("{\"code\": \"" +EasyUtils.checkNull(errorCode, "555")+ "\", \"errorMsg\": \"" + beMsg.replaceAll("\"", "`") + ".\"}");
             }
         } 
     	catch (Exception e) {
@@ -111,6 +117,10 @@ public class ExceptionEncoder {
      * @param be
      */
     public static void printErrorMessage(Throwable be) {
+		if( noNeedPrint(be) ) {
+			return;
+		}
+		
         Throwable first = getFirstCause(be);
         
         // 过滤掉不需要输出到控制台（或日志）的异常，比如SocketException等
@@ -123,6 +133,14 @@ public class ExceptionEncoder {
         } else {
         	printStackTrace(be);
         }
+    }
+    
+    private static boolean noNeedPrint(Throwable be) {
+    	return be instanceof IBusinessException && !((IBusinessException) be).needPrint();
+    }
+    
+    public static void logException(String errorMsg, Exception e) {
+        log.error( errorMsg,  noNeedPrint(e) ? null : e );
     }
     
     /**
@@ -176,5 +194,4 @@ public class ExceptionEncoder {
         	MailUtil.send("紧急情况，请速查看详细日志：" + errorMessage, stackTrace);
         }
     }
-    
 }

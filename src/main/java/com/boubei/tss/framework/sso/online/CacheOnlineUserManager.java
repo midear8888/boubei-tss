@@ -10,10 +10,8 @@
 
 package com.boubei.tss.framework.sso.online;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -61,22 +59,6 @@ public class CacheOnlineUserManager implements IOnlineUserManager {
         return token;
     }
     
-	public void logout(Long userId) {
-		List<OnlineUser> list = new ArrayList<OnlineUser>();
-		for(OnlineUser ou : sessionIdMap.values()) {
-			if(userId.equals( ou.getUserId() )) {
-				list.add(ou);
-			}
-		}
-		
-		for(OnlineUser ou : list) {
-			sessionIdMap.remove(ou.getSessionId());
-			tokenMap.remove(ou.getToken());
-		}
-		
-		usersMap.remove(userId);
-	}
-	
     public boolean isOnline(String token) {
         return tokenMap.containsKey(token);
     }

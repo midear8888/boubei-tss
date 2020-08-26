@@ -67,7 +67,7 @@ public class _Connection extends ConfigurableContants {
 		try {
 			conn.close();
 		} catch (SQLException e) {
-			log.fatal("销毁数据库连接时候出错", e);
+			// log.fatal("销毁数据库连接时候出错", e);
 		}
 	}
  

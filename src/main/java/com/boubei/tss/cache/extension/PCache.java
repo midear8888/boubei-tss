@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.map.ObjectMapper;
 
 import com.boubei.tss.PX;
 import com.boubei.tss.cache.CacheStrategy;
@@ -22,11 +21,11 @@ import com.boubei.tss.cache.JCache;
 import com.boubei.tss.cache.Pool;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.modules.param.Param;
-import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.modules.param.ParamListener;
 import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.modules.param.ParamService;
 import com.boubei.tss.util.BeanUtil;
+import com.boubei.tss.util.EasyUtils;
 
 /**
  * 结合Param模块来配置实现缓存池
@@ -44,9 +43,7 @@ public class PCache implements ParamListener {
 			List<Param> list = paramService.getParamsByParentCode(PX.CACHE_PARAM);
 			if(list != null) {
 				for(Param item : list) {
-					if( ParamConstants.FALSE.equals(item.getDisabled()) ){
-						rebuildCache(item.getCode(), item.getValue());
-					}
+					rebuildCache(item.getCode(), item.getValue());
 		    	}
 			}
 	    	return;
@@ -65,12 +62,10 @@ public class PCache implements ParamListener {
 		}
 	}
     
-    @SuppressWarnings("unchecked")
     public static void rebuildCache(String cacheCode, String newConfig) {
     	Map<String, String> attrs;
     	try {  
-  			ObjectMapper objectMapper = new ObjectMapper();
-  			attrs = objectMapper.readValue(newConfig, Map.class);
+  			attrs = EasyUtils.json2Map(newConfig);
 		} 
     	catch (Exception e) {  
 			throw new BusinessException("CACHE_PARAM[" + cacheCode + "] config has error: \n" + newConfig, e);

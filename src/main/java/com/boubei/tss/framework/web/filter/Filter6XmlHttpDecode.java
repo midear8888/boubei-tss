@@ -12,7 +12,6 @@ package com.boubei.tss.framework.web.filter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -101,7 +100,7 @@ public class Filter6XmlHttpDecode implements Filter {
         }
     }
     
-    private static String getRequestBody(ServletInputStream sis) throws IOException, UnsupportedEncodingException {
+    public static String getRequestBody(ServletInputStream sis) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte[] buffer = new byte[8 * 1024];
         int bLen = sis.read(buffer);

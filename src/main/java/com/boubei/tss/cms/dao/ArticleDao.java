@@ -39,6 +39,7 @@ public class ArticleDao extends BaseDao<Article> implements IArticleDao {
     }
  
     public Article saveArticle(Article article) {
+    	article.setDomain(Environment.getDomain());
         return create(article);
     }
 
@@ -151,7 +152,7 @@ public class ArticleDao extends BaseDao<Article> implements IArticleDao {
     	// select字段的顺序不能变，新增字段放最后
         String hql = "select o.id, o.title, o.author, o.summary, o.issueDate, o.createTime, o.hitCount, o.isTop, o.commentNum, o.seqNo, o.htmlRef "
                 + " from Article o"
-                + " where 1=1 ${channelId} ${status} ${domain} "
+                + " where 1=1 ${channelId} ${status} #{domainOrNoDomain}"
                 + " order by o.isTop desc, o.seqNo desc, o.issueDate desc, o.id desc";
  
         PaginationQueryByHQL pageQuery = new PaginationQueryByHQL(em, hql, condition);
@@ -165,7 +166,7 @@ public class ArticleDao extends BaseDao<Article> implements IArticleDao {
         String hql = "select o.id, o.title, o.author, o.summary, o.issueDate, o.createTime, o.hitCount, o.isTop, o.commentNum, o.seqNo, o.htmlRef "
                     + " from Article o, Temp t "
                     + " where o.channel.id = t.id and t.thread=" + Environment.threadID()
-                    + " ${status} ${createTime} ${domain} "
+                    + " ${status} ${createTime} #{domainOrNoDomain} "
                     + " order by o.isTop desc, o.seqNo desc, o.issueDate desc, o.id desc";
         
         PaginationQueryByHQL pageQuery = new PaginationQueryByHQL(em, hql, condition);

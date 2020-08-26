@@ -10,6 +10,7 @@
 
 package com.boubei.tss.cms;
 
+import java.io.File;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
@@ -23,6 +24,7 @@ import org.apache.log4j.Logger;
 import com.boubei.tss.cms.service.IRemoteArticleService;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.util.FileHelper;
+import com.boubei.tss.util.Imager;
 
 /** 
  * <p> DownloadServlet.java </p> 
@@ -64,6 +66,12 @@ public class DownloadServlet extends HttpServlet {
         
         String docOrPicPath = attach.basePath[attach.type]; 
         String filePath = attach.basePath[0] + "/" + docOrPicPath + "/" + attach.localPath;
+        
+        // 是否用缩略图
+ 		if( "true".equals( request.getParameter("smaller") ) ) {
+ 			filePath = Imager.markSLPic(new File(filePath), 64); // 64k
+ 		}
+        
         FileHelper.downloadFile(response, filePath, attach.name);
 	}
 

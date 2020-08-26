@@ -16,6 +16,8 @@ import java.util.Map;
 
 import com.boubei.tss.cache.aop.Cached;
 import com.boubei.tss.cache.extension.CacheLife;
+import com.boubei.tss.um.entity.Group;
+import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.helper.dto.GroupDTO;
 import com.boubei.tss.um.helper.dto.OperatorDTO;
 
@@ -30,14 +32,31 @@ import com.boubei.tss.um.helper.dto.OperatorDTO;
 public interface ILoginService {
 
     /**
-     * <p>
      * 根据用户登录名获取用户名及身份认证器类名
-     * </p>
+     * 
      * @param loginName 用户登录名
      * @return String[] {用户名:String, 身份认证器类名（全路径）:String}
      */
 	@Cached(cyclelife = CacheLife.SHORT)
-    String[] getLoginInfoByLoginName(String loginName);
+	User getLoginInfoByLoginName(String loginName);
+	
+	/**
+     * 根据用户ID获取用户信息
+     * 
+     * @param id 用户ID
+     * @return OperatorDTO 用户信息DTO
+     */
+	@Cached(cyclelife = CacheLife.SHORT)
+    OperatorDTO getOperatorDTOByID(Long id);
+    
+    /**
+     * 根据用户登录名获取用户信息
+     * 
+     * @param loginName 用户登录名
+     * @return OperatorDTO 用户信息DTO
+     */
+    @Cached(cyclelife = CacheLife.SHORT)
+    OperatorDTO getOperatorDTOByLoginName(String loginName);
 	
 	/**
 	 * 统计用户连续输错密码的次数
@@ -58,30 +77,12 @@ public interface ILoginService {
 	
     /**
      * <p>
-     * 根据用户ID获取用户信息
-     * </p>
-     * @param id 用户ID
-     * @return OperatorDTO 用户信息DTO
-     */
-    OperatorDTO getOperatorDTOByID(Long id);
-    
-    /**
-     * <p>
-     * 根据用户登录名获取用户信息
-     * </p>
-     * @param loginName 用户登录名
-     * @return OperatorDTO 用户信息DTO
-     */
-    OperatorDTO getOperatorDTOByLoginName(String loginName);
-    
-    /**
-     * <p>
      * 登陆成功后，保存【用户对应角色列表】到RoleUserMapping表，同时删除旧的关系
      * </p>
      * @param logonUserId 
      */
-    List<Long> saveUserRolesAfterLogin(Long logonUserId);
-    List<Long> saveUserRolesAfterLogin(Long logonUserId, List<Long> roleIds);
+    List<Long> saveUserRoleMapping(Long logonUserId);
+    List<Long> saveUserRoleMapping(Long logonUserId, List<Long> roleIds);
 
     /**
      * <p>
@@ -109,7 +110,7 @@ public interface ILoginService {
      * 		List: Object[](groupId, groupName)
      *		层次是从上向下,依次类推
      */
-    List<Object[]> getGroupsByUserId(Long userId);
+    List<Group> getGroupsByUserId(Long userId);
 
     /**
      * <p>
@@ -137,6 +138,7 @@ public interface ILoginService {
      */
     List<OperatorDTO> getUsersByRoleId(Long roleId);
     List<OperatorDTO> getUsersByRoleId(Long roleId, String domain);
+    List<OperatorDTO> getUsersByRole(String roleName, String domain);
     
     /**
      * 查找指定域下的所有用户，按【域 + 登录用户】进行缓存（开发者域的域名相同，需要用logonUserId来区分是哪个开发者）
@@ -145,18 +147,20 @@ public interface ILoginService {
      * @param field
      * @return
      */
-    @Cached(cyclelife = CacheLife.SHORT)
+    @Cached(cyclelife = CacheLife.SHORTER)
     List<?> getUsersByDomain(String domain, String field, Long logonUserId);
     
     /**
      * 获取登录用户所在域的所有登陆账号和中文名字映射
      */
-    Map<String, String> getUsersMap();
+    @Cached(cyclelife = CacheLife.SHORTER)
+    Map<String, String> getUsersMap(String domain);
     
     /**
      * 获取登录用户所在域的所有登陆账号ID和中文名字映射
      */
-    Map<Long, String> getUsersMapI();
+    @Cached(cyclelife = CacheLife.SHORTER)
+    Map<Long, String> getUsersMapI(String domain);
     
 	/**
 	 * 读取用户联系方式：

@@ -26,6 +26,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.dom4j.Element;
 
 import com.boubei.tss.framework.persistence.entityaop.IDecodable;
@@ -47,6 +48,8 @@ import com.boubei.tss.util.XMLDocUtil;
         @UniqueConstraint(name="MULTI_NAME_MENU", columnNames = { "parentId", "name" })
 })
 @SequenceGenerator(name = "navigator_sequence", sequenceName = "navigator_sequence", initialValue = 1)
+@JsonIgnoreProperties(value={"pk", "attributes4XForm", "attributes", "parentClass", "createTime", "creatorName", 
+		"updatorId", "updateTime", "updatorName", "lockVersion", "resourceType", "content"})
 public class Navigator extends OperateInfo implements IXForm, IDecodable, IResource {
 
     /**

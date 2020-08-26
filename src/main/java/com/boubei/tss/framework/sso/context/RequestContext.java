@@ -17,8 +17,10 @@ import javax.servlet.http.HttpSession;
 import com.boubei.tss.framework.Config;
 import com.boubei.tss.framework.sso.IdentityCard;
 import com.boubei.tss.framework.web.XHttpServletRequest;
+import com.boubei.tss.framework.web.filter.Filter8APITokenCheck;
 import com.boubei.tss.framework.web.wrapper.XHttpServletRequestWrapper;
 import com.boubei.tss.util.EasyUtils;
+import com.boubei.tss.util.URLUtil;
 
 /**
  * <p> 当前请求上下文路径 </p>
@@ -27,6 +29,8 @@ import com.boubei.tss.util.EasyUtils;
  * </p>
  */
 public class RequestContext {
+	
+	public static final String SERVER_TIME = "server_time";
 
 	/** 用户令牌属性名 */
 	public static final String USER_TOKEN = "token";
@@ -35,10 +39,11 @@ public class RequestContext {
 
 	/** 请求所属系统编号属性名 */
 	public static final String APPLICATION_CODE = "appCode";
+	public static final String API_CALL   = "apiCall";
 
 	/** 用户客户端ID属性名称 */
-	public static final String USER_CLIENT_IP = "X-real-ip";
-	public static final String USER_ORIGN_IP  = "X-Forwarded-For";
+	public static final String USER_REAL_IP  = "X-Real-IP";
+	public static final String USER_ORIGN_IP = "X-Forwarded-For";
 
 	/** 用户身份证对象Session属性名 */
 	public static final String IDENTITY_CARD = "identity_card";
@@ -79,11 +84,7 @@ public class RequestContext {
 	 * @return
 	 */
 	public String getClientIp() {
-		String proxyIp = request.getHeader(USER_CLIENT_IP);   // TSS框架内代理请求转发时设置源IP到heaher
-		Object orignIp = request.getAttribute(USER_ORIGN_IP); // apche、nginx反向代理前的IP
-		String remoteAddr = request.getRemoteAddr();
-		
-		return (String) EasyUtils.checkNull(proxyIp, orignIp, remoteAddr);
+		return URLUtil.getClientIp(request);
 	}
 
 	/**
@@ -201,6 +202,10 @@ public class RequestContext {
 	 * @return
 	 */
 	private String getValueFromCookie(String name) {
+		return getValueFromCookie(request, name);
+	}
+	
+	public static String getValueFromCookie(HttpServletRequest request, String name) {
 		Cookie[] cookies = request.getCookies();
 		if (cookies != null) {
 			for ( Cookie cookie : cookies ) {
@@ -253,6 +258,14 @@ public class RequestContext {
 	}
 	
 	public static boolean isApiCall(HttpServletRequest request) {
-		return request.getParameter("uName") != null && (request.getParameter("uToken") != null  || request.getParameter("uSign") != null);
+		boolean apiCall = "true".equals( request.getAttribute(API_CALL) );
+		if( apiCall ) {
+			return true;
+		}
+		
+		String uName  = Filter8APITokenCheck.getInfo(request, "uName_ALIAS", "uName,appkey");
+		String uSign  = Filter8APITokenCheck.getInfo(request, "uSign_ALIAS", "uSign,_sign");
+		String uToken = request.getParameter("uToken");
+		return !EasyUtils.isNullOrEmpty(uName) && EasyUtils.checkNull(uToken, uSign) != null;
 	}
 }

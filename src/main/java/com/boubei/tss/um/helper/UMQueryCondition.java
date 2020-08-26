@@ -21,20 +21,16 @@ import com.boubei.tss.framework.persistence.pagequery.MacrocodeQueryCondition;
  */
 public class UMQueryCondition extends MacrocodeQueryCondition {
 	
-	private Long groupId; // 用户组Id
+	private Long groupId;         // 用户组Id
 	private Collection<Long> groupIds; // 用户组Ids
 	
-	private String loginName;  // 用户名
-	private String userName;   // 姓名
-	private String email;           // 邮件 
-    private String telephone;       // 联系电话 
-	private String employeeNo; // 员工编号
-	private Date   birthday;   // 出生年月
+	private String loginName;     // 用户名
+	private String userName;      // 姓名
+	private String email;         // 邮件 
+    private String telephone;     // 联系电话 
+	private String employeeNo;    // 员工编号
+	private Date   birthday;      // 出生年月
 	private String certificateNo; // 证件号
-	
-	protected String getCreatorIdField() {
-		return "u.creatorId";
-	}
 	
     public Map<String, Object> getConditionMacrocodes() {
         Map<String, Object> map = super.getConditionMacrocodes();

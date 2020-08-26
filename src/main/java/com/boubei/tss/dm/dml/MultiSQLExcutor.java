@@ -21,7 +21,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,7 +39,6 @@ import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.modules.log.BusinessLogger;
 import com.boubei.tss.modules.log.Log;
-import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.EasyUtils;
 
 /**
@@ -75,7 +73,6 @@ public class MultiSQLExcutor {
 	public static final int PAGE_SIZE = 50;
 	
 	@Autowired public RecordService recordService;
-	@Autowired private ILoginService loginService;
 	  
     /**
      * 一个事务内执行新增、修改、删除、查询等多条SQL语句，All in one，并记录日志；要求都在一个数据源内执行。
@@ -118,9 +115,9 @@ public class MultiSQLExcutor {
         	autoCommit = conn.getAutoCommit();
             conn.setAutoCommit(false);
             
-	    	List<Map<Object, Object>> list = new ObjectMapper().readValue(json, List.class);
+	    	List<Map<String, Object>> list = EasyUtils.json2List(json);
 	    	int index = 1;
-	    	for(Map<Object, Object> item : list) {
+	    	for(Map<String, Object> item : list) {
 	    		String sqlCode = (String) item.get("sqlCode");
     			sql = sqlDefMap.get(sqlCode);
 	    		if(sql == null) {
@@ -139,6 +136,7 @@ public class MultiSQLExcutor {
 	    			throw new BusinessException("SQL freemarker parse error" + _sql.replaceAll("FM-parse-error:", ""));
 	    		}
 	    		sql = _sql;
+	    		log.debug(" excute  sql: " + sql);
 	    		
 	    		if( sql.toLowerCase().startsWith("select") ) {
 	    			List<Map<String, Object>> rows = SQLExcutor.query(ds, sql);
@@ -147,7 +145,6 @@ public class MultiSQLExcutor {
 	    			}
 	    		} 
 	    		else {
-	    			log.debug(" excute  sql: " + sql);
 	    			Statement statement = conn.createStatement();
 	    			statements.add(statement);
                     statement.execute(sql);

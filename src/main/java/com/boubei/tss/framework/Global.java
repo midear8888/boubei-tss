@@ -10,6 +10,10 @@
 
 package com.boubei.tss.framework;
 
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -17,11 +21,13 @@ import com.boubei.tss.PX;
 import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.persistence.ICommonService;
+import com.boubei.tss.framework.sso.LoginCustomizerFactory;
 import com.boubei.tss.matrix.MatrixUtil;
 import com.boubei.tss.modules.param.ParamListener;
 import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.modules.param.ParamService;
 import com.boubei.tss.modules.timer.SchedulerBean;
+import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 
 /**
@@ -33,6 +39,8 @@ public class Global {
 	private static ApplicationContext _ctx;
 
 	private static String defaultContextPath = "META-INF/spring.xml";
+	
+	public final static Date restartTime = new Date(); // Global生成的时间，及系统重启的时间
  
 	public static synchronized ApplicationContext getContext() {
 		if (_ctx == null) {
@@ -65,11 +73,20 @@ public class Global {
     	
     	schedulerBean = SchedulerBean.getInstanse(); // 定时器初始化
     	
-    	// 清空在线用户库
+    	LoginCustomizerFactory.instance().getCustomizer();
+    	
+    	/* 清除在线用户库 & 历史取号器 */
     	try {
-    		String serverIp = MatrixUtil.getIpAddress();
-    		SQLExcutor.excute("delete from online_user where serverIp='" +serverIp+ "'", DMConstants.LOCAL_CONN_POOL);
-    	} catch( Exception e ) { }
+    		Map<Integer, Object> params = new HashMap<Integer, Object>();
+    		params.put(1, MatrixUtil.getIpAddress());
+    		params.put(2, DateUtil.today());
+    		SQLExcutor.excute("delete from online_user where serverIp = ? and loginTime < ?", params, DMConstants.LOCAL_CONN_POOL);
+    		
+    		params = new HashMap<Integer, Object>();
+    		params.put(1, DateUtil.today());
+    		SQLExcutor.excute("delete from x_serialno where day < ? and day > '2018-08-24' ", params, DMConstants.LOCAL_CONN_POOL);
+    	} 
+    	catch( Exception e ) { }
 	}
 
 	public static synchronized void destroyContext() {

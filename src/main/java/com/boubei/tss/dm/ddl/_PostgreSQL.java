@@ -41,7 +41,7 @@ public class _PostgreSQL extends _Database {
 		StringBuffer createDDL = new StringBuffer("create table if not exists " + table + " ( ");
 		createDDL.append("id SERIAL primary key, ");  // PostgresSQL需要将ID放在第一栏位，否则insert时返回的getGeneratedKeys不是ID字段
 		
-   		for(Map<Object, Object> fDefs : fields) {
+   		for(Map<String, Object> fDefs : fields) {
 			createDDL.append( getFiledDef(fDefs, false) ).append( ", " );
    		}
    		

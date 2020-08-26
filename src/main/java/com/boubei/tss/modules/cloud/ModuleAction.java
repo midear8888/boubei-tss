@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.boubei.tss.dm.dml.SQLExcutor;
-import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.util.EasyUtils;
 
@@ -30,23 +29,50 @@ import com.boubei.tss.util.EasyUtils;
 public class ModuleAction {
 	
 	@Autowired private CloudService service;
-	@Autowired private ICommonService commonService;
 	
 	@RequestMapping(value = "/resources/{resource}")
 	@ResponseBody
-	public Object listResource(@PathVariable String resource) {
+	public List<Map<String, Object>> listResource(@PathVariable String resource) {
 		String permissionTable = resource.replace("_", "_permission_");
 		String sql = "select distinct t.id as value, t.name as text, t.decode, t.type " +
 				" from " + resource + " t, " + permissionTable + " p, um_roleusermapping ru  " +
 				" where t.id = p.resourceId and p.roleId = ru.roleId and ru.userId = ? " +
-				"  and disabled = 0 and name not like '$%' and t.id >= 8 order by t.decode";
+				"  and disabled = 0 and name not like '$%' order by t.decode";
 		
 		List<Map<String, Object>> list = SQLExcutor.queryL(sql, Environment.getUserId());
 		for( Map<String, Object> row : list ) {
-			String text = row.get("text") + "（" +row.get("type")+ "）"; 
-			row.put("text", text.replace("（0）", "（组）").replace("（1）", ""));
+			String text = "(" +row.get("type")+ ")" + row.get("text") + "（" +row.get("type")+ "）"; 
+			text = text.replace("（0）", "（组）").replace("（1）", "").replace("（2）", "");
+			text = text.replace("(0)", "").replace("(1)", "").replace("(2)", "-    ");
+			
+			row.put("text", text);
+			row.remove("decode");
+			row.remove("type");
 		}
 		return list;
+	}
+	
+	@RequestMapping(value = "/allresources")
+	@ResponseBody
+	public List<Map<String, Object>> listAllResource() {
+		List<Map<String, Object>> records = this.listResource("dm_record");
+		for( Map<String, Object> row : records ) {
+			row.put("value", "rc_" + row.get("value"));
+		}
+		
+		List<Map<String, Object>> reports = this.listResource("dm_report");
+		for( Map<String, Object> row : reports ) {
+			row.put("value", "rp_" + row.get("value"));
+		}
+		records.addAll(reports);
+		
+		List<Map<String, Object>> menus = this.listResource("portal_navigator");
+		for( Map<String, Object> row : menus ) {
+			row.put("value", "menu_" + row.get("value"));
+		}
+		records.addAll(menus);
+		
+		return records;
 	}
 	
 	/**
@@ -60,7 +86,7 @@ public class ModuleAction {
 			return new Object[] {};
 		}
 
-		return new Object[] { service.limitReports(), service.limitRecords() };
+		return new Object[] { service.limitReports(), service.limitRecords(), service.limitMenus() };
 	}
 	
 	@RequestMapping(value = "/{module}", method = RequestMethod.POST)

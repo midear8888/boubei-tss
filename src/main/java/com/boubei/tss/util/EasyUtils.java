@@ -14,17 +14,23 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 import javax.script.ScriptEngineManager;
 
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 
+import com.boubei.tss.PX;
 import com.boubei.tss.framework.exception.BusinessException;
+import com.boubei.tss.modules.param.ParamConfig;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -39,6 +45,24 @@ public class EasyUtils {
     static Logger log = Logger.getLogger(EasyUtils.class);
     
     /**
+     * 判断是否为数字（正负整数）
+     */
+    public static boolean isDigit(String s) {
+    	return EasyUtils.isNullOrEmpty(s) ? false : s.matches("^(-|\\+)?[0-9]*$");  // ^-?\\d+$
+    }
+    
+    public static boolean isTimestamp(Long val) {
+		return val != null && val > 1510000000000L;
+    }
+    
+    public static final Long str2Long(String s) {
+    	if( isDigit(s) ) {
+    		return Long.valueOf(s);
+    	}
+    	return null;
+    }
+    
+    /**
      * 将对象转换成Double。
      * 用于SQL取出的数据类型字段处理，因为double 单元测试环境下取出的是BigDecimal，jobss下取出的是Double。
      * 统一转为String再转回Double。
@@ -51,7 +75,7 @@ public class EasyUtils {
         	return Double.valueOf( toNumberString(value) ); // value = .5 
         } 
         catch (Exception e) {
-            throw new RuntimeException("error double value: " + value + ", " + e.getMessage());
+            throw new RuntimeException("【" +value+ "】不是有效数字");
         }
     }
     
@@ -60,7 +84,7 @@ public class EasyUtils {
         	return Long.valueOf( toNumberString(value) );
         } 
         catch (Exception e) {
-        	 throw new RuntimeException("error long value: " + value + ", " + e.getMessage());
+        	throw new RuntimeException("【" +value+ "】不是有效数字");
         }
     }
     
@@ -69,7 +93,7 @@ public class EasyUtils {
             return Integer.valueOf( toNumberString(value) );
         } 
         catch (Exception e) {
-        	 throw new RuntimeException("error int value:" + value + ", " + e.getMessage());
+        	throw new RuntimeException("【" +value+ "】不是有效数字");
         }
     }
     
@@ -97,8 +121,23 @@ public class EasyUtils {
   	    }  
     }
     
+    @SuppressWarnings("unchecked")
+	public static Map<String, String> json2Map(String json) throws Exception {
+    	return new ObjectMapper().readValue(json, Map.class);
+    }
+    
+    @SuppressWarnings("unchecked")
+	public static Map<String, Object> json2Map2(String json) throws Exception {
+    	return new ObjectMapper().readValue(json, Map.class);
+    }
+    
+    @SuppressWarnings("unchecked")
+	public static List<Map<String, Object>> json2List(String json) throws Exception {
+    	return new ObjectMapper().readValue(json, List.class);
+    }
+    
     public static boolean isNullOrEmpty(String str) {
-        return str == null || "".equals(str.trim()) || "null".equalsIgnoreCase(str.trim()) || "undefined".equalsIgnoreCase(str.trim());
+        return str == null || "".equals(str.trim()) || "null".equalsIgnoreCase(str.trim()) || "undefined".equalsIgnoreCase(str.trim()) || "NaN".equals(str.trim());
     }
     
     public static boolean isNullOrEmpty(Object obj) {
@@ -132,6 +171,23 @@ public class EasyUtils {
     public static Object checkTrue(boolean condition, Object result1, Object result2) {
     	return condition ? result1 : result2;
     }
+    
+    public static boolean contains(List<?> list, String items) {
+    	if(EasyUtils.isNullOrEmpty(items)) return true;
+    	
+		String[] _arr = items.split(",");
+		for (String item : _arr) {
+			item = item.trim();
+			if( item.length() == 0 ) continue;
+			
+			for( Object obj : list ) {
+				if( obj.toString().equals(item) ) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
     
     public static List<String> toList(String s) {
     	return toList(s, ",");
@@ -201,13 +257,31 @@ public class EasyUtils {
     	}
         return temp;
     }
+    
+    @SuppressWarnings("unchecked")
+	public static Map<?, Map<?, Object>> list2Map(String key, Collection<?>..._list) {
+    	Map<Object, Map<?, Object>> map = new HashMap<>();
+    	
+    	for(Collection<?> list : _list) {
+    		for(Object o : list) {
+    			Map<?, Object> m = (Map<?, Object>) o;
+    			map.put( m.get(key), m );
+        	}
+    	}
+    	
+        return map;
+    }
 
-    public static List<Object> objAttr2List(Collection<?> list, String key){
+    public static List<Object> objAttr2List(Collection<?> list, String key) {
     	List<Object> result = new ArrayList<>();
     	for (Object o : list) {
     		result.add(BeanUtil.getPropertyValue(o, key));
 		}
 		return result;
+    }
+    
+    public static String objAttr2Str(Collection<?> list, String key) {
+    	return  EasyUtils.list2Str(EasyUtils.objAttr2List(list, key));
     }
     
     /**
@@ -234,107 +308,15 @@ public class EasyUtils {
         return new String[]{value.toString(), text.toString()};
     }
     
-    /**
-     * 转换utf8字符集
-     * @param str
-     * @return
-     */
-    public static String toUtf8String(String str) {
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < str.length(); i++) {
-            char c = str.charAt(i);
-            if (c >= 0 && c <= 255) {
-                sb.append(c);
-            } else {
-                byte[] b = new byte[0];
-                try {
-                    b = Character.toString(c).getBytes("utf-8");
-                } catch (Exception ex) {
-                }
-                
-                for (int j = 0; j < b.length; j++) {
-                    int k = b[j];
-                    k = (Integer) checkTrue(k < 0, k+256, k);
-                    sb.append("%" + Integer.toHexString(k).toUpperCase());
-                }
+    public static Map<String, String> sortMapByKey(Map<String, String> map) {
+        Map<String, String> sortMap = new TreeMap<String, String>(new Comparator<String>(){
+        	public int compare(String str1, String str2) {
+                return str1.compareTo(str2);
             }
-        }
-        return sb.toString();
-    }
+        });
 
-    /**
-     * 将十六进制的字符串解码
-     * @param hex
-     * @return
-     */
-    public static final byte[] decodeHex(String hex) {
-        char chars[] = hex.toCharArray();
-        byte bytes[] = new byte[chars.length / 2];
-        int byteCount = 0;
-        for(int i = 0; i < chars.length; i += 2){
-            int newByte = 0;
-            newByte |= hexCharToByte(chars[i]);
-            newByte <<= 4;
-            newByte |= hexCharToByte(chars[i + 1]);
-            bytes[byteCount] = (byte)newByte;
-            byteCount++;
-        }
-        return bytes;
-    }
-
-    /**
-     * 将字节数组加密成十六进制
-     * @param bytes
-     * @return
-     */
-    public static final String encodeHex(byte bytes[]) {
-        StringBuffer buf = new StringBuffer(bytes.length * 2);
-        for(int i = 0; i < bytes.length; i++) {
-            if((bytes[i] & 0xff) < 16) {
-                buf.append("0");
-            }
-            buf.append(Long.toString(bytes[i] & 0xff, 16));
-        }
-        return buf.toString();
-    }
- 
-    static final byte hexCharToByte(char ch)  {
-        switch(ch) {
-        case 48: // '0'
-            return 0;
-        case 49: // '1'
-            return 1;
-        case 50: // '2'
-            return 2;
-        case 51: // '3'
-            return 3;
-        case 52: // '4'
-            return 4;
-        case 53: // '5'
-            return 5;
-        case 54: // '6'
-            return 6;
-        case 55: // '7'
-            return 7;
-        case 56: // '8'
-            return 8;
-        case 57: // '9'
-            return 9;
-        case 97: // 'a'
-            return 10;
-        case 98: // 'b'
-            return 11;
-        case 99: // 'c'
-            return 12;
-        case 100: // 'd'
-            return 13;
-        case 101: // 'e'
-            return 14;
-        case 102: // 'f'
-            return 15;
-        default:
-            return 0;
-        }
+        sortMap.putAll(map);
+        return sortMap;
     }
 
     /**
@@ -362,8 +344,14 @@ public class EasyUtils {
     public static void fixRepeat(List<String> l) {
     	if(l == null) return;
     	
+    	// 先去除空格
+    	int index = 0;
+    	for(String s : l) {
+    		l.set(index++, s.trim());
+    	}
+    	
     	Map<String, Integer> m = new HashMap<>();
-		int index = 0;
+		index = 0;
 		for(String s : l) {
 			Integer count = m.get(s);
 			if( count == null ) {
@@ -380,13 +368,35 @@ public class EasyUtils {
     }
     
     /**
+     * 过滤掉逗号分隔的字符串里空的元素（eg: 12,,,33,44,,66 --> 12,33,44,66） 并去重
+     */
+    public static String filterEmptyItem(String s) {
+    	Set<String> list = new LinkedHashSet<String>();
+    	String[] arr = s.split(",");
+    	for(String item : arr) {
+    		if( !isNullOrEmpty(item) ) {
+    			list.add( item.trim() );
+    		}
+    	}
+    	
+    	return list2Str(list);
+    }
+    
+    public static boolean fmParseError(String s) {
+    	return s != null && s.startsWith(FM_PARSE_ERROR);
+    }
+    
+    static String FM_PARSE_ERROR = "FM-parse-error:";
+    
+    /**
      * log4j里加 log4j.logger.freemarker=fatal 过滤掉FM自身的error Log
      */
     public static String fmParse( String str, Map<String, ?> data, Writer out, Configuration cfg ) {
     	try {
     		cfg.setNumberFormat("#"); // 防止数字类格式化，eg: 1000 变 1,000
+    		cfg.setDefaultEncoding("UTF-8");
+    		
 	        Template tl = new Template("t.ftl", new StringReader(str), cfg);
-	        tl.setEncoding("UTF-8");
 	        tl.process(data, out);
 	        str = out.toString();
 	        out.flush();
@@ -394,9 +404,8 @@ public class EasyUtils {
 	        return str;
         } 
         catch (Exception e) {
-        	String errorMsg = "FM-parse-error:" + e.getMessage();
-	    	log.error(errorMsg);
-	    	log.debug("template = " + str + ", data = " + data);
+			String errorMsg = FM_PARSE_ERROR + e.getMessage();
+	    	log.error(errorMsg + ", template = " + str + ", data = " + data);
 	    	
 	    	return errorMsg;
 	    }
@@ -404,28 +413,43 @@ public class EasyUtils {
     
     public static String fmParse( String template, Map<String, ?> data ) {
     	Writer out = new StringWriter();
-    	return fmParse(template, data, out, new Configuration());
+    	return fmParse(template, data, out, new Configuration(Configuration.VERSION_2_3_28));
     }
     
     
     /**
 	 * 调用freeMarker解析后，用js的eval方法计算结果
 	 * 
-	 * @param reader
+	 * @param script
 	 * @param params
 	 * @return
 	 */
-	public static Double eval(String reader, Map<String, ?> params) {
-		if (reader.indexOf("$") > -1 || reader.indexOf("<#if") > -1) {
-			reader = fmParse(reader, params);
+	public static Double eval(String script, Map<String, ?> params) {
+		if (script.indexOf("${") > -1 || script.indexOf("<#if") > -1) {
+			script = fmParse(script, params);
+		}
+		if (script.indexOf("${") > -1 || script.indexOf("<#if") > -1) {
+			script = fmParse(script, params);
 		}
 		
 		Object value = 0;
 		try {
-			value = new ScriptEngineManager().getEngineByName("JavaScript").eval(reader);
+			value = new ScriptEngineManager().getEngineByName("JavaScript").eval(script);
 		} catch (Exception e) {
-			throw new BusinessException( reader + "," + params + " eval error: " + e.getMessage(), e);
+			throw new BusinessException( script + "," + params + " eval error: " + e.getMessage(), e);
 		}
 		return obj2Double(value);
 	}
+
+	/**
+	 * 是否是服务器环境, 约定：本地或dev环境envirment必须是带local或dev字样的（test需要当prod对待，保证测试覆盖）
+	 * 
+	 * @param script
+	 * @param params
+	 * @return
+	 */
+    public static boolean isProd() {
+    	String envirment = ParamConfig.getAttribute(PX.ENVIRONMENT);
+    	return envirment.indexOf("local") == -1 && envirment.indexOf("dev") == -1;
+    }
 }

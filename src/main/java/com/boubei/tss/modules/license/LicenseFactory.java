@@ -25,8 +25,8 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
+import com.boubei.tss.util.InfoEncoder;
 import com.boubei.tss.util.URLUtil;
 
 public class LicenseFactory {
@@ -51,14 +51,14 @@ public class LicenseFactory {
     public static synchronized void sign(License license) throws Exception {
         String privateKey = FileHelper.readFile(new File(PRIVATE_KEY_FILE));
         KeyFactory keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
-        PKCS8EncodedKeySpec privKeySpec = new PKCS8EncodedKeySpec(EasyUtils.decodeHex(privateKey.trim()));
+        PKCS8EncodedKeySpec privKeySpec = new PKCS8EncodedKeySpec( InfoEncoder.decodeHex(privateKey.trim()));
         PrivateKey privKey = keyFactory.generatePrivate(privKeySpec);
         
         Signature sig = Signature.getInstance(SIGN_ALGORITHM);
         sig.initSign(privKey);
         sig.update(license.getFingerprint());
         
-        license.signature = EasyUtils.encodeHex(sig.sign());
+        license.signature = InfoEncoder.encodeHex(sig.sign());
     }
 
     /**
@@ -75,12 +75,12 @@ public class LicenseFactory {
         
         log.info("开始生成秘钥");
         DataOutputStream out = new DataOutputStream(new FileOutputStream(PUBLIC_KEY_FILE));
-        out.writeBytes(EasyUtils.encodeHex(pub.getEncoded()));
+        out.writeBytes(InfoEncoder.encodeHex(pub.getEncoded()));
         out.close();
         log.info("成功生成：" + PUBLIC_KEY_FILE);
         
         out = new DataOutputStream(new FileOutputStream(PRIVATE_KEY_FILE));
-        out.writeBytes(EasyUtils.encodeHex(priv.getEncoded()));
+        out.writeBytes(InfoEncoder.encodeHex(priv.getEncoded()));
         out.close();
         log.info("成功生成：" + PRIVATE_KEY_FILE);
     }

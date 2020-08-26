@@ -10,12 +10,13 @@
 
 package com.boubei.tss.um.syncdata;
 
-import com.boubei.tss.um.UMConstants;
+import com.boubei.tss.framework.exception.BusinessException;
+import com.boubei.tss.um.entity.Group;
 import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.helper.dto.UserDTO;
 import com.boubei.tss.um.sso.UMPasswordIdentifier;
+import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
-import com.boubei.tssx.sync.LDAPDataDao;
 
 public class SyncDataHelper {
     
@@ -45,6 +46,7 @@ public class SyncDataHelper {
         user.setSex(userDTO.getSex());
         user.setTelephone(userDTO.getTelephone());
         user.setEmployeeNo(userDTO.getEmployeeNo());
+        user.setOrigin("Job同步");
         
         if( !EasyUtils.isNullOrEmpty(userDTO.getAuthMethod()) ) {
         	user.setAuthMethod(userDTO.getAuthMethod());
@@ -66,12 +68,20 @@ public class SyncDataHelper {
         user.setFromUserId(userDTO.getId());
     }
     
-    public static IOutDataDao getOutDataDao(String dataSourceType) {
-        if (UMConstants.DATA_SOURCE_TYPE_LDAP.equals(dataSourceType)) {
-            return new LDAPDataDao();
-        }
-        
-        return new DBDataDao();
+    public static IOutDataDao getOutDataDao(String dsType) {
+        dsType = (String) EasyUtils.checkNull(dsType, DBDataDao.class.getName());
+        return (IOutDataDao) BeanUtil.newInstanceByName(dsType);
+    }
+    
+    // 安全监测
+    public static void checkSecurity(Group group, UserDTO userDto) {
+    	
+    	// 1、检测用户是否跨域同步（防止员工管理里，用户恶意修改所属组为其它域的组，然后把账号同步到了其它域下）
+		String domain = userDto.getDomain();
+		if( !EasyUtils.isNullOrEmpty(domain) && !domain.equals(group.getDomain()) ) {
+			throw new BusinessException("非法同步，指定域下的用户不同同步至其它域。"
+					+ "group = " + group + ", user=" +  EasyUtils.obj2Json(userDto), true);
+		};
     }
 }
 

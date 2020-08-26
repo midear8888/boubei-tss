@@ -187,7 +187,7 @@ public class Filter4AutoLogin implements Filter {
 	 * @return
 	 * @throws UserIdentificationException
 	 */
-	private IdentityCard validate(String userIdentifierClassName) throws UserIdentificationException {
+	static IdentityCard validate(String userIdentifierClassName) throws UserIdentificationException {
 		UserIdentifierFactory factory = UserIdentifierFactory.instance();
 		IUserIdentifier identifier = factory.getUserIdentifier(userIdentifierClassName);
 		return identifier.identify();

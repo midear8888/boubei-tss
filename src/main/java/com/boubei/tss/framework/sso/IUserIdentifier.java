@@ -13,10 +13,7 @@ package com.boubei.tss.framework.sso;
 import com.boubei.tss.framework.exception.UserIdentificationException;
 
 /** 
- * <p>
  * 身份认证器接口
- * </p>
- * 
  */
 public interface IUserIdentifier {
 

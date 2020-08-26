@@ -79,7 +79,7 @@ public class ByIDETLJob extends AbstractETLJob {
 	        commonService.create(tLog);
 		}
 
-		log.info(task.getName() + "Done! Cost time: " + (System.currentTimeMillis() - start));
+		log.info(task.getName() + " Done! Cost time: " + (System.currentTimeMillis() - start));
 		return tLog;
 	}
 	

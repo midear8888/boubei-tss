@@ -33,7 +33,7 @@ public class _MySQL extends _Database {
 		if(this.fields.isEmpty()) return;
 		
 		StringBuffer createDDL = new StringBuffer("create table if not exists " + table + " ( ");
-   		for(Map<Object, Object> fDefs : fields) {
+   		for(Map<String, Object> fDefs : fields) {
 			createDDL.append( getFiledDef(fDefs, false) ).append( ", " );
    		}
    		

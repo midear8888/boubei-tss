@@ -212,7 +212,7 @@ public class FileHelper {
 		if (isCut && file.exists()) {
 			file.delete();
 		}
-		return fileName;
+		return newFile.getPath();
 	}
 
 	/**
@@ -707,7 +707,7 @@ public class FileHelper {
 	        }
 			response.setContentType("image/" + fileExt); 
 			if( !disableCache ) {
-				response.setHeader("Cache-control", "max-age=3600");
+				response.setHeader("Cache-control", "max-age=600");
 			}
 		}
 		else if(fileExt.equals("pdf")) {
@@ -715,7 +715,7 @@ public class FileHelper {
 		}
         else {
         	response.setContentType("application/octet-stream"); // 设置附件类型
-            response.setHeader("Content-Disposition", "attachment; filename=\"" + EasyUtils.toUtf8String(fileName) + "\"");        
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + StringUtil.toUtf8String(fileName) + "\"");        
 	    }
         
         ServletOutputStream out = null;

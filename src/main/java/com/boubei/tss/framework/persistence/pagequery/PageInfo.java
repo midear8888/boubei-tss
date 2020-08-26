@@ -152,4 +152,11 @@ public class PageInfo {
     	map.put("total", getTotalRows());
         return map;
     }
+    
+    public Map<String,Object> toEasyUIDataGrid(){
+    	Map<String,Object> map = new HashMap<String,Object>();
+    	map.put("total", this.getTotalRows());
+    	map.put("rows", this.getItems());
+    	return map;
+    }
 }

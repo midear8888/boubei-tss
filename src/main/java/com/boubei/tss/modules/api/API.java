@@ -1,5 +1,6 @@
 package com.boubei.tss.modules.api;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,13 +18,15 @@ import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.sso.Environment;
-import com.boubei.tss.framework.sso.SSOConstants;
 import com.boubei.tss.modules.log.BusinessLogger;
+import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.portal.helper.MenuDTO;
 import com.boubei.tss.portal.service.INavigatorService;
-import com.boubei.tss.um.entity.User;
+import com.boubei.tss.um.UMConstants;
+import com.boubei.tss.um.entity.Role;
 import com.boubei.tss.um.service.ILoginService;
-import com.boubei.tss.um.service.IUserService;
+import com.boubei.tss.um.service.IMessageService;
+import com.boubei.tss.um.service.IRoleService;
 import com.boubei.tss.util.EasyUtils;
 
 /**
@@ -36,13 +39,37 @@ public class API {
 	
 	@Autowired ILoginService loginService;
 	@Autowired INavigatorService menuService;
-	@Autowired IUserService userService;
+	@Autowired IRoleService roleService;
 	@Autowired ICommonService commService;
+	@Autowired APIService apiService;
+	@Autowired IMessageService msgService;
+	
+	@RequestMapping("/message/level2")
+	@ResponseBody
+    public List<?> hignLevelMessagegs() {
+        return msgService.getUnReadHignLevelMsg(7);
+    }
+	
+	@RequestMapping(value = "/message/read/{ids}", method = RequestMethod.POST)
+    @ResponseBody
+    public String batchRead(@PathVariable("ids") String ids) {
+		msgService.batchRead(ids);
+    	return "success";
+    }
 	
 	@RequestMapping("/menu/json/{id}")
 	@ResponseBody
     public List<MenuDTO> menuJSON(@PathVariable("id") Long id) {
         return menuService.getMenuTree(id);
+    }
+	
+	@RequestMapping("/menu/json")
+	@ResponseBody
+    public List<MenuDTO> menuJSON(HttpServletRequest request) {
+		Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
+		String menuName = requestMap.get("name");
+		Object id = SQLExcutor.queryVL("select id from portal_navigator where name = ?", "id", menuName);
+        return menuService.getMenuTree( EasyUtils.obj2Long(id) );
     }
 	
 	/**
@@ -70,17 +97,54 @@ public class API {
 	}
 	
 	/**
+	 * 获取当前用户有【查看权限】的角色，用于前台生成角色下拉列表
+	 */
+	@RequestMapping(value = "/roleList", method = RequestMethod.GET)
+	@ResponseBody
+	public List<?> getVisiableRoles() {
+		List<?> list = roleService.getAllVisiableRole();
+		List<Role> returnList = new ArrayList<Role>();
+		for(Object temp : list) {
+			Role role = (Role) temp;
+			boolean isRole = ParamConstants.FALSE.equals(role.getIsGroup());
+			boolean enable = ParamConstants.FALSE.equals(role.getDisabled());
+			if( isRole && enable && role.getId() > 0 ) {
+				returnList.add(role);
+			}
+		}
+		
+		Role role = new Role();
+		role.setId(UMConstants.ANONYMOUS_ROLE_ID);
+		role.setName(UMConstants.ANONYMOUS_ROLE);
+		returnList.add( role );
+		
+		return returnList;
+	}
+	
+	/**
 	 * http://localhost:9000/tss/api/users
 	 * 登陆账号和中文名字映射
 	 */
 	@RequestMapping(value = "/users")
 	@ResponseBody
 	public Map<String, String> getUsers() {
-		return loginService.getUsersMap();
+		return loginService.getUsersMap(Environment.getDomain());
+	}
+	
+	@RequestMapping(value = "/userattr")
+	@ResponseBody
+	public Object getSessionAttr(String attr) {
+		Object v1 = Environment.getInSession(attr);
+		Object v2 = Environment.getDomainInfo(attr);
+		Object v3 = Environment.getUserInfo(attr);
+		return EasyUtils.checkNull(v1, v2, v3);
 	}
 	
 	/**
 	 * http://localhost:9000/tss/api/log
+	 * 
+	 * var params = {table: 'xx', code: 'xx', content: 'xx', udf1: 'xx'};
+	 * tssJS.post("/tss/api/log", params);
 	 * 记录日志
 	 */
 	@RequestMapping(value = "/log", method = RequestMethod.POST)
@@ -94,44 +158,15 @@ public class API {
 		BusinessLogger.log(table, code, content, udf1, System.currentTimeMillis());
 	}
 	
-	/** 指定人员特定的岗位, 用于特定的页面添加账号及角色：客户管理、司机管理等 */
-	@SuppressWarnings("unchecked")
+	/** 
+	 * 在指定组下创建特定岗位的人员, 用于特定的页面添加账号及角色：客户管理、司机管理等；
+	 * 如果人员已经存在，则修改其 组织 和 角色；
+	 * 如果不存在，则新建一个用户账号；
+	 */
 	@RequestMapping(value = "/setUserRole", method = RequestMethod.POST)
 	@ResponseBody
-	public User setRole4User(HttpServletRequest request, String userCode, String group, String roles) {
+	public boolean setRole4User(HttpServletRequest request, String userCode, String group, String roles) {
 		Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
-		
-		User user = userService.getUserByLoginName(userCode);
-		String groupStr;
-		
-		// 只能修改自己域下用户，修改别的域已存在的用户会报账号已存在
-		if( user != null && loginService.getUsersMap().containsKey(userCode) ) {
-			Long userID = user.getId();
-			
-			List<Long> exsitRoles = loginService.getRoleIdsByUserId(userID);
-			List<Object[]> groups = loginService.getAssistGroups(userID);
-			groups.add( loginService.getMainGroup(userID) );
-			
-			groupStr = EasyUtils.list2Str(groups, 0);
-			roles += "," + EasyUtils.list2Str(exsitRoles);
-		} 
-		else {
-			user = new User();
-			user.setLoginName(userCode);
-			user.setPassword(userCode);
-			
-	        String hql = "select id from Group where domain = ? and name = ? order by decode asc";
-			List<Object> list = (List<Object>) commService.getList(hql, Environment.getDomain(), EasyUtils.checkNull(group, "noGroup__"));
-			list.addAll( commService.getList(hql, Environment.getDomain(), Environment.getInSession(SSOConstants.USER_GROUP)) );
-			
-			groupStr = list.get(0) + ""; // 创建用户到当前创建人所在组下
-		}
-		
-		user.setUserName( (String) EasyUtils.checkNull(requestMap.get("userName"), user.getUserName()) );
-		user.setTelephone( (String) EasyUtils.checkNull(requestMap.get("mobile"), user.getTelephone()) );
-		user.setUdf(requestMap.get("udf"));
-		userService.createOrUpdateUser(user, groupStr, roles);
-		
-		return user;
+		return apiService.setRole4User(requestMap, userCode, group, roles);
 	}
 }

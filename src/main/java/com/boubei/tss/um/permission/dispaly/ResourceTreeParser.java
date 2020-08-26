@@ -62,7 +62,7 @@ public class ResourceTreeParser implements ITreeParser {
 
     // 检查是否为 系统管理员用户资源 或者 系统管理员角色。
     private boolean checkIsAdmin(ResourceTreeNode resource) {
-        return resource.getId().equals( UMConstants.ADMIN_ROLE_ID ) || resource.getResourceName().equals(UMConstants.ADMIN_ROLE_NAME);
+        return resource.getId().equals( UMConstants.ADMIN_ROLE_ID ) || resource.getResourceName().equals(UMConstants.ADMIN_ROLE);
     }
 
 }

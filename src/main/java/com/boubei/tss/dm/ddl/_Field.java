@@ -35,7 +35,7 @@ public class _Field {
 	/**
 	 * 字符串的类型字段的长度 = height/18 *255
 	 */
-	public static int getVarcharLength(Map<Object, Object> fDefs) {
+	public static int getVarcharLength(Map<String, Object> fDefs) {
 		int length = 255;
 		
 		String _height = (String) fDefs.get("height");

@@ -10,8 +10,6 @@
 
 package com.boubei.tss.um;
 
-import java.util.Calendar;
-
 import com.boubei.tss.framework.web.mvc.BaseActionSupport;
 
 /**
@@ -20,11 +18,8 @@ import com.boubei.tss.framework.web.mvc.BaseActionSupport;
 public final class UMConstants {
 	
 	/** 有效期设置 */
-	public static final int ROLE_LIFE_TYPE = Calendar.YEAR; //角色有效期的类型(年)
-    public static final int ROLE_LIFE_TIME = 50;            //角色有效期(50年)
-    
-	public static final int STRATEGY_LIFE_TYPE = Calendar.DAY_OF_YEAR; //策略有效期的类型(日)
-	public static final int STRATEGY_LIFE_TIME = 7;                   //策略有效期（7天）
+    public static final int ROLE_LIFE_TIME = 50;      // 角色有效期(50年)
+	public static final int STRATEGY_LIFE_TIME = 7;   // 策略有效期（7天）
     
 	/**
 	 * 远程接口路径设置
@@ -48,13 +43,14 @@ public final class UMConstants {
 	 */
 	public static final Long DEFAULT_NEW_ID = BaseActionSupport.DEFAULT_NEW_ID; 
 
-    public static final String ADMIN_ROLE_NAME = "系统管理员";       // 管理员角色
-    public static final Long ADMIN_ROLE_ID     = new Long(-1);     // 管理员角色的ID
-    public static final Long ANONYMOUS_ROLE_ID = new Long(-10000); // 匿名角色的ID
+    public static final String ADMIN_ROLE      = "系统管理员";      // 管理员角色
+    public static final Long ADMIN_ROLE_ID     = new Long(-1);    // 管理员角色的ID
+    public static final String ANONYMOUS_ROLE  = "匿名角色";
+    public static final Long ANONYMOUS_ROLE_ID = new Long(-10000);// 匿名角色的ID
     public static final Long DOMAIN_ROLE_ID = new Long(-8);  // 域管理员角色ID
     public static final Long DEV_ROLE_ID    = new Long(-9);  // 开发者角色ID
 
-    public static final String ADMIN_USER = "Admin";          //系统管理员的ID(初始化数据库时写死的)
+    public static final String ADMIN_USER      = "Admin";          //系统管理员的ID(初始化数据库时写死的)
 	public static final Long ADMIN_USER_ID     = new Long(-1);     //系统管理员的ID(初始化数据库时写死的)
 	public static final Long ANONYMOUS_USER_ID = new Long(-10000); //匿名用户的ID(初始化数据库时写死的)
 	public static final Long ROBOT_USER_ID     = new Long(-997);   //机器人用户：用于JOB执行等，虚拟账号，实际不存在
@@ -70,6 +66,7 @@ public final class UMConstants {
 	public static final Long ROLE_ROOT_ID             = -6L; //角色的ID(视图生成)
 	
 	public static final String DEFAULT_DOMAIN = "无域";
+	public static final String COMPANY_DOMAIN = "企业域";
 	
 	// ===========================================================================
     // 资源权限相关

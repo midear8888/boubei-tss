@@ -34,9 +34,6 @@ public abstract class AbstractPool implements Pool {
     
     // 对象池属性
     
-    /** 池中对象个数 */
-    protected Integer size = 0;
-    
     /** 请求数 */
     protected long requests;
     
@@ -139,9 +136,6 @@ public abstract class AbstractPool implements Pool {
 			// 缓存项放入缓存池的同时也设置了其生命周期
 			Cacheable newItem = new TimeWrapper(key, value, strategy.cyclelife);
 			newItem = getFree().put(key, newItem);
-        	synchronized(size) { 
-        		size ++; 
-        	}
 			
 			// 事件监听器将唤醒所有等待中的线程，包括cleaner线程，checkout，remove等方法的等待线程
 			firePoolEvent(PoolEvent.PUT_IN);
@@ -183,28 +177,14 @@ public abstract class AbstractPool implements Pool {
     /**
      * 销毁指定对象（如果有必要的话可采用异步）；
      */
-    public synchronized void destroyObject(final Cacheable o) {
+    public void destroyObject(final Cacheable o) {
         if (o != null) {
     		customizer.destroy(o);
         	logDebug(" Object[" + o + "] was destroyed.");
-        	
-        	synchronized(size) { 
-        		size --; 
-        		checkSize();
-        	}
         }
     }
     
-    private void checkSize() {
-    	int realSize = getFree().size() + getUsing().size();
-    	if( realSize != size ) {
-    		log.debug(this);
-    		log.info( "[" +this.getName()+ "] realSize != size(), realSize = " +realSize+ ", size() = " +size());
-    		size = realSize; // 以实际个数为准
-    	}
-    }
-    
-    public synchronized boolean destroyByKey(Object key) {
+    public boolean destroyByKey(Object key) {
     	Cacheable item = removeObject(key);
         destroyObject(item);
         return item == null;
@@ -243,7 +223,7 @@ public abstract class AbstractPool implements Pool {
                 item = checkOut();
             } 
             catch (InterruptedException e) { 
-                log.error("checkOut was interrupted", e); 
+                log.error("checkOut wait was interrupted", e); 
             }
         }
         

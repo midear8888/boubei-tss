@@ -42,7 +42,7 @@ public class RoleDao extends TreeSupportDao<Role> implements IRoleDao {
     }
  
 	public List<?> getUsersByRoleId(Long roleId) {
-		String hql = "select distinct u from RoleUser ru, User u where ru.id.userId = u.id and ru.id.roleId = ? and ru.strategyId is null ";
+		String hql = "select distinct u from RoleUser ru, User u where ru.userId = u.id and ru.roleId = ? and ru.strategyId is null ";
 		return getEntities( hql, roleId );
 	}
 
@@ -76,7 +76,7 @@ public class RoleDao extends TreeSupportDao<Role> implements IRoleDao {
     }
     
     public List<?> getUsersByStrategy(Long strategyId) {
-        String hql = "select distinct u from RoleUser ru, User u where ru.id.userId = u.id and ru.strategyId = ? ";
+        String hql = "select distinct u from RoleUser ru, User u where ru.userId = u.id and ru.strategyId = ? ";
         return getEntities(hql, strategyId);
     }
 

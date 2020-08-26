@@ -56,8 +56,10 @@ public class GroupDao extends TreeSupportDao<Group> implements IGroupDao {
             if(user.getLogonCount() > 0) {
                 throw new BusinessException( EX.parse(EX.U_322, group.getName()) );
             }
-            deleteAll(getEntities("from GroupUser gu where gu.userId = ?", new Object[]{user.getId()}));
-            deleteAll(getEntities("from RoleUser ru where ru.id.userId = ? and ru.strategyId is null", new Object[]{user.getId()}));
+            
+            Object[] params = new Object[]{ user.getId() };
+			deleteAll(getEntities("from GroupUser gu where gu.userId = ?", params));
+            deleteAll(getEntities("from RoleUser ru where ru.userId = ? and ru.strategyId is null", params));
         }
         
         for(Iterator<?> it = groups.iterator(); it.hasNext();){
@@ -128,9 +130,14 @@ public class GroupDao extends TreeSupportDao<Group> implements IGroupDao {
         	return groups; // 设置为系统级管理员的，需要能看到全部被授权的用户组织
         }
         
-        /* 按操作用户对结果集进行过滤，只留下自己所在主组及其子组。 注：#自注册用户组#放开
-         * eg:浙江分公司的用户只能看到浙分下面的组织，哪怕给他授权了其它分公司
-         */
+        return filterGroups(operatorId, groups);
+	}
+
+	/* 
+	 * 按操作用户对结果集进行过滤，只留下自己所在主组及其子组。 注：#自注册用户组#放开
+     * eg:浙江分公司的用户只能看到浙分下面的组织，哪怕给他授权了其它分公司
+     */
+	private List<Group> filterGroups(Long operatorId, List<Group> groups) {
         Group mainGroup = getMainGroup(operatorId);
         List<Group> result = new ArrayList<Group>();
         for(Object temp : groups) {
@@ -148,8 +155,7 @@ public class GroupDao extends TreeSupportDao<Group> implements IGroupDao {
 				result.add(group);
 			}
         }
-        
-        return result;
+		return result;
 	}
 	
 	private Group getMainGroup(Long userId) {
@@ -171,9 +177,11 @@ public class GroupDao extends TreeSupportDao<Group> implements IGroupDao {
             	resultList.add(group);
             }
         }
-        return resultList;
+        
+        return filterGroups(operatorId, resultList);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public List<?> getParentGroupByGroupIds(List<Long> groupIds, Long operatorId, String operationId) {
         if( EasyUtils.isNullOrEmpty(groupIds)) return new ArrayList<Group>();
         
@@ -182,9 +190,11 @@ public class GroupDao extends TreeSupportDao<Group> implements IGroupDao {
 		        " and child.id in (:groupIds) and child.decode like o.decode||'%' and o.id not in (-1, -7)" + 
 		        PermissionHelper.ORDER_BY;
 		
-		return getEntities(hql, 
+		List<?> pgroups = getEntities(hql, 
 				new String[]{"operatorId", "operationId", "groupIds"}, 
 				new Object[]{operatorId, operationId, groupIds} );
+		
+		return filterGroups(operatorId, (List<Group>) pgroups);
 	}
 
 	public List<?> getVisibleMainUsers(Long operatorId) {
@@ -282,6 +292,7 @@ public class GroupDao extends TreeSupportDao<Group> implements IGroupDao {
         UMQueryCondition condition = new UMQueryCondition();
         condition.setGroupId(groupId);
         condition.getPage().setPageNum(pageNum);
+        condition.getPage().setPageSize(50);
         condition.getOrderByFields().addAll( Arrays.asList(orderBy) );
 
         PaginationQueryByHQL pageQuery = new PaginationQueryByHQL(em, hql, condition);

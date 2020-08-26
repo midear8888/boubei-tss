@@ -168,22 +168,20 @@ public class ReportServiceImpl implements ReportService {
         return list;
     }
 
-    public void move(Long reportId, Long groupId) {
-        List<Report> list  = reportDao.getChildrenById(reportId);
-        Report reportGroup = reportDao.getEntity(groupId);
-        for (Report temp : list) {
-            if (temp.getId().equals(reportId)) { // 判断是否是移动节点（即被移动枝的根节点）
-                temp.setSeqNo(reportDao.getNextSeqNo(groupId));
-                temp.setParentId(groupId);
-            }
-            
-            // reportGroup有可能是“全部”节点
-            if (reportGroup != null && !reportGroup.isActive() ) {
-                temp.setDisabled(ParamConstants.TRUE); // 如果目标根节点是停用状态，则所有新复制出来的节点也一律为停用状态
-            }
-            
-            reportDao.moveEntity(temp);
-        }
+    public void move(Long id, Long groupId) {
+        Report node = reportDao.getEntity(id);
+        node.setSeqNo(reportDao.getNextSeqNo(groupId));
+        node.setParentId(groupId);
+        reportDao.moveEntity(node);
+		
+        Report group = reportDao.getEntity(groupId);
+		if (group != null && !group.isActive() ) {
+			List<Report> list  = reportDao.getChildrenById(id);
+	        for (Report temp : list) {
+	            temp.setDisabled(ParamConstants.TRUE); // 如果目标根节点是停用状态，则所有新复制出来的节点也一律为停用状态
+	            reportDao.update(temp);
+	        }
+		}
     }
     
   	public SQLExcutor queryReport(Long reportId, Map<String, String> requestMap, 

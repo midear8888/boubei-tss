@@ -10,11 +10,11 @@
 
 package com.boubei.tss.um.helper.dto;
 
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 
 import com.boubei.tss.modules.param.ParamConstants;
+import com.boubei.tss.um.UMConstants;
+import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 
 public class UserDTO {
@@ -24,21 +24,19 @@ public class UserDTO {
 	private String  userName;     // 用户的实际姓名
 	private String  employeeNo;   // 员工编号
 	private String  sex;          // 姓名
-	private String  telephone;     // 电话
+	private String  telephone;    // 电话
     private String  email;        // 邮件
     private String  groupId;      // 对应用户所在组id  
+    private String  domain;       // 所属域
     
 	private Integer disabled = ParamConstants.FALSE; // 帐户状态 
-	private Date    accountLife = new Date();     // 帐户有效期限：用户帐户到某个指顶的期限过期
+	private Date    accountLife = new Date();        // 帐户有效期限：用户帐户到某个指顶的期限过期
 	private String  authMethod;
 	private String 	password;
     
     public Date getAccountLife() {
         // 默认有效期50年
-        Calendar calendar = new GregorianCalendar();
-        calendar.add(Calendar.YEAR, 50);
-        
-        this.setAccountLife(calendar.getTime());
+        this.setAccountLife( DateUtil.addYears(UMConstants.ROLE_LIFE_TIME) );
         return accountLife;
     }
  
@@ -132,6 +130,14 @@ public class UserDTO {
 
 	public void setTelephone(String telephone) {
 		this.telephone = telephone;
+	}
+
+	public String getDomain() {
+		return domain;
+	}
+
+	public void setDomain(String domain) {
+		this.domain = domain;
 	}
 }
 

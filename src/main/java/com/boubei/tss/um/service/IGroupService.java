@@ -15,6 +15,7 @@ import java.util.List;
 import com.boubei.tss.modules.log.Logable;
 import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.entity.Group;
+import com.boubei.tss.um.entity.Role;
 import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.permission.filter.PermissionFilter4Check;
 import com.boubei.tss.um.permission.filter.PermissionTag;
@@ -52,7 +53,7 @@ public interface IGroupService {
 	 * </p>
 	 * @return List
 	 */
-	List<?> findEditableRoles();
+	List<Role> findEditableRoles();
 	
     /**
      * 获取有操作权限的主用户组（多用于移动时取目标用户组）
@@ -97,7 +98,7 @@ public interface IGroupService {
     @Logable(operateObject="用户组织", 
             operateInfo="新建了【 ${args[0]} 】域"
         )
-    Group createDomainGroup(String domain);
+    Group createDomainGroup(String domain, Long parent);
     
 	/**
 	 * <p>

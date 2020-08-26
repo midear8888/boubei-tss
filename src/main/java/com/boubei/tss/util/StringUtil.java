@@ -14,10 +14,20 @@ import java.util.regex.Pattern;
 
 /**
  * 字符串工具类：
- * <li>字符串转码工具：将字符串的编码进行转换（默认为GBK转UTF-8）
- * </p>
+ * 1.字符串转码工具：将字符串的编码进行转换（默认为GBK转UTF-8）
  */
 public class StringUtil {
+	
+	/**
+	 * 替换各种分隔符（tab、空格、回车、英文逗号、中文逗号）为统一分隔符
+	 */
+	public static String fixSplit(String s, String split) {
+		return s.replaceAll("\t+|\r|\n|,|，|\\s+|、", split);
+	}
+	
+	public static String[] split(String s) {
+		return fixSplit(s, ",").split(",");
+	}
 
     /**
      * <p>
@@ -61,6 +71,11 @@ public class StringUtil {
 	public static boolean hasCNChar(String str) {
 		return cnPattern.matcher(str).find();
 	}
+	
+	public static String replaceEmoji(String s) {
+		if( s == null ) return null;
+		return s.replaceAll("[\\ud83c\\udc00-\\ud83c\\udfff]|[\\ud83d\\udc00-\\ud83d\\udfff]|[\\u2600-\\u27ff]", "*");
+	}
 
 	/**
 	 * 判断是否为乱码
@@ -79,4 +94,31 @@ public class StringUtil {
 		return false;
 	}
 
+    /**
+     * 转换utf8字符集
+     * @param str
+     * @return
+     */
+    public static String toUtf8String(String str) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (c >= 0 && c <= 255) {
+                sb.append(c);
+            } else {
+                byte[] b = new byte[0];
+                try {
+                    b = Character.toString(c).getBytes("utf-8");
+                } catch (Exception ex) {
+                }
+                
+                for (int j = 0; j < b.length; j++) {
+                    int k = b[j];
+                    k = (Integer) EasyUtils.checkTrue(k < 0, k + 256, k);
+                    sb.append("%" + Integer.toHexString(k).toUpperCase());
+                }
+            }
+        }
+        return sb.toString();
+    }
 }

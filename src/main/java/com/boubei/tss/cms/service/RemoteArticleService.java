@@ -65,7 +65,7 @@ public class RemoteArticleService implements IRemoteArticleService {
         Channel channel = channelDao.getEntity(channelId);
         if(channel == null) {
         	log.info("ID为：" + channelId + " 的栏目不存在！");
-            return "<Response><ArticleList><rss><totalPageNum>0</totalPageNum><totalRows>0</totalRows></rss></ArticleList></Response>";
+            return "<Response><ArticleList><rss><totalPageNum>0</totalPageNum><totalRows>0</totalRows><currentPage>1</currentPage></rss></ArticleList></Response>";
         }
         
         channelId = checkBrowsePermission(channelId);
@@ -134,11 +134,9 @@ public class RemoteArticleService implements IRemoteArticleService {
         return "<Response><ArticleList>" + createReturnXML(pageInfo, channelId) + "</ArticleList></Response>";
     }
     
+    // 对指定栏目没有浏览权限，则置反channelId值，使查询不到结果
     private Long checkBrowsePermission(Long channelId) {
-    	if( !channelDao.checkBrowsePermission(channelId) ) {
-          channelId = channelId * -1; // 置反channelId值，使查询不到结果
-    	}
-    	return channelId;
+    	return (Long) EasyUtils.checkTrue(channelDao.checkBrowsePermission(channelId), channelId, channelId * -1);
     }
     
     private String createReturnXML(PageInfo pageInfo, Long channelId){

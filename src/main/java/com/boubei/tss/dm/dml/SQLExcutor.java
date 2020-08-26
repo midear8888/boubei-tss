@@ -37,8 +37,6 @@ import com.boubei.tss.cache.Pool;
 import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.ddl._Database;
 import com.boubei.tss.dm.ddl._Field;
-import com.boubei.tss.dm.ext.query.AbstractSO;
-import com.boubei.tss.dm.ext.query.SOUtil;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.web.display.grid.GridTemplet;
 import com.boubei.tss.util.EasyUtils;
@@ -48,7 +46,10 @@ public class SQLExcutor {
 
     static Logger log = Logger.getLogger(SQLExcutor.class);
     
+    public boolean testFlag = false;
+    
     public List<String> selectFields = new ArrayList<String>();
+    public Map<String, String> labelsMap = new HashMap<>();
     public List<Integer> fieldTypes  = new ArrayList<Integer>(); // java.sql.Types
     public List<String> fieldWidths  = new ArrayList<String>(); 
     
@@ -58,6 +59,13 @@ public class SQLExcutor {
     
     public String toString() {
     	return EasyUtils.obj2Json( result );
+    }
+    
+    public Map<String, Object> toEasyUIGrid() {
+    	Map<String, Object> ret = new HashMap<String, Object>();
+    	ret.put("total", this.count);
+    	ret.put("rows", this.result);
+    	return ret;
     }
     
     public Document getGridTemplate() {
@@ -71,13 +79,16 @@ public class SQLExcutor {
         if(selectFields.size() > 0) {
         	int index = 0;
             for(String field : selectFields) {
-            	Object caption = EasyUtils.checkNull( cnm.get(field), field);
+            	Object label = EasyUtils.checkNull( cnm.get(field), field);
                 String type = ctm.get(field);
-                String align = _Field.TYPE_NUMBER.equals(type) ? "right" : "";
-                String width = GridTemplet.transColWidth( fieldWidths.get(index++) );
+                String align = _Field.TYPE_NUMBER.equals(type) ? "right" : "center";
+                String width = GridTemplet.transColWidth( fieldWidths.get(index) );
+                String mode = (String) EasyUtils.checkTrue(type != null, " mode=\"" + type + "\"", "");
+                String pattern = (String) EasyUtils.checkTrue(cpm.get(field) != null, " pattern=\"" + cpm.get(field) + "\"", "");
                 
-				sb.append("<column name=\"" + field + "\" mode=\"" + type + "\" pattern=\"" + cpm.get(field) 
-            			+ "\" caption=\"" + caption + "\" align=\"" + align + "\" " +width+ " />").append("\n");
+				sb.append("<column name=\"" + labelsMap.get(field) + "\" " + mode + pattern 
+            			+ " caption=\"" + label + "\" align=\"" + align + "\" " +width+ " sortable=\"true\" />").append("\n");
+				index++;
             }
         }
         else {
@@ -116,10 +127,6 @@ public class SQLExcutor {
     
     public void excuteQuery(String sql, String datasource) {
         excuteQuery(sql, new HashMap<Integer, Object>(), datasource);
-    }
-    
-    public void excuteQuery(String sql, AbstractSO so, String datasource) {
-        excuteQuery(sql, SOUtil.generateQueryParametersMap(so), datasource);
     }
 
     public void excuteQuery(String sql, String dataSource, Object...params) {
@@ -184,6 +191,10 @@ public class SQLExcutor {
 
     public void excuteQuery(String sql, Map<Integer, Object> paramsMap, int page, int pagesize, Connection conn) {
     	sql = sql.replaceAll("？", "?");
+    	if( testFlag ) {
+        	log.info(" excute query sql: \n" + sql + " \n params: " + paramsMap);
+		}
+    	
         String queryDataSql = sql;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
@@ -223,7 +234,6 @@ public class SQLExcutor {
                 queryDataSql = _Database.getDB(driveName, null).toPageQuery(sql, page, pagesize); 
             }
 
-            log.debug(" excute query sql: \n" + queryDataSql);
             pstmt = prepareStatement(conn, queryDataSql, paramsMap);
             rs = pstmt.executeQuery();
             
@@ -236,6 +246,8 @@ public class SQLExcutor {
                 // 从1开始，非0
 				for(int index = 1; index <= fieldNum; index++) {
 					String columnName = rsMetaData.getColumnLabel(index).toLowerCase();
+					String columnCode = "c" + index; // grid 解析时 xml的attribute.name命名不能数字等开头，SQL里的label不可控
+					labelsMap.put(columnName, columnCode);
 					
                 	if(columnName.equals("rn")) continue;
                 	
@@ -276,8 +288,8 @@ public class SQLExcutor {
         try {
         	excute(sql, conn);
         } catch (Exception e) {
-        	String errorMsg = e.getMessage() + " --- SQL: " + sql + ", " + datasource;
-        	log.info( errorMsg );
+        	String errorMsg = e.getMessage();
+        	log.error( errorMsg + " --- SQL: " + sql + ", " + datasource );
         	throw new BusinessException(errorMsg);
         } 
         finally {
@@ -375,8 +387,9 @@ public class SQLExcutor {
      * 出错时就会造成，前几条插入，后几条没有会形成脏数据。
      * 
      * 注: 设定setAutoCommit(false) 没有在catch中进行Connection的rollBack操作，操作的表就会被锁住，造成数据库死锁。
+     * @throws SQLException 
      */
-    public static void excuteBatch(String sql, List<Object[]> paramsList, Connection conn) {
+    public static void excuteBatch(String sql, List<Object[]> paramsList, Connection conn) throws SQLException {
     	if( EasyUtils.isNullOrEmpty(paramsList) ) return;
     	
     	boolean autoCommit = true;
@@ -401,16 +414,14 @@ public class SQLExcutor {
             
         } catch (SQLException e) {
         	// 执行回滚
-        	try { conn.rollback(); } 
-        	catch (Exception e2) { log.error(e2.getMessage(), e2); }
+        	conn.rollback();
         	
         	String errorMsg = "error: " +e.getMessage();
-        	log.info(errorMsg + " ------ SQL: " + sql);
+        	log.error(errorMsg + " ------ SQL: " + sql);
             throw new BusinessException(errorMsg);
             
         } finally {
-        	try { conn.setAutoCommit(autoCommit); } 
-        	catch (Exception e2) { log.error(e2.getMessage(), e2);  }
+        	conn.setAutoCommit(autoCommit);
         	
             try { pstmt.close(); } catch (Exception e) { }
         }

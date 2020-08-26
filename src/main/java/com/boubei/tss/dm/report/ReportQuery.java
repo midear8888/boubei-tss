@@ -26,6 +26,7 @@ import com.boubei.tss.EX;
 import com.boubei.tss.PX;
 import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.DMUtil;
+import com.boubei.tss.dm.ddl._Field;
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.Environment;
@@ -106,11 +107,12 @@ public class ReportQuery {
 				 */
 				String _script = reportScript.toLowerCase();
 				Object ignore = null; 
-				if ( Pattern.compile("\\$\\{[\\s]*(" +code+ "|" +paramKey+ ")[\\s]*\\}").matcher(_script).find() ) {
+				String regKey = (code+ "|" +paramKey).toLowerCase();
+				if ( Pattern.compile("\\$\\{[\\s]*(" +regKey+ ")[\\s]*\\}").matcher(_script).find() ) {
 					ignore = "true";		
 				}
-				else if( Pattern.compile("if[\\s]+(" +code+ "|" +paramKey+ ")").matcher(_script).find() && 
-						!Pattern.compile("if[\\s]+(" +code+ "|" +paramKey+ ")\\?\\?").matcher(_script).find() ) {
+				else if( Pattern.compile("if[\\s]+(" +regKey+ ")").matcher(_script).find() && 
+						!Pattern.compile("if[\\s]+(" +regKey+ ")\\?\\?").matcher(_script).find() ) {
 					
 					// <#if param1==1> or <#elseif param1==1>
 					// eg1: <#if param1==1> group by week </#if>  --> is macrocode: true 
@@ -128,9 +130,12 @@ public class ReportQuery {
 				// 将日期的快捷写法，转换成相应日期
 				paramValue = DateUtil.fastCast(paramValue);
 				Object _paramValue = DMUtil.preTreatValue(paramValue, paramType);
+				if( EasyUtils.obj2String(paramValue).indexOf("\'") > 0 ) { // 输入的参数值中含有英文逗号(中间字符)，拼接到SQL里将会报错
+					_paramValue = EasyUtils.obj2String(paramValue).replaceAll("\'", "");
+	  	  		}
 
 				// 处理in查询的条件值，为每个项加上单引号 
-				if ( Pattern.compile("in[\\s]*\\(\\$\\{[\\s]*(" +code+ "|" +paramKey+ ")[\\s]*\\}\\)").matcher(_script).find() ) {
+				if ( Pattern.compile("in[\\s]*\\(\\$\\{[\\s]*(" +regKey+ ")[\\s]*\\}\\)").matcher(_script).find() ) {
 					
 					_paramValue = DMUtil.insertSingleQuotes(paramValue); 
 				}
@@ -139,6 +144,9 @@ public class ReportQuery {
 					paramsMap.put(paramsMap.size() + 1, _paramValue);
 				}
 				
+				if(_Field.TYPE_DATE.equals(paramType) || _Field.TYPE_DATETIME.equals(paramType)) {
+					_paramValue = paramValue; // 日期用于Freemarker解析时不能是Date对象类型，用于通配符?则可以
+				}
 				fmDataMap.put(paramKey, _paramValue);
 				fmDataMap.put(code, _paramValue);
   	        }
@@ -150,6 +158,7 @@ public class ReportQuery {
       	reportScript = DMUtil.fmParse(reportScript, fmDataMap, true);
           
 		SQLExcutor excutor = new SQLExcutor();
+		excutor.testFlag = requestMap.containsKey("testFlag");
 		try {
 			excutor.excuteQuery(reportScript, paramsMap, page, pagesize, datasource);
 		} catch (Exception e) {

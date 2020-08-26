@@ -11,9 +11,7 @@
 package com.boubei.tss.um.action;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,10 +40,8 @@ import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 
 /**
- * <p>
  * 权限转授策略相关操作。
  * 策略没有组，没有上下级关系，没有排序id
- * </p>
  */
 @Controller
 @RequestMapping("/auth/subauthorize")
@@ -68,6 +64,8 @@ public class SubAuthorizeAction extends BaseActionSupport {
 			SubAuthorize sa = (SubAuthorize) o;
 			String name = sa.getName();  // name = 模块ID_模块名称_购买序号
 			Long moduleId = EasyUtils.obj2Long( name.split("_")[0] );
+			moduleId = (Long) EasyUtils.checkNull( sa.getModuleId(), moduleId );
+			
 			ModuleDef md = (ModuleDef) commService.getEntity(ModuleDef.class, moduleId);
 			
 			Object[] obj = new Object[3];
@@ -107,9 +105,7 @@ public class SubAuthorizeAction extends BaseActionSupport {
 			map.put("startDate", DateUtil.format(new Date()));
 			
 			// 默认的有效时间, 结束时间向后推迟7天
-			Calendar calendar = new GregorianCalendar();
-			calendar.add(UMConstants.STRATEGY_LIFE_TYPE, UMConstants.STRATEGY_LIFE_TIME);
-			map.put("endDate", DateUtil.format(calendar.getTime()));
+			map.put("endDate", DateUtil.format( DateUtil.addDays(UMConstants.STRATEGY_LIFE_TIME) ));
             
 			ruleXFormEncoder = new XFormEncoder(UMConstants.STRATEGY_XFORM, map);
 		} 

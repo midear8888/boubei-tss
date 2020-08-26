@@ -57,12 +57,13 @@ public class QueryCacheInterceptor implements MethodInterceptor {
     public static int MAX_QUERY_REQUEST = 100;
     public static boolean IS_BUSY = false;
     
+    
     public Object invoke(MethodInvocation invocation) throws Throwable {
         Method targetMethod = invocation.getMethod(); /* 获取目标方法 */
         Object[] args = invocation.getArguments();    /* 获取目标方法的参数 */
         
         QueryCached annotation = targetMethod.getAnnotation(QueryCached.class); // 取得注释对象
-        if (annotation == null) {
+        if ( annotation == null || CacheInterceptor.hasTimestampArg(args) ) {
         	return invocation.proceed(); /* 如果没有配置缓存，则直接执行方法并返回结果 */
         }
  
@@ -71,19 +72,7 @@ public class QueryCacheInterceptor implements MethodInterceptor {
 		
 		// 检查当前等待线程数（执行中 + 等待中）
 		int V = EasyUtils.obj2Int( ParamManager.getValue(PX.MAX_QUERY_REQUEST, "" + MAX_QUERY_REQUEST) );
-		int X = countThread(qCache, V);
-		if( X > V ) {
-			if( !IS_BUSY ) { // 第一次出现时，已经紧张了无需提醒
-				IS_BUSY = true;
-				String qCacheInfo = qCache.getUsing().toString();
-				log.info( EX.CACHE_1 + ": " + qCacheInfo);
-				MailUtil.send(EX.CACHE_1, qCacheInfo);
-			}
-			throw new BusinessException(EX.CACHE_1 + X + ">" + V);
-		} 
-		else {
-			IS_BUSY = false;
-		}
+		checkBusy(qCache, V);
 		
 		/* 检查当前查询服务（报表服务等）在等待队列中是否超过了阈值（X）25%，超过则不再接受新的查询请求，以防止单个服务耗尽队列。
 		 * 注：如果数据源出现异常，请求长时间处于等待获取连接的状态，还是会出现耗尽线程的情形，此时需做的是：关闭该异常数据源。
@@ -116,7 +105,7 @@ public class QueryCacheInterceptor implements MethodInterceptor {
 			long start = System.currentTimeMillis();
 			while( qCache.contains(qKey) ) { // 说明NO.1 Query还在执行中
 				log.debug(currentThread + " QueryCache waiting...");
-				Thread.sleep( 3000 * Math.min(Math.max(1, qcItem.getHit()), 10) ); //等待的线程越多，则sleep时间越长
+				Thread.sleep( MAX_QUERY_TIME / 10 );
 				
 				// 超过10分钟，说明执行非常缓慢，则不再继续等待，同时抛错提示用户。
 				if(System.currentTimeMillis() - start > MAX_QUERY_TIME) {
@@ -124,7 +113,7 @@ public class QueryCacheInterceptor implements MethodInterceptor {
 				}
 			}
 			
-			// QC_cache 已经被destroy
+			// 调出上面while循环，说明 qCache 已 destroydestroyByKey(qKey)
 			returnVal = invocation.proceed(); // 此时去执行查询，结果已经在3分钟的cache中
 		} 
 		else {
@@ -143,12 +132,28 @@ public class QueryCacheInterceptor implements MethodInterceptor {
 			} catch(Exception e) {
 				throw e;
 			} finally {
-				qCache.destroyByKey(qKey); // 移除销毁缓存的执行信息（出现异常时也要移除）
+				qCache.destroyByKey(qKey); // 移除销毁缓存的执行信息（出现异常时也要移除），注：销毁的执行过程，不是执行结果
 			}
 		}
 		
         return returnVal;
     }
+
+	void checkBusy(AbstractPool qCache, int V) {
+		int X = countThread(qCache, V);
+		if( X > V ) {
+			if( !IS_BUSY ) { // 第一次出现时，已经紧张了无需提醒
+				IS_BUSY = true;
+				String qCacheInfo = qCache.getUsing().toString();
+				log.info( EX.CACHE_1 + ": " + qCacheInfo);
+				MailUtil.send(EX.CACHE_1, qCacheInfo);
+			}
+			throw new BusinessException(EX.CACHE_1 + X + ">" + V);
+		} 
+		else {
+			IS_BUSY = false;
+		}
+	}
     
     private int countThread(Pool cache, int V) {
     	int I = 0, H = 0;

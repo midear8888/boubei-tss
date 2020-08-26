@@ -97,14 +97,11 @@ public abstract class OutputRecordsManager {
     private class FlushThread extends Thread {
         public void run() {
             while (true) {
-                try {
-                	/* 定期休眠，醒来后输出记录 */
-                    sleep(getMaxTime()); 
-                    if(size() > 0 ) {
-                        flush();   
-                    }
-                } catch (InterruptedException e) {
-                    log.error(" OutputRecordsManager.FlushThread run failed", e);
+            	/* 定期休眠，醒来后输出记录 */
+                try { sleep( getMaxTime() ); } catch (InterruptedException e) { } 
+                
+                if( size() > 0 ) {
+                    flush();   
                 }
             }
         }

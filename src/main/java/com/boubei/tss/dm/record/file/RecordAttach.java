@@ -69,15 +69,20 @@ public class RecordAttach implements IEntity, IGridNode {
 
 	private Date   uploadDate; // 上传日期
 	private String uploadUser; // 上传用户
+	private String origin;     // 上传客户端类型
 	
 	private Integer hitCount = 0; // 点击下载次数
 	
 	public String getAttachPath() {
-		return getAttachDir(this.recordId, this.itemId) + "/" + this.fileName;
+		return getAttachDir() + "/" + this.fileName;
+	}
+	
+	public String getAttachDir() {
+		return getAttachDir(this.recordId, this.itemId);
 	}
 	
 	public static String getAttachDir(Long recordId, Long itemId) {
-		String attachDir = DMUtil.getExportPath();
+		String attachDir = DMUtil.getAttachPath();
         attachDir = attachDir + "/" + recordId + "/" + itemId;
         
         return attachDir;
@@ -214,5 +219,13 @@ public class RecordAttach implements IEntity, IGridNode {
 
 	public void setFileSize(Long fileSize) {
 		this.fileSize = fileSize;
+	}
+
+	public String getOrigin() {
+		return origin;
+	}
+
+	public void setOrigin(String origin) {
+		this.origin = origin;
 	}
 }

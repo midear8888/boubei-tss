@@ -11,8 +11,10 @@
 package com.boubei.tss.modules.log;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.persistence.Column;
@@ -71,10 +73,10 @@ public class Log implements IEntity, IXForm, IGridNode {
     		operationCode = operationCode.substring(0, 100);
     	}
     	entity = entity == null ? "" : entity;
-    	
+
     	this.setOperatorId( Environment.getUserId() );
-        this.setOperatorName( Environment.getUserName() );
-        this.setOperatorIP( Environment.getClientIp() );
+		this.setOperatorName( Environment.getUserName() );
+        this.setOperatorIP( Environment.getClientIp() +" "+ Environment.getDomainCN() );
         this.setOperationCode( operationCode );
         this.setOperateTable ( entity.getClass().getName() );
         this.setOperateTime  ( new Date() );
@@ -92,6 +94,44 @@ public class Log implements IEntity, IXForm, IGridNode {
     public Log(String opTable, String opCode, Object entity) {
     	this(opCode, entity);
     	this.setOperateTable(opTable);
+    }
+    
+    public void formatContent() {
+    	String content = this.getContent();
+    	int index1 = content.indexOf("begin: {"),
+    		index2 = content.indexOf("after: {");
+    	
+    	if(index1 >= 0 && index2 > 0) {
+    		String compareResult = "";
+    		String begin = content.substring(index1 + 8, index2 - 4);
+    		String after = content.substring(index2 + 8, content.length() - 1);
+    		List<String> ignoreFields = Arrays.asList("creator", "createTime", "updator", "updateTime", "version");
+    		
+    		String[] s1 = begin.split(",");
+    		String[] s2 = after.split(",");
+    		Map<String, String> m1 = new HashMap<String, String>();
+    		for(String s : s1) {
+    			String[] pair = s.trim().split("=");
+    			if(pair.length == 2) {
+    				m1.put(pair[0], pair[1]);
+    			}
+    		}
+    		for(String s : s2) {
+    			String[] pair = s.trim().split("=");
+    			if(pair.length == 2) {
+    				String key = pair[0];
+					if(  ignoreFields.contains(key) ) continue;
+    				
+    				String newV = pair[1];
+    				String oldV = m1.get(key);
+    				if( !newV.equals(oldV) ) {
+    					compareResult += key + ": " + oldV + " => " + newV + ", ";
+    				}
+    			}
+    		}
+    		
+    		this.setContent( compareResult );
+    	}
     }
     
     public String toString() {
@@ -132,6 +172,7 @@ public class Log implements IEntity, IXForm, IGridNode {
  
     public void setContent(String content) {
         this.content = content;
+        formatContent();
     }
  
     public void setId(Long id) {
@@ -183,7 +224,7 @@ public class Log implements IEntity, IXForm, IGridNode {
         map.put("methodExcuteTime", this.methodExcuteTime);
         
         String content = EasyUtils.obj2Json(this.getContent()).replaceAll("\"", "");
-        map.put("content", content.substring(0, Math.min(content.length(), 60)));
+        map.put("content", content.substring(0, Math.min(content.length(), 128)));
         map.put("origin", this.getOperatorBrowser() );
         map.put("udf1", this.getUdf1());
         

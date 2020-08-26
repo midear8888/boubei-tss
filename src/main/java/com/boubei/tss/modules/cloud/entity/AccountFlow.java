@@ -21,54 +21,53 @@ import com.boubei.tss.modules.sn.SerialNOer;
 @Table(name = "cloud_account_flow")
 @SequenceGenerator(name = "account_flow_seq", sequenceName = "account_flow_seq", initialValue = 1, allocationSize = 10)
 public class AccountFlow implements IEntity {
-	
+
 	public final static String TYPE0 = "系统使用费";
 	public final static String TYPE1 = "充值";
-	
+	public final static String TYPE2 = "代理费";
+	public final static String TYPE3 = "积分充值";
+	public final static String TYPE4 = "积分支出";
+
 	public static final String PAYMENT0 = "系统赠送";
-	
+	public static final String PAYMENT1 = "系统扣款";
+
 	@Id
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "account_flow_seq")
+	@GeneratedValue(strategy = GenerationType.AUTO, generator = "account_flow_seq")
 	private Long id;
-	
+
 	private Long account_id;
-	
-	private String sn;   // 流水号
-	
-	private String type;    // 费用类型：充值/短信费/查单费/系统使用费/报表定制费/接口对接费/卖打印机
-	
-	private String payment; // 支付方式：微信支付、支付宝支付、系统扣款、系统赠送、对公转账、对私转账
-	
+
+	private String sn; // 流水号
+
+	private String type;    // 费用类型：充值/短信费/查单费/系统使用费/报表定制费/接口对接费
+
+	private String payment; // 支付方式：系统扣款、系统赠送、微信支付、支付宝支付、对公转账、对私转账
+
 	private String order_no; // 关联的订单号
-	
-	private Double money;   // 金额
-	
-	private Double balance; // 余额（后）
+
+	private Double money; 	 // 本次金额
+	private Double balance;  // 余额（后）
 	private Double balance_freeze; // 冻结余额（后）
-	
-	public Double getBalance_freeze() {
-		return balance_freeze;
-	}
 
-	public void setBalance_freeze(Double balance_freeze) {
-		this.balance_freeze = balance_freeze;
-	}
-
-	private Date   pay_time; // 入账时间
-	
-	private String pay_man; // 操作人
-	
+	private Date   pay_time;  // 入账时间
+	private String pay_man;  // 操作人
 	private String remark;  // 备注
 	
-	
-	public AccountFlow() { }
-	
+	private Long fk; // 外键
+
+	public AccountFlow() {
+	}
+
 	public AccountFlow(Account account, AbstractProduct product, String type, String remark) {
-		this.setAccount_id(account.getId());
+		this(account, type, remark);
 		this.setOrder_no(product.co.getOrder_no());
 		this.setPay_man(product.payer);
-		this.setPay_time(new Date());
 		this.setPayment(product.payType);
+	}
+
+	public AccountFlow(Account account, String type, String remark) {
+		this.setAccount_id(account.getId());
+		this.setPay_time(new Date());
 		this.setSn(SerialNOer.get("AF", true));
 		this.setType(type);
 		this.setRemark(remark);
@@ -124,6 +123,14 @@ public class AccountFlow implements IEntity {
 		this.balance = balance;
 	}
 
+	public Double getBalance_freeze() {
+		return balance_freeze;
+	}
+
+	public void setBalance_freeze(Double balance_freeze) {
+		this.balance_freeze = balance_freeze;
+	}
+
 	public String getRemark() {
 		return remark;
 	}
@@ -166,5 +173,13 @@ public class AccountFlow implements IEntity {
 
 	public void setOrder_no(String order_no) {
 		this.order_no = order_no;
+	}
+
+	public Long getFk() {
+		return fk;
+	}
+
+	public void setFk(Long fk) {
+		this.fk = fk;
 	}
 }

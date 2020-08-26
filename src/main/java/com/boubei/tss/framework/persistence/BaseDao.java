@@ -28,7 +28,9 @@ import org.apache.log4j.Logger;
 import com.boubei.tss.EX;
 import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.dml.SQLExcutor;
+import com.boubei.tss.dm.record.ARecordTable;
 import com.boubei.tss.framework.exception.BusinessException;
+import com.boubei.tss.framework.persistence.entityaop.OperateInfoInterceptor;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.util.EasyUtils;
 
@@ -86,6 +88,16 @@ public abstract class BaseDao<T extends IEntity> implements IDao<T>{
     public Object createObjectWithoutFlush(Object entity) {
         em.persist(entity);
         return entity;
+    }
+    
+    public Object createRecordObject(ARecordTable entity) {
+    	OperateInfoInterceptor.fix(entity, this);
+        return createObject(entity);
+    }
+    
+    public Object updateRecordObject(ARecordTable entity) {
+    	OperateInfoInterceptor.fix(entity, this);
+        return update(entity);
     }
     
     public Object update(Object entity) {
@@ -160,7 +172,7 @@ public abstract class BaseDao<T extends IEntity> implements IDao<T>{
         for (int i = 0; i < params.length; i++) {
             Object param = params[i];
             if (param == null) {
-                throw new BusinessException( EX.parse(EX.F_01, hql, (i + 1)) );
+                throw new BusinessException( EX.parse(EX.F_01, hql, (i + 1)), true);
             }
             query.setParameter(i + 1, param); // 从1开始，非0
         }
@@ -185,7 +197,7 @@ public abstract class BaseDao<T extends IEntity> implements IDao<T>{
         for (int i = 0; i < vals.length; i++) {
             Object param = vals[i];
             if (param == null) {
-                throw new BusinessException( EX.parse(EX.F_01, hql, (i + 1)) );
+                throw new BusinessException( EX.parse(EX.F_01, hql, (i + 1)), true);
             }
             
             if (param instanceof Object[])
@@ -213,7 +225,7 @@ public abstract class BaseDao<T extends IEntity> implements IDao<T>{
         for (int i = 0; i < params.length; i++) {
             Object param = params[i];
             if (param == null) {
-                throw new BusinessException( EX.parse(EX.F_01, nativeSql, (i + 1)) );
+                throw new BusinessException( EX.parse(EX.F_01, nativeSql, (i + 1)), true);
             }
             query.setParameter(i + 1, param);  // 从1开始，非0
         }
@@ -228,7 +240,7 @@ public abstract class BaseDao<T extends IEntity> implements IDao<T>{
         for (int i = 0; i < params.length; i++) {
             Object param = params[i];
             if (param == null) {
-                throw new BusinessException( EX.parse(EX.F_01, nativeSql, (i + 1)) );
+                throw new BusinessException( EX.parse(EX.F_01, nativeSql, (i + 1)), true);
             }
             query.setParameter(i + 1, param);  // 从1开始，非0
         }
@@ -379,6 +391,10 @@ public abstract class BaseDao<T extends IEntity> implements IDao<T>{
     }
     
     public void clearTempTable() {
-        deleteAll( getEntities("from Temp where thread=?", Environment.threadID()) );
+        long threadID = Environment.threadID();
+		deleteAll( getEntities("from Temp where thread=?", threadID) );
+		flush();
+		
+		// 强制用SQL再删除一遍，以防get/select/query打头的service方法没有写事务
     }
 }

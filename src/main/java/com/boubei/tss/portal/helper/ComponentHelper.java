@@ -25,8 +25,8 @@ import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.portal.entity.Component;
 import com.boubei.tss.portal.service.IComponentService;
-import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
+import com.boubei.tss.util.StringUtil;
 import com.boubei.tss.util.XMLDocUtil;
 
 /** 
@@ -135,6 +135,7 @@ public class ComponentHelper {
     /**
      * 如果是导入zip包，则先将包解压到一个临时文件夹，
      * 然后导入其中的元素XML配置文件，成功导入元素后在重新命名临时文件夹为正式名。
+     * 
      * @param service
      * @param component
      * @param importDir
@@ -148,11 +149,6 @@ public class ComponentHelper {
         try {
 			FileHelper.upZip(importDir, tempDir);
 		} catch (Exception e) { }
-        
-        if ( !FileHelper.checkFile(tempDir, eXMLFile) ) {
-            FileHelper.deleteFile(tempDir);
-            throw new BusinessException( EX.parse(EX.P_18, eXMLFile) );
-        }
         
         File eXMLFilePath = new File(desDir + "/" + tempDir.getName() + "/" + eXMLFile);
         component = importXml(service, component, eXMLFilePath);
@@ -170,7 +166,7 @@ public class ComponentHelper {
      * @param eXMLFile    元素的XML文件名 "/decorator.xml"
      */
     public static void exportComponent(String modelPath, Component component, String eXMLFile) {
-        String elementName = EasyUtils.toUtf8String(component.getName());
+        String elementName = StringUtil.toUtf8String(component.getName());
         String exportFileName = elementName + ".xml";;
         String outPath; // 导出zip或xml文件路径
         
@@ -207,7 +203,7 @@ public class ComponentHelper {
         response.reset(); // 设置附件下载页面
         response.setContentType("application/octet-stream"); // 设置附件类型
         response.setContentLength((int) new File(sourceFilePath).length()); // 文件长度
-        response.setHeader("Content-Disposition", "attachment; filename=\"" + EasyUtils.toUtf8String(exportName) + "\""); // 设置标头
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + StringUtil.toUtf8String(exportName) + "\""); // 设置标头
         
         InputStream inStream = null;
         OutputStream outStream = null;

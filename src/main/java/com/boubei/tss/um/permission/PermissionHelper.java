@@ -73,18 +73,21 @@ public class PermissionHelper extends TreeSupportDao<IDecodable> {
 		  and ru.roleId in (-10000, 2)
 		  and ru.userId = 250
      */
-    @SuppressWarnings("unchecked")
     public List<String> getOperationsByResource(Long resourceId, String permissionTable, Class<?> resourceClass) {
-    	
-        List<String> operations = new ArrayList<String>();
-    	
-        String hql = "select distinct p.id.operationId from " + permissionTable + " p, RoleUserMapping ru "  +
-                " where p.id.resourceId = ? and p.id.roleId = ru.id.roleId and ru.id.userId = ? ";  
-        
         Long userId = Environment.getUserId();
+        return getOperationsByResource(resourceId, permissionTable, resourceClass, userId);
+    }
+    
+    public List<String> getOperationsByResource(Long resourceId, String permissionTable, Class<?> resourceClass, Long userId) {
+    	List<String> operations = new ArrayList<String>();
+        String hql = "select distinct p.operationId from " + permissionTable + " p, RoleUserMapping ru "  +
+                " where p.resourceId = ? and p.roleId = ru.id.roleId and ru.id.userId = ? ";  
+        
         userId = (Long) EasyUtils.checkNull(userId, Anonymous._ID);
-		List<String> operationsOnResource = (List<String>) getEntities(hql, resourceId, userId);
-        operations.addAll(operationsOnResource);  // 用户对指定节点的操作权限
+		List<?> operationsOnResource = getEntities(hql, resourceId, userId);
+        for(Object oprationId : operationsOnResource){
+            operations.add( (String) oprationId );  // 用户对指定节点的操作权限
+        }
         
         ILevelTreeNode resource = (ILevelTreeNode) getEntity(resourceClass, resourceId);
         List<?> parentOperations = getEntities(hql, resource.getParentId(), userId); 
@@ -96,10 +99,17 @@ public class PermissionHelper extends TreeSupportDao<IDecodable> {
     }
     
     /**
+     * 判断某个角色对指定的资源节点是否拥有某项权限
+     */
+    public List<?> getOperationsByResourceAndRole(String permissionTable, Long resourceId, Long roleId) {
+        String hql = "select distinct p.operationId from " + permissionTable + " p  where p.resourceId = ? and p.roleId = ? ";  
+		return getEntities(hql, resourceId, roleId);
+    }
+    
+    /**
      * 获取用户对一个应用中的一种资源类型中的一个资源拥有的权限选项ID集合
      * @param resourceTypeId
      * @param resourceId
-     * @param userId
      * @return
      */
     public List<?> getOperationsByResource(String resourceTypeId, Long resourceId) {
@@ -428,7 +438,7 @@ public class PermissionHelper extends TreeSupportDao<IDecodable> {
     @SuppressWarnings("unchecked")
     public List<Long> getResourceIdsByOperation(String permissionTable, String operation, Long operatorId){
     	operatorId = (Long) EasyUtils.checkNull(operatorId, Anonymous.one.getId());
-        String hql = "select distinct p.id.resourceId from RoleUserMapping ur, " + permissionTable + " p" +
+        String hql = "select distinct p.resourceId from RoleUserMapping ur, " + permissionTable + " p" +
               " where p.operationId = ? and p.roleId = ur.id.roleId and ur.id.userId = ? ";
         return (List<Long>) getEntities( hql, operation, operatorId );
     }
@@ -490,24 +500,12 @@ public class PermissionHelper extends TreeSupportDao<IDecodable> {
     
     // 检查用户是否包含指定角色中的一个
 	public static boolean checkRole(String roles) {
-		if (EasyUtils.isNullOrEmpty(roles)) return true;
-
-		boolean ret = false;
-		String[] _roles = roles.split(",");
 		
 		List<Object> ownRoles = new ArrayList<Object>();
 		ownRoles.addAll(Environment.getOwnRoles());
 		ownRoles.addAll(Environment.getOwnRoleNames());
-		
-		for (String role : _roles) {
-			for (Object ownRole : ownRoles) {
-				if (ownRole.toString().equals(role)) {
-					ret = true;
-				}
-			}
-		}
 
-		return ret;
+		return EasyUtils.contains(ownRoles, roles);
 	}
 	
 	public static void vsSize(List<?> permitedList, List<?> list, String msg ) {

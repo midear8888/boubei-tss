@@ -154,4 +154,79 @@ public class InfoEncoder {
         }
         return new String(a);
     }
+    
+    /**
+     * 将十六进制的字符串解码
+     * @param hex
+     * @return
+     */
+    public static final byte[] decodeHex(String hex) {
+        char chars[] = hex.toCharArray();
+        byte bytes[] = new byte[chars.length / 2];
+        int byteCount = 0;
+        for(int i = 0; i < chars.length; i += 2){
+            int newByte = 0;
+            newByte |= hexCharToByte(chars[i]);
+            newByte <<= 4;
+            newByte |= hexCharToByte(chars[i + 1]);
+            bytes[byteCount] = (byte)newByte;
+            byteCount++;
+        }
+        return bytes;
+    }
+
+    /**
+     * 将字节数组加密成十六进制
+     * @param bytes
+     * @return
+     */
+    public static final String encodeHex(byte bytes[]) {
+        StringBuffer buf = new StringBuffer(bytes.length * 2);
+        for(int i = 0; i < bytes.length; i++) {
+            if((bytes[i] & 0xff) < 16) {
+                buf.append("0");
+            }
+            buf.append(Long.toString(bytes[i] & 0xff, 16));
+        }
+        return buf.toString();
+    }
+ 
+    static final byte hexCharToByte(char ch)  {
+        switch(ch) {
+        case 48: // '0'
+            return 0;
+        case 49: // '1'
+            return 1;
+        case 50: // '2'
+            return 2;
+        case 51: // '3'
+            return 3;
+        case 52: // '4'
+            return 4;
+        case 53: // '5'
+            return 5;
+        case 54: // '6'
+            return 6;
+        case 55: // '7'
+            return 7;
+        case 56: // '8'
+            return 8;
+        case 57: // '9'
+            return 9;
+        case 97: // 'a'
+            return 10;
+        case 98: // 'b'
+            return 11;
+        case 99: // 'c'
+            return 12;
+        case 100: // 'd'
+            return 13;
+        case 101: // 'e'
+            return 14;
+        case 102: // 'f'
+            return 15;
+        default:
+            return 0;
+        }
+    }
 }

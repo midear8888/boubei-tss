@@ -11,7 +11,6 @@
 package com.boubei.tss.dm.ext;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,14 +18,13 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import com.boubei.tss.dm.report.Report;
 import com.boubei.tss.dm.report.ReportService;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.web.servlet.AfterUpload;
+import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
 
@@ -56,9 +54,12 @@ public class ImportReport implements AfterUpload {
 		return "parent.alert('成功导入" +count+ "个报表.');parent.loadInitData();";
 	}
 
-	// 参考Param模块的【复制】操作
-	public int createReports(String json, String dataSource, Long groupId)
-			throws IOException, JsonParseException, JsonMappingException {
+	/**
+	 * 参考Param模块的【复制】操作;
+	 * 
+	 * 如果同名 且 同ID 的已存在，则覆盖； 通常是一个环境复制到另外一个环境
+	 */
+	public int createReports(String json, String dataSource, Long groupId) throws Exception {
 		
         int count = 0;
     	Map<Long, Long> idMapping = new HashMap<Long, Long>();
@@ -69,23 +70,28 @@ public class ImportReport implements AfterUpload {
             Report report = new ObjectMapper().readValue(EasyUtils.obj2Json(obj), Report.class);
             Long oldId = report.getId();
             
-            report.setId(null);
-            if ( i == 0 ) {
-                report.setParentId(groupId);
-            } else {
-                report.setParentId(idMapping.get(report.getParentId()));
-            }
-            
             if( !report.isGroup() ) {
             	count ++;
             	report.setDatasource(dataSource);
             }
             
-            Integer status = report.getDisabled();
-            reportService.createReport(report);
-            
-            report.setDisabled(status); // 因默认创建分组都是停用状态，但导入分组不需要，保留原来状态
-            reportService.updateReport(report);
+            String hql = "from Report where name = ? and (id = ? or code = ?)";
+            List<?> exists = Global.getCommonService().getList(hql, report.getName(), oldId, EasyUtils.obj2String(report.getCode()));
+            if( exists.isEmpty() ) {
+            	Integer status = report.getDisabled();
+            	report.setId(null);
+            	Long parentId = idMapping.get( report.getParentId() );
+            	report.setParentId( (Long) EasyUtils.checkNull(parentId, groupId) );
+                reportService.createReport(report);
+                
+                report.setDisabled(status); // 因默认创建分组都是停用状态，但导入分组不需要，保留原来状态
+                reportService.updateReport(report);
+            }
+            else {
+            	Report old = (Report) exists.get(0);
+            	BeanUtil.copy( old, report, new String[]{"id", "lockVersion","createTime", "creatorName", "decode", "seqNo", "levelNo", "group"} );
+            	reportService.updateReport(old);
+            }
             
             idMapping.put(oldId, report.getId());
         }

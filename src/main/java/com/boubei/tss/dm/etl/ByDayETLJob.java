@@ -173,7 +173,7 @@ public class ByDayETLJob extends AbstractETLJob {
         	// check target is a RecordTable or SQL, if SQL, this will throw exception, then do catch { ... }
         	if( target.trim().split(" ").length == 1 ) {
         		Long recordId = recordService.getRecordID(target, false);  
-        		_Database db = recordService.getDB(recordId);
+        		_Database db = recordService._getDB(recordId);
 				db.insertBatch(list2);
         	} 
         	else {

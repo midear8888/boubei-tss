@@ -10,6 +10,7 @@
 
 package com.boubei.tss.framework.sso.context;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -51,7 +52,7 @@ public final class Context {
 	 */
 	private static ThreadLocal<HttpServletResponse> responseLocal = new ThreadLocal<HttpServletResponse>();
 	
-	public static Map<String, HttpSession> sessionMap = new HashMap<String, HttpSession>();
+	public static Map<String, HttpSession> sessionMap = Collections.synchronizedMap( new HashMap<String, HttpSession>() );
 
 	/**
 	 * <pre>
@@ -70,7 +71,7 @@ public final class Context {
      * </pre>
      * 注：card是session级，而不是request级，所以在Context.destroy()时无需销毁。
      */
-    private static Map<String, IdentityCard> cardsMap = new HashMap<String, IdentityCard>(); 
+    private static Map<String, IdentityCard> cardsMap = Collections.synchronizedMap( new HashMap<String, IdentityCard>() ); 
 
 	/**
 	 * <p>

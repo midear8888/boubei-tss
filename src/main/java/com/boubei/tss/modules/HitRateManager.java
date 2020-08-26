@@ -24,7 +24,7 @@ import com.boubei.tss.framework.persistence.connpool.Output2DBTask;
 import com.boubei.tss.util.EasyUtils;
 
 /** 
- * 记录（文章、附件等）点击率统计
+ * 记录（文章、附件、任意数据表）点击率统计
  */
 public class HitRateManager extends OutputRecordsManager{
     
@@ -58,10 +58,6 @@ public class HitRateManager extends OutputRecordsManager{
         task.fill(temp);
 
         tpool.excute(task);
-    }
-    
-    public void output(Object record){
-        super.output(record);
     }
     
     protected int getMaxSize(){ return 10; }

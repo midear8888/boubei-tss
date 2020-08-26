@@ -22,6 +22,7 @@ import org.quartz.CronScheduleBuilder;
 import org.quartz.Job;
 import org.quartz.JobBuilder;
 import org.quartz.JobDetail;
+import org.quartz.JobExecutionContext;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
@@ -73,6 +74,15 @@ public class SchedulerBean {
 	    	
 	    	refresh(true);
     	}
+    }
+    
+    public List<JobExecutionContext> listExcutingJobs() {
+    	List<JobExecutionContext> list = null;
+		try {
+			list = scheduler.getCurrentlyExecutingJobs();
+		} catch (Exception e) {
+		}
+		return list;
     }
     
     public void refresh(boolean init) {

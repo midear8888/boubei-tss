@@ -20,7 +20,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,45 +27,24 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 
-import com.boubei.tss.dm.ext.query.AbstractExportSO;
-import com.boubei.tss.dm.ext.query.AbstractVO;
 import com.boubei.tss.framework.exception.BusinessException;
+import com.boubei.tss.modules.param.ParamConfig;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
+import com.boubei.tss.util.StringUtil;
 
 public class DataExport {
 	
+	public static final String CHARSET = "charSet";
 	public static final String CSV_GBK = "GBK";
 	public static final String CSV_UTF8 = "UTF-8";
+	public static final String SYS_CHAR_SET = ParamConfig.getAttribute("SYS_CHAR_SET", CSV_GBK);
 	
 	static Logger log = Logger.getLogger(DataExport.class);
 	
 	public static String getExportPath() {
-		return DMUtil.getExportPath() + "/export";
+		return DMUtil.getAttachPath() + "/export";
 	}
-	
-	/**
-     * 将已经读取到缓存中的VOList分页展示给前台
-     */
-    public static Map<String, Object> getDataByPage(List<? extends AbstractVO> voList, int page, int rows ) {
-    	Map<String, Object> rlt = new HashMap<String, Object>();
-        rlt.put("total", voList.size());
-
-        page = Math.max(1, page);
-        rows = Math.max(1, rows);
-        int fromLine = (page - 1) * rows;
-        int toLine = page * rows;
-        if (fromLine <= voList.size()) {
-            toLine = Math.min(voList.size(), toLine);
-            rlt.put("rows", voList.subList(fromLine, toLine));
-        }
-        
-        if(voList.size() > 0) {
-        	rlt.put("headerNames", voList.get(0).displayHeaderNames());
-        }
-
-        return rlt;
-    }
     
     public static String exportCSV(List<Object[]> data, List<String> cnFields) {
     	String basePath = getExportPath();
@@ -74,22 +52,6 @@ public class DataExport {
 		String exportPath = basePath + "/" + exportFileName;
 		
 		DataExport._exportCSV(exportPath, convertList2Array(data), cnFields );
-		return exportFileName;
-    }
-    
-    public static String exportCSV(List<? extends AbstractVO> voList, AbstractExportSO so) {
-    	String basePath = getExportPath();
-        String exportFileName = so.getExportFileName();
-		String exportPath = basePath + "/" + exportFileName;
-
-        List<String> cnFields = null;
-        if(voList != null && voList.size() > 0) {
-        	cnFields = voList.get(0).displayHeaderNames();
-        }
-        
-        Object[][] data = convertList2Array(AbstractVO.voList2Objects(voList));
-		_exportCSV(exportPath, data, cnFields );
-		
 		return exportFileName;
     }
     
@@ -122,7 +84,7 @@ public class DataExport {
     }
  
     public static String exportCSV(String fileName, List<Map<String, Object>> data, List<String> fields) {
-    	return exportCSV(fileName, data, fields, CSV_GBK);
+    	return exportCSV(fileName, data, fields, SYS_CHAR_SET);
     }
     
     // data 里的Map key可能是code，而fields[x] 可能是name，调用本本方法前需要保证顺序及个数一致
@@ -139,13 +101,15 @@ public class DataExport {
     }
     
     public static void exportCSV(String path, Collection<Object[]> data, List<String> fields) {
-    	exportCSV(path, data, fields, CSV_GBK);
+    	exportCSV(path, data, fields, SYS_CHAR_SET);
     }
     
     public static void exportCSV(String path, Collection<Object[]> data, List<String> fields, String charSet) {
         try {
-        	File file = FileHelper.createFile(path);
+        	// 在已经导出的文件上继续导出数据
         	boolean append = fields == null;
+        	
+        	File file = FileHelper.createFile(path);
             OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(file, append), charSet );
             BufferedWriter fw = new BufferedWriter(write);   
             
@@ -181,7 +145,7 @@ public class DataExport {
     public static void exportCSV(String path, String data) {
         try {
         	File file = FileHelper.createFile(path);
-            OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(file), CSV_GBK );
+            OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(file), SYS_CHAR_SET );
             BufferedWriter fw = new BufferedWriter(write);   
             
             fw.write(data);
@@ -200,10 +164,10 @@ public class DataExport {
      * @param exportName  导出名字
      */
     public static void downloadFileByHttp(HttpServletResponse response, String sourceFilePath) {
-    	downloadFileByHttp(response, sourceFilePath, false);
+    	downloadFileByHttp(response, sourceFilePath, DataExport.SYS_CHAR_SET, false);
     }
     
-    public static void downloadFileByHttp(HttpServletResponse response, String sourceFilePath, boolean justCSV) {
+    public static void downloadFileByHttp(HttpServletResponse response, String sourceFilePath, String charSet, boolean justCSV) {
 
         File sourceFile = new File(sourceFilePath);
         if( !sourceFile.exists() ) {
@@ -213,7 +177,7 @@ public class DataExport {
         
     	// 导出XLS文件（先一律转为XLS导出）
     	if( Excel.isCSV(sourceFilePath) && !justCSV) {
-    		sourceFilePath = Excel.csv2Excel(sourceFilePath); 
+    		sourceFilePath = Excel.csv2Excel(sourceFilePath, charSet); 
     		sourceFile = new File(sourceFilePath);
     	}
         
@@ -221,7 +185,7 @@ public class DataExport {
         response.setCharacterEncoding("utf-8");
         response.setContentType("application/octet-stream"); // 设置附件类型
         response.setContentLength((int) sourceFile.length());
-        response.setHeader("Content-Disposition", "attachment; filename=\"" + EasyUtils.toUtf8String(sourceFile.getName()) + "\"");
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + StringUtil.toUtf8String(sourceFile.getName()) + "\"");
         
         InputStream inStream = null;
         OutputStream outStream = null;

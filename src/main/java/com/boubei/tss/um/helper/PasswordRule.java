@@ -10,6 +10,9 @@
 
 package com.boubei.tss.um.helper;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.boubei.tss.util.EasyUtils;
 
 /**
@@ -42,8 +45,8 @@ public class PasswordRule {
 	}
  
 	// 密码强度定义.
-    static int factor[] = {1, 2, 3, 4};
-    static int kindFactor[] = {0, 0, 10, 20, 30};
+    static int factor[] = {2, 2, 3, 4};
+    static int kindFactor[] = {0, 5, 10, 20, 30, 40};
     static String[] regex = {"0123456789", 
                              "abcdefghijklmnopqrstuvwxyz", 
                              "ABCDEFGHIJKLMNOPQRSTUVWXYZ", 
@@ -51,12 +54,16 @@ public class PasswordRule {
 
     static int getStrengthValue(String pwd) {
         int strengthValue = 0;
-        int composedKind = 0;
+        int composedKind = (int) EasyUtils.checkTrue(pwd.length() > 8, 1, 0);
+        
+        Set<Character> charSet = new HashSet<>();
         for (int i = 0; i < regex.length; i++) {
             int matched = 0;
             for (int j = 0; j < pwd.length(); j++) {
-                if (regex[i].indexOf(pwd.charAt(j)) >= 0)
-                    matched++;
+                char ch = pwd.charAt(j);
+                charSet.add(ch);
+                
+				if (regex[i].indexOf(ch) >= 0)  matched++;
             }
  
             if (matched != 0) {
@@ -64,6 +71,11 @@ public class PasswordRule {
                 composedKind++;
             }
         }
+        if(charSet.size() <= 2) { // 如果密码只包含两个字符
+        	composedKind --;
+        }
+        
+        composedKind = Math.min(composedKind, 4);
         strengthValue += kindFactor[composedKind];
         return strengthValue;
     }
@@ -80,10 +92,7 @@ public class PasswordRule {
         }
 		
         int strength = PasswordRule.getStrengthValue(password);
-        if(flag == 0) {
-            return PasswordRule.UNQUALIFIED_LEVEL;
-        } 
-        if(strength < rule.leastStrength) {
+        if(flag == 0 || strength < rule.leastStrength) {
             return PasswordRule.UNQUALIFIED_LEVEL;
         }
         if(strength < rule.lowStrength) {

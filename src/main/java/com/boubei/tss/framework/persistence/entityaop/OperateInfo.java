@@ -24,7 +24,7 @@ import com.boubei.tss.framework.persistence.IEntity;
  * 对数据对象操作的操作者信息记录实体
  */
 @MappedSuperclass
-public abstract class OperateInfo implements IOperatable, IEntity {
+public abstract class OperateInfo implements IOperatable {
     
     protected Long   creatorId;       // 创建者Id
     protected Date   createTime;     // 创建时间

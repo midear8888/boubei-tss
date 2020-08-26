@@ -21,6 +21,7 @@ import com.boubei.tss.cache.Cacheable;
 import com.boubei.tss.cache.JCache;
 import com.boubei.tss.cache.Pool;
 import com.boubei.tss.cache.extension.CacheLife;
+import com.boubei.tss.util.EasyUtils;
  
 @Component("cacheInterceptor")
 public class CacheInterceptor implements MethodInterceptor {
@@ -50,7 +51,7 @@ public class CacheInterceptor implements MethodInterceptor {
         Object[] args = invocation.getArguments();    /* 获取目标方法的参数 */
         
     	Cached annotation = targetMethod.getAnnotation(Cached.class); // 取得注释对象
-        if (annotation == null) {
+        if ( annotation == null || hasTimestampArg(args) ) {
         	return invocation.proceed(); /* 如果没有配置缓存，则直接执行方法并返回结果 */
         }
  
@@ -73,4 +74,15 @@ public class CacheInterceptor implements MethodInterceptor {
  
         return returnVal;
     }
+
+	public static boolean hasTimestampArg(Object[] args) {
+		boolean hasTimestampArg = false;
+        for( Object arg : args ) {
+        	if ( arg instanceof Long && EasyUtils.isTimestamp((Long) arg) ) {
+        		hasTimestampArg = true;
+        		break;
+        	}
+        }
+		return hasTimestampArg;
+	}
 }

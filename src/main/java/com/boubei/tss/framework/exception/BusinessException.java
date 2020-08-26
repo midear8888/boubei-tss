@@ -22,6 +22,11 @@ public class BusinessException extends RuntimeException implements IBusinessExce
         this(msg, false);
     }
     
+    public BusinessException(String msg, Object code) {
+        this(msg, false);
+        this.errorCode = code;
+    }
+    
     public BusinessException(String msg, boolean neddPrint) {
         super(msg);
         this.neddPrint = neddPrint;
@@ -35,6 +40,11 @@ public class BusinessException extends RuntimeException implements IBusinessExce
      * 是否打印异常stack
      */
     private boolean neddPrint = true;
+    
+    /**
+     * 错误编码
+     */
+    private Object errorCode;
 
 	public boolean needPrint() {
 		return this.neddPrint;
@@ -43,4 +53,8 @@ public class BusinessException extends RuntimeException implements IBusinessExce
     public boolean needRelogin() {
         return false;
     }
+
+	public Object errorCode() {
+		return errorCode;
+	}
 }

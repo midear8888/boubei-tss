@@ -20,6 +20,7 @@ import com.boubei.tss.modules.param.Param;
 import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.modules.param.ParamService;
+import com.boubei.tss.util.EasyUtils;
 
 public class CacheHelper {
 	
@@ -47,10 +48,12 @@ public class CacheHelper {
 	 * 按照关键字刷新指定缓存池中的对象
 	 */
 	public static void flushCache(String poolName, String likeKey) {
+		if( EasyUtils.isNullOrEmpty(likeKey) ) return;
+		
 		Pool pool = JCache.getInstance().getPool(poolName);
 		Set<Object> keys = pool.listKeys();
 		for(Object _key : keys) {
-			if(_key.toString().indexOf(likeKey) >= 0) {
+			if( _key.toString().indexOf(likeKey) >= 0) {
 				pool.destroyByKey(_key);
 			}
 		}

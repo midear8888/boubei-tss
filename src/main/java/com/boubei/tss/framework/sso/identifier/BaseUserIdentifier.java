@@ -23,12 +23,12 @@ import com.boubei.tss.framework.sso.SSOConstants;
 import com.boubei.tss.framework.sso.TokenUtil;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.sso.online.OnlineUserManagerFactory;
+import com.boubei.tss.framework.web.display.xmlhttp.XmlHttpEncoder;
+import com.boubei.tss.um.entity.User;
+import com.boubei.tss.util.MathUtil;
 
 /**
- * <p>
  * 身份认证器超类
- * </p>
- *
  */
 public abstract class BaseUserIdentifier implements IUserIdentifier {
     
@@ -52,6 +52,18 @@ public abstract class BaseUserIdentifier implements IUserIdentifier {
         // 注册到在线用户库
 		OnlineUserManagerFactory.getManager().register(token, appCode, sessionId, userId, userName);
 		return new IdentityCard(token, operator);
+	}
+	
+
+	/*
+	 *  产生一个登录随机数给客户端，客户端使用该随机数对账号和密码进行加密后再传回后台
+	 */
+	public Object before(User user, XmlHttpEncoder encoder, HttpSession session) {
+        int randomKey = MathUtil.randomInt(10000);
+        encoder.put(SSOConstants.RANDOM_KEY, randomKey);
+        session.setAttribute(SSOConstants.RANDOM_KEY, randomKey);
+        
+        return randomKey;
 	}
 
 	/**

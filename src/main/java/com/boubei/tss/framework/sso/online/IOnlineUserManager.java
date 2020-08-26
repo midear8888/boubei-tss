@@ -13,13 +13,14 @@ package com.boubei.tss.framework.sso.online;
 
 /**
  * 在线用户管理类接口
- * 
+ * <pre>
  * 在线用户库和用户令牌都是用户单点登陆的重要组成：前者记录用户的登陆信息，后者则是表明用户身份的唯一凭证。
  * 在线用户库的工作原理是：
  * （1）当用户第一次成功登陆平台应用时，将会用登陆生成的Token针对当前应用在在线用户库中注册一条信息。
  * （2）当访问其它应用时，先检测携带的token是否已经在在线用户库中注册过，如果有，则说明用户已经在其它应用登陆过，同时也用Token为该应用也注册一条信息。
  * （3）当用户退出某个应用时，删除Token在这个应用的注册信息，同时检测是否还有其它应用在线，如果没有了，则从在线用户库移除本Token。
  * （4）当session过期时，操作和第三步一样。
+ * </pre>
  */
 public interface IOnlineUserManager {
 
@@ -45,24 +46,15 @@ public interface IOnlineUserManager {
     void register(String token, String appCode, String sessionId, Long userId, String userName);
 
     /**
-     * <p>
+     * <pre>
      * 销毁在线用户或访问应用：根据应用Code，SessionId销毁相应的记录。
      * 用于session超时时自动注销。
      * 注：一次只注销一个应用，即一次登录、多次登出，因为在每个应用都生成了一个不同的token（给了多把钥匙，一把把归还）。
      * SessionDestroyedListener，此监听器会在session超时时自动销毁在线用户信息。
-     * </p>
+     * </pre>
      *
      * @param appCode
      * @param sessionId
      */
     String logout(String appCode, String sessionId);
-    
-    /**
-     * 根据用户一次性注销在所有应用的全部登陆信息。
-     * 用于用户手动退出。
-     * 
-     * @param userId
-     * @return
-     */
-    void logout(Long userId);
 }

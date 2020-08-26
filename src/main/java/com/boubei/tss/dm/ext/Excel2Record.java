@@ -104,7 +104,7 @@ public class Excel2Record implements AfterUpload {
 					types.add( getCellType(cell) );
 				}
 				else {
-					if (i == 1) {
+					if (i == 1 && cell != null) {
 						types.set(j, getCellType(cell) );
 					}
 					row.add( ExcelPOI.getCellVal(cell, i, j) );

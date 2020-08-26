@@ -16,6 +16,8 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 
+import com.boubei.tss.dm.record.ARecordTable;
+
 /**
  * DAO的一些基本方法
  * 
@@ -45,6 +47,13 @@ public interface IDao<T extends IEntity> {
     Object createObject(Object entity);
     
     Object createObjectWithoutFlush(Object entity);
+    
+    /**
+     * 新增修改 录入表对象，修复create、domain等信息。在Dao里调用 （service调dao的，拦截器OperateInfoInterceptor已经处理了）  
+     */
+    Object createRecordObject(ARecordTable entity);
+    
+    Object updateRecordObject(ARecordTable entity);
 
     /**
      * 更新实体，merge  

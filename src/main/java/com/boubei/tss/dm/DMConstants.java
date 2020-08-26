@@ -19,7 +19,8 @@ public final class DMConstants {
 	
 	public final static String LOCAL_CONN_POOL = "connectionpool";
 	
-	public final static String USER_ID      = "userId";
+	public final static String USER_ID_L    = "_userId";
+	public final static String USER_ID_S    = "userId";
 	public final static String USER_CODE    = "userCode";
 	public final static String FROM_USER_ID = "fromUserId";
 	

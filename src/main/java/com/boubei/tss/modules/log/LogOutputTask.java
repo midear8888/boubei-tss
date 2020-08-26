@@ -17,6 +17,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import com.boubei.tss.framework.persistence.connpool.Output2DBTask;
+import com.boubei.tss.framework.sso.Anonymous;
 import com.boubei.tss.util.EasyUtils;
 
 /** 
@@ -36,7 +37,7 @@ public class LogOutputTask extends Output2DBTask implements Serializable {
             Log dto = (Log) temp;
             
             int index = 1;
-            pstmt.setLong  (index++, (Long) EasyUtils.checkNull(dto.getOperatorId(), 0L));
+            pstmt.setLong  (index++, (Long) EasyUtils.checkNull(dto.getOperatorId(), Anonymous._ID));
             pstmt.setString(index++, dto.getOperatorName());
             pstmt.setString(index++, dto.getOperatorIP());
             pstmt.setString(index++, dto.getOperationCode());

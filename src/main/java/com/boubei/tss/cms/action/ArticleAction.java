@@ -11,9 +11,7 @@
 package com.boubei.tss.cms.action;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,9 +84,8 @@ public class ArticleAction extends BaseActionSupport {
         
         // 默认的文章发布日期及过期日期
         initMap.put("issueDate", DateUtil.format(new Date()));
-        Calendar calendar = new GregorianCalendar();
-        calendar.add(Calendar.YEAR, 1); // 默认一年后过期
-        initMap.put("overdueDate", DateUtil.format(calendar.getTime()));
+        // 默认一年后过期
+        initMap.put("overdueDate", DateUtil.format(DateUtil.addYears(1)));
         
         XFormEncoder articleInfoXForm = new XFormEncoder(CMSConstants.XFORM_ARTICLE, initMap);
  

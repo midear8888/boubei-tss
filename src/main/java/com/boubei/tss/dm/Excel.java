@@ -27,6 +27,7 @@ public abstract class Excel {
 	public static String CSV_FIX = ".csv";
 	public static String XLS_FIX = ".xls";
 	public static String XLSX_FIX = ".xlsx";
+	public static String HIDDEN = "HIDDEN";
 	
 	public static boolean isCSV(String filepath) {
 		return filepath.toLowerCase().endsWith( CSV_FIX );
@@ -40,7 +41,7 @@ public abstract class Excel {
 	
 	
 	public static String csv2Excel(String sourceFile) {
-		return csv2Excel(sourceFile, DataExport.CSV_GBK);
+		return csv2Excel(sourceFile, DataExport.SYS_CHAR_SET);
 	}
 	
 	public static String csv2Excel(String sourceFile, String charSet) {
@@ -48,7 +49,7 @@ public abstract class Excel {
 	}
 	
 	public static String excel2CSV(String sourceFile) {
-		return excel2CSV(sourceFile, DataExport.CSV_GBK);
+		return excel2CSV(sourceFile, DataExport.SYS_CHAR_SET);
 	}
 	
 	@SuppressWarnings("unchecked")

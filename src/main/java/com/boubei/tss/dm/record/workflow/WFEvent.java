@@ -10,13 +10,17 @@
 
 package com.boubei.tss.dm.record.workflow;
 
+import java.util.Map;
+
 import com.boubei.tss.dm.ddl._Database;
 
 /**
  * 流程自定义监听事件
+ * 
+ * wfEventClass:=com.boubei.xx.xx
  */
 public interface WFEvent {
 	
-	void after( WFStatus wfStatus, _Database db );
+	void after( Map<String, Object> item, WFStatus wfStatus, _Database db );
 
 }

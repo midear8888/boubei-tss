@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.boubei.tss.cache.extension.CacheHelper;
+import com.boubei.tss.cache.extension.CacheLife;
 import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.record.permission.RecordPermission;
@@ -87,7 +88,11 @@ public class RecordAction extends BaseActionSupport {
     		String name = record.getName();
 			Long pId = record.getParentId();
 			String icon = record.getIcon();
-			result.add(new Object[] { id, name, pId, record.getType(), "record", icon, EasyUtils.obj2Int(countMap.get(id)) });
+			int wfCount = EasyUtils.obj2Int(countMap.get(id));
+			String pageHelp = DMUtil.getExtendAttr(record.getRemark(), "page_help");
+			String pageCode = DMUtil.getExtendAttr(record.getRemark(), "page_code");
+			String pageUrl  = record.getCustomizePage();
+			result.add(new Object[] { id, name, pId, record.getType(), "record", icon, wfCount, pageHelp, pageCode, pageUrl });
     	}
     	
     	return result;
@@ -133,7 +138,7 @@ public class RecordAction extends BaseActionSupport {
             map.put("type", type);
             map.put("table", defaultTable);
             map.put("needLog", ParamConstants.TRUE);
-            map.put("needFile", ParamConstants.TRUE);
+            map.put("needFile", ParamConstants.FALSE);
             map.put("batchImp", ParamConstants.TRUE);
             map.put("showCreator", ParamConstants.TRUE);
             xformEncoder = new XFormEncoder(uri, map);
@@ -159,8 +164,7 @@ public class RecordAction extends BaseActionSupport {
         } 
         else {
         	recordService.updateRecord(record);
-        	String cacheKey = "_db_record_" + record.getId();
-    		CacheHelper.getLongCache().destroyByKey(cacheKey);
+    		CacheHelper.flushCache(CacheLife.LONG.toString(), "_db_record_" + record.getId());
         }
         
         doAfterSave(isnew, record, "SourceTree");
@@ -182,6 +186,7 @@ public class RecordAction extends BaseActionSupport {
     		commService.create(wfDefine);
     	}
     	
+    	CacheHelper.flushCache(CacheLife.LONG.toString(), "_db_record_" + recordId);
     	return wfDefine;
     }
     

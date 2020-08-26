@@ -30,7 +30,7 @@ public class _SQLServer extends _Database {
 
 	public void createTable() {		
 		StringBuffer createDDL = new StringBuffer("create table " + table + " ( ");
-   		for(Map<Object, Object> fDefs : fields) {
+   		for(Map<String, Object> fDefs : fields) {
 			createDDL.append( getFiledDef(fDefs, false) ).append( ", " );
    		}
    		

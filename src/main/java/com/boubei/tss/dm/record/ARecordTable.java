@@ -18,16 +18,16 @@ import javax.persistence.Version;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
-import com.boubei.tss.framework.persistence.IEntity;
 import com.boubei.tss.framework.persistence.entityaop.IOperatable;
 import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
 
 /**
  * 数据用录入模块来维护，但也配以实体类。
  */
 @MappedSuperclass
-public abstract class ARecordTable implements IEntity, IOperatable {
+public abstract class ARecordTable implements IOperatable {
 	
 	protected String domain;
     
@@ -38,6 +38,10 @@ public abstract class ARecordTable implements IEntity, IOperatable {
     
     @Version
     private Integer version = 0;
+    
+    public void copy(ARecordTable from) {
+    	BeanUtil.copy(this, from, "id,domain,version,creator,createTime,updator,updateTime,creatorId,creatorName,updatorId,updatorName".split(","));
+    }
     
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
@@ -106,14 +110,14 @@ public abstract class ARecordTable implements IEntity, IOperatable {
 	}
 
 	public void setCreatorName(String creatorName) {
-		this.setCreator( Environment.getUserCode() );
+		this.setCreator( Environment.getNotnullUserCode() );
 	}
 
 	public void setUpdatorId(Long updatorId) {
 	}
 
 	public void setUpdatorName(String updatorName) {
-		this.setUpdator( Environment.getUserCode() );
+		this.setUpdator( Environment.getNotnullUserCode() );
 	}
 }
 

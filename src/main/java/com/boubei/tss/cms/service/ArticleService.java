@@ -33,6 +33,7 @@ import com.boubei.tss.cms.helper.ArticleHelper;
 import com.boubei.tss.cms.helper.ArticleQueryCondition;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.pagequery.PageInfo;
+import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
  
@@ -59,7 +60,8 @@ public class ArticleService implements IArticleService {
         long fileSize = file.length();
         
         // 将附件从上传临时目录剪切到站点指定的附件目录里
-        String fileName = FileHelper.copyFile(siteRootDir, file); 
+        String filePath = FileHelper.copyFile(siteRootDir, file);
+		String fileName = new File(filePath).getName(); 
 		String fileSuffix = FileHelper.getFileSuffix(fileName);
 		
 		// file指向剪切后的地址
@@ -78,16 +80,10 @@ public class ArticleService implements IArticleService {
 		
 		String filepath = file.getPath();
 
-		/* 缩略图质量太差
-		if (attachment.isImage()) { // 如果是图片，则为其制作缩略图
-			try {
-				filepath = new ImageProcessor(filepath).resize(0.68);
-			} catch (Exception e) {
-				log.error("制作附近图片的缩略图失败。", e);
-				filepath = file.getPath(); // 如果缩略失败，则还是采用原图片
-			}
+		/* 如果是图片，则为其制作缩略图 */
+		if (attachment.isImage()) {
+//			filepath = Imager.markSLPic( file, 100 );
 		}
-		*/
 
 		String year = new SimpleDateFormat("yyyy").format(new Date());
 		int index = filepath.indexOf(year);
@@ -131,7 +127,7 @@ public class ArticleService implements IArticleService {
 	}
  
     public void updateArticle(Article article, Long channelId, String attachList) {
-    	
+    	article.setDomain(Environment.getDomain());
         articleDao.update(article);
         
         if(channelId == null) return; // 不关心附件的增删

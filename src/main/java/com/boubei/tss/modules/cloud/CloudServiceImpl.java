@@ -11,18 +11,15 @@ T * Created [2016-06-22] by Jon.King
 package com.boubei.tss.modules.cloud;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -41,24 +38,22 @@ import com.boubei.tss.modules.cloud.pay.AbstractProduct;
 import com.boubei.tss.modules.cloud.pay.AfterPayService;
 import com.boubei.tss.modules.cloud.pay.ModuleOrderHandler;
 import com.boubei.tss.modules.param.ParamConstants;
+import com.boubei.tss.portal.PortalConstants;
 import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.entity.RoleUser;
 import com.boubei.tss.um.entity.SubAuthorize;
 import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.service.IUserService;
-import com.boubei.tss.util.BeanUtil;
+import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 
 @SuppressWarnings("unchecked")
 @Service("CloudService")
 public class CloudServiceImpl implements CloudService, AfterPayService {
 
-	@Autowired
-	ICommonDao commonDao;
-	@Autowired
-	IUserService userService;
-	@Autowired
-	APIService apiService;
+	@Autowired ICommonDao commonDao;
+	@Autowired IUserService userService;
+	@Autowired APIService apiService;
 
 	protected Logger log = Logger.getLogger(this.getClass());
 
@@ -70,6 +65,7 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 
 		// 创建 ModuleUser映射关系
 		ModuleUser mu = new ModuleUser(user, module);
+		mu.setIsBuy(ParamConstants.FALSE);
 		mu.setDomain(Environment.getDomainOrign());
 
 		commonDao.create(mu);
@@ -77,18 +73,18 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 		// 生成一个转授策略
 		SubAuthorize sa = new SubAuthorize();
 		sa.setName(def.getId() + "_" + def.getModule() + "_" + user + "_try"); /* name:模块ID_模块名称_购买人_购买序号 */
-		sa.setStartDate(new Date());
+		sa.setModuleId(def.getId());
+		sa.setStartDate( DateUtil.today() );
 		sa.setOwnerId(Environment.getUserId());
 		sa.setBuyerId(Environment.getUserId());
 
-		Calendar calendar = new GregorianCalendar();
 		Object try_days = EasyUtils.checkNull(def.getTry_days(), 31);
-		calendar.add(Calendar.DAY_OF_YEAR, EasyUtils.obj2Int(try_days));
-		sa.setEndDate(calendar.getTime());
+		sa.setEndDate( DateUtil.addDays( EasyUtils.obj2Int(try_days) ) );
 		commonDao.create(sa);
 
 		// 设置转授权限给当前域管理员
-		for (Long roleId : def.roles()) {
+		List<Long> roles = def.resourcelist("roles");
+		for (Long roleId : roles) {
 			RoleUser ru = new RoleUser();
 			ru.setRoleId(roleId);
 			ru.setUserId(user);
@@ -104,7 +100,7 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 	 * 检查当前用户是否为域管理员，只有域管理员可以选择或取消功能模块
 	 */
 	private void checkIsDomainAdmin() {
-		if (!Environment.isDomainUser()) {
+		if (!Environment.isDomainAdmin()) {
 			throw new BusinessException(EX.MODULE_1);
 		}
 	}
@@ -112,25 +108,34 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 	/**
 	 * 域用户选择模块后，获得了模块所含的角色；当模块新添加了角色后，自动刷给域用户。
 	 * 避免域用户需要重新选择模块才能获取新角色（先【结束试用】，再【我要试用】）
-	 * 注：模块角色减少时，本方法只能去掉域管理员的角色；域管理员也已经把角色授给了其它域成员的话，则无法收回
 	 */
-	public void refreshModuleUserRoles(Long module) {
-		// 模块被多少域用户购买使用
-		List<Long> userIds = (List<Long>) commonDao.getEntities("select userId from ModuleUser where moduleId = ?", module);
-		List<RoleUser> ruList = (List<RoleUser>) commonDao.getEntities("from RoleUser where moduleId = ?", module);
-		String hql3 = "select id from SubAuthorize where name like ? and buyerId = ?";
-
-		ModuleDef def = (ModuleDef) commonDao.getEntity(ModuleDef.class, module);
-		for (Long roleId : def.roles()) {
-			for (Long domainUserId : userIds) {
-
-				// 当前域用户已经获得的模块策略
-				List<Long> strategyIds = (List<Long>) commonDao.getEntities(hql3, module + "_%", domainUserId);
-				for (Long strategyId : strategyIds) {
+	public void refreshModuleUserRoles(Long moduleID) {
+		
+		ModuleDef def = (ModuleDef) commonDao.getEntity(ModuleDef.class, moduleID);
+		List<Long> roles = def.resourcelist("roles");
+		
+		// 模块角色减少时，本方法只能去掉域管理员的角色；域管理员也已经把角色授给了其它域成员的话，则无法收回
+		List<RoleUser> ruList = (List<RoleUser>) commonDao.getEntities("from RoleUser where moduleId = ?", moduleID);
+		for(Iterator<RoleUser> it = ruList.iterator(); it.hasNext();) {
+			RoleUser ru = it.next();
+			if( !roles.contains(ru.getRoleId()) ) {
+				commonDao.delete(ru);
+				it.remove();
+			}
+		}
+		
+		// 模块已被多少域用户购买使用
+		List<Long> userIds = (List<Long>) commonDao.getEntities("select userId from ModuleUser where moduleId = ?", moduleID);
+		String hql3 = "select id from SubAuthorize where moduleId = ? and buyerId = ?";
+		for (Long domainUserId : userIds) {
+			// 当前域用户已经获得的模块策略
+			List<Long> strategyIds = (List<Long>) commonDao.getEntities(hql3, moduleID, domainUserId);
+			for (Long strategyId : strategyIds) {
+				for (Long roleId : roles) {
 					RoleUser ru = new RoleUser();
 					ru.setRoleId(roleId);
 					ru.setUserId(domainUserId);
-					ru.setModuleId(module);
+					ru.setModuleId(moduleID);
 					ru.setStrategyId(strategyId);
 
 					if (!ruList.contains(ru)) {
@@ -144,7 +149,7 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 	public void unSelectModule(Long user, Long module) {
 		checkIsDomainAdmin();
 
-		// 不能删除购买获得的策略（按照策略的命名判断）
+		// 不能删除购买获得的策略（按照策略的命名判断，"_try"结尾）
 		String hql = "from SubAuthorize where name like ?";
 		List<?> list = commonDao.getEntities(hql, module + "\\_%\\_" + user + "_try");
 		if(list.size() > 0) {
@@ -152,11 +157,8 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 			commonDao.deleteAll(commonDao.getEntities("from RoleUser where strategyId=?", sa.getId()));
 			commonDao.delete(sa);
 			
-			// 使用策略删除后，没有其他的RoleUser了，则删除 ModuleUser
-			List<?> temp = commonDao.getEntities("from RoleUser where userId=? and moduleId=?", user, module);
-			if( temp.isEmpty() ) {
-				commonDao.deleteAll(commonDao.getEntities("from ModuleUser where userId=? and moduleId=?", user, module));
-			}
+			// 删除选择试用产生的ModuleUser
+			commonDao.deleteAll(commonDao.getEntities("from ModuleUser where userId=? and moduleId=? and isBuy=0", user, module));
 		}
 	}
 
@@ -172,55 +174,36 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 	}
 
 	public Set<Long> limitReports() {
-		String domain = Environment.getDomain();
-		Set<Long> reports = new LinkedHashSet<Long>();
-		
-		String hql = "from ModuleDef where id in (select moduleId from ModuleUser where domain = ?)";
-		String hql1 = "select distinct p.resourceId from ReportPermission p  where p.operationId = ? and p.roleId in ("; 
-		
-		List<ModuleDef> list = (List<ModuleDef>) commonDao.getEntities(hql, domain);
-		List<Long> ownRoles = new ArrayList<>(Environment.getOwnRoles());
-		for(ModuleDef md : list) {
-			String roles = (String) EasyUtils.checkNull( md.getRoles(), "-999");
-			
-			// 查出模块 roles 拥有查看权限的所有报表、录入表，如果模块没有单独指定报表、录入表列表，则取roles所有
-			if( md.reports().isEmpty() ) {
-				reports.addAll( (List<Long>) commonDao.getEntities( hql1 + roles+ ")", Report.OPERATION_VIEW) );
-			} else {
-				reports.addAll( md.reports() );
-			}
-			
-			String[] _roles = roles.split(",");
-			for(String _role: _roles) {
-				ownRoles.remove( EasyUtils.obj2Long(_role) );
-			}
-		}
-		
-		String roles = (String) EasyUtils.checkNull( EasyUtils.list2Str(ownRoles), "-999");
-		reports.addAll( (List<Long>) commonDao.getEntities( hql1 + roles+ ")", Report.OPERATION_VIEW) );
-
-		return reports;
+		return limitResources("ReportPermission", "reports", "rp_", Report.OPERATION_VIEW);
 	}
 	
 	public Set<Long> limitRecords() {
+		return limitResources("RecordPermission", "records", "rc_", Record.OPERATION_VDATA, Record.OPERATION_CDATA);
+	}
+	
+	public Set<Long> limitMenus() {
+		return limitResources("NavigatorPermission", "menus", "menu_", PortalConstants.NAVIGATOR_VIEW_OPERRATION);
+	}
+	
+	private Set<Long> limitResources(String permissionTable, String rType, String prefix, String... opts) {
+		Set<Long> result = new LinkedHashSet<Long>();
+		String hql1 = "select distinct p.resourceId from " +permissionTable+ " p  where p.operationId = ? and p.roleId in ("; 
+		
 		String domain = Environment.getDomain();
-		Set<Long> records = new LinkedHashSet<Long>();
-		
-		String hql = "from ModuleDef where id in (select moduleId from ModuleUser where domain = ?)";
-		String hql2 = "select distinct p.resourceId from RecordPermission p  where p.operationId = ? and p.roleId in ("; 
-		
-		List<ModuleDef> list = (List<ModuleDef>) commonDao.getEntities(hql, domain);
-		List<Long> ownRoles = new ArrayList<>(Environment.getOwnRoles());
+		List<ModuleDef> list = queryDomainModules(domain);
+		List<Long> ownRoles = new ArrayList<>(Environment.getOwnRoles()); // clone 一份角色列表
 		for(ModuleDef md : list) {
 			String roles = (String) EasyUtils.checkNull( md.getRoles(), "-999");
+			roles += "," + EasyUtils.checkNull( md.getRoles_free(), "-999"); 
 			
-			// 查出模块 roles 拥有查看权限的所有报表、录入表，如果模块没有单独指定报表、录入表列表，则取roles所有
-			if( md.records().isEmpty() ) {
-				String _hql2 =  hql2 + roles+ ")"; 
-				records.addAll(  (List<Long>) commonDao.getEntities( _hql2, Record.OPERATION_VDATA)  );
-				records.addAll(  (List<Long>) commonDao.getEntities( _hql2, Record.OPERATION_CDATA)  );
+			// 查出模块 roles 拥有查看权限的所有菜单，如果模块没有单独指定菜单，则取roles所有
+			List<Long> rList = md.resourcelist(rType);
+			if( rList.isEmpty() ) {
+				for( String opt : opts) {
+					result.addAll( (List<Long>) commonDao.getEntities( hql1 + roles+ ")", opt) );
+				}
 			} else {
-				records.addAll( md.records() );
+				result.addAll( rList );
 			}
 			
 			String[] _roles = roles.split(",");
@@ -230,24 +213,62 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 		}
 		
 		String roles = (String) EasyUtils.checkNull( EasyUtils.list2Str(ownRoles), "-999");
+		for( String opt : opts) {
+			result.addAll( (List<Long>) commonDao.getEntities( hql1 + roles+ ")", opt) ); // 模块以外的角色，直接授予的
+		}
 		
-		String _hql2 =  hql2 + roles+ ")"; 
-		records.addAll( (List<Long>) commonDao.getEntities( _hql2, Record.OPERATION_VDATA) );
-		records.addAll( (List<Long>) commonDao.getEntities( _hql2, Record.OPERATION_CDATA) );
-	        
-		return records;
+		filterByDomain(domain, result, prefix);
+		return result;
+	}
+	
+	/*  
+	 * 需要有效期内的策略对应的 模块：
+	 * eg：A同时购买了E8财务版 和 E8高级版，都有财务角色，但财务版限制了部分功能；现高级版策略已经到期，则只保留财务版的功能.
+	 * */
+	private List<ModuleDef> queryDomainModules(String domain) {
+		String hql = "from ModuleDef where id in (select moduleId from ModuleUser where domain = ?) "
+				+ " and id in ( select sa.moduleId from SubAuthorize sa where ? in (sa.buyerId,sa.ownerId) and sa.endDate > now() ) ";
+		Object userId = Environment.getNotnullUserId();
+		List<ModuleDef> list = (List<ModuleDef>) commonDao.getEntities(hql, domain, userId);
+		
+		return list;
+	}
+	
+	/**
+	 * 按域信息里配置的资源菜单黑（白）名单，二次过滤角色授予及Module里定义的资源列表；
+	 * 优先级：黑名单 > 白名单
+	 * 
+	 * 白名单：适合放不在模块里的发布的定制菜单，直接授予角色和域即可
+	 */
+	private void filterByDomain(String domain, Set<Long> resources, String tag) {
+		String white_list = (String) Environment.getDomainInfo("white_list");
+		String[] white_lists = EasyUtils.checkNull(white_list, "-999").toString().split(",");
+		for(String rid : white_lists) {
+			resources.add( EasyUtils.str2Long(rid.replaceFirst(tag, "")) );
+		}
+		
+		String black_list = (String) Environment.getDomainInfo("black_list");
+		String[] black_lists = EasyUtils.checkNull(black_list, "-999").toString().split(",");
+		for(String rid : black_lists) {
+			resources.remove( EasyUtils.str2Long(rid.replaceFirst(tag, "")) );
+		}
 	}
 	
 	/************************************* cloud order **************************************/
 
 	public CloudOrder createOrder(CloudOrder co) {
+		return createOrder(co, false);
+	}
+	
+	public CloudOrder createOrder(CloudOrder co,Boolean forceRegister) {
 		Map<String, String> map = new HashMap<>();
-		try { map = new ObjectMapper().readValue(co.getParams(), HashMap.class); } catch (Exception e) { }
+		try { 
+			map = EasyUtils.json2Map(co.getParams()); 
+		} catch (Exception e) { }
 
-		Boolean isNewUser = false;
-		// 自注册账号
-		if (Environment.isAnonymous()) {
-			isNewUser = selfRegister(co, map);
+		boolean isNewUser = false;
+		if (Environment.isAnonymous() || forceRegister) {
+			isNewUser = selfRegister(co, map); // 新注册购买
 		}
 
 		// for 购买时补充填写用户信息
@@ -263,25 +284,25 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 		commonDao.update(user);
 		
 		// 模拟登录
-		if(Environment.isAnonymous()){
+		if( Environment.isAnonymous()) {
 			apiService.mockLogin(userCode);
 		}
-
 		co.setCreator(userCode);
 		co.setType( (String) EasyUtils.checkNull(co.getType(), ModuleOrderHandler.class.getName()) );
+		
 		AbstractProduct product = AbstractProduct.createBean(co);
 		product.beforeOrder();
-
 		co.setProduct(product.getName());
+		
 		co.setStatus(CloudOrder.NEW);
 		co.setOrder_date(new Date());
 		co = (CloudOrder) commonDao.create(co);
 		
 		co.setOrder_no(co.getOrder_date().getTime() + "-" + co.getId());
-		if (co.getModule_id() != null) {
-			calMoney(co); // 价格以后台计算为准，防止篡改（同时检查前后台的报价是否一致）
-		}
+		co.setCreator(userCode);
 		
+		commonDao.update(co);
+
 		// 如果是下单生成的自注册新用户，则先停用，支付后启用
 		if( isNewUser || UMConstants.SELF_REGISTER_GROUP_ID.equals(Environment.getUserGroupId()) ){
 			user.setDisabled(ParamConstants.TRUE);
@@ -294,13 +315,14 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 	private Boolean selfRegister(CloudOrder mo, Map<String, String> map) {
 		// 校验短信验证码smsCode
 		String smsCode = map.get("smsCode");
-		String mobile = map.get("phone");
-		if (EasyUtils.isNullOrEmpty(smsCode) || !AbstractSMS.create().checkCode(mobile, smsCode)) {
-			throw new BusinessException("短信验证码校验失败，请重新输入。");
+		String mobile  = map.get("phone");
+		if (mo.checkSMS) {
+			if (EasyUtils.isNullOrEmpty(smsCode) || !AbstractSMS.create().checkCode(mobile, smsCode)) {
+				throw new BusinessException("短信验证码校验失败，请重新输入。");
+			}
 		}
 
 		List<?> users = commonDao.getEntities(" from User where ? in (loginName, telephone, email)", mobile);
-
 		if (users.size() > 0) {
 			return false;
 		}
@@ -313,28 +335,10 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 		user.setUserName(mobile);
 		user.setPassword(map.get("password"));
 		userService.regUser(user, true);
+		user.setOrigin("云注册");
 		return true;
 	}
 
-	public CloudOrder calMoney(CloudOrder co) {
-		ModuleDef md = (ModuleDef) commonDao.getEntity(ModuleDef.class, co.getModule_id());
-
-		co.setPrice(md.getPrice());
-
-		Map<String, Object> params = BeanUtil.getProperties(co);
-		Double money = EasyUtils.eval(md.getPrice_def(), params);
-
-		if (co.getRebate() != null) {
-			money *= co.getRebate();
-		}
-		if (co.getDerate() != null) {
-			money -= co.getDerate();
-		}
-
-		co.setMoney_cal((double) Math.round(money * 100) / 100);
-
-		return co;
-	}
 
 	public void handle(String order_no, Double real_money, String payer, String payType, Map<?, ?> trade_map) {
 		AbstractProduct iAfterPay = AbstractProduct.createBean(order_no);
@@ -346,17 +350,69 @@ public class CloudServiceImpl implements CloudService, AfterPayService {
 		sa.setOwnerId(userId);
 		commonDao.update(sa);
 
-		List<?> ruIDList = Arrays.asList(ruIds.split(","));
-
-		List<RoleUser> rus = (List<RoleUser>) commonDao.getEntities(" from RoleUser where strategyId = ?", strategyId);
-		for (RoleUser ru : rus) {
-			if (ruIDList.contains(ru.getId().toString())) {
-				ru.setUserId(userId);
-			} else {
-				ru.setUserId(sa.getBuyerId());
+		List<RoleUser> rus = new ArrayList<>();
+		List<Long> ruIDList = new ArrayList<>();
+		
+		String[] _ruIds = ruIds.split(",");
+		for(String _ruId : _ruIds) {
+			Long ruId = EasyUtils.obj2Long(_ruId);
+			Object ru = commonDao.getEntity(RoleUser.class, ruId);
+			if( ru != null ) {
+				ruIDList.add( ruId );
+				rus.add( (RoleUser) ru ); // 让打钩的排前面，排后面会导致冗余的删不掉
 			}
-			commonDao.update(ru);
+		}
+		Object exclude = EasyUtils.checkTrue(ruIDList.isEmpty(), "", " and id not in(" +ruIds+ ")");
+		rus.addAll( (List<RoleUser>) commonDao.getEntities("from RoleUser where strategyId = ? " + exclude, strategyId) );
+		
+		// 剔除掉冗余的RoleUser记录
+		Map<String, RoleUser> map = new HashMap<>();
+		
+		for (RoleUser ru : rus) {
+			String key = ru.getModuleId() + "-" + ru.getStrategyId() + "-" + ru.getRoleId();
+			if (ruIDList.contains(ru.getId())) {
+				ru.setUserId(userId);
+				commonDao.update(ru);
+			} 
+			else {
+				if( map.containsKey(key) ) {
+					commonDao.delete(ru);
+				} else {
+					ru.setUserId(null);
+					commonDao.update(ru);
+				}
+			}
+			map.put(key, ru);
 		}
 	}
+	
+	public void fastCreateModuleUser(String user_name, String phone, Long moduleId, Long logistics_id) {
+		CloudOrder co = new CloudOrder();
+		co.setAccount_num(1);
+		co.setMonth_num(500);
+		co.setModule_id(moduleId);
+		co.setMoney_cal(0D);
+		
+		ModuleDef md = (ModuleDef) commonDao.getEntity(ModuleDef.class, moduleId);
+		co.setType(md.getProduct_class());
+		
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("phone", phone);
+		params.put("password", phone);
+		params.put("user_name", user_name);
+		params.put("company_name", user_name);
+		params.put("logistics_id", logistics_id.toString());
+		co.setParams(EasyUtils.obj2Json(params));
+		
+		co.checkSMS = false;
+		createOrder(co, true);
 
+		// 自动支付 admin支付
+		Double money_real = 0D;
+		co.setMoney_real(money_real);
+		co.singleSubAuthorize = true;
+		
+		AbstractProduct iAfterPay = AbstractProduct.createBean(co);
+		iAfterPay.afterPay(null, money_real, AbstractProduct.ADMIN_PAYER, "线下");
+	}
 }

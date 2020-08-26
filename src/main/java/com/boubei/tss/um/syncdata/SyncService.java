@@ -16,11 +16,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.boubei.tss.cache.extension.CacheHelper;
+import com.boubei.tss.cache.extension.CacheLife;
 import com.boubei.tss.modules.progress.Progress;
 import com.boubei.tss.modules.progress.Progressable;
 import com.boubei.tss.um.UMConstants;
@@ -43,6 +46,8 @@ import com.boubei.tss.util.XMLDocUtil;
 @Service("SyncService")
 public class SyncService implements ISyncService, Progressable {
 	
+	protected Logger log = Logger.getLogger(this.getClass());
+	
 	@Autowired private IUserDao  userDao;
     @Autowired private IGroupDao  groupDao;
     @Autowired private ResourcePermission resourcePermission;
@@ -62,10 +67,13 @@ public class SyncService implements ISyncService, Progressable {
         Map<String, Long> idMapping = new HashMap<String, Long>();
         
         // 取已经同步的用户组. 设置父子节点关系时用到（其实只需'同步节点'的父节点 ＋ 子枝）
-        List<?> allGroups = groupDao.getEntitiesByNativeSql("select t.* from um_group t where t.fromGroupId is not null ", Group.class); 
+        List<?> allGroups = groupDao.getEntitiesByNativeSql("select t.* from um_group t ", Group.class); 
         for(Iterator<?> it = allGroups.iterator();it.hasNext();){
             Group group = (Group)it.next();
-            idMapping.put(group.getFromGroupId(), group.getId());
+            Long groupId = group.getId();
+            String fromGroupId = group.getFromGroupId();
+			fromGroupId = EasyUtils.checkNull(fromGroupId, groupId).toString(); // 没有fromGroupId，则取自己
+			idMapping.put(fromGroupId, groupId);
         }
 
         Group mainGroup = groupDao.getEntity(mainGroupId);
@@ -107,6 +115,9 @@ public class SyncService implements ISyncService, Progressable {
         
         syncGroups(groups, idMapping, progress, domain);
         syncUsers (users, idMapping, progress);
+        
+        // 刷新缓存
+        CacheHelper.flushCache(CacheLife.SHORTER.toString(), "getUsers");
         
         return "group num = " + groups.size() + ", user num = " + users.size();
     }
@@ -173,47 +184,20 @@ public class SyncService implements ISyncService, Progressable {
             userDto.setDisabled(userDto.getDisabled());
             
             // 如果用户登陆名相同，只保存第一个
-            if(loginNames.contains(userDto.getLoginName())) continue;
-            
+            String userCode = userDto.getLoginName();
+			if(loginNames.contains(userCode)) continue;
+			
             // 如果用户所属的组不存在，则不导入该用户
             Long mainGroupId = idMapping.get(userDto.getGroupId());
-            if(mainGroupId == null) continue;
-            
-            /* 检查相同账号的用户否已经存在: 
-             * 如果是之前同步过的，则只更新字段；
-             * 如果是已经存在的但不是从该fromApp同步过来的，则忽略该fromApp用户；
-             * 如果用户不存在，则新建。
-             */
-            List<?> temp = groupDao.getEntities("from User t where ? in (t.loginName, t.email, t.telephone)", userDto.getLoginName());
-            if( !EasyUtils.isNullOrEmpty(temp) ) {
-            	User existUser = (User) temp.get(0);
-            	String fromUserId = existUser.getFromUserId();
-				if( fromUserId == null || fromUserId.equals( userDto.getId() ) ) { 
-					existUser.setUserName(userDto.getUserName());
-					existUser.setDisabled(userDto.getDisabled());
-					existUser.setFromUserId(userDto.getId());
-					
-					String email = (String) EasyUtils.checkNull(existUser.getEmail(), userDto.getEmail());
-					existUser.setEmail(email);
-					String phone = (String) EasyUtils.checkNull(existUser.getTelephone(), userDto.getTelephone());
-					existUser.setTelephone(phone);
-					
-					userDao.checkUserAccout(existUser);
-					userDao.refreshEntity(existUser);
-            	}
-            }
-            else {
-            	User user = new User();
-                SyncDataHelper.setUserByDTO(user, userDto);
-            	user.setGroupId(mainGroupId);
-            	
-            	userDao.checkUserAccout(user);
-            	userDao.create(user);
-            	userDao.createObject(new GroupUser(user.getId(), mainGroupId));
+
+            try { 
+            	syncOneUser(userDto, mainGroupId);
+            } 
+            catch(Exception e) {
+            	log.error("同步用户：" + userCode + "失败了: " + e.getMessage());
             }
             
-            loginNames.add(userDto.getLoginName());
-                
+            loginNames.add(userCode);
             progress.add(1);  /* 更新进度信息 */
         }
         
@@ -222,4 +206,63 @@ public class SyncService implements ISyncService, Progressable {
             progress.add(8888888); // 通过设置一个大数（远大于总数）来使进度完成
         }
     }
+
+	protected void syncOneUser(UserDTO userDto, Long mainGroupId) {
+		/* 检查相同账号的用户否已经存在: 
+		 * 如果是之前同步过的，则只更新字段；
+		 * 如果是已经存在的但不是从该fromApp同步过来的，则忽略该fromApp用户；
+		 * 如果用户不存在，则新建。
+		 */
+		Group group = groupDao.getEntity(mainGroupId);
+		
+		// 检测用户是否非法：跨域同步等
+		SyncDataHelper.checkSecurity(group, userDto);
+		
+		List<?> temp = groupDao.getEntities("from User t where ? in (t.loginName, t.email, t.telephone)", userDto.getLoginName());
+		User user;
+		if( temp.size() > 0 ) { // 更新已存在用户的信息
+			user = (User) temp.get(0);
+			updateUser(user, group, userDto);
+		}
+		else {
+			user = new User();
+		    SyncDataHelper.setUserByDTO(user, userDto);
+			user.setGroupId(mainGroupId);
+			
+			Integer disabled = Math.max(user.getDisabled(), group.getDisabled()); // 如果组被停用了
+			user.setDisabled(disabled);
+			
+			userDao.checkUserAccout(user);
+			userDao.create(user);
+			userDao.createObject(new GroupUser(user.getId(), mainGroupId));
+		}
+		
+		userDao.recordUserLog(user, group, "sync");
+	}
+
+	public void updateUser(User user, Group nowGroup, UserDTO userDto) {
+		Long userId = user.getId();
+		Group oldGroup = groupDao.findMainGroupByUserId(userId);
+		
+		// 不能修改其它域的用户数据（除客户组）
+		if( Group.CUSTOMER_GROUP.equals(oldGroup.getName())  || nowGroup.getDomain().equals(oldGroup.getDomain()) ) {
+			user.setUserName(userDto.getUserName());
+			Integer disabled = Math.max(userDto.getDisabled(), nowGroup.getDisabled()); // 如果组被停用了
+			user.setDisabled(disabled);
+			user.setFromUserId(userDto.getId());
+			user.setEmail( (String) EasyUtils.checkNull(user.getEmail(), userDto.getEmail()) );
+			user.setTelephone( (String) EasyUtils.checkNull(user.getTelephone(), userDto.getTelephone()) );
+			
+			userDao.checkUserAccout(user);
+			userDao.refreshEntity(user);
+			
+			// 移动员工用户到指定组下（不能跨域移动）
+			Long oldGroupId = oldGroup.getId();
+			Long nowGroupId = nowGroup.getId();
+			if( !nowGroupId.equals(oldGroupId) ) {
+				String updateHQL = "update GroupUser set groupId=? where userId=? and groupId=?";
+				userDao.executeHQL(updateHQL, nowGroupId, userId, oldGroupId);
+			}
+		}
+	}
 }

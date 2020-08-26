@@ -30,6 +30,7 @@ import com.boubei.tss.util.FileHelper;
 import com.boubei.tss.util.URLUtil;
 
 import freemarker.ext.beans.BeansWrapper;
+import freemarker.ext.beans.BeansWrapperBuilder;
 import freemarker.ext.dom.NodeModel;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
@@ -43,13 +44,14 @@ public class FreemarkerParser {
     protected Logger log = Logger.getLogger(this.getClass());
     
     /** 配置用于加载Freemarker的模板文件。*/
-    private Configuration cfg = new Configuration();
+    private Configuration cfg = new Configuration(Configuration.VERSION_2_3_28);
     
     /** DataModel，存放参数、静态类（statics）等 */
     private Map<String, Object> root = new HashMap<String, Object>();
     
     public FreemarkerParser(){
-        root.put("statics", BeansWrapper.getDefaultInstance().getStaticModels()); 
+        BeansWrapper bwb = new BeansWrapperBuilder(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS).build();
+		root.put("statics", bwb.getStaticModels()); 
     }
     
     public Map<String, Object> getDataModel() {

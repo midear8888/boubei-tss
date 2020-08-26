@@ -21,10 +21,14 @@ import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+
 import com.boubei.tss.dm.record.workflow.WFUtil;
 import com.boubei.tss.framework.persistence.IEntity;
+import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.web.display.grid.GridAttributesMap;
 import com.boubei.tss.framework.web.display.grid.IGridNode;
+import com.boubei.tss.util.EasyUtils;
  
 /**
  * 站内消息对象
@@ -32,6 +36,7 @@ import com.boubei.tss.framework.web.display.grid.IGridNode;
 @Entity
 @Table(name = "um_message")
 @SequenceGenerator(name = "message_sequence", sequenceName = "message_sequence", initialValue = 1000, allocationSize = 10)
+@JsonIgnoreProperties(value={"pk", "attributes"})
 public class Message implements IEntity, IGridNode {
 	
 	public static final String CATEGORY_NOTIFY = "提醒";
@@ -52,12 +57,25 @@ public class Message implements IEntity, IGridNode {
 	private String sender;		// 发送者
 	private Long   receiverId;	// 接收者ID
 	private String receiver;	// 接收者
+	private String origin;      // 终端
 	
 	private Date   sendTime;    // 发送时间
 	private Date   readTime;    // 读取时间
 	
 	private String category;   // 消息分类
 	private String level;      // 重要等级
+	
+	private Long workflow;     // 工作流提醒
+	private Long workflowItem; // 流程记录ID
+	
+	private String sendChannel;   // 发送渠道（短信、邮件、公众号通知等）
+	
+	public Message() {
+		this.setOrigin( Environment.getOrigin() );
+		this.setSendTime(new Date());
+		this.setSenderId(Environment.getUserId());
+		this.setSender(Environment.getUserName());
+	}
  
 	public String toString() {
 		return WFUtil.toString(this);
@@ -88,7 +106,8 @@ public class Message implements IEntity, IGridNode {
 	}
  
 	public void setContent(String content) {
-		this.content = content;
+		content = EasyUtils.obj2String(content);
+		this.content = content.substring(0, Math.min(2000, content.length()));
 	}
  
 	public void setId(Long id) {
@@ -124,7 +143,8 @@ public class Message implements IEntity, IGridNode {
 	}
  
 	public void setTitle(String title) {
-		this.title = title;
+		title = EasyUtils.obj2String(title);
+		this.title = title.substring(0, Math.min(120, title.length()));
 	}
  
 	public Date getReadTime() {
@@ -146,6 +166,7 @@ public class Message implements IEntity, IGridNode {
 		map.put("title", "<a href='javascript:void(0)' onclick='showMsgInfo("+this.id+")' class='" + _class + "'>" + title + "</a>");
 		map.put("content", content);
 		map.put("status", readed() ? 1 : 0);
+		map.put("receiver", receiver);
 		map.put("sender", sender);
 		map.put("senderId", senderId);
 		map.put("category", this.getCategory());
@@ -176,5 +197,37 @@ public class Message implements IEntity, IGridNode {
 
 	public void setLevel(String level) {
 		this.level = level;
+	}
+
+	public Long getWorkflow() {
+		return workflow;
+	}
+
+	public void setWorkflow(Long workflow) {
+		this.workflow = workflow;
+	}
+
+	public Long getWorkflowItem() {
+		return workflowItem;
+	}
+
+	public void setWorkflowItem(Long workflowItem) {
+		this.workflowItem = workflowItem;
+	}
+
+	public String getSendChannel() {
+		return sendChannel;
+	}
+
+	public void setSendChannel(String sendChannel) {
+		this.sendChannel = sendChannel;
+	}
+
+	public String getOrigin() {
+		return origin;
+	}
+
+	public void setOrigin(String origin) {
+		this.origin = origin;
 	}
 }

@@ -36,6 +36,7 @@ public class WFStatus implements IEntity {
 	public final static String MODIFIED  = "已修改";
 	public final static String REAPPLY   = "重新提交";
 	
+	public final static String DRAFT     = "草稿";
 	public final static String NEW       = "待审批";
 	public final static String APPROVING = "审批中";
 	public final static String APPROVED  = "已同意";
@@ -86,6 +87,14 @@ public class WFStatus implements IEntity {
 	
 	@Transient
 	public int currStepIndex;
+	
+	public boolean isPassed() {
+		return PASSED.equals(this.currentStatus) || isAutoPassed();
+	}
+	
+	public boolean isAutoPassed() {
+		return AUTO_PASSED.equals(this.currentStatus);
+	}
 	
 	public List<String> toUsers() {
 		return Arrays.asList( EasyUtils.obj2String(to).split(",") );

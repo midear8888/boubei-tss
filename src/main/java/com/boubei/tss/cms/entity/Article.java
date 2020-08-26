@@ -73,7 +73,7 @@ public class Article extends OperateInfo implements IGridNode, IXForm {
     private String  pubUrl;       // 发布路径
     
     private Integer seqNo = 0;
-    private Integer hitCount = 0; //点击率
+    private Integer hitCount = 0; // 点击率
 	
     private Integer status = CMSConstants.START_STATUS;	   // 文章的状态 1：编辑中 2：待发布 3：已发布生成xml 4：过期 
     
@@ -81,6 +81,8 @@ public class Article extends OperateInfo implements IGridNode, IXForm {
     private Channel channel;      // 文章所属栏目
     
     private Integer isTop = ParamConstants.FALSE;   // 文章是否置顶
+    
+    private String domain;
     
     @Transient 
     List<Attachment> attachments = new ArrayList<Attachment>();  // 存放文章附件列表
@@ -267,5 +269,13 @@ public class Article extends OperateInfo implements IGridNode, IXForm {
 
 	public void setHtmlRef(String htmlRef) {
 		this.htmlRef = htmlRef;
+	}
+
+	public String getDomain() {
+		return domain;
+	}
+
+	public void setDomain(String domain) {
+		this.domain = domain;
 	}
 }

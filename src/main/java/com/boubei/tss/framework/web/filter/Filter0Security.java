@@ -13,9 +13,7 @@ package com.boubei.tss.framework.web.filter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -30,13 +28,14 @@ import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
 
 import com.boubei.tss.PX;
+import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.framework.Config;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.SecurityUtil;
+import com.boubei.tss.framework.SystemInfo;
 import com.boubei.tss.framework.sso.SSOConstants;
 import com.boubei.tss.framework.sso.context.RequestContext;
 import com.boubei.tss.modules.param.ParamConfig;
-import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.EasyUtils;
 
@@ -64,6 +63,9 @@ public class Filter0Security implements Filter {
     	String servletPath = req.getServletPath();
     	String referer     = req.getHeader("referer");
         String serverName  = req.getServerName(); // 网站的域名
+        
+        /*0、防止同一IP多次请求攻击（多为匿名攻击），一分钟 > 180次 */
+        SecurityUtil.denyMassAttack(req);
     	
         /* 忽略盗链检查 */
     	List<String> crossDomainIgnores = new ArrayList<String>();
@@ -82,15 +84,17 @@ public class Filter0Security implements Filter {
         	String ipWhiteListConfig = ParamConfig.getAttribute(PX.IP_WHITE_LIST, "boubei.com");
         	whiteList.addAll( Arrays.asList( ipWhiteListConfig.split(",") ) );
         	
-        	boolean flag = false;
+        	boolean pass = false;
         	for(String whiteip : whiteList) {
         		whiteip = whiteip.trim();
         		if( whiteip.length() > 0 && referer.indexOf( whiteip ) >= 0) {
-        			flag = true;
+        			pass = true;
+        			break;
         		}
         	}
         	
-        	if( !flag ){
+        	if( !pass ) {
+        		log.info("IP white list check denied! servletPath = " +servletPath+ ", referer = " + referer + ", whiteList = " + whiteList );
         		_404(rep, servletPath);
             	return;
         	}
@@ -102,20 +106,12 @@ public class Filter0Security implements Filter {
             return;
         }
          
-        /* 3、检测权限（判断用户是否登录，此时Filter3Context还没有执行，无法使用Environment）*/
+        /* 3、检测Session（判断用户是否登录，此时Filter3Context还没有执行，无法使用Environment）*/
         log.debug("checking permission: " + servletPath);
-        Set<Object> userRights = new HashSet<Object>();
-        Long userId = null;
-        try {
-        	HttpSession session = req.getSession(false);
-        	userId = (Long) session.getAttribute(SSOConstants.USER_ID);
-            List<?> list = (List<?>) session.getAttribute(SSOConstants.USER_RIGHTS_L); // 用户拥有的角色列表
-			userRights.addAll( list );
-				
-        } catch(Exception e) {  }
-        
-        if ( !checkPermission(userRights, servletPath) ) {
-            log.debug("checking permission failed");
+        HttpSession session = req.getSession(false);
+        boolean isCacheUri = servletPath.indexOf("/cache/") >= 0; // 缓存监控自动刷新 不触发
+		if ( !isCacheUri  && !checkSession(req, rep, session) ) {
+        	log404Context(req, servletPath, session);
             _404(rep, servletPath);
             return;
         }
@@ -126,8 +122,13 @@ public class Filter0Security implements Filter {
         		&& servletPath.indexOf("_password.htm") < 0) {
         	
         	ILoginService loginService = (ILoginService) Global.getBean("LoginService");
+        	session = req.getSession();
+        	
+        	boolean not_admin_su = session.getAttribute("admin_su") == null;
+			Long userId = (Long) session.getAttribute(SSOConstants.USER_ID); 
 			int flag = loginService.checkPwdSecurity(userId);
-        	if(flag < 1) {
+			
+        	if(flag < 1 && userId != null && not_admin_su) {
         		log.debug(userId + "'s password is not safe, need to strengthen first.");
         		String originURI = req.getRequestURI().replaceFirst("//", "/");
 				rep.sendRedirect(THE_PASSWD_URL + "?flag=" +flag+ "&origin=" +originURI);
@@ -139,21 +140,35 @@ public class Filter0Security implements Filter {
         chain.doFilter(request, response);
     }
 
+	protected void log404Context(HttpServletRequest req, String servletPath, HttpSession session) {
+		log.info("checking permission failed, servletPath = " + servletPath + 
+				", session is null = " + (session == null) + 
+	    		", params" + DMUtil.parseRequestParams(req, false));
+	}
+
 	protected void _404(HttpServletResponse rep, String servletPath) throws IOException {
 		if( servletPath.indexOf(".htm") > 0 ) {
 			rep.sendRedirect(THE_404_URL);
 		} else {
 			rep.setContentType("application/json;charset=UTF-8");
-			rep.getWriter().println("{\"code\": \"TSS-404\", \"errorMsg\": \"资源不存在或限制访问, by Filter0\"}");
+			rep.getWriter().println("{\"code\": \"TSS-404\", \"errorMsg\": \"资源不存在或限制访问: " +servletPath+ "\"}");
 		}
 	}
  
     /**
-     * 登陆即可访问: 除掉匿名角色，还必须有其它角色
+     * 检查session是否存在，机器重启后，session消失，此时用token做下重新注册在线库（更新session信息）
+     * 此处一定是非remote API（带uName和uToken）访问，isNeedPermission() 里检测了 apiCall
      */
-    private boolean checkPermission(Set<?> userRights, String servletPath) {
-    	userRights.remove(UMConstants.ADMIN_ROLE_ID);
-    	return userRights.size() > 0;
+    private boolean checkSession(HttpServletRequest req, HttpServletResponse rep, HttpSession session) {
+    	if( session == null || session.getAttribute(RequestContext.USER_TOKEN) == null ) {
+    		try {
+    			return SystemInfo.autoLogin(req, rep, null);
+    		} 
+    		catch(Exception e) { // 自动登录失败不影响安全校验
+    			log.error("autoLogin 出错了", e);
+    		}
+    	}
+    	return true;
 	}
     
     private boolean isNeedPermission(String servletPath, HttpServletRequest req) {
@@ -163,10 +178,10 @@ public class Filter0Security implements Filter {
     	}
     	
     	// 2、检查URL白名单，白名单内的，放行
-    	String[] whiteList = EasyUtils.obj2String( ParamConfig.getAttribute(PX.URL_WHITE_LIST) ).split(",");
+    	String[] whiteList = ParamConfig.getAttribute(PX.URL_WHITE_LIST).split(",");
     	for( String whiteItem : whiteList ) {
     		whiteItem = whiteItem.trim();
-    		if( whiteItem.length() > 0 && servletPath.indexOf( whiteItem ) >= 0 ) {
+    		if( whiteItem.length() >= 3 && servletPath.indexOf( whiteItem ) >= 0 ) {
     			return false;
     		}
     	}

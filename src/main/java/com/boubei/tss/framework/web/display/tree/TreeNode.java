@@ -25,10 +25,10 @@ import com.boubei.tss.util.XmlUtil;
  */
 public class TreeNode {
 
-	public static final String DISABLED = "0"; // disabled
-	public static final String ENABLED = "1"; // enabled
+	public static final String DISABLED = "1"; // disabled
+	public static final String ENABLED  = "0"; // enabled
 
-	public static final String TREENODE_ATTR_CANSELECTED = "canselected"; // 可选
+	public static final String TREENODE_ATTR_CANSELECTED = "disabled"; // 是否禁止选择
 	public static final String TREENODE_ATTR_DISPLAY = "display"; // 是否显示
 
 	public static final String TREENODE_ATTR_ID = "id";

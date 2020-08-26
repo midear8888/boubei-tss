@@ -9,29 +9,34 @@ import org.apache.commons.lang.time.DateUtils;
 
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.Environment;
-import com.boubei.tss.modules.cloud.entity.ModuleDef;
+import com.boubei.tss.modules.cloud.entity.CloudOrder;
 import com.boubei.tss.um.entity.SubAuthorize;
-import com.boubei.tss.util.EasyUtils;
 
 /**
- * @author hank 转授策略续费成功后续操作
+ * @author hank 续费
  */
-@SuppressWarnings("unchecked")
-public class RenewalfeeOrderHandler extends AbstractProduct {
+public class RenewalfeeOrderHandler extends ModuleOrderHandler {
 
-	protected void beforeOrderInit() {
-		String subAuthorizeIds = co.getParams();
-		String hql = " from SubAuthorize where id in (" + subAuthorizeIds + ")";
-		List<SubAuthorize> subAuthorizes = (List<SubAuthorize>) commonDao.getEntities(hql);
+	public RenewalfeeOrderHandler(CloudOrder co) {
+		super(co);
+	}
+	
+	/* 
+	 * 续费不需要限制 购买账号, 只限制月份
+	 */
+	protected void beforeOrderModuleCheck() { 
+		checkLimit(md.getMonth_limit(), co.getMonth_num(), "月", true, true); // 购买月份限制为1,1的不支持续费
+	}
+
+	protected void beforeOrderCustomCheck() {
+		List<SubAuthorize> saList = querySaList();
+		co.setAccount_num(saList.size());
 		
-		Set<String> module_ids = new HashSet<>();
-		Set<String> module_Names = new HashSet<>();
-		for (SubAuthorize subAuthorize : subAuthorizes) {
-			String[] name = subAuthorize.getName().split("_");
-			module_ids.add(name[0]);
-			module_Names.add(name[1]);
+		Set<Long> module_ids = new HashSet<>();
+		for (SubAuthorize sa : saList) {
+			module_ids.add(sa.getModuleId());
 			
-			if (!subAuthorize.getBuyerId().equals(Environment.getUserId())) {
+			if (!sa.getBuyerId().equals(Environment.getUserId())) {
 				throw new BusinessException("您不能续费其它用户购买的账号！");
 			}
 		}
@@ -39,19 +44,17 @@ public class RenewalfeeOrderHandler extends AbstractProduct {
 		if (module_ids.size() > 1) {
 			throw new BusinessException("您不能同时续费多个产品，请分开续费！");
 		}
-
-		Long module_id = EasyUtils.obj2Long(module_ids.toArray()[0]);
-		co.setModule_id(module_id);
-		co.setProduct( EasyUtils.list2Str(module_Names) );
-		co.setAccount_num(subAuthorizes.size());
-
-		this.md = (ModuleDef) commonDao.getEntity(ModuleDef.class, module_id);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private List<SubAuthorize> querySaList() {
+		String subAuthorizeIds = co.getParams();
+		String hql = "from SubAuthorize where id in (" + subAuthorizeIds + ")";
+		return (List<SubAuthorize>) dao.getEntities( hql );
 	}
 
 	protected void handle() {
-		// 获取订单信息
-		String hql = " from SubAuthorize where id in (" + co.getParams() + ")";
-		List<SubAuthorize> subAuthorizes = (List<SubAuthorize>) commonDao.getEntities(hql);
+		List<SubAuthorize> subAuthorizes = querySaList();
 		Date now = new Date();
 		for (SubAuthorize strategy : subAuthorizes) {
 			Date endDate = new Date(Math.max(strategy.getEndDate().getTime(), now.getTime()));
@@ -59,7 +62,7 @@ public class RenewalfeeOrderHandler extends AbstractProduct {
 			strategy.setDisabled(0);
 		}
 
-		createFlows(getAccount());
+		createFlows(getBuyerAccount());
 	}
 
 }

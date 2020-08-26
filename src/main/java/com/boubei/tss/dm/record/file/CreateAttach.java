@@ -57,7 +57,7 @@ public class CreateAttach implements AfterUpload {
 		if( separatorIndex >= 0) {
 			orignFileName = orignFileName.substring(separatorIndex + 1);
 		}
-		return orignFileName;
+		return orignFileName.substring(Math.max(0, orignFileName.length() - 25));
 	}
 
 	public String processUploadFile(HttpServletRequest request,
@@ -90,7 +90,7 @@ public class CreateAttach implements AfterUpload {
 			return attach.getId().toString();  // 其它地方上传只需返回附件记录ID即可
 		}
 		return "parent.addAttach(" + attach.getId() + ", " + attach.getType() + ", '" 
-				+ attach.getName() + "', '" + attach.getDownloadUrl() + "', '" + attach.getUploadUser() + "')";
+				+ attach.getName() + "', '" + attach.getDownloadUrl() + "', '" + attach.getUploadUser() + "');";
 	}
 	
 	private RecordAttach saveAttach(File file, Long recordId, Long itemId, int type, String oldfileName) {
@@ -101,7 +101,8 @@ public class CreateAttach implements AfterUpload {
         long fileSize = file.length();
         
         // 将附件从上传临时目录剪切到站点指定的附件目录里
-        String fileName = FileHelper.copyFile(rootDir, file); 
+        String filePath = FileHelper.copyFile(rootDir, file);
+		String fileName = new File( filePath ).getName();
 		String fileSuffix = FileHelper.getFileSuffix(fileName);
 		
 		// 保存附件信息对象
@@ -114,6 +115,7 @@ public class CreateAttach implements AfterUpload {
 		attach.setSeqNo(recordService.getAttachSeqNo(recordId, itemId));
 		attach.setUploadDate(new Date());
 		attach.setUploadUser(Environment.getUserName());
+		attach.setOrigin(Environment.getOrigin());
         attach.setFileName(fileName);
         attach.setFileExt(fileSuffix.toLowerCase());
         attach.setFileSize( fileSize / 1024 );

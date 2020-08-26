@@ -279,6 +279,6 @@ public class ObjectPool extends AbstractPool implements Cleaner {
 	}
 
 	public final int size() {
-		return size;
+		return getFree().size() + getUsing().size();
 	}
 }

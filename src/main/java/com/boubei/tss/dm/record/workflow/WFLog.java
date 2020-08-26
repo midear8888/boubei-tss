@@ -53,6 +53,8 @@ public class WFLog implements IEntity {
 	@Column(nullable = false)
 	private String processor;
 	
+	private String processorCode;
+	
 	@Column(nullable = false)
 	private Date   processTime;
 	
@@ -68,6 +70,8 @@ public class WFLog implements IEntity {
 		this.setTableId(wfStatus.getTableId());
 		this.setItemId(wfStatus.getItemId());
 		this.setProcessor( Environment.getUserName() );
+		String pcode = (String) EasyUtils.checkNull(Environment.getUserInfo("telephone"), Environment.getUserCode());
+		this.setProcessorCode( pcode );
 		this.setProcessTime( new Date() );
 		this.setProcessResult( wfStatus.getCurrentStatus() );
 		this.setProcessOpinion( EasyUtils.obj2String(opinion) );
@@ -144,5 +148,13 @@ public class WFLog implements IEntity {
 
 	public void setOrigin(String origin) {
 		this.origin = origin;
+	}
+
+	public String getProcessorCode() {
+		return processorCode;
+	}
+
+	public void setProcessorCode(String processorCode) {
+		this.processorCode = processorCode;
 	}
 }

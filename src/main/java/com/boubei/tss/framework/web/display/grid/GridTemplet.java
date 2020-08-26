@@ -123,7 +123,7 @@ public class GridTemplet {
     }
     
     public static String transColWidth(String colWidth) {
-		if(EasyUtils.isNullOrEmpty(colWidth)) {
+		if( EasyUtils.isNullOrEmpty(colWidth) ) {
         	colWidth = "";
         }
         else if( colWidth.startsWith("0") ) {

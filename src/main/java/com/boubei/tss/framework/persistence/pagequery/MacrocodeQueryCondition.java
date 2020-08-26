@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.boubei.tss.dm.DMUtil;
+import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.util.EasyUtils;
 
 /**
@@ -68,7 +68,9 @@ public abstract class MacrocodeQueryCondition  {
 		StringBuffer buffer = new StringBuffer();
 		Map<String, Object> conditionsMap = getConditionMacrocodes();
 		for(String macro : conditionsMap.keySet()) {
-			buffer.append(macro).append(" ");
+			if( macro.startsWith("${") ) {
+				buffer.append(macro).append(" ");
+			}
 		}
 		return buffer.toString();
 	}
@@ -78,21 +80,19 @@ public abstract class MacrocodeQueryCondition  {
 	}
 	
     /**
-     * 获取条件查询HQL/SQL条件语句宏代码字典
+     * 获取条件查询HQL/SQL条件语句宏代码字典.
+     * 
+     * 正常条件表示式用占位符： map.put("${xxx}", and o.xxx = :xxx);
+     * 如果条件表达式是确定的，则用 #{xxx}，eg: map.put( "#{domain}", "and o.createId in (1,2,3)" );
+     * 
      * @return Map 
      * 			条件宏代码字典对象
      */
 	public Map<String, Object> getConditionMacrocodes() {
         Map<String, Object> map = new HashMap<String, Object>();
-
-        String domainCondition = "<#if USERIDS_OF_DOAMIN??> and " +getCreatorIdField()+ " in (${USERIDS_OF_DOAMIN}) </#if> ";
-        map.put("${domain}",  DMUtil.fmParse(domainCondition));
+        map.put("#{domain}", " and o.domain in ('" +Environment.getDomain()+ "')");
         
         return map;
-	}
-
-	protected String getCreatorIdField() {
-		return "o.creatorId";
 	}
 	
 	public static String wrapLike(String val) {

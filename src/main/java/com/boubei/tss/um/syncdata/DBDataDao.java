@@ -29,7 +29,7 @@ public class DBDataDao implements IOutDataDao {
     
 	// 要求SQL的字段别名 和 DTO里的属性名一致
     protected static String[] groupDtoFields = {"id", "parentId", "name", "description"};
-    protected static String[] userDtoFields  = {"id", "groupId", "loginName", "password", "userName", "sex", "telephone", "email", "employeeNo", "authMethod", "disabled"};
+    protected static String[] userDtoFields  = {"id", "groupId", "loginName", "password", "userName", "sex", "telephone", "email", "employeeNo", "authMethod", "disabled", "domain"};
     
     public List<?> getOtherGroups(Map<String, String> paramsMap, String sql, String groupId) {
         sql = sql.replaceAll(":groupId", groupId);

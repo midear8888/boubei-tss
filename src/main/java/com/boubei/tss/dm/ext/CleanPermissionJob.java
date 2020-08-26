@@ -10,12 +10,16 @@
 
 package com.boubei.tss.dm.ext;
 
+import java.io.File;
+
 import com.boubei.tss.EX;
 import com.boubei.tss.dm.DMConstants;
+import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.modules.timer.AbstractJob;
 import com.boubei.tss.um.service.IUserService;
+import com.boubei.tss.util.FileHelper;
 
 /**
  * 清理垃圾权限信息
@@ -26,6 +30,10 @@ import com.boubei.tss.um.service.IUserService;
 public class CleanPermissionJob extends AbstractJob {
 	
 	IUserService userService = (IUserService) Global.getBean("UserService");
+	
+	protected boolean needSuccessLog() {
+		return true;
+	}
  
 	protected String excuteJob(String jobConfig, Long jobID) {
  
@@ -51,6 +59,19 @@ public class CleanPermissionJob extends AbstractJob {
 		
 		// 处理过期的用户、角色、转授策略等
 		userService.overdue();
+		
+		
+		// 清除 um_roleusermapping
+		SQLExcutor.excute("delete from um_roleusermapping where userId > -10000 or roleId > -10000", DMConstants.LOCAL_CONN_POOL);
+		
+		// 清除临时表残留数据
+		SQLExcutor.excute("truncate table TBL_TEMP_", DMConstants.LOCAL_CONN_POOL);
+		
+		// 清除残留在export 和 upload 里的附件
+		FileHelper.deleteFilesInDir("", new File(DMUtil.getAttachPath() + "/export") );
+//		FileHelper.deleteFilesInDir("", new File(DMUtil.getAttachPath() + "/upload") ); // Excel导入文件需要保留
+		
+		// TODO 循环所有域，如果一个域管理员的策略过期了，则需要把 域管理员 授权出去的账号 的角色一并收回来
 		
 		return EX.DEFAULT_SUCCESS_MSG;
 	}

@@ -15,6 +15,7 @@ import java.util.List;
 import org.springframework.stereotype.Repository;
 
 import com.boubei.tss.framework.persistence.TreeSupportDao;
+import com.boubei.tss.util.EasyUtils;
 
 @Repository("ParamDao")
 public class ParamDaoImpl extends TreeSupportDao<Param> implements ParamDao {
@@ -30,9 +31,9 @@ public class ParamDaoImpl extends TreeSupportDao<Param> implements ParamDao {
 		return getEntities("from Param p where p.hidden <> 1 order by p.decode");
 	}
 	
-	public Param getParamByCode(String code){
+	public Param getParamByCode(String code) {
 		String hql = "from Param p where p.code = ? and p.disabled <> 1 order by p.decode";
-        List<?> list = getEntities(hql, code);
+        List<?> list = getEntities(hql, EasyUtils.checkNull(code, "code is null"));
         return list.size() > 0 ? (Param) list.get(0) : null;
 	}
 	

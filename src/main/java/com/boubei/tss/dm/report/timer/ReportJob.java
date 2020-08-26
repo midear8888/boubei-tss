@@ -54,10 +54,10 @@ public class ReportJob extends AbstractJob {
 	
 	public static int MAX_ROWS = 1000;
 	
-	ReportService reportService = (ReportService) Global.getBean("ReportService");
-	ILoginService loginService  = (ILoginService) Global.getBean("LoginService");
+	protected ReportService reportService = (ReportService) Global.getBean("ReportService");
+	protected ILoginService loginService  = (ILoginService) Global.getBean("LoginService");
 	
-	String currJobCreator = UMConstants.ROBOT_USER_NAME;
+	protected String currJobCreator = UMConstants.ROBOT_USER_NAME;
 	
 	protected IOperator jobRobot() {
         return new OperatorDTO(UMConstants.ROBOT_USER_ID, currJobCreator); 
@@ -133,7 +133,7 @@ public class ReportJob extends AbstractJob {
 		return EasyUtils.list2Str(msgList);
 	}
 	
-	private void send(String _ms, String[] receiver, ReceiverReports rr) {
+	protected void send(String _ms, String[] receiver, ReceiverReports rr) {
 		String title = EasyUtils.list2Str(rr.reportTitles);
 		
 		JavaMailSenderImpl sender = MailUtil.getMailSender(_ms);
@@ -159,22 +159,25 @@ public class ReportJob extends AbstractJob {
 			html.append("</head>");
 			html.append("<body>");
 			
+			boolean hasData = false;
 			for(int index = 0; index < rr.reportIds.size(); index++) {
-				buildEmailContent(rr, index, messageHelper, html);
+				hasData = hasData || buildEmailContent(rr, index, messageHelper, html);
 			}
 			
 			html.append("</body>");
 			html.append("</html>");
-			log.debug(html);
-			messageHelper.setText(html.toString(), true);
-			sender.send(mailMessage);
+			
+			if( hasData ) {
+				messageHelper.setText(html.toString(), true);
+				sender.send(mailMessage);
+			}
 		} 
 		catch (Exception e) {
 			log.error(" error when send report email ", e);
 		}
 	}
 
-	private void buildEmailContent(ReceiverReports rr, int index, 
+	private boolean buildEmailContent(ReceiverReports rr, int index, 
 			MimeMessageHelper messageHelper, StringBuffer html) throws Exception {
 		
 		Long reportId = rr.reportIds.get(index);
@@ -230,15 +233,17 @@ public class ReportJob extends AbstractJob {
 		
 		fileName = MimeUtility.encodeWord(fileName); // 使用MimeUtility.encodeWord()来解决附件名称的中文问题
 		messageHelper.addAttachment(fileName, new File(exportPath));
+		
+		return ex.result.size() > 0;
 	}
 	
 	
 	/**
 	 * 收件人对报表的映射，当一组收件人对应多个报表时，将这些报表合并成一个邮件发送
 	 */
-	class ReceiverReports {
-		List<Long> reportIds = new ArrayList<Long>();
-		List<String> reportTitles = new ArrayList<String>();
-		List<Map<String, String>> reportParams = new ArrayList<Map<String, String>>();
+	public static class ReceiverReports {
+		public List<Long> reportIds = new ArrayList<Long>();
+		public List<String> reportTitles = new ArrayList<String>();
+		public List<Map<String, String>> reportParams = new ArrayList<Map<String, String>>();
 	}
 }

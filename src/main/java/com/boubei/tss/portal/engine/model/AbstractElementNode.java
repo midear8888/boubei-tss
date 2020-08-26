@@ -113,10 +113,8 @@ public abstract class AbstractElementNode extends AbstractSubNode {
         
         List<org.dom4j.Element> paramNodes = XMLDocUtil.selectNodes(doc, "/" + elementName + "/parameters/param");
         paramNodes = (List<Element>) EasyUtils.checkNull(paramNodes, new ArrayList<org.dom4j.Element>());
-        for( org.dom4j.Element paramNode : paramNodes ){
-            String attrName = paramNode.attributeValue("name");
-			String defaultVal = paramNode.attributeValue("defaultValue");
-			getParameters().put(attrName, defaultVal);
+        for( org.dom4j.Element pn : paramNodes ){
+			getParameters().put(pn.attributeValue("name"), pn.attributeValue("defaultValue"));
         }
         
         return doc;

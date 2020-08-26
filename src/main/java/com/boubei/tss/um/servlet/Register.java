@@ -84,6 +84,7 @@ public class Register extends HttpServlet {
         user.setPasswordQuestion(request.getParameter("passwordQuestion"));
         user.setPasswordAnswer(request.getParameter("passwordAnswer"));
         user.setAuthToken(request.getParameter("uToken"));
+        user.setOrigin("注册");
         
         String regex = "\\w+(\\.\\w)*@\\w+(\\.\\w{2,3}){1,3}";
         if( account.matches(regex) && EasyUtils.isNullOrEmpty(user.getEmail()) ) {

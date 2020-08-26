@@ -12,11 +12,13 @@ package com.boubei.tss.framework.persistence.entityaop;
 
 import java.util.Date;
 
+import com.boubei.tss.framework.persistence.IEntity;
+
 /**
  * 用户操作信息记录接口
  * 
  */
-public interface IOperatable {
+public interface IOperatable extends IEntity {
 	
 	Date getCreateTime();
 

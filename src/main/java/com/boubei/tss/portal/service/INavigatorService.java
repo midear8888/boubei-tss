@@ -90,5 +90,7 @@ public interface INavigatorService {
      */
     String getNavigatorXML(Long id);
     
+    List<Navigator> getMenuItems(Long id);
+    
     List<MenuDTO> getMenuTree(Long id);
 }

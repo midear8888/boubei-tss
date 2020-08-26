@@ -28,6 +28,8 @@ import com.boubei.tss.dm.report.Report;
 import com.boubei.tss.dm.report.ReportService;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.modules.param.ParamConstants;
+import com.boubei.tss.portal.entity.Navigator;
+import com.boubei.tss.portal.service.INavigatorService;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
 
@@ -41,37 +43,47 @@ public class Export {
 	
 	@Autowired ReportService reportService;
 	@Autowired RecordService recordService;
+	@Autowired INavigatorService menuService;
 	
-	@RequestMapping("/report/{reportId}")
-	public void exportReport(HttpServletResponse response, 
-            @PathVariable("reportId") Long reportId) {
+	@RequestMapping("/menu/{menuId}")
+	public String exportMenu(HttpServletResponse response, @PathVariable("menuId") Long menuId) {
 		
-		Report report = reportService.getReport(reportId);
-		List<Report> list = reportService.getReportsByGroup(reportId, Environment.getUserId());
-		String json = EasyUtils.obj2Json(list);
-		
-		String fileName = report.getName() + ".json";
-        String exportPath = DataExport.getExportPath() + "/" + fileName;
+		Navigator menu = menuService.getNavigator(menuId);
+		List<Navigator> list = menuService.getMenuItems(menuId) ;
+        	
+        return exportResources(response, menu.getName(), list);
+	}
+	
+	private String exportResources(HttpServletResponse response, String name, List<?> resources) {
+		String json = EasyUtils.obj2Json(resources);
+        String exportPath = DataExport.getExportPath() + "/" + name + ".json";
  
 		// 先输出内容到服务端的导出文件中
         FileHelper.writeFile(exportPath, json, false);
-        DataExport.downloadFileByHttp(response, exportPath);
+        if( response != null ) {
+        	DataExport.downloadFileByHttp(response, exportPath);
+        }
+        	
+        return exportPath;
+	}
+	
+	@RequestMapping("/report/{reportId}")
+	public String exportReport(HttpServletResponse response, @PathVariable("reportId") Long reportId) {
+		
+		Report report = reportService.getReport(reportId);
+		List<Report> list = reportService.getReportsByGroup(reportId, Environment.getUserId());
+
+        return exportResources(response, report.getName(), list);
 	}
 	
 	@RequestMapping("/record/{recordId}")
-	public void exportRecord(HttpServletResponse response, 
+	public String exportRecord(HttpServletResponse response, 
             @PathVariable("recordId") Long recordId) {
 		
 		Record record = recordService.getRecord(recordId);
 		List<Record> list = recordService.getRecordsByPID(recordId, Environment.getUserId());
-		String json = EasyUtils.obj2Json(list);
-		
-		String fileName = record.getName() + ".json";
-        String exportPath = DataExport.getExportPath() + "/" + fileName;
- 
-		// 先输出内容到服务端的导出文件中
-        FileHelper.writeFile(exportPath, json, false);
-        DataExport.downloadFileByHttp(response, exportPath);
+
+        return exportResources(response, record.getName(), list);
 	}
 	
 	@RequestMapping("/record2report")

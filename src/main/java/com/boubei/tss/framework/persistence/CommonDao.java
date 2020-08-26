@@ -33,5 +33,9 @@ public class CommonDao extends BaseDao<IEntity> implements ICommonDao{
 	public Object updateWithLog(Object entity) {
 		return super.update(entity);
 	}
+
+	public Object deleteWithLog(Class<?> entityClass, Long id) {
+		return super.delete(entityClass, id);
+	}
 }
 

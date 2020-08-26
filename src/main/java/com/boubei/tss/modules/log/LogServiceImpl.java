@@ -38,7 +38,12 @@ public class LogServiceImpl implements LogService {
         		+ " order by o.operateTime desc ";
  
         PaginationQueryByHQL pageQuery = new PaginationQueryByHQL(dao.em(), hql, condition);
-        return pageQuery.getResultList();
+        PageInfo pi = pageQuery.getResultList();
+        for( Object item : pi.getItems() ) {
+        	Log log = (Log) item;
+        	log.formatContent();
+        }
+		return pi;
     }
 
     public Log getLogById(Long id) {

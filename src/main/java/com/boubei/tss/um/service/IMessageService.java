@@ -44,15 +44,12 @@ public interface IMessageService {
 	 */
 	void deleteMessage(String id);
 	
+	int getUnReadMsgNum();
+	
+	List<?> getUnReadHignLevelMsg(int days);
+	
 	/**
-	 * <p>
-	 * 获取收件箱列表
-	 * </p>
-	 * @return
+	 * 获取收(发)件箱列表
 	 */
-	List<Message> getInboxList();
-	
-	int getNewMessageNum();
-	
-	PageInfo getInboxList(MessageQueryCondition condition);
+	PageInfo getBoxList(MessageQueryCondition condition);
 }

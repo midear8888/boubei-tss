@@ -24,7 +24,7 @@ public class Anonymous implements IOperator {
 
 	public static final String _NAME = "匿名用户"; 
     public static final String _CODE = "ANONYMOUS"; 
-    public static final Long   _ID   = -10000L;// 匿名用户ID
+    public static final Long   _ID   = -10000L; // 匿名用户ID
     
     public static Anonymous one = new Anonymous();
     

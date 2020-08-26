@@ -13,6 +13,9 @@ package com.boubei.tss.cache.aop;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+/**
+ * 注：需要配合 @Cached 一起使用
+ */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface QueryCached {
 	

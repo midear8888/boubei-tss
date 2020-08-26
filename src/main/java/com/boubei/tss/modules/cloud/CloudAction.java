@@ -10,6 +10,7 @@
 
 package com.boubei.tss.modules.cloud;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,12 +23,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.DMUtil;
+import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.modules.cloud.entity.CloudOrder;
 import com.boubei.tss.modules.cloud.pay.AbstractProduct;
 import com.boubei.tss.modules.cloud.pay.AfterPayService;
+import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
 
@@ -39,6 +43,8 @@ public class CloudAction {
 	private CloudService cloudService;
 	@Autowired
 	private ICommonService commonService;
+	@Autowired
+	private CloudDao cloudDao;
 
 	@RequestMapping(value = "/order", method = RequestMethod.POST)
 	@ResponseBody
@@ -53,7 +59,7 @@ public class CloudAction {
 	@RequestMapping(value = "/order", method = RequestMethod.PUT)
 	@ResponseBody
 	public CloudOrder updateOrder(CloudOrder co) {
-		cloudService.calMoney(co); // 重新计算价格
+		AbstractProduct.createBean(co).setPrice(); // 重新计算价格
 		commonService.update(co);
 
 		return co;
@@ -62,7 +68,12 @@ public class CloudAction {
 	@RequestMapping(value = "/order/price/query")
 	@ResponseBody
 	public CloudOrder queryPrice(CloudOrder co) {
-		return cloudService.calMoney(co);
+		co.setCreator((String) EasyUtils.checkNull(co.getCreator(), Environment.getUserCode(), "ANONYMOUS"));
+		if( co.getType() != null ) {
+			AbstractProduct.createBean(co).setPrice();
+		}
+		
+		return co;
 	}
 
 	@RequestMapping(value = "/order/price", method = RequestMethod.POST)
@@ -82,12 +93,36 @@ public class CloudAction {
 
 	@RequestMapping(value = "/order/list", method = RequestMethod.GET)
 	@ResponseBody
-	public List<?> listOrders() {
+	public Object listOrders(Integer page, Integer rows) {
+		String hql = " from CloudOrder where creator = '" + Environment.getUserCode() + "' order by id desc";
 		if (Environment.isAdmin()) {
-			return commonService.getList(" from CloudOrder order by id desc");
+			hql = " from CloudOrder order by id desc";
 		}
-		String hql = "from CloudOrder where creator = ? order by id desc";
-		return commonService.getList(hql, Environment.getUserCode());
+		if (page == null && rows == null) {
+			return cloudDao.getEntities(hql);
+		} else {
+			return cloudDao.getPaginationEntities(hql, page, rows);
+		}
+	}
+
+	@RequestMapping(value = "/proxy/authorize", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> listMyCustomer(int page, int rows, String appid) {
+		String sql = "select distinct uu.loginname,uu.username,usa.name, usa.startdate,usa.enddate,usa.disabled,cmo.appid "
+				+ "from cloud_proxy_contract cpc,cloud_module_order cmo,um_user uu,um_sub_authorize usa " + "where cpc.appid = ? "
+				+ "and cpc.disabled = ? " + "and cpc.proxy_user = ? " + "and cpc.module_id = cmo.module_id " + "and cpc.appid = cmo.appid "
+				+ "and cmo.status = ? " + "and cmo.creator = uu.loginname " + "and uu.id = usa.ownerid";
+
+		Map<Integer, Object> paramsMap = new HashMap<Integer, Object>();
+		paramsMap.put(1, appid);
+		paramsMap.put(2, ParamConstants.FALSE);
+		paramsMap.put(3, Environment.getUserCode());
+		paramsMap.put(4, CloudOrder.PAYED);
+
+		SQLExcutor ex = new SQLExcutor();
+		ex.excuteQuery(sql, paramsMap, page, rows, DMConstants.LOCAL_CONN_POOL);
+
+		return ex.toEasyUIGrid();
 	}
 
 	@RequestMapping(value = "/modules", method = RequestMethod.GET)
@@ -113,6 +148,15 @@ public class CloudAction {
 		money_real = (Double) EasyUtils.checkNull(money_real, co.getMoney_cal());
 		co.setMoney_real(money_real);
 
-		afterPayService.handle(order_no, money_real, AbstractProduct.ignoreMoneyDiffPayer, "线下", null);
+		afterPayService.handle(order_no, money_real, AbstractProduct.ADMIN_PAYER, "线下", null);
+	}
+
+	/**
+	 * 非购买，管理员自动创建策略分配给新开域（TMS里当前域为下游承运商开域）
+	 */
+	@RequestMapping(value = "/order/autoPayed", method = RequestMethod.POST)
+	@ResponseBody
+	public void fastCreateModuleUser(String user_name, String phone, Long moduleId, Long logistics_id) {
+		cloudService.fastCreateModuleUser(user_name, phone, moduleId, logistics_id);
 	}
 }

@@ -37,6 +37,8 @@ public class ModuleUser implements IEntity {
 	@Column(nullable = false)
 	private Long userId; // 用户ID
 	
+	private Integer isBuy; // 是否购买获得
+	
 	private String domain;
 	
 	public ModuleUser() {
@@ -82,5 +84,13 @@ public class ModuleUser implements IEntity {
 
 	public void setDomain(String domain) {
 		this.domain = domain;
+	}
+
+	public Integer getIsBuy() {
+		return isBuy;
+	}
+
+	public void setIsBuy(Integer isBuy) {
+		this.isBuy = isBuy;
 	}
 }

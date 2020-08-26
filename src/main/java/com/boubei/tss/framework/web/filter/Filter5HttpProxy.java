@@ -151,7 +151,7 @@ public class Filter5HttpProxy implements Filter {
 		HttpState httpState = client.getState();
 		
 		/* 设置用户令牌相关Cookie，包括一个token Cookie和一个 sessionId Cookie */
-        boolean isSecure = Context.getRequestContext().isSecure(); //是否https请求
+        boolean isSecure = Context.getRequestContext().isSecure(); // TODO 目前【https】请求转发会报SunCertPathBuilderException
         String currentAppCode = Context.getApplicationContext().getCurrentAppCode(); //当前应用code
         String domain = appServer.getDomain();
         String path   = appServer.getPath(); 
@@ -218,7 +218,7 @@ public class Filter5HttpProxy implements Filter {
 
 	/**
 	 * <p>
-	 * 转发返回数据，包括转发请求的cookie、Header、以及返回数据流（response）设置到转发前请求的响应对象（response）中。
+	 * 转发返回数据，包括转发请求的Header、以及返回数据流（response）设置到转发前请求的响应对象（response）中。
 	 * </p>
 	 * @param appServer 当前应用相关信息
 	 * @param response  转发前的响应对象（即进本filter时的response）
@@ -228,22 +228,6 @@ public class Filter5HttpProxy implements Filter {
 	 */
 	private void transmitResponse(AppServer appServer, HttpServletResponse response, HttpClient client,
             HttpMethod httpMethod) throws IOException {
-        
-		// 转发返回的Cookies信息
-	    org.apache.commons.httpclient.Cookie[] cookies = client.getState().getCookies();
-        for (int i = 0; i < cookies.length; i++) {
-            String cookieName = cookies[i].getName();
-            ApplicationContext appContext = Context.getApplicationContext();
-			if (cookieName.equals(appContext.getCurrentAppCode())) continue;
-            
-            if (cookieName.equals(appServer.getSessionIdName())) {
-                cookieName = appServer.getCode();
-            }
-            
-            String cpath = appContext.getCurrentAppServer().getPath();
-            javax.servlet.http.Cookie cookie = HttpClientUtil.createCookie(cookieName, cookies[i].getValue(), cpath);
-            response.addCookie(cookie);
-        }
         
         // 转发返回的Header信息
         Header contentType = httpMethod.getRequestHeader(HttpClientUtil.CONTENT_TYPE);

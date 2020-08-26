@@ -13,7 +13,6 @@ package com.boubei.tss.dm.report;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -91,7 +90,7 @@ public class _Reporter extends BaseActionSupport {
     	/* 其它系统调用接口时，传入其在TSS注册的用户ID; 检查令牌，令牌有效则自动完成登陆 */
     	Filter8APITokenCheck.checkAPIToken(request, report);
     	
-    	/* 如果传入的参数要求不取缓存的数据，则返回当前时间戳作为userID，以触发缓存更新。*/
+    	/* 如果传入的参数要求不取缓存的数据，则返回【当前时间戳】作为cacheFlag，以避开缓存 */
     	boolean reportCache = Config.TRUE.equalsIgnoreCase(ParamManager.getValue(PX.REPORT_CACHE, Config.TRUE));
     	Object cacheFlag;
     	if( !reportCache || Config.TRUE.equals(request.getParameter("noCache")) ) {
@@ -116,21 +115,24 @@ public class _Reporter extends BaseActionSupport {
     	long start = System.currentTimeMillis();
     	Map<String, String> requestMap = DMUtil.parseRequestParams(request, false);
 		Object cacheFlag = checkLoginAndCache(request, reportId);
-		SQLExcutor excutor = reportService.queryReport(reportId, requestMap, page, pagesize, cacheFlag);
+		SQLExcutor ex = reportService.queryReport(reportId, requestMap, page, pagesize, cacheFlag);
     	
 		AccessLogRecorder.outputAccessLog(reportService, reportId, "showAsGrid", requestMap, start);
         
         List<IGridNode> list = new ArrayList<IGridNode>();
-        for(Map<String, Object> item : excutor.result) {
+        for(Map<String, Object> item : ex.result) {
             DefaultGridNode gridNode = new DefaultGridNode();
-            gridNode.getAttrs().putAll(item);
+            for(String label : item.keySet()) {
+            	String code = (String) EasyUtils.checkNull(ex.labelsMap.get(label), label);
+            	gridNode.getAttrs().put(code, item.get(label));
+            }
             list.add(gridNode);
         }
-        GridDataEncoder gEncoder = new GridDataEncoder(list, excutor.getGridTemplate());
+        GridDataEncoder gEncoder = new GridDataEncoder(list, ex.getGridTemplate());
         
         PageInfo pageInfo = new PageInfo();
         pageInfo.setPageSize(pagesize);
-        pageInfo.setTotalRows(excutor.count);
+        pageInfo.setTotalRows(ex.count);
         pageInfo.setPageNum(page);
         
         print(new String[] {"ReportData", "PageInfo"}, new Object[] {gEncoder, pageInfo});
@@ -148,14 +150,16 @@ public class _Reporter extends BaseActionSupport {
         
     	Map<String, String> requestMap = DMUtil.parseRequestParams(request, true);
     	Long reportId = reportService.getReportId( report.toString() );
+    	Report reportObj = reportService.getReport(reportId, false);
     	
 		Object cacheFlag = checkLoginAndCache(request, reportId);
 		String email = requestMap.remove("email");
+		String charSet = (String) EasyUtils.checkNull(request.getParameter(DataExport.CHARSET), DataExport.SYS_CHAR_SET);
 		
 		long start = System.currentTimeMillis();
 		SQLExcutor excutor = reportService.queryReport(reportId, requestMap, page, pagesize, cacheFlag);
 		
-		String fileName = report + "-" + Environment.getUserId() + ".csv";
+		String fileName = reportObj.getName() + "-" + Environment.getUserId() + ".csv";
         String exportPath;
         
         // 如果导出数据超过了pageSize（前台为导出设置的pageSize为10万），则不予导出并给与提示
@@ -172,7 +176,8 @@ public class _Reporter extends BaseActionSupport {
 		}
 		else {
 			// 先输出查询结果到服务端的导出文件中
-			exportPath = DataExport.exportCSV(fileName, excutor.result, excutor.selectFields);
+			
+			exportPath = DataExport.exportCSV(fileName, excutor.result, excutor.selectFields, charSet);
 		}
 		
 		if( email != null ) {
@@ -183,7 +188,7 @@ public class _Reporter extends BaseActionSupport {
 			MailUtil.sendHTML(subject, html, email.split(","), _ms, new File(exportPath));
 		}
 		else { // 下载上一步生成的附件
-	        DataExport.downloadFileByHttp(response, exportPath, excutor.result.size() >= 655350);
+	        DataExport.downloadFileByHttp(response, exportPath, charSet, excutor.result.size() >= 655350);
 		}
         
         AccessLogRecorder.outputAccessLog(reportService, reportId, "exportAsCSV", requestMap, start);
@@ -216,9 +221,11 @@ public class _Reporter extends BaseActionSupport {
     
     @RequestMapping("/download")
     public void download(HttpServletRequest request, HttpServletResponse response) {
-    	String fileName = DMUtil.parseRequestParams(request, true).get("filename");
+    	Map<String, String> params = DMUtil.parseRequestParams(request, true);
+		String charSet = (String) EasyUtils.checkNull(request.getParameter(DataExport.CHARSET), DataExport.SYS_CHAR_SET);
+		String fileName = params.get("filename");
         String exportPath = DataExport.getExportPath() + "/" + fileName ;
-        DataExport.downloadFileByHttp(response, exportPath);
+        DataExport.downloadFileByHttp(response, exportPath, charSet, false);
     }
     
     /**
@@ -260,10 +267,7 @@ public class _Reporter extends BaseActionSupport {
         }
 
         if(page != null || requestMap.containsKey("rows")) {
-        	Map<String, Object> returlVal = new HashMap<String, Object>();
-        	returlVal.put("total", excutor.count);
-        	returlVal.put("rows", excutor.result);
-        	return returlVal;
+        	return excutor.toEasyUIGrid();
         }
         
         return excutor.result;

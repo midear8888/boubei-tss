@@ -27,7 +27,7 @@ public class SerialNO extends ARecordTable {
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "serialno_sequence")
 	private Long id;
 	
-	@Column(nullable = false, length = 12)
+	@Column(nullable = false, length = 50)
 	private String precode;
 	
 	@Column(nullable = false)

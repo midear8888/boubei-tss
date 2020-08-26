@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
+import com.boubei.tss.util.InfoEncoder;
 
 /** 
  * <pre> 
@@ -37,7 +38,7 @@ import com.boubei.tss.util.FileHelper;
  *    可以使用java代码编译混淆器、自定义类装载器来实现。
  * </pre>
  */
-public final class LicenseManager {
+public class LicenseManager {
 
     private final Log log = LogFactory.getLog(getClass());
     
@@ -49,7 +50,7 @@ public final class LicenseManager {
         return instance;
     }
     
-    private List<License> licenses;
+    public List<License> licenses;
 
     public void loadLicenses() {
         if( !EasyUtils.isNullOrEmpty(licenses) ) return;
@@ -59,27 +60,29 @@ public final class LicenseManager {
         for(int i = 0; i < files.length; i++){
             String filename = files[i];
             File file = new File(LicenseFactory.LICENSE_DIR, filename);
-            if(file.isDirectory() || !filename.endsWith(".license")) {
-                continue;
+            if( !file.isDirectory() && filename.endsWith(".license")) {
+            	try {
+            		checkLicense(file, licenses);
+            	} catch(Exception e) { }
             }
-            
-            try {
-                License license = License.fromConfigFile(filename);
-                
-                Date expiresDate = license.expiry;
-                if(expiresDate != null && expiresDate.before(new Date())) {
-                    log.error("license文件 \"" + file.getName() + "\" 已经过期.");
-                    continue; 
-                }
-                if(!validate(license)) {
-                    log.error("license文件 \"" + file.getName() + "\" 不合法.");
-                    continue; 
-                }
-                
-                licenses.add(license);
-            } 
-            catch(Exception e) { }
         }
+    }
+    
+	void checkLicense(File file, List<License> licenses) throws Exception {
+		String fileName = file.getName();
+		License license = License.fromConfigFile(fileName);
+
+		Date expiresDate = license.expiry;
+		if (expiresDate != null && expiresDate.before(new Date())) {
+			log.error("license文件 \"" + fileName + "\" 已经过期.");
+			return;
+		}
+		if (!validate(license)) {
+			log.error("license文件 \"" + fileName + "\" 不合法.");
+			return;
+		}
+
+		licenses.add(license);
     }
  
     /**
@@ -133,13 +136,13 @@ public final class LicenseManager {
         File keyFile = new File(LicenseFactory.PUBLIC_KEY_FILE);
         String publicKey = FileHelper.readFile(keyFile).trim();
 
-        X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(EasyUtils.decodeHex(publicKey));
+        X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(InfoEncoder.decodeHex(publicKey));
         KeyFactory keyFactory = KeyFactory.getInstance(LicenseFactory.KEY_ALGORITHM);
         java.security.PublicKey pubKey = keyFactory.generatePublic(pubKeySpec);
         
         Signature sig = Signature.getInstance(LicenseFactory.KEY_ALGORITHM);
         sig.initVerify(pubKey);
         sig.update(license.getFingerprint());
-        return sig.verify(EasyUtils.decodeHex(license.signature));
+        return sig.verify(InfoEncoder.decodeHex(license.signature));
     }
 }

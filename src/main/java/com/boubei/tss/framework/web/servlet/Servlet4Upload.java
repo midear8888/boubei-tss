@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
@@ -27,9 +28,15 @@ import javax.servlet.http.Part;
 import org.apache.log4j.Logger;
 
 import com.boubei.tss.dm.DMUtil;
+import com.boubei.tss.dm.Excel;
+import com.boubei.tss.dm.record.file.OrignUploadFile;
+import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.exception.ExceptionEncoder;
 import com.boubei.tss.framework.exception.convert.ExceptionConvertorFactory;
+import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.web.filter.Filter8APITokenCheck;
+import com.boubei.tss.modules.progress.Progress;
+import com.boubei.tss.modules.progress.ProgressPool;
 import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
@@ -46,7 +53,7 @@ import com.boubei.tss.util.FileHelper;
  * -3. 使用随机数改写文件名和文件路径，使得用户不能轻易访问自己上传的文件
  * -4. 单独设置文件服务器的域名
  * 
- * 注：最大可以上传文件大小为20M = 20971520Byte
+ * 注：最大可以上传文件大小为10M
  * 
  * 微信小程序等上传附件：
  * var url =  "https://www.boudata.com/tss/remote/upload?afterUploadClass=com.boubei.tss.dm.record.file.CreateAttach&type=2";
@@ -57,7 +64,7 @@ import com.boubei.tss.util.FileHelper;
 	url += "&client=" + wx;
  */
 @WebServlet(urlPatterns={"/auth/file/upload", "/remote/upload"})
-@MultipartConfig(maxFileSize = 1024 * 1024 * 20)
+@MultipartConfig(maxFileSize = 1024 * 1024 * 10)
 public class Servlet4Upload extends HttpServlet {
 
 	private static final long serialVersionUID = -6423431960248248353L;
@@ -78,10 +85,12 @@ public class Servlet4Upload extends HttpServlet {
 			script = doUpload(request, part); // 自定义输出到指定目录
 			
 		} catch (Exception _e) {
+			ProgressPool.finish( new Progress(100) ); // 进度设置为完成
+			
 			Exception e = ExceptionConvertorFactory.getConvertor().convert(_e);
 			ExceptionEncoder.printErrorMessage(_e);
 			
-			String errorMsg = "上传（导入）失败：" + e.getMessage();
+			String errorMsg = "异常提示：" + e.getMessage();
 			errorMsg = Pattern.compile("\t|\r|\n|\'").matcher(errorMsg).replaceAll(" "); // 剔除换行，以免alert不出来
 			script = "parent.alert('" + errorMsg + "');";
 		} 
@@ -99,8 +108,8 @@ public class Servlet4Upload extends HttpServlet {
 		 * gets absolute path of the web application, tomcat7/webapps/tss
 		String defaultUploadPath = request.getServletContext().getRealPath("");
 		 */
-		
-		String uploadPath = DMUtil.getExportPath() + File.separator + "upload";
+		Map<String,String> params = DMUtil.getRequestMap(request, true);
+		String uploadPath = DMUtil.getAttachPath() + File.separator + "upload";
         FileHelper.createDir(uploadPath);
  
 		// 获取上传的文件真实名字(含后缀)
@@ -117,14 +126,19 @@ public class Servlet4Upload extends HttpServlet {
 		String subfix = FileHelper.getFileSuffix(orignFileName), newFileName;
 		
 		// 允许使用原文件名
-		String useOrignName = request.getParameter("useOrignName");
+		String useOrignName = params.get("useOrignName");
+		// 指定文件名
+		String useSpecifiedName = params.get("useSpecifiedName");
 		if(useOrignName != null) {
 			newFileName = orignFileName;
+		} else if(useSpecifiedName != null){
+			newFileName = useSpecifiedName + "." + subfix;
 		} else {
 			newFileName = System.currentTimeMillis() + "." + subfix; // 重命名
 		}
 		
         String newFilePath = uploadPath + File.separator + newFileName;
+        long fileSize = part.getSize() / 1024;
         
         // 自定义输出到指定目录
 		InputStream is = part.getInputStream();
@@ -137,10 +151,30 @@ public class Servlet4Upload extends HttpServlet {
 		fos.close();
 		is.close();
 		
-		String afterUploadClass = request.getParameter("afterUploadClass");
-		AfterUpload afterUpload = (AfterUpload) BeanUtil.newInstanceByName(afterUploadClass);
 		
-		String jsCallback = EasyUtils.obj2String( request.getParameter("callback") );
-		return afterUpload.processUploadFile(request, newFilePath, orignFileName) + jsCallback;
+		String afterUploadClass = params.get("afterUploadClass");
+		String jsCallback = EasyUtils.obj2String( params.get("callback") );
+		
+		// 导入数据：则记录上传的数据附件信息 & 检查是否重复在导入
+		if( Excel.isCSV(newFilePath) || Excel.isXLS(newFilePath) || Excel.isXLSX(newFilePath) ) {
+			
+			ProgressPool.checkRepeat(); 
+			
+			OrignUploadFile ogf = new OrignUploadFile();
+			ogf.setId((Long) ogf.getPK());
+			ogf.setType(subfix);
+			ogf.setName(newFileName);
+			ogf.setPath(newFilePath);
+			ogf.setSize(fileSize);
+			ogf.setOld(orignFileName);
+			ogf.setOrigin(Environment.getOrigin());
+			ogf.setAfter(afterUploadClass);
+			Global.getCommonService().create(ogf);
+		}
+		
+		// 执行附件后续逻辑操作
+		AfterUpload afterUpload = (AfterUpload) BeanUtil.newInstanceByName(afterUploadClass);
+		return afterUpload.processUploadFile(request, newFilePath, orignFileName)
+				+ EasyUtils.checkTrue(jsCallback.length() == 0, "", ";" + jsCallback);
 	}
 }

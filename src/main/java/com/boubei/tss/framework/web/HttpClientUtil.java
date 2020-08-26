@@ -81,7 +81,7 @@ public class HttpClientUtil {
         
         // 设置转发Cookies信息
         AppServer currentAS = Context.getApplicationContext().getCurrentAppServer();
-        for (javax.servlet.http.Cookie cookie : request.getCookies()) {
+        for (javax.servlet.http.Cookie cookie : cookies) {
             String cookieName = cookie.getName();
             if (cookieName.equals(currentAS.getSessionIdName()) 
             		|| cookieName.equals(RequestContext.USER_TOKEN)) {
@@ -176,49 +176,10 @@ public class HttpClientUtil {
         }
         
         // 设置客户端IP
-        httpMethod.setRequestHeader(RequestContext.USER_CLIENT_IP, requestContext.getClientIp());
+        httpMethod.setRequestHeader(RequestContext.USER_REAL_IP, requestContext.getClientIp());
         return httpMethod;
     }
 	
-    /**
-     * 处理二次转发请求（request2）转发成功后 返回的Cookie信息，将这些cookie设置到初始的请求和响应里
-     * @param cookies 
-     *            注：是org.apache.commons.httpclient.Cookie
-     * @param targetAppServer
-     */
-    public static void transmitReturnCookies(org.apache.commons.httpclient.Cookie[] cookies, AppServer targetAppServer) {
-        RequestContext requestContext = Context.getRequestContext();
-        if (requestContext == null) return;
-        
-        XHttpServletRequest request = requestContext.getRequest();
-        HttpServletResponse response = Context.getResponse();
-        if (response == null || request == null) return;
-        
-        // 转发返回Cookies
-        for (int i = 0; i < cookies.length; i++) {
-            String cookieName = cookies[i].getName();
-            
-            //如果当前应用本身的cookie，则无需转发
-            if (cookieName.equals(Context.getApplicationContext().getCurrentAppCode())) continue; 
-            
-            if (cookieName.equals(targetAppServer.getSessionIdName())) {
-                cookieName = targetAppServer.getCode();
-            }
-            
-            String cpath = request.getContextPath();
-            javax.servlet.http.Cookie cookie = createCookie(cookieName, cookies[i].getValue(), cpath);
-            cookie.setMaxAge(-1);
-            cookie.setSecure(request.isSecure());
-            
-            if (response.isCommitted()) {
-                response.addCookie(cookie);
-            }
-            
-            // 同时也添加到request中，以用于二次、三次的远程接口调用
-            request.addCookie(cookie); 
-        }
-    }
-    
 	/**
 	 * <p>
 	 * 设置需要返回的Cookie对象到response中

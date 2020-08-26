@@ -11,6 +11,7 @@ package com.boubei.tss.util;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Properties;
 
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeUtility;
@@ -41,7 +42,8 @@ public class MailUtil {
 		if( configs.length == 5 ) {
 			mailSender.setUsername( configs[3] );
 			mailSender.setPassword( InfoEncoder.simpleDecode(configs[4], 12) ); 
-			mailSender.getJavaMailProperties().put("mail.smtp.auth", true);
+			Properties mailProperties = mailSender.getJavaMailProperties();
+			mailProperties.put("mail.smtp.auth", true);
 		}
 		
 		return mailSender;

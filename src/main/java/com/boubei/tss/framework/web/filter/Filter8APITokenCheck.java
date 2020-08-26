@@ -2,7 +2,9 @@ package com.boubei.tss.framework.web.filter;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -17,13 +19,18 @@ import org.apache.commons.logging.LogFactory;
 
 import com.boubei.tss.EX;
 import com.boubei.tss.PX;
+import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.framework.Config;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.SecurityUtil;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.sso.context.RequestContext;
+import com.boubei.tss.framework.web.XHttpServletRequest;
+import com.boubei.tss.framework.web.wrapper.XHttpServletRequestWrapper;
 import com.boubei.tss.modules.api.APIService;
+import com.boubei.tss.modules.log.BusinessLogger;
+import com.boubei.tss.modules.param.ParamConfig;
 import com.boubei.tss.um.permission.IResource;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
@@ -44,16 +51,22 @@ import com.boubei.tss.util.InfoEncoder;
  * http://api?uName=JK&uSign=md5(params+secret+timestamp)&timestamp=&参数1=value1&参数2=value2.......
  * JS 和 Java分别对params进行排序，拼接成json字符串，然后进行签名
  * 
- * 安全等级 > 6, 必须以签名的方式过滤：md5(secret + timestamp)  timestamp格式 yyyy-MM-dd hh:mi:ss
+ * 安全等级 > 6, 必须以签名的方式过滤：md5(secret + timestamp) 或 md5(secret + requestBody.json + timestamp)  timestamp格式 yyyy-MM-dd hh:mi:ss
  * 
  * 登录分：
  * 1、有会话Session: 账号、买吗登录 --> Token，浏览器
  * 2、无会话远程Call: uName / sign(secret) 
  * 
+ * 错误code含义：
+ *  503  签名为空
+ *	504  时间戳无效
+ *	505  验签失败
+ *	506  令牌验证失败
+ *	555  接口内部异常
  */
 //@WebFilter(filterName = "Filter8APITokenCheck", urlPatterns = {"/api/*"})
 public class Filter8APITokenCheck implements Filter {
-    
+	
     static Log log = LogFactory.getLog(Filter8APITokenCheck.class);
 
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -64,15 +77,15 @@ public class Filter8APITokenCheck implements Filter {
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         
-    	checkAPIToken( (HttpServletRequest) request );
+    	request = checkAPIToken( (HttpServletRequest) request );
     	chain.doFilter(request, response);
     }
     
-    public static void checkAPIToken(HttpServletRequest req) {
+    public static HttpServletRequest checkAPIToken(HttpServletRequest req) {
     	String resourceType = "D1";
     	String resource = req.getServletPath();
  
-    	checkAPIToken(req, resourceType, resource);
+    	return checkAPIToken(req, resourceType, resource);
 	}
 	
 	/**
@@ -85,39 +98,70 @@ public class Filter8APITokenCheck implements Filter {
 	    checkAPIToken(req, resourceType, resource);
 	}
 	
-	public static void checkAPIToken(HttpServletRequest req, String resourceType, String resource) {
+	public static HttpServletRequest checkAPIToken(HttpServletRequest req, String resourceType, String resource) {
 		
 		APIService apiService = (APIService) Global.getBean("APIService");
 		
 		/* 注：tssJS.ajax需要把uName和uToken放在QueryString里，本过滤器可能在Filter6Decoder前执行（此时XML格式参数还没解析出来）*/
-		String uName  = req.getParameter("uName");
+		String uName = getInfo(req, "uName_ALIAS", "uName,appkey");
+		String sign  = getInfo(req, "uSign_ALIAS", "uSign,_sign");
 	    
-	    if( EasyUtils.isNullOrEmpty(uName) ) return;
+	    if( EasyUtils.isNullOrEmpty(uName) ) return req;
 	    
-	    /* 签名验证模式 */
-	    String sign = req.getParameter("uSign");
+	    /* 1、签名验证模式登录 */
 	    if( SecurityUtil.isHardestMode() || sign != null ) {
 	    	if( EasyUtils.isNullOrEmpty(sign) )  {
-	    		throw new BusinessException(EX.DM_11C);
+	    		throw new BusinessException(EX.DM_11C, 503);
 	    	}
 	    	
-			String timestamp = req.getParameter("timestamp");
+	    	// 检查签名时间戳是否过期（3分钟内有效）
+			String timestamp = getInfo(req, "timestamp_ALIAS", "timestamp");
 			Date _timestamp = DateUtil.parse(timestamp);
-			if(_timestamp == null || System.currentTimeMillis() - _timestamp.getTime() > 1000*60*30) {
-				throw new BusinessException(EX.parse(EX.DM_11A, timestamp));
+			
+			if(_timestamp == null || System.currentTimeMillis() - _timestamp.getTime() > 1000*60*3) {
+				throw new BusinessException(EX.parse(EX.DM_11A, timestamp), 504);
+			}
+			timestamp = DateUtil.formatCare2Second(_timestamp);
+			
+			// 验签
+			List<String> tokenList = apiService.searchTokes(uName, resource, resourceType); 
+			Map<String, String> paramsMap = new HashMap<String, String>();
+			String requestBody = null;
+			try {
+				// 原始报文
+				requestBody = Filter6XmlHttpDecode.getRequestBody(req.getInputStream());
+				paramsMap = EasyUtils.json2Map(requestBody) ;
+				
+				// req.getInputStream() 只能取一次
+				req = XHttpServletRequestWrapper.wrapRequest(req);
+		        for (String key : paramsMap.keySet()) {
+		        	((XHttpServletRequest)req).addParameter(key, paramsMap.get(key));
+		        }
+			} catch (Exception e) {
 			}
 			
-			List<String> tokenList = apiService.searchTokes(uName, resource, resourceType); 
+			String params = "";
+			Map<String, String> resultMap = EasyUtils.sortMapByKey(paramsMap); // 按Key进行排序
+	        for (Map.Entry<String, String> entry : resultMap.entrySet()) {
+	        	params += entry.getKey() + entry.getValue();
+	        }
 			for(String secret : tokenList) {
-	    		 String _sign = InfoEncoder.string2MD5(secret + timestamp);
-	    		 if(sign.equalsIgnoreCase(_sign)) {
+	    		 String _sign1 = InfoEncoder.string2MD5(secret + timestamp);
+	    		 String _sign2 = InfoEncoder.string2MD5(secret + params + timestamp);
+	    		 if(sign.equalsIgnoreCase(_sign1) || sign.equalsIgnoreCase(_sign2)) {
 	    			 apiService.mockLogin(uName);
-	    	    	 return;
+	    	    	 return req;
 	    		 }
 	    	}
-			throw new BusinessException(EX.DM_11B);
+			
+			String content = EX.DM_11B + ", params=" +DMUtil.parseRequestParams(req, false)+ ", tokens=" +tokenList+ ", resource=" +resource+ ", requestBody=" +requestBody;
+			log.info( content );
+			BusinessLogger.log("对外API", EX.DM_11B, content);
+			
+			throw new BusinessException(EX.DM_11B, 505);
 	    }
 		
+	    // 2、验证session中token登录（非初次登录）
 		RequestContext requestContext = Context.getRequestContext();
 		String cToken = requestContext.getUserToken(); // token in cookie
 		String sToken = requestContext.getAgoToken(); // token in session
@@ -126,19 +170,38 @@ public class Filter8APITokenCheck implements Filter {
 		log.debug(resourceType + ", " + resource + ", " + uName + ", " + uToken);
 		log.debug("token in cookie  = " + cToken);
 		log.debug("token in session = " + sToken);
+		log.debug("request sessionID = " + Context.getRequestContext().getSessionId() );
 		
-		if( cToken != null && cToken.equals(sToken) ) return; // 非初次登录
+		if( cToken != null && cToken.equals(sToken) ) return req; // 非初次登录
 	    
-		if( EasyUtils.isNullOrEmpty(uToken) ) return;
+		if( EasyUtils.isNullOrEmpty(uToken) ) return req;
 	    
-		// 分别按资源的【ID】+ uName 搜索一遍令牌
-		List<String> tokenList = apiService.searchTokes(uName, resource, resourceType); 
+		// 3、uNameu + Token登录； 
+		List<String> tokenList = apiService.searchTokes(uName, resource, resourceType); // 分别按资源的【ID】+ uName 搜索一遍令牌
 		
     	if( tokenList.contains(uToken) ) {
     		apiService.mockLogin(uName);
-    		return;
     	}
-    	
-    	throw new BusinessException(EX.DM_11);
+    	else {
+    		String errorMsg = EX.DM_11 + uName;
+        	log.info( errorMsg + ", params=" + DMUtil.parseRequestParams(req, false) + ", tokens=" + tokenList + ", resource=" + resource);
+        	
+        	/* 如果携带错误的uName和uToken，不抛出异常（在白名单中且允许匿名访问的地址，就算令牌是错的也要能访问）
+        	 * throw new BusinessException(errorMsg, 506);
+        	 */
+    	}
+    	return req;
+	}
+	
+	public static String getInfo(HttpServletRequest req, String config, String defaultV) {
+		String[] nameAlias = ParamConfig.getAttribute(config, defaultV).split(",");
+		String val = null; 
+		for(String alias : nameAlias) {
+			val = req.getParameter(alias);
+			if( !EasyUtils.isNullOrEmpty(val) )  { 
+				break;
+			}
+		}
+		return val;
 	}
 }

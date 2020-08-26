@@ -28,6 +28,7 @@ import com.boubei.tss.util.EasyUtils;
  * 
  * com.boubei.tss.um.syncdata.SyncUserJob | 0 06 * * * ? | 4
  * 
+ * /tss-4.x/src/main/resources/template/um/syncdata/template_DB2.xml
  */
 public class SyncUserJob extends AbstractJob {
 	

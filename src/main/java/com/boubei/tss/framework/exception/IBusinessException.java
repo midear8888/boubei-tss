@@ -28,4 +28,6 @@ public interface IBusinessException {
      * 是否打印异常stack
      */
 	boolean needPrint();
+	
+	Object errorCode();
 }

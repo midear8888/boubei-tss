@@ -70,4 +70,8 @@ public class BusinessServletException extends ServletException implements IBusin
 	public boolean needPrint() {
 		return !this.relogin && this.neddPrint;
 	}
+
+	public Object errorCode() {
+		return null;
+	}
 }

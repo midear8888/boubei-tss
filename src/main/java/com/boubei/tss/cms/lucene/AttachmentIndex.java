@@ -57,16 +57,12 @@ public class AttachmentIndex {
 			return getContentFromText(file); // 普通文档，txt等
 		}
 //		else if ( "doc".equals(suffix) || "docx".equals(suffix) ) { // word文档
-//			// TODO
 //		} 
 //		else if ( "ppt".equals(suffix) || "pptx".equals(suffix) ) { // ppt文档
-//			// TODO
 //		} 
 //		else if ( "xls".equals(suffix) || "xlsx".equals(suffix) ) { // excle文档
-//			// TODO
 //		} 
 //		else if ( "pdf".equals(suffix) ) { // pdf文档
-//			// TODO
 //		}
         
 		return "";

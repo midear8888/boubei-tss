@@ -137,7 +137,7 @@ public class Channel extends OperateInfo implements IXForm, IDecodable, IResourc
  
 	public String getPath() {
 		if( "temp".equals(path) ) {
-			return DMUtil.getExportPath() + "/cms";
+			return DMUtil.getAttachPath() + "/cms";
 		}
 		return path;
 	}

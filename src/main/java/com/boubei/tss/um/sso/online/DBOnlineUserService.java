@@ -16,15 +16,22 @@ import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.boubei.tss.PX;
+import com.boubei.tss.dm.dml.SQLExcutor;
+import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.sso.online.IOnlineUserManager;
+import com.boubei.tss.modules.param.ParamConfig;
 import com.boubei.tss.modules.param.ParamConstants;
+import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.dao.IUserDao;
 import com.boubei.tss.um.entity.Group;
+import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.URLUtil;
 
@@ -33,6 +40,8 @@ import com.boubei.tss.util.URLUtil;
  */
 @Service("DBOnlineUserService")
 public class DBOnlineUserService implements IOnlineUserManager {
+	
+	Logger log = Logger.getLogger(this.getClass());
 	
 	@Autowired private IUserDao dao;
 	
@@ -43,10 +52,20 @@ public class DBOnlineUserService implements IOnlineUserManager {
      * 2、同一用户，只能在PC、微信、H5上分别登录一个session
      */
     public void register(String token, String appCode, String sessionId, Long userId, String userName) {
-        List<?> list = queryExists(userId);
+    	
+    	boolean isMobile = URLUtil.isMobile();
+    	boolean isAPICall = Context.getRequestContext().isApiCall() && !isMobile;
+    	
+    	// session 还没有加入domain信息
+    	String domain = queryDomain(userId);
+    	Object multilogin = SQLExcutor.queryVL("select multilogin x from x_domain where domain = ?", "x", EasyUtils.checkNull(domain, UMConstants.DEFAULT_DOMAIN));
+    	Object admin_su = Environment.getInSession("admin_su");
+    	
+        List<?> list = queryExists(userId, userName, isMobile, EasyUtils.checkNull(multilogin, admin_su), isAPICall);
         
         DBOnlineUser ou;
         if( list.isEmpty() ) {
+        	userName += EasyUtils.checkTrue(ParamConstants.TRUE.equals( admin_su ), " < Admin", "");
         	ou = new DBOnlineUser(userId, sessionId, appCode, token, userName);
         	dao.createObject(ou);
         	
@@ -54,67 +73,88 @@ public class DBOnlineUserService implements IOnlineUserManager {
         } 
         else {
         	ou = (DBOnlineUser) list.get(0);
+        	dao.evict(ou);
         	
         	// 移动端登录/API访问, 不干扰PC端
         	HttpSession session = Context.sessionMap.get(ou.getSessionId());
-        	if( session != null && !URLUtil.isWeixin() && !Context.getRequestContext().isApiCall() ) {
-        		session.invalidate(); // 销毁当前用户已经登录的session（登录在其它电脑上的），控制账号在多地登录
+        	if( session != null && !isMobile && !isAPICall ) {
+        		/*  销毁当前用户已经登录的session（登录在其它电脑上的），控制账号在多地登录. */
+        		try {
+        			session.invalidate(); 
+        			dao.executeHQL("delete from DBOnlineUser where id = ?", ou.getId());
+        			
+        			// 销毁session时，ou也被删除了；此处重新保存
+        			ou.setId(null);
+        			dao.createObject(ou);
+        		} 
+        		catch(Exception e) {
+        			// java.lang.IllegalStateException: invalidate: Session already invalidated
+        		}
         		
         		dao.setLastLoginTime(userId);
         	}
         	
-        	ou.setSessionId(sessionId);
-        	ou.setLoginCount( EasyUtils.obj2Int(ou.getLoginCount()) + 1 );
-        	ou.setLoginTime(new Date());
-        	ou.setClientIp(Environment.getClientIp());
-        	ou.setOrigin( Environment.getOrigin() );
+        	if( isAPICall && !sessionId.equals(ou.getSessionId()) ) {
+        		Context.sessionMap.remove(ou.getSessionId());
+        	}
+
+        	int loginCount = EasyUtils.obj2Int(ou.getLoginCount()) + 1 ;
+        	dao.executeHQL("update DBOnlineUser set token = ?, sessionId = ?, loginCount = ?, loginTime = ?, clientIp = ?, origin = ? where id = ?", 
+        			token, sessionId, loginCount, new Date(), Environment.getClientIp(), Environment.getOrigin(), ou.getId());
         }
         
         // 设置域信息（每次登陆domain可能已经发生了变化，重新设置）
-        String hql = "from Group where id in (select groupId from GroupUser where userId = ?) and groupType = ?";
-    	List<?> groups = dao.getEntities(hql, userId, Group.MAIN_GROUP_TYPE);
-    	if( groups.size() > 0 ) {
-    		Group group = (Group) groups.get(0);
-        	ou.setDomain(group.getDomain());
+    	if( domain != null && !domain.equals(ou.getDomain()) ) {
+    		dao.executeHQL("update DBOnlineUser set domain = ? where id = ?", domain, ou.getId());
     	}
-    	
-    	dao.update(ou);
     }
     
-    private List<?> queryExists(Long userId) {
-    	// 对系统级账号不做限制
-    	if( userId < 0 ) {
+    private String queryDomain(Long userId) {
+    	String hql = "from Group where id in (select groupId from GroupUser where userId = ?) and groupType = ?";
+    	List<?> groups = dao.getEntities(hql, userId, Group.MAIN_GROUP_TYPE);
+    	
+    	String domain = null;
+    	if( groups.size() > 0 ) {
+    		Group group = (Group) groups.get(0);
+        	domain = group.getDomain();
+    	}
+    	return domain;
+    }
+    
+    List<?> queryExists(Long userId, String userName, boolean isMobile, Object multilogin, boolean isAPICall) {
+    	// 对系统级账号 及 体验账号(PX.SYS_TEST_USER) 不做限制，允许小程序多处登录，不互踢
+    	if( userId < 0 || userName.equals(ParamConfig.getAttribute(PX.SYS_TEST_USER))) {
             return new ArrayList<Object>(); 
     	}
     	
-    	// 移动端登录不干扰PC端
-    	if( URLUtil.isWeixin() ) {
-    		String hql = " from DBOnlineUser o where o.userId = ? and o.origin = ? ";
-            return dao.getEntities(hql, userId, URLUtil.QQ_WX);
+    	/* 
+    	 * 1、移动端登录不干扰PC端；
+    	 * 2、检查域信息配置，判断当前用户所在域是否支持一个账号多地同时登陆；
+    	 * 3、API call 也不踢人;
+    	 */
+    	String hql = " from DBOnlineUser o where o.userId = ? and o.origin = ? ";
+    	String origin = Environment.getOrigin();
+		if( isMobile  ) {
+            return dao.getEntities(hql, userId, origin); 
+    	}
+    	if( ParamConstants.TRUE.equals( multilogin ) || isAPICall ) {
+    		hql += " and clientIp = ? ";
+            return dao.getEntities(hql, userId, origin, Environment.getClientIp());
     	}
     	
-    	// 检查域信息配置，判断当前用户所在域是否支持一个账号多地同时登陆（API call 也不踢人）
-    	Object multilogin = Environment.getDomainInfo("multilogin");
-    	multilogin = EasyUtils.checkNull(multilogin, Environment.getInSession("admin_su"));
-    	
-		if( ParamConstants.TRUE.equals( multilogin ) || Context.getRequestContext().isApiCall() ) {
-    		String hql = " from DBOnlineUser o where o.userId = ? and o.origin = ? and clientIp = ? ";
-            return dao.getEntities(hql, userId, Environment.getOrigin(), Environment.getClientIp());
-    	}
-    	
-    	// 一个账号只能登录一台电脑
-    	String hql = " from DBOnlineUser o where o.userId = ? ";
-        return dao.getEntities(hql, userId);
+    	// 通常一个账号只能登录一台电脑（加上userName条件可以不踢Admin切换的记录）
+    	hql = " from DBOnlineUser o where o.userId = ? and o.userName = ?";
+        return dao.getEntities(hql, userId, userName);
     }
 
-	public void logout(Long userId) {
-		List<?> list = queryExists(userId);		
-		dao.deleteAll(list);
-	}
- 
     /*
-     * session超时销毁调用。
-     * 根据 SessionId，找到用户并将用户的sessionId置为Null，表示已经注销。
+     * 只在 SessionDestroyedListener.sessionDestroyed(ev) 里调用，session.invalidate()可能发生在：
+     * 1、session超时销毁，自动 （此种情形，不会自动删除DBOnlineUser，要等12小时后，其它用户人为logout了被清理）
+     * 2、register在线库时，发现有账号多地登录的，销毁前面登录的session
+     * 3、用户手动登出logout
+     * 4、被Admin踢下线
+     * 
+     * 注：Jetty关闭前会失效所有的session，要在Jetty下测试自动登录，需要在重启jetty前把online_user表里的sessionId值清空
      */
     public String logout(String appCode, String sessionId) {
     	String hql = " from DBOnlineUser o where o.appCode = ? and o.sessionId = ? ";
@@ -126,16 +166,20 @@ public class DBOnlineUserService implements IOnlineUserManager {
         	token = ou.getToken();
     	}
     	
-    	// 将12小时前的在线信息删除（应该都是漏删除的了）
-    	long nowLong = new Date().getTime(); 
-        Date time = new Date(nowLong - (long) (12 * 60 * 60 * 1000)); 
-    	dao.deleteAll(dao.getEntities("from DBOnlineUser o where o.loginTime < ?", time));
+    	// 将系统重启前登录 或 重启后登录但在线超12小时 的在线信息删除（应该是重启后，除去自动登录之外的，残留于在线库的登录记录）
+    	Date restartTime = Global.restartTime, now = new Date();
+		long currTime = now.getTime();
+		Double delta = (Double) EasyUtils.checkTrue(currTime - restartTime.getTime() < 1000*60*3, 0.1d, 0d);
+		Date time1 = DateUtil.subDays(restartTime, delta); // 重启后3分钟内，删除2小时前登录的（允许近期登录的自动登录）；3分钟后，删除所有重启前的登录记录
+		Date time2 = DateUtil.subDays(now, 0.5); // 12小时
+    	dao.executeHQL("delete from DBOnlineUser where loginTime < ?", EasyUtils.checkTrue(time1.after(time2), time1, time2));
     	
 		return token;
     }
-
+    
     public boolean isOnline(String token) {
-        List<?> list = dao.getEntities("from DBOnlineUser o where o.token = ? ", token);
+        String hql = "from DBOnlineUser o where o.token = ? and clientIp = ? ";
+		List<?> list = dao.getEntities(hql, token, Environment.getClientIp());
 		return list.size() > 0;
     }
 }

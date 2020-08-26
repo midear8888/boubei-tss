@@ -26,8 +26,10 @@ import com.boubei.tss.EX;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.Anonymous;
 import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.framework.sso.SSOConstants;
 import com.boubei.tss.modules.cloud.entity.ModuleDef;
 import com.boubei.tss.modules.param.ParamConstants;
+import com.boubei.tss.modules.sn.SerialNOer;
 import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.dao.IGroupDao;
 import com.boubei.tss.um.dao.IRoleDao;
@@ -63,35 +65,55 @@ public class GroupService implements IGroupService {
     }
 
     @SuppressWarnings("unchecked")
-	public List<?> findEditableRoles() {
+	public List<Role> findEditableRoles() {
         List<Role> list = (List<Role>) roleDao.getEditableRoles();
         Set<Role> set = new LinkedHashSet<Role>(list);
         
-        /* 加上因域管理员选用功能模块而得来的模块角色，以用来给域内用户定岗
+        /* 1、加上因【域管理员】选用功能模块而得来的模块角色，以用来给域内用户定岗
          * （注：只适合定价为0的免费模块，付费的需要域管理员通过使用转授策略把购买的模块角色赋予域用户）
          */
         String hql = "select o from ModuleDef o, ModuleUser mu where mu.moduleId = o.id and mu.userId = ? and o.status in ('opened') ";
-        Long userId = (Long) EasyUtils.checkNull(Environment.getUserId(), Anonymous._ID);
-		List<ModuleDef> modules = (List<ModuleDef>) roleDao.getEntities(hql, userId);
+        Long userId = Environment.getNotnullUserId();
+		List<ModuleDef> modules = (List<ModuleDef>) roleDao.getEntities(hql, userId);  // 非域管理员获取不到此处角色
         for(ModuleDef module : modules ) {
-        	Double price = EasyUtils.obj2Double(module.getPrice());
-        	boolean moduleFreeUse = price <= 0;
+        	List<String> freeRoles = EasyUtils.toList( module.getRoles_free() ); // 模块的免费角色
         	
-        	String[] roles = module.getRoles().split(",");
-    		for(String role : roles) {
-    			Long roleId = EasyUtils.obj2Long(role);
-				Role r = roleDao.getEntity(roleId);
-				if(r != null) {
-					boolean roleFreeUse = EasyUtils.obj2String(r.getDescription()).indexOf("freeUse") >= 0;
-					if( !moduleFreeUse && !roleFreeUse) continue;
-					
+        	Double price = EasyUtils.obj2Double(module.getPrice());
+        	boolean moduleFreeUse = price <= 0; 
+        	if( moduleFreeUse ) { 
+        		freeRoles.addAll( EasyUtils.toList( module.getRoles() ) );  // 免费模块的收费角色
+        	}
+        	
+    		for(String role : freeRoles) {
+				Role r = roleDao.getEntity( EasyUtils.obj2Long(role) );
+				if(r != null && r.getId() != UMConstants.ANONYMOUS_ROLE_ID) {
 					roleDao.evict(r);
-    				r.setName( r.getName() + "(" + module.getModule() + ")" );
+    				r.setName( r.getName() + " - " + module.getCode() );
     				set.add( r );
 				}
     		}
         }
         
+        /* 2、域用户（人事等非域管理员角色）可以自行设置自己或别人的角色（freeUse），需要用户所在域选择的模块包含有此角色
+         * （ 注：免费角色允许域管理员设置给其它成员，不允许其它成员自主获得；其它成员自主只能获取标记为freeUse的免费角色 ） */
+        Object domainUserIds = Environment.getInSession(SSOConstants.USERIDS_OF_DOMAIN);
+		hql = "select o from ModuleDef o, ModuleUser mu where mu.moduleId = o.id " +
+        		" and mu.userId in (" +EasyUtils.checkNull(domainUserIds, Anonymous._ID)+ ") and o.status in ('opened') ";
+		modules = (List<ModuleDef>) roleDao.getEntities(hql);
+        for(ModuleDef module : modules ) {
+        	List<String> roles = EasyUtils.toList( module.getRoles() );
+        	roles.addAll( EasyUtils.toList( module.getRoles_free() ) );
+        	
+    		for(String role : roles) {
+				Role r = roleDao.getEntity( EasyUtils.obj2Long(role) );
+				if(r != null && r.getDescription().indexOf("freeUse") >= 0) {
+					roleDao.evict(r);
+    				r.setName( r.getName() + " - " + module.getCode() );
+    				set.add( r );
+				}
+    		}
+        }
+ 
 		return new ArrayList<Role>(set);
     }
 
@@ -120,19 +142,26 @@ public class GroupService implements IGroupService {
         return new Object[] { groupIds, parentGroups };
     }
  
-    public Group createDomainGroup(String domain) {
+    public Group createDomainGroup(String domain, Long parent) {
+    	parent = (Long) EasyUtils.checkNull(parent, UMConstants.DOMAIN_ROOT_ID);
+		if (groupDao.getEntity(parent) == null ) {
+			throw new BusinessException(EX.parse(EX.U_53, parent));
+		}
+		
 		List<?> list = groupDao.getEntities("from Group where ? in (domain, name)", domain);
 		if(list.size() > 0) {
 			throw new BusinessException(EX.parse(EX.U_19, domain));
 		}
+		
 		Group group = new Group();
-		group.setName(domain);
-		group.setParentId(UMConstants.DOMAIN_ROOT_ID);
 		group.setGroupType(Group.MAIN_GROUP_TYPE);
-		group.setSeqNo(groupDao.getNextSeqNo(UMConstants.DOMAIN_ROOT_ID));
+		group.setDomainRoot(ParamConstants.TRUE);
+		group.setName(domain);
+		group.setParentId(parent);
+		group.setSeqNo(groupDao.getNextSeqNo(parent));
 		groupDao.saveGroup(group);
 		
-		fixDomain(domain, group);
+		fixDomain(domain, group, true);
 		
 		return group;
     }
@@ -140,7 +169,7 @@ public class GroupService implements IGroupService {
 	/**
 	 * 创建时，OperateInfoInterceptor 会执行 IOperatable.setDomain(Environment.getDomain())；需要单独再保存一遍domain信息
 	 */
-	private void fixDomain(String domain, Group group) {
+	private void fixDomain(String domain, Group group, boolean isDomainGroup) {
 		Integer groupType = group.getGroupType();
 		if( domain == null && Group.MAIN_GROUP_TYPE.equals(groupType) ) return;
 		
@@ -150,8 +179,10 @@ public class GroupService implements IGroupService {
 	    } 
 		else {
 	    	// 控制注册时域名必须为英文字母或数字，方便小程序传递域参数; 或者字符数 > 7
-		    if( !Pattern.compile("[a-z|A-Z|0-9]+").matcher(domain).matches() || domain.length() > 7 ) {
-		    	domain = "G" + group.getId();
+		    if( isDomainGroup && (!Pattern.compile("[a-z|A-Z|0-9]+").matcher(domain).matches() || domain.length() > 7) ) {
+		    	String _domain = SerialNOer.get("Dxxxx", true);
+		    	List<?> list = groupDao.getEntities("from Group where domain = ?", _domain);
+		    	domain = (String) EasyUtils.checkTrue(list.isEmpty(), _domain, "G" + group.getId());
 		    }
 	    }
 	        
@@ -164,11 +195,12 @@ public class GroupService implements IGroupService {
 		Group parent = groupDao.getEntity(parentId);
 		
 		group.setDomain(parent.getDomain());
+		group.setDomainRoot( ParamConstants.FALSE );
 		group.setSeqNo(groupDao.getNextSeqNo(parentId));
 		group.setDisabled(parent.getDisabled());
 		groupDao.saveGroup(group);
 		
-		fixDomain( parent.getDomain(), group);
+		fixDomain( parent.getDomain(), group, false);
         
 		saveGroupToUser(group.getId(), userIdsStr);
 		saveGroupToRole(group.getId(), roleIdsStr);

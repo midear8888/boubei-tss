@@ -57,6 +57,7 @@ public class PasswordPassport {
             throw new BusinessException(EX.U_02);
         }
         
+        // 随机数，用以解密
         Object randomKey = session.getAttribute(SSOConstants.RANDOM_KEY);
         if(randomKey == null) {
         	randomKey = requestContext.getValue(SSOConstants.RANDOM_KEY);

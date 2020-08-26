@@ -10,13 +10,17 @@
 
 package com.boubei.tss.framework.sso.appserver;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.dom4j.Element;
 
 import com.boubei.tss.EX;
+import com.boubei.tss.cache.Cacheable;
+import com.boubei.tss.cache.Pool;
+import com.boubei.tss.cache.extension.CacheHelper;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.util.BeanUtil;
@@ -28,11 +32,14 @@ import com.boubei.tss.util.XMLDocUtil;
  */
 public class ParamAppServerStorer implements IAppServerStorer {
 	
-	private Map<String, AppServer> cache = new HashMap<String, AppServer>(); 
+	Pool cache = CacheHelper.getNoDeadCache();
+	String prefix = "APP-";
     
     public AppServer getAppServer(String appCode) {
-    	if(cache.get(appCode) != null) {
-    		return cache.get(appCode);
+		String cacheKey = prefix + appCode;
+    	Cacheable item = cache.getObject(cacheKey);
+		if(item != null) {
+    		return (AppServer) item.getValue(); // 修改AppServer配置后需刷新 nodead cache
     	}
     	
         String appServerXML = null;
@@ -52,12 +59,20 @@ public class ParamAppServerStorer implements IAppServerStorer {
         AppServer bean = new AppServer();
         BeanUtil.setDataToBean(bean, attrsMap);
         
-        cache.put(appCode, bean);
+        cache.putObject(cacheKey, bean);
         return bean;
     }
     
 	public Collection<AppServer> getAppServers() {
-		return cache.values();
+		Collection<AppServer> result = new ArrayList<>();
+		Set<Cacheable> items = cache.listItems();
+		for(Cacheable item : items) {
+			if( item.getKey().toString().startsWith(prefix)) {
+				result.add( (AppServer) item.getValue() );
+			}
+		}
+		
+		return result;
 	}
 }
 

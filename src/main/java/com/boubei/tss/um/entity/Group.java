@@ -11,7 +11,9 @@
 package com.boubei.tss.um.entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.persistence.Column;
@@ -43,12 +45,15 @@ import com.boubei.tss.util.EasyUtils;
         @UniqueConstraint(name = "MULTI_NAME_GROUP", columnNames = { "parentId", "name" })
 })
 @SequenceGenerator(name = "group_sequence", sequenceName = "group_sequence", initialValue = 1000, allocationSize = 10)
-@JsonIgnoreProperties(value={"pk", "attributes4XForm", "attributes", "parentClass", "creatorId", "createTime", "creatorName", 
-		"updatorId", "updateTime", "updatorName", "lockVersion", "decode", "seqNo", "levelNo", "resourceType", "fromGroupId", "syncDefine"})
+@JsonIgnoreProperties(value={"pk", "attributes4XForm", "attributes", "parentClass", "decode", "seqNo", "levelNo", 
+		"creatorId", "createTime", "creatorName", "updatorId", "updateTime", "updatorName", "lockVersion", 
+		"resourceType", "fromGroupId", "syncConfig"})
 public class Group extends OperateInfo implements IDecodable, IXForm, IResource {
 
 	public static final Integer MAIN_GROUP_TYPE      = 1; // 主组类型
 	public static final Integer ASSISTANT_GROUP_TYPE = 2; // 辅助组类型
+	
+	public static final String CUSTOMER_GROUP = "customer";
  
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO, generator = "group_sequence")
@@ -79,6 +84,14 @@ public class Group extends OperateInfo implements IDecodable, IXForm, IResource 
 	 * 组域：用以隔离不同组织（企业）的数据。企业注册时生成，其所有子组/用户/数据都记录domain
 	 */
 	private String domain;
+	private Integer domainRoot = ParamConstants.FALSE; // 是否为域的根节点, 0/1, -1为域分组
+	
+	public boolean isDomainGroup() {
+		List<String> ignores = new ArrayList<>();
+		ignores.add("Business");
+		ignores.add(UMConstants.COMPANY_DOMAIN);
+		return (levelNo == 4 && !ignores.contains(this.domain)) || ParamConstants.TRUE.equals(this.getDomainRoot());
+	}
  
 	public Long getId() {
 		return id;
@@ -178,6 +191,7 @@ public class Group extends OperateInfo implements IDecodable, IXForm, IResource 
    
 	public TreeAttributesMap getAttributes() {
 		TreeAttributesMap map = new TreeAttributesMap(id, name);
+		map.put("code", domain);
 		map.put("parentId", parentId);
 		map.put("disabled", disabled);
 		map.put("syncable", EasyUtils.obj2String(this.syncConfig).indexOf("userSql") > 0);
@@ -210,5 +224,13 @@ public class Group extends OperateInfo implements IDecodable, IXForm, IResource 
 
 	public void setSyncConfig(String syncConfig) {
 		this.syncConfig = syncConfig;
+	}
+
+	public Integer getDomainRoot() {
+		return domainRoot;
+	}
+
+	public void setDomainRoot(Integer domainRoot) {
+		this.domainRoot = domainRoot;
 	}
 }

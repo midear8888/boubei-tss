@@ -52,8 +52,14 @@ public interface PX {
      */
 	static String URL_WHITE_LIST = "url.white.list";
 	
-    /** ip白名单，名单内的ip允许跨域访问系统的服务和资源 */
+    /** IP黑白名单，百名单内的ip允许跨域访问系统的服务和资源，黑名单禁止访问任何资源；*/
     static String IP_WHITE_LIST = "ip.white.list";
+    static String IP_BLACK_LIST = "ip.black.list";
+    
+    /** 开启攻击防御  */
+    static String DENY_MASS_ATTACK = "DENY_MASS_ATTACK";
+    static String MAX_HTTP_REQUEST = "MAX_HTTP_REQUEST";
+    static String MIN_REQUEST_INTERVAL = "MIN_REQUEST_INTERVAL";
     
     /** session生命周期，单位（秒）*/
 	static String SESSION_CYCLELIFE_CONFIG = "session.cyclelife";
@@ -118,5 +124,14 @@ public interface PX {
 	
 	/** 导入图片文件大小上限，超出则进行压缩, 单位K */
 	static String MAX_PIC_SIZE  = "MAX_PIC_SIZE";
+	
+	/** 策略到期预先几天提醒 */
+	static String SA_EXPIRE_NOTIFY_DAYS = "SA_EXPIRE_NOTIFY_DAYS";
+	
+	/** 系统体验账号 */
+	static String SYS_TEST_USER = "SYS_TEST_USER";
+	
+	/** 系统管理员邮箱 */
+	static String MONITORING_RECEIVERS = "Monitoring-Receivers";
 	
 }

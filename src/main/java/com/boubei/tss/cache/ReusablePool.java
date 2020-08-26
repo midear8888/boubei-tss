@@ -48,7 +48,6 @@ public class ReusablePool extends ObjectPool {
 			} 
 			else {
 				super.destroyObject(item);
-				log.info("destroy invalid item[" + item + "]");
 			}
 		}
 		
@@ -60,9 +59,6 @@ public class ReusablePool extends ObjectPool {
 			int maxSize = strategy.poolSize;
 			if (size() < maxSize || maxSize == 0) {
 				item = customizer.create();
-				synchronized (size) {
-					size ++;
-				} 
 			}
 		}
 		

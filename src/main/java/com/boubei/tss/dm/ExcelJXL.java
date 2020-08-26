@@ -21,6 +21,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.boubei.tss.util.DateUtil;
+import com.boubei.tss.util.EasyUtils;
+import com.boubei.tss.util.FileHelper;
+
 import jxl.Cell;
 import jxl.CellType;
 import jxl.DateCell;
@@ -28,10 +32,6 @@ import jxl.Sheet;
 import jxl.Workbook;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
-
-import com.boubei.tss.util.DateUtil;
-import com.boubei.tss.util.EasyUtils;
-import com.boubei.tss.util.FileHelper;
 
 public class ExcelJXL extends Excel {
  
@@ -68,7 +68,8 @@ public class ExcelJXL extends Excel {
 		
 		return targetFile;
 	}
- 
+	
+	@SuppressWarnings("deprecation")
 	protected Map<String, Object> readExcel(String filepath) {
 		List<String> headers = new ArrayList<String>();
 		List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
@@ -79,7 +80,11 @@ public class ExcelJXL extends Excel {
 			is = new FileInputStream(filepath);
 			wb = Workbook.getWorkbook(is);
 			
-			Sheet sheet1 = wb.getSheet(0);       // 获取第一张Sheet表
+			int index = 0;
+			Sheet sheet1 = wb.getSheet(index);;       // 获取第一张Sheet表
+			while(sheet1.isHidden()){
+				sheet1 = wb.getSheet(++index);
+			}
 			int rsColumns = sheet1.getColumns();  // 获取Sheet表中所包含的总列数
 			int rsRows = sheet1.getRows();        // 获取Sheet表中所包含的总行数
 			

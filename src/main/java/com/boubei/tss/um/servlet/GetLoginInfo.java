@@ -17,14 +17,17 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.SSOConstants;
+import com.boubei.tss.framework.sso.identifier.BaseUserIdentifier;
 import com.boubei.tss.framework.web.display.XmlPrintWriter;
 import com.boubei.tss.framework.web.display.xmlhttp.XmlHttpEncoder;
+import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.service.ILoginService;
-import com.boubei.tss.util.MathUtil;
+import com.boubei.tss.util.BeanUtil;
 
 /**
  * <p>
@@ -44,16 +47,17 @@ public class GetLoginInfo extends HttpServlet {
         
         String loginName = request.getParameter(SSOConstants.USER_ACCOUNT);
         try {
-        	String[] info = service.getLoginInfoByLoginName(loginName);
+        	User user = service.getLoginInfoByLoginName(loginName);
+        	String clazz = user.getAuthMethod();
+        	 
             XmlHttpEncoder encoder = new XmlHttpEncoder(); 
-            encoder.put("UserName",  info[0]);  // 返回用户姓名
-            encoder.put("identifier", info[1]); // 返回身份认证器类名：全路径
+            encoder.put("UserName",  user.getUserName());  // 返回用户姓名
+			encoder.put("identifier", clazz);  // 返回身份认证器类名：全路径
             
-            // 产生一个登录随机数给客户端，客户端使用该随机数对账号和密码进行加密后再传回后台
-            int randomKey = MathUtil.randomInt(10000);
-            encoder.put(SSOConstants.RANDOM_KEY, randomKey);
-			request.getSession(true).setAttribute(SSOConstants.RANDOM_KEY, randomKey);
-			
+			BaseUserIdentifier identifier = (BaseUserIdentifier) BeanUtil.newInstanceByName(clazz);
+            HttpSession session = request.getSession(true);
+			identifier.before(user, encoder, session);
+            
             response.setCharacterEncoding("utf-8");
             encoder.print(new XmlPrintWriter(response.getWriter()));
         } 

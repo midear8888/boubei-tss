@@ -11,9 +11,7 @@
 package com.boubei.tss.um.entity;
 
 import java.io.Serializable;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -39,6 +37,7 @@ import com.boubei.tss.um.helper.PasswordRule;
 import com.boubei.tss.um.sso.UMPasswordIdentifier;
 import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.DateUtil;
+import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.InfoEncoder;
 
 /**
@@ -57,6 +56,8 @@ public class User extends OperateInfo implements ITreeNode, IGridNode, IXForm {
     
     @Column(length = 50, nullable = false)  
     private String loginName;       // 登陆系统帐号
+    
+    @Column(length = 50, nullable = false)  
     private String userName;        // 姓名
     private String employeeNo;      // 员工编号
     private String sex;             // 性别
@@ -70,6 +71,7 @@ public class User extends OperateInfo implements ITreeNode, IGridNode, IXForm {
     
     @Column(length = 1000)
     private String udf;     		// 自定义 
+    private String origin;          // 来源
     
     private String  password;         // 密码 
     private String  passwordQuestion; // 密码提示问题 
@@ -119,9 +121,7 @@ public class User extends OperateInfo implements ITreeNode, IGridNode, IXForm {
  
     public void setAccountLife(Date accountLife) {
     	if(accountLife == null) { // 默认有效期50年
-            Calendar cl = new GregorianCalendar();
-            cl.add(Calendar.YEAR, 50);
-            accountLife = cl.getTime();
+            accountLife = DateUtil.addYears(UMConstants.ROLE_LIFE_TIME);
     	}
         this.accountLife = accountLife;
     }
@@ -135,7 +135,7 @@ public class User extends OperateInfo implements ITreeNode, IGridNode, IXForm {
     }
  
     public String getAuthMethod() {
-        return authMethod;
+    	return (String) EasyUtils.checkNull(authMethod, UMPasswordIdentifier.class.getName());
     }
  
     public void setAuthMethod(String authMethod) {
@@ -179,9 +179,9 @@ public class User extends OperateInfo implements ITreeNode, IGridNode, IXForm {
     }
  
     public void setLoginName(String loginName) {
-        this.loginName = loginName;
+        this.loginName = loginName.replaceAll("\\s*", ""); // 去掉空格、制表符、换页符等空白字符
     }
- 
+
     public String getEmail() {
         return email;
     }
@@ -249,7 +249,11 @@ public class User extends OperateInfo implements ITreeNode, IGridNode, IXForm {
     }
  
     public String getTelephone() {
-        return telephone;
+        return this.telephone;
+    }
+    
+    public String _mobile() {
+        return (String) EasyUtils.checkNull(this.telephone, this.loginName);
     }
  
     public void setTelephone(String telephone) {
@@ -401,5 +405,13 @@ public class User extends OperateInfo implements ITreeNode, IGridNode, IXForm {
 
 	public void setRoleNames(String roleNames) {
 		this.roleNames = roleNames;
+	}
+
+	public String getOrigin() {
+		return origin;
+	}
+
+	public void setOrigin(String origin) {
+		this.origin = origin;
 	}
 }

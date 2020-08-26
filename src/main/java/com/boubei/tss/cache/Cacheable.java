@@ -51,6 +51,8 @@ public interface Cacheable {
 	 * @return
 	 */
 	long getAccessed();
+	
+	long getPreAccessed();
 
 	/**
 	 * 更新缓存项最后一次被访问的时间（注：不会同时更新对象的死亡时间，死亡时间不变）

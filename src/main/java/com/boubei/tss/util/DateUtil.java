@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -137,6 +138,10 @@ public class DateUtil {
         return noHMS(new Date());
     }
     
+    public static String now() {
+    	return formatCare2Second(new Date());
+    }
+    
     /**
      * 去掉时分秒
      */
@@ -151,6 +156,9 @@ public class DateUtil {
         return c.getTime();
     }
     
+    public static Date addDays(double days) {
+    	return addDays(new Date(), days);
+    }
     public static Date addDays(Date now, double days) {
         long nowLong = now.getTime(); // 将参考日期转换为毫秒时间
         Date time = new Date(nowLong + (long) (days * 24 * 60 * 60 * 1000)); // 加上时间差毫秒数
@@ -159,6 +167,24 @@ public class DateUtil {
     
     public static Date subDays(Date now, double days) {
         return addDays(now, days * -1);
+    }
+    
+    public static Date addMonths(int mouth_num) {
+    	return addMonths(new Date(), mouth_num);
+    }
+    public static Date addMonths(Date now, int mouth_num) {
+    	Calendar calendar = new GregorianCalendar();
+		calendar.add(Calendar.MONTH, mouth_num);
+		return calendar.getTime();
+    }
+    
+    public static Date addYears(int year_num) {
+    	return addYears(new Date(), year_num);
+    }
+    public static Date addYears(Date now, int year_num) {
+    	Calendar calendar = new GregorianCalendar();
+		calendar.add(Calendar.YEAR, year_num);
+		return calendar.getTime();
     }
     
 	public static List<Date> daysBetweenFromAndTo(Date fromDate, Date toDate) {

@@ -42,8 +42,9 @@ import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.XMLDocUtil;
 
 /** 
- * 应用地址(html类型)访问权限控制检测过滤器
+ * 应用资源地址(action、html等)访问权限控制检测过滤器。 配置文件地址：tss/rights.xml
  * 
+ * TODO 允许在数据表里配置过滤信息，or 直接在方法上加注解？
  */
 //@WebFilter(filterName = "Filter7AccessingCheck", urlPatterns = {"*.htm", "*.html"})
 public class Filter7AccessingCheck implements Filter {
@@ -76,17 +77,12 @@ public class Filter7AccessingCheck implements Filter {
         
         // 检测权限(无法使用Environment)
         List<Object> userRights = new ArrayList<Object>();
+        userRights.add( session.getAttribute(SSOConstants.USER_ACCOUNT) );
         try {
-            List<?> userRightsInSession = (List<?>) session.getAttribute(SSOConstants.USER_RIGHTS_L);
-            if(userRightsInSession != null) {
-                userRights.addAll(userRightsInSession);
-            }
-            
-            String operatorCode = (String) session.getAttribute(SSOConstants.USER_ACCOUNT);
-            if(operatorCode != null) {
-                userRights.add(operatorCode);
-            }
-        } catch(Exception e) { }
+        	userRights.addAll( (List<?>) session.getAttribute(SSOConstants.USER_RIGHTS_L) );
+        	userRights.addAll( (List<?>) session.getAttribute(SSOConstants.USER_ROLES_L) );
+        } 
+        catch(Exception e) { }
         
         log.debug("权限检测开始：" + servletPath);
         if ( !checker.checkPermission(userRights, servletPath) ) {
@@ -103,10 +99,10 @@ public class Filter7AccessingCheck implements Filter {
  * 权限检测器。
  * 
  * 权限配置文件格式： 
- * <rightConfig>
- *      <servlet name="param.htm" right="权限ID1,权限ID2,Admin"/>
- *      <servlet name="cache.htm" right="权限ID1,权限ID3,Admin,JonKing"/>
- * </rightConfig> 
+ * <rights>
+ *      <right uri="param.htm" role="权限ID1,权限ID2,Admin"/>
+ *      <right uri="cache.htm" role="权限ID1,权限ID3,Admin,JonKing"/>
+ * </rights> 
  * 
  * @author Jon.King 2008/12/19 10:59:06
  */
@@ -197,17 +193,17 @@ class AccessingChecker {
 			Element root = doc.getRootElement();
 	        THE_404_URL = root.attributeValue("url_404");
 	        
-	        for (Iterator<?> it = root.elementIterator("servlet"); it.hasNext();) {
+	        for (Iterator<?> it = root.elementIterator("right"); it.hasNext();) {
 	            Element servletNode = (Element) it.next();
-	            String name = EasyUtils.obj2String( servletNode.attributeValue("name") );
-	            String role = EasyUtils.obj2String( servletNode.attributeValue("right") );
+	            String uri = EasyUtils.obj2String( servletNode.attributeValue("uri") );
+	            String role = EasyUtils.obj2String( servletNode.attributeValue("role") );
                
-	            Set<String> rightSet = new HashSet<String>();
+	            Set<String> roleSet = new HashSet<String>();
                 String[] rights = role.split(",");
                 for (int i = 0; i < rights.length; i++) {
-                    rightSet.add(rights[i]);
+                    roleSet.add(rights[i]);
                 }
-                rightsMap.put(name, rightSet);
+                rightsMap.put(uri, roleSet);
 	        }
 		} 
 		catch(Exception e) { }

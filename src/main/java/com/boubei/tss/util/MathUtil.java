@@ -52,6 +52,11 @@ public class MathUtil {
         }
         return sum.doubleValue();
     }
+    
+    public static Double subDoubles(Double value, Double subValue) {
+    	subValue = EasyUtils.obj2Double(subValue);
+    	return addDoubles(value, subValue * -1);
+    }
 
 	/**
 	 * 两数相乘

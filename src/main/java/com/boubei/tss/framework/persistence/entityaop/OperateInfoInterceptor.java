@@ -18,7 +18,6 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.stereotype.Component;
 
 import com.boubei.tss.framework.persistence.IDao;
-import com.boubei.tss.framework.persistence.IEntity;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.util.EasyUtils;
 
@@ -47,36 +46,37 @@ public class OperateInfoInterceptor extends MatchByDaoMethodNameInterceptor {
             if (args[i] instanceof IOperatable 
             		&& (manipulateKind == SAVE || manipulateKind == UPDATE)) {
                
-                IOperatable opObj = (IOperatable) args[i];
-                Serializable pk = ((IEntity)opObj).getPK();
-                
-				if( pk == null ) { // ID为null，说明是新建
-                    opObj.setCreateTime(new Date());
-                    opObj.setCreatorId(Environment.getUserId());
-                    opObj.setCreatorName(Environment.getUserName());  
-                    
-                    // 定时器写数据时，域信息已经指定
-                    String domain = (String) EasyUtils.checkNull( opObj.getDomain(), Environment.getDomainOrign() );
-                    opObj.setDomain(domain);
-                } 
-                else {
-                    opObj.setUpdateTime(new Date());
-                    opObj.setUpdatorId(Environment.getUserId());
-                    opObj.setUpdatorName(Environment.getUserName());  
-                    
-                    /* 修改后，createTime的时分秒没了（日期传递到前台时截去了时分秒，保存后就没有了），
-                     * update时不要前台传入的createTime，而是从DB查出来复制回去
-                     */
-                    @SuppressWarnings("unchecked")
-                    IDao<IEntity> dao = (IDao<IEntity>) target;
-                    IOperatable old = (IOperatable) dao.getEntity( opObj.getClass(), pk);
-                    old = (IOperatable) EasyUtils.checkNull(old, opObj); // 可能修改时记录已被其它人[删除]
-                    opObj.setCreateTime(old.getCreateTime());
-                }
+                fix((IOperatable) args[i], (IDao<?>) target);
             }
         }
 			
         return invocation.proceed();
+	}
+	
+	public static void fix( IOperatable opObj, IDao<?> dao) {
+		 Serializable pk = opObj.getPK();
+         
+		 if( pk == null ) { // ID为null，说明是新建
+             opObj.setCreateTime(new Date());
+             opObj.setCreatorId(Environment.getUserId());
+             opObj.setCreatorName(Environment.getUserName());  
+             
+             // 定时器写数据时，域信息已经指定
+             String domain = (String) EasyUtils.checkNull( opObj.getDomain(), Environment.getDomainOrign() );
+             opObj.setDomain(domain);
+         } 
+         else {
+             /* 修改后，createTime的时分秒没了（日期传递到前台时截去了时分秒，保存后就没有了），
+              * update时不要前台传入的createTime，而是从DB查出来复制回去
+              */
+             IOperatable old = (IOperatable) dao.getEntity( opObj.getClass(), pk);
+             old = (IOperatable) EasyUtils.checkNull(old, opObj); // 可能修改时记录已被其它人[删除]
+             opObj.setCreateTime(old.getCreateTime());
+             
+             opObj.setUpdateTime(new Date());
+             opObj.setUpdatorId(Environment.getUserId());
+             opObj.setUpdatorName(Environment.getUserName());  
+         }
 	}
 }
 

@@ -15,6 +15,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.dom4j.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.boubei.tss.framework.persistence.pagequery.PageInfo;
+import com.boubei.tss.framework.sms.MsgSender;
 import com.boubei.tss.framework.web.display.grid.GridDataEncoder;
 import com.boubei.tss.framework.web.mvc.BaseActionSupport;
 import com.boubei.tss.um.UMConstants;
@@ -30,7 +32,6 @@ import com.boubei.tss.um.entity.Message;
 import com.boubei.tss.um.helper.MessageQueryCondition;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.um.service.IMessageService;
-import com.boubei.tss.util.MailUtil;
 import com.boubei.tss.util.XMLDocUtil;
 
 @Controller
@@ -45,42 +46,28 @@ public class MessageAction extends BaseActionSupport {
     @RequestMapping(value = "/email", method = RequestMethod.POST)
     @ResponseBody
     public void sendEmail(String title, String content, String receivers) {
-    	String[] info = MailUtil.parseReceivers(receivers);
-    	String[] emails = loginService.getContactInfos(info[1], false);
-    	if(emails != null && emails.length > 0) {
-    		MailUtil.send(title, content, emails, info[0]);
-    	}
+    	MsgSender.sendMail(title, content, receivers, false);
     }
     
     @RequestMapping(value = "/email2", method = RequestMethod.POST)
     @ResponseBody
     public void sendHtmlEmail(String title, String content, String receivers) {
-		String[] info = MailUtil.parseReceivers(receivers);
-    	String[] emails = loginService.getContactInfos(info[1], false);
-    	
-    	if(emails != null && emails.length > 0) {
-    		MailUtil.sendHTML(title, content, emails, info[0]);
-    	}
+    	MsgSender.sendMail(title, content, receivers, true);
     }
     
     @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
-    public void sendMessage(String title, String content, String receivers) {
-		messageService.sendMessage(title, content, receivers);
+    public void sendMessage(String title, String content, String receivers, String category, String level) {
+		messageService.sendMessage(title, content, receivers, category, level);
     }
-    
-    @RequestMapping(value = "/list", method = RequestMethod.GET)
-    @ResponseBody
-    public List<Message> listMessages() {
-    	return messageService.getInboxList();
-    }
-    
+
     @RequestMapping(value = "/list/{page}")
     public void listMessages(HttpServletResponse response, MessageQueryCondition condition, @PathVariable int page) {
         condition.getPage().setPageNum(page);
-        PageInfo pi = messageService.getInboxList(condition);
+        PageInfo pi = messageService.getBoxList(condition);
         
-        GridDataEncoder gridEncoder = new GridDataEncoder(pi.getItems(), XMLDocUtil.createDoc(UMConstants.MESSAGE_GRID));
+        Document template = XMLDocUtil.createDoc(UMConstants.MESSAGE_GRID);
+		GridDataEncoder gridEncoder = new GridDataEncoder(pi.getItems(), template);
         print( new String[]{"MsgList", "PageInfo"}, new Object[]{gridEncoder, pi} );
     }
     
@@ -88,7 +75,7 @@ public class MessageAction extends BaseActionSupport {
     @ResponseBody
     public List<?> listMessages2Json(MessageQueryCondition condition, @PathVariable int page) {
         condition.getPage().setPageNum(page);
-        PageInfo pi = messageService.getInboxList(condition);
+        PageInfo pi = messageService.getBoxList(condition);
         
         return pi.getItems();
     }
@@ -108,8 +95,8 @@ public class MessageAction extends BaseActionSupport {
     
     @RequestMapping(value = "/num", method = RequestMethod.GET)
     @ResponseBody
-    public int getNewMessageNum() {
-    	return messageService.getNewMessageNum();
+    public int getUnReadMsgNum() {
+    	return messageService.getUnReadMsgNum();
     }
     
     @RequestMapping(value = "/{ids}", method = RequestMethod.DELETE)

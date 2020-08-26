@@ -1,7 +1,5 @@
 package com.boubei.tss.modules.sn;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.springframework.stereotype.Controller;
@@ -9,12 +7,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.boubei.tss.cache.Cacheable;
+import com.boubei.tss.cache.Pool;
+import com.boubei.tss.cache.extension.CacheHelper;
 import com.boubei.tss.dm.ddl._Field;
-import com.boubei.tss.framework.Global;
-import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.um.UMConstants;
-import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 
 /**
@@ -27,104 +25,82 @@ import com.boubei.tss.util.EasyUtils;
 @Controller
 @RequestMapping("/sn")
 public class SerialNOer {
-	
-	private boolean isGlobal; // 全局流水号：账户流水号等
-	
-	public SerialNOer() { }
-	
-	public SerialNOer(boolean isGlobal) { 
-		this.isGlobal = isGlobal;
-	}
 
-	@RequestMapping(value = "/{sntemplate}/{count}")
+	@RequestMapping(value = "/{snTL}/{count}")
 	@ResponseBody
-	public synchronized List<String> create(@PathVariable("sntemplate") String sntemplate, @PathVariable("count") int count) {
-		String domain = this.isGlobal ? UMConstants.DEFAULT_DOMAIN : Environment.getDomainOrign();
-		
-		return create(domain, sntemplate, count);
+	public List<String> create(@PathVariable("snTL") String snTL, @PathVariable("count") int count, Integer size) {
+		int length = EasyUtils.obj2Int(size);
+		return getSNCreator(snTL, false, length).create(count);
 	}
 	
-	public synchronized List<String> create(String domain, String sntemplate, int count) {
-		
-		sntemplate = EasyUtils.obj2String(sntemplate).toLowerCase();
-		if( !sntemplate.endsWith(_Field.SNO_xxxx) ) {  // eg: SO、ASN等
-			sntemplate += _Field.SNO_yyMMddxxxx;
-		}
-		
-		Date _day;
-		String snMode;
-		if(sntemplate.endsWith(_Field.SNO_yyMMddxxxx)) {
-			_day = DateUtil.today();
-			snMode = DateUtil.format(_day, "yyyyMMdd").substring(2);
-		} else {
-			_day = DateUtil.parse("2018-08-23");
-			snMode = "";
-		}
-		String precode = sntemplate.replace(_Field.SNO_yyMMddxxxx, "").replace(_Field.SNO_xxxx, "").toUpperCase();
-		
-		// 如果域扩展表(x_domain)里明确维护了订单前缀
-		precode = (isGlobal ? "" : EasyUtils.obj2String( Environment.getDomainInfo("prefix") ) ) + precode;
-		
-		ICommonService commonService = Global.getCommonService();
-		domain = (String) EasyUtils.checkNull(domain, UMConstants.DEFAULT_DOMAIN);
-		
-		String hql = " from SerialNO where day = ? and precode = ? and domain = ? ";
-		
-		SerialNO snItem;
-		List<?> list = commonService.getList(hql, _day, precode, domain);
-		if(list.isEmpty()) {
-			snItem = new SerialNO();
-			snItem.setDay( _day );
-			snItem.setPrecode(precode);
-			snItem.setLastNum(0);
-			
-			commonService.createWithLog(snItem);
-			snItem.setDomain(domain);
-		} 
-		else {
-			snItem = (SerialNO) list.get(0);
-		}
-		
-		List<String> result = new ArrayList<String>();
-		count = Math.min(Math.max(1, count), 100000); // 单次最多1到100000个
-		for(int i = 1; i <= count; i++) {
-			int no = snItem.getLastNum() + i;
-			
-			String sn;
-			if(snMode.length() == 0) {
-				sn = "00" + no;
-				sn = sn.substring(sn.length() - (no >= 1000 ? String.valueOf(no).length() : 3));
-				
-			} else {
-				sn = "000" + no;
-				sn = sn.substring(sn.length() - (no >= 10000 ? String.valueOf(no).length() : 4));
-			}
-			
-			sn = precode + snMode + sn;
-			result.add(sn);
-		}
-		
-		int lastNum = snItem.getLastNum() + count;
-		snItem.setLastNum(lastNum);
-		commonService.update(snItem);
-		
-		return result;
+	public static List<String> create(String sntemplate, int count) {
+		return getSNCreator(sntemplate, false, 0).create(count);
 	}
 
-	public synchronized String createOne(String sntemplate) {
-		return this.create(sntemplate, 1).get(0);
+	public static String createOne(String sntemplate) {
+		return create(sntemplate, 1).get(0);
+	}
+	
+	public static List<String> create(String domain, String sntemplate, int count, int length) {
+		return getSNCreator(domain, sntemplate, length).create(count);
 	}
 	
 	// 无限定前缀
 	public static String get() {
 		return get( _Field.SNO_yyMMddxxxx );
 	}
-	
 	public static String get(String preCode) {
 		return get(preCode, false);
 	}
-	
 	public static String get(String preCode, boolean isGlobal) {
-		return new SerialNOer(isGlobal).createOne( preCode );
+		return getSNCreator(preCode, isGlobal, 0).create();  // preCode eg: Dxxxx
+	}
+	
+	
+	/**
+	 * 生成固定位数(size)的编码
+	 * 
+	 * 测试取号器锁机制是否有效：
+	 * var a = [], i = 0; 
+	 * while(i++ < 1000) {  $.get('/tss/fix/sn/Sxxxx/1', {size:5, isGlobal:true}, function(r) { !a.contains(r[0]) && a.push(r[0]);  }); }
+	 * 
+	 */
+	@RequestMapping(value = "/fix/{precode}/{count}")
+	@ResponseBody
+	public  List<String> getFixSN( @PathVariable("precode") String preCode, @PathVariable("count") int count, 
+			int size, boolean isGlobal ) {
+		return getFixSN(size, preCode, count, isGlobal);
+	}
+	
+	// 生成固定位数的编码（单个）
+	public static String getFixSN(int length, String preCode, boolean isGlobal) {
+		return getFixSN(length, preCode, 1, isGlobal).get(0);
+	}
+		
+	// 生成固定位数的编码（批量）
+	public static List<String> getFixSN(int length, String preCode, int count, boolean isGlobal) {
+		preCode = EasyUtils.checkNull(preCode, "1").toString();
+		if( !preCode.endsWith(_Field.SNO_xxxx) ) {
+			preCode += _Field.SNO_xxxx;
+		}
+		return getSNCreator(preCode, isGlobal, length).create(count);
+	}
+	
+	// 对取号器进行缓存，可用作对象锁
+	static SNCreator getSNCreator(String snTemplate, boolean isGlobal, int length) {
+		String domain = isGlobal ? UMConstants.DEFAULT_DOMAIN : Environment.getDomain();
+		return getSNCreator(domain, snTemplate, length);
+	}
+	synchronized static SNCreator getSNCreator(String domain, String snTemplate, int length) {
+		domain = (String) EasyUtils.checkNull(domain, Environment.getDomain());
+		
+		Pool cache = CacheHelper.getNoDeadCache();
+		String key = domain + "-" + snTemplate + "_" + length;
+		Cacheable item = cache.getObject(key);
+		if( item == null ) {
+			item = cache.putObject( key, new SNCreator(domain, snTemplate, length) );
+		}
+		
+		return (SNCreator) item.getValue();
 	}
 }

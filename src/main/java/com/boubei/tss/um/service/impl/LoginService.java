@@ -25,6 +25,8 @@ import org.springframework.stereotype.Service;
 
 import com.boubei.tss.EX;
 import com.boubei.tss.PX;
+import com.boubei.tss.cache.extension.CacheHelper;
+import com.boubei.tss.cache.extension.CacheLife;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.sso.IOperator;
@@ -36,13 +38,13 @@ import com.boubei.tss.um.dao.IGroupDao;
 import com.boubei.tss.um.dao.IRoleDao;
 import com.boubei.tss.um.dao.IUserDao;
 import com.boubei.tss.um.entity.Group;
+import com.boubei.tss.um.entity.Role;
 import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.entity.permission.RoleUserMapping;
 import com.boubei.tss.um.entity.permission.RoleUserMappingId;
 import com.boubei.tss.um.helper.PasswordRule;
 import com.boubei.tss.um.helper.dto.GroupDTO;
 import com.boubei.tss.um.helper.dto.OperatorDTO;
-import com.boubei.tss.um.permission.PermissionHelper;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
@@ -67,7 +69,6 @@ public class LoginService implements ILoginService {
 	@Autowired private IUserDao userDao;
 	@Autowired private IGroupDao groupDao;
 	@Autowired private IRoleDao roleDao;
-	@Autowired private PermissionHelper pHelper;
 	
 	public int checkPwdErrorCount(String loginName) {
 		User user = getUserByLoginName(loginName);
@@ -110,13 +111,15 @@ public class LoginService implements ILoginService {
     	}
     	
     	userDao.refreshEntity(user);
+    	
+    	// 刷新cache，否则密码修改后要等10分钟才生效
+    	CacheHelper.flushCache(CacheLife.SHORT.toString(), "ByLoginName(" +user.getLoginName()+ ")");
     	return token;
 	}
 
 	// For登录用, 此处调用会校验User的状态，停用、过期等状态会抛出异常
-	public String[] getLoginInfoByLoginName(String loginName) {
-		User user = getUserByLoginName(loginName);
-		return new String[] { user.getUserName(), user.getAuthMethod(), user.getAuthToken() };
+	public User getLoginInfoByLoginName(String loginName) {
+		return getUserByLoginName(loginName);
 	}
 	
 	private User getUserByLoginName(String loginName) {
@@ -160,18 +163,17 @@ public class LoginService implements ILoginService {
 	    return new OperatorDTO(user);
 	}
     
-    public List<Long> saveUserRolesAfterLogin(Long logonUserId) {
+    public List<Long> saveUserRoleMapping(Long logonUserId) {
     	List<Long> roleIds = getRoleIdsByUserId( logonUserId );
-        return saveUserRolesAfterLogin(logonUserId, roleIds);
+        return saveUserRoleMapping(logonUserId, roleIds);
 	}
     
-    public List<Long> saveUserRolesAfterLogin(Long logonUserId, List<Long> roleIds) {
-    	
-    	String hql = "from RoleUserMapping o where o.id.userId = ?";
-		List<RoleUserMapping> exsits = (List<RoleUserMapping>) userDao.getEntities(hql,  logonUserId);
+    public List<Long> saveUserRoleMapping(Long logonUserId, List<Long> roleIds) {
+		List<?> exsits = userDao.getEntities("from RoleUserMapping where id.userId = ?", logonUserId);
     	Map<Long, RoleUserMapping> history = new HashMap<Long, RoleUserMapping>();
-    	for(RoleUserMapping rum : exsits) {
-    		history.put(rum.getId().getRoleId(), rum);
+    	for(Object obj : exsits) {
+    		RoleUserMapping ru = (RoleUserMapping) obj;
+    		history.put(ru.getId().getRoleId(), ru);
     	}
         
         // 默认插入一条【匿名角色】给每一个登录用户
@@ -189,10 +191,10 @@ public class LoginService implements ILoginService {
     			RoleUserMapping entity = new RoleUserMapping();
     			entity.setId(id);
     			
-    			userDao.createObject(entity);
+    			userDao.createObject(entity);  // 新增，多线程不安全
         	}
 		}
-        userDao.deleteAll( history.values() );
+        userDao.deleteAll( history.values() ); // 删除之前有，现在没了的角色
         
         return roleIds;
 	}
@@ -219,17 +221,17 @@ public class LoginService implements ILoginService {
 	}
 	
 	private List<Object[]> getUserGroups(Long userId, Integer groupType) {
-        String hql = "select distinct g.id, g.name from Group g, GroupUser gu " +
+        String hql = "select distinct g.id, g.name, g.domain from Group g, GroupUser gu " +
         		" where g.id = gu.groupId and gu.userId = ? and g.groupType = ?";
         return (List<Object[]>) userDao.getEntities(hql, userId, groupType);
 	}
 
-	public List<Object[]> getGroupsByUserId(Long userId) {
+	public List<Group> getGroupsByUserId(Long userId) {
 		List<?> list = groupDao.getFatherGroupsByUserId(userId);
-		List<Object[]> result = new ArrayList<Object[]>();
+		List<Group> result = new ArrayList<Group>();
 		for (int i = 1; i < list.size() + 1; i++) {
 			Group group = (Group) list.get(i - 1);
-			result.add(new Object[] {group.getId(), group.getName(), group.getDomain(), group.getDecode()});
+			result.add(group);
 		}
 		return result;
 	}
@@ -259,17 +261,24 @@ public class LoginService implements ILoginService {
         return translateUserList2DTO(users);
     }
     
+    // 如果domain为空，则取主用户组下非域组用户
     public List<OperatorDTO> getUsersByRoleId(Long roleId) {
     	String domain = Environment.getDomainOrign();
-    	return getUsersByRoleId(roleId, domain);
+    	String domainCondition = (String) EasyUtils.checkTrue(EasyUtils.isNullOrEmpty(domain), "and g.domain is null", "and g.domain = '"+ domain + "'");
+    	return _getDomainUsersByRole(roleId, domainCondition);
+    }
+    
+    // 如果domain为空，则忽略域查询条件
+    public List<OperatorDTO> getUsersByRoleId(Long roleId, String domain) {
+    	String domainCondition = (String) EasyUtils.checkTrue(EasyUtils.isNullOrEmpty(domain), "", "and g.domain = '"+ domain + "'");
+    	return _getDomainUsersByRole(roleId, domainCondition);
     }
  
-    public List<OperatorDTO> getUsersByRoleId(Long roleId, String domain) {
+    private List<OperatorDTO> _getDomainUsersByRole(Long roleId, String domainCondition) {
         String hql = "select distinct u, g.decode from ViewRoleUser ru, User u, GroupUser gu, Group g" +
                 " where ru.id.userId = u.id and ru.id.roleId = ? " +
-                " 	and u.id = gu.userId and gu.groupId = g.id and g.groupType = 1 " +
-                "  and g.domain " + (!EasyUtils.isNullOrEmpty(domain) ? " = '"+ domain + "'" : " is null" ) +
-                " order by g.decode desc, u.id desc ";
+                " 	and u.id = gu.userId and gu.groupId = g.id and g.groupType = 1 " + domainCondition + 
+                " order by g.decode desc, u.id asc ";
         
 		List<?> data = (List<User>) groupDao.getEntities( hql, roleId);
 		List<User> users = new ArrayList<User>();
@@ -278,6 +287,15 @@ public class LoginService implements ILoginService {
 		}
 		
         return translateUserList2DTO(users);
+    }
+    
+    public List<OperatorDTO> getUsersByRole(String roleName, String domain) {
+    	List<?> roles = roleDao.getEntities("from Role where name = ? and isGroup = 0", roleName);
+    	if( roles.isEmpty()) {
+    		throw new BusinessException("角色：" + roleName + " 不存在");
+    	}
+		Long roleId = ((Role) roles.get(0)).getId();
+		return getUsersByRoleId(roleId, domain);
     }
     
     public List<?> getUsersByDomain(String domain, String field, Long logonUserId) {
@@ -291,7 +309,7 @@ public class LoginService implements ILoginService {
     	}
     	
         String hql = "select distinct u." +field+ " from Group g, GroupUser gu, User u" +
-                " where gu.id.userId = u.id and gu.id.groupId = g.id and groupType = 1 " +
+                " where gu.userId = u.id and gu.groupId = g.id and groupType = 1 " +
                 "	and ? in (g.domain, '无域') " +
                 " order by u." + field;
        
@@ -299,17 +317,16 @@ public class LoginService implements ILoginService {
     }
     
     // 登陆账号和中文名字映射
-    public Map<String, String> getUsersMap() {
-		return (Map<String, String>) _getUsersMap("loginName, u.userName");
+    public Map<String, String> getUsersMap(String domain) {
+		return (Map<String, String>) _getUsersMap(domain, "loginName, u.userName");
 	}
     
     // 登陆账号ID和中文名字映射
-    public Map<Long, String> getUsersMapI() {
-		return (Map<Long, String>) _getUsersMap("id, u.userName");
+    public Map<Long, String> getUsersMapI(String domain) {
+		return (Map<Long, String>) _getUsersMap(domain, "id, u.userName");
 	}
     
-    private Map<?, String> _getUsersMap(String key) {
-		String domain = Environment.getDomain();
+    private Map<?, String> _getUsersMap(String domain, String key) {
 		List<?> list = getUsersByDomain(domain, key, Environment.getUserId());
 		
 		Map<Object, String> map = new HashMap<Object, String>();
@@ -323,7 +340,9 @@ public class LoginService implements ILoginService {
     private List<OperatorDTO> translateUserList2DTO(List<User> users){
         List<OperatorDTO> returnList = new ArrayList<OperatorDTO>();
         for( User user : users ){
-            returnList.add(new OperatorDTO(user));
+            OperatorDTO dto = new OperatorDTO(user);
+            dto.setPassword(null);
+			returnList.add(dto);
         }
         return returnList;
     }
@@ -351,7 +370,11 @@ public class LoginService implements ILoginService {
 			int index = temp.indexOf("@tssRole");
 			if(index > 0) { // 角色
 				String domain = temp.substring(index + 8).replaceFirst("@", "");
-				List<OperatorDTO> list = getUsersByRoleId(parseID(temp), domain);
+				List<OperatorDTO> list = getUsersByRoleId(parseID(temp), domain); // 按角色ID
+				try {
+					list.addAll( getUsersByRole(temp.split("@")[0], domain) ); // 按角色名字
+				} catch(Exception e) { }
+				
 				for(OperatorDTO user : list) {
 					addUserEmail2List(user, emails, ids);
 				}

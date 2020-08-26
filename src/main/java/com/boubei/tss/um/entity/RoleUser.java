@@ -42,8 +42,11 @@ public class RoleUser implements IEntity {
 	private Long strategyId; // 策略Id
 	private Long moduleId;   // 模块Id
 	
+	/**
+	 * 一个策略下一个角色只出现一次，但userId可以为空或不为空，所以判断时忽略userId
+	 */
 	public String toString() {
-		return "(" + roleId + ", " + userId + ", " + strategyId + ", " + moduleId + ")";
+		return "(" + strategyId + ", " + roleId + ")";
 	}
 	
 	public boolean equals(Object o) {
@@ -51,7 +54,7 @@ public class RoleUser implements IEntity {
 	}
 	
 	public int hasCode() {
-		return this.toString().hashCode();
+		return this.toString().hashCode(); 
 	}
  
 	public Long getId() {

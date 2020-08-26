@@ -10,6 +10,7 @@
 
 package com.boubei.tss.dm.record;
 
+import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -17,11 +18,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.boubei.tss.EX;
+import com.boubei.tss.cache.Cacheable;
+import com.boubei.tss.cache.Pool;
+import com.boubei.tss.cache.extension.CacheHelper;
+import com.boubei.tss.cache.extension.CacheLife;
 import com.boubei.tss.dm.ddl._Database;
+import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.record.file.RecordAttach;
 import com.boubei.tss.dm.record.permission.RecordPermission;
 import com.boubei.tss.dm.record.permission.RecordResource;
 import com.boubei.tss.framework.exception.BusinessException;
+import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.um.permission.PermissionHelper;
 import com.boubei.tss.util.EasyUtils;
@@ -63,8 +70,8 @@ public class RecordServiceImpl implements RecordService {
 	
 	// 名字、表名二者有一个能对上即可
 	public Long getRecordID(String nameOrTable, int type, boolean auth) {
-		String hql = "select o.id from Record o where ? in (o.id, o.name, o.table) and type = ? order by o.id desc"; 
-		List<?> list = recordDao.getEntities(hql, nameOrTable, type); 
+		String hql = "select o.id from Record o where (o.name = ? or o.table = ?) and type = ? order by o.id asc"; 
+		List<?> list = recordDao.getEntities(hql, nameOrTable, nameOrTable, type); 
 		
 		if(!auth && list.size() > 0) {
 			return (Long) list.get(0);
@@ -83,6 +90,28 @@ public class RecordServiceImpl implements RecordService {
 		}
 		
 		throw new BusinessException(EX.parse(EX.DM_14, nameOrTable));
+	}
+	
+	/* 
+	 * 按 recordId + domain + user 进行缓存
+	 */
+	public _Database _getDB(Long recordId) {
+		String cacheKey = _Database._CACHE_KEY(recordId);
+		Pool longCache = CacheHelper.getLongCache();
+		Cacheable item = longCache.getObject(cacheKey);
+		if( item == null ) {
+			item = longCache.putObject(cacheKey, getDB(recordId));
+		} 
+		else {
+			// 判断 RecordField 表有无更新（Cacheable.birthday < RecordField.createtime or updatetime），有的话重新生成 _Database 对象
+			List<?> list = SQLExcutor.queryL("select * from dm_record_field where domain = ? and IFNULL(updateTime, createTime) >= ?", 
+					Environment.getDomain(), new Date(item.getBirthday()));
+			if( list.size() > 0 ) {
+				longCache.destroyByKey(cacheKey);
+				item = longCache.putObject(cacheKey, getDB(recordId));
+			}
+		}
+		return (_Database) item.getValue();
 	}
 	
 	public _Database getDB(Long recordId) {
@@ -150,6 +179,8 @@ public class RecordServiceImpl implements RecordService {
     	recordDao.refreshEntity(record);
     	
     	_db.alterTable(record);
+    	
+    	CacheHelper.flushCache(CacheLife.LONG.toString(), "_db_record_" + record.getId() + "_");
 	}
 
 	public Record delete(Long id) {
@@ -184,15 +215,19 @@ public class RecordServiceImpl implements RecordService {
 	}
 
 	public void move(Long id, Long groupId) {
-		List<Record> list  = recordDao.getChildrenById(id);
-        for (Record temp : list) {
-            if (temp.getId().equals(id)) { // 判断是否是移动节点（即被移动枝的根节点）
-                temp.setSeqNo(recordDao.getNextSeqNo(groupId));
-                temp.setParentId(groupId);
-            }
- 
-            recordDao.moveEntity(temp);
-        }
+		Record node = recordDao.getEntity(id);
+        node.setSeqNo(recordDao.getNextSeqNo(groupId));
+        node.setParentId(groupId);
+        recordDao.moveEntity(node);
+		
+		Record group = recordDao.getEntity(groupId);
+		if (group != null && !group.isActive() ) {
+			List<Record> list  = recordDao.getChildrenById(id);
+	        for (Record temp : list) {
+	            temp.setDisabled(ParamConstants.TRUE); // 如果目标根节点是停用状态，则所有新复制出来的节点也一律为停用状态
+	            recordDao.update(temp);
+	        }
+		}
 	}
 	
 	public Integer getAttachSeqNo(Long recordId, Long itemId) {

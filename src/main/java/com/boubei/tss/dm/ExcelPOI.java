@@ -23,7 +23,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
@@ -35,7 +37,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.boubei.tss.PX;
 import com.boubei.tss.framework.exception.BusinessException;
-import com.boubei.tss.modules.param.ParamManager;
+import com.boubei.tss.modules.param.ParamConfig;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
@@ -99,16 +101,27 @@ public class ExcelPOI extends Excel {
 			
 			checkExcelSize(is, isXLS);
 			
+			ZipSecureFile.setMinInflateRatio(-1.0d);
 			wb = isXLS ? new HSSFWorkbook(is) : new XSSFWorkbook(is);
 			
-			Sheet sheet1 = wb.getSheetAt(0);   // 获取第一张Sheet表
+			int index = 0;  //HIDDEN,VISIBLE
+			while(HIDDEN.equals(wb.getSheetVisibility(index).toString())){ index++; }
+			
+			Sheet sheet1 = wb.getSheetAt(index);   // 获取第一张Sheet表
 			Row row0 = sheet1.getRow(0);      // 获取第一行
             
 			int rsColumns = row0.getPhysicalNumberOfCells();  // 获取Sheet表中所包含的总列数
 			int rsRows  = sheet1.getPhysicalNumberOfRows();   // 获取Sheet表中所包含的总行数
 			
+			for (int j = 0; j < rsColumns; j++) {
+				Cell cell = row0.getCell(j);
+				String value = getCellVal(cell, 0, j);
+				headers.add(value);
+			}
+			EasyUtils.fixRepeat(headers);
+			
 			// 获取指定单元格的对象引用
-			for (int i = 0; i <= rsRows; i++) {
+			for (int i = 1; i <= rsRows; i++) {
 				Map<String, Object> row = new LinkedHashMap<String, Object>();
 				Row _row = sheet1.getRow(i);
 				if( _row == null) continue;
@@ -116,16 +129,10 @@ public class ExcelPOI extends Excel {
 				for (int j = 0; j < rsColumns; j++) {
 					Cell cell = _row.getCell(j);
 					String value = getCellVal(cell, i, j);
-					
-					if (i == 0) {
-						headers.add(value);
-					}
-					else {
-						row.put(headers.get(j), value);
-					}
+					row.put(headers.get(j), value);
 				}
 				
-				if (i > 0) data.add(row);
+				data.add(row);
 			}
 		} 
 		catch (Exception e) {
@@ -143,12 +150,12 @@ public class ExcelPOI extends Excel {
 	}
 
 	public static void checkExcelSize(InputStream is, boolean isXLS) throws IOException {
-		int MAX_XLSX_SIZE = EasyUtils.obj2Int( ParamManager.getValue(PX.MAX_XLSX_SIZE, "1024") );
-		MAX_XLSX_SIZE = Math.max(MAX_XLSX_SIZE, 1024);
+		int MAX_XLSX_SIZE = EasyUtils.obj2Int( ParamConfig.getAttribute(PX.MAX_XLSX_SIZE, "1024") );
+		MAX_XLSX_SIZE = Math.max(MAX_XLSX_SIZE, 256);
 		
 		int max_size = 1024 * MAX_XLSX_SIZE * (isXLS ? 5 : 1) ;
 		if( is.available() > max_size ) { // 1M xlsx 约等于 1万行*20列
-			throw new BusinessException("导入文件过大，已超过" +(max_size*1.0/1024/1024)+ "M，请将数据分开多次导入");
+			throw new BusinessException("导入文件过大，已超过" + Math.round(max_size*10.0/1024/1024)/10.0 + "M，请将数据分开多次导入");
 		}
 	}
 
@@ -173,7 +180,11 @@ public class ExcelPOI extends Excel {
 		            	return val.replace(",", "");
 		            }
 		        case FORMULA:
-		        	return ( (XSSFCell)cell ).getCTCell().getV();
+		        	if( cell instanceof XSSFCell ) {
+		        		return ( (XSSFCell)cell ).getCTCell().getV();
+		        	} else {
+		        		return ( (HSSFCell)cell ).getCellFormula();
+		        	}
 		        case STRING:
 		        	return cell.getStringCellValue();
 		        default:

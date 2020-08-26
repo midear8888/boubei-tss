@@ -52,6 +52,9 @@ import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.MathUtil;
 import com.boubei.tss.util.XMLDocUtil;
 
+/**
+ * TODO 设置 /cache/ 的资源路径，只有Admin能访问
+ */
 @Controller
 @RequestMapping("/cache")
 public class CacheAction extends BaseActionSupport {
@@ -75,14 +78,13 @@ public class CacheAction extends BaseActionSupport {
 		// 将更新信息保存到系统参数模块(ParamListener-->PCache将会执行 rebuildCache)
 		Param cacheGroup = CacheHelper.getCacheParamGroup(paramService);
 		
-		Param cacheParam = null;
 		List<Param> cacheParams = paramService.getParamsByParentCode(PX.CACHE_PARAM);
+		Map<String, Param> map = new HashMap<>();
 		for(Param temp : cacheParams) {
-			if(temp.getCode().equals(cacheCode)) {
-				cacheParam = temp;
-				break;
-			}
+			map.put(temp.getCode(), temp);
 		}
+		
+		Param cacheParam = map.get(cacheCode);
 		if(cacheParam == null) { // 新建一个对象池Param配置
 			Long parentId = cacheGroup.getId();
 			String name = cache.getPool(cacheCode).getCacheStrategy().getName();
@@ -150,7 +152,7 @@ public class CacheAction extends BaseActionSupport {
         	AbstractPool _pool = (AbstractPool)pool;
         	int busys = _pool.getUsing().size();
 			attrs.put("freeItemNum", _pool.getFree().size());
-			attrs.put("busyItemNum", busys > 0 ? "<b>" + busys + "</b>" : busys);
+			attrs.put("busyItemNum", EasyUtils.checkTrue(busys > 0, "<b>" + busys + "</b>", busys));
             
             dataList.add(gridNode);
         }

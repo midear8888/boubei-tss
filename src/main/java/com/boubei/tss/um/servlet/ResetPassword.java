@@ -76,7 +76,7 @@ public class ResetPassword extends HttpServlet {
     		Long id = Long.valueOf(userId);
     		user = userService.getUserById(id);
             if(user == null) {
-                throw new BusinessException(EX.parse(EX.U_34, id));
+                return; // 账号已被删除，或伪造的userId
             }
     	}
 		

@@ -11,9 +11,7 @@
 package com.boubei.tss.um.action;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -146,9 +144,7 @@ public class RoleAction extends BaseActionSupport {
         
         // 默认的有效时间
         map.put("startDate", DateUtil.format(new Date()));
-        Calendar calendar = new GregorianCalendar();
-        calendar.add(UMConstants.ROLE_LIFE_TYPE, UMConstants.ROLE_LIFE_TIME);
-        map.put("endDate", DateUtil.format(calendar.getTime()));
+        map.put("endDate", DateUtil.format( DateUtil.addYears(UMConstants.ROLE_LIFE_TIME) ));
         
         // 如果是新增,则返回一个空的无数据的模板
         roleXFormEncoder = new XFormEncoder(UMConstants.ROLE_XFORM, map);

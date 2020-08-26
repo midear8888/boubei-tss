@@ -34,7 +34,7 @@ public class _Oracle extends _Database {
 		if(this.fields.isEmpty()) return;
  
 		StringBuffer createDDL = new StringBuffer("create table " + this.table + " ( ");
-   		for(Map<Object, Object> fDefs : fields) {
+   		for(Map<String, Object> fDefs : fields) {
 			createDDL.append( getFiledDef(fDefs, false) ).append( ", " );
    		}
    		
@@ -91,7 +91,7 @@ public class _Oracle extends _Database {
 		Map<Integer, Object> paramsMap = super.buildInsertParams(valuesMap);
 		SQLExcutor.excute(insertSQL, paramsMap, this.datasource);
 		
-		logCUD(newID, "create", " add a new row: " + valuesMap);
+		rcEvent.afterInsert(newID, valuesMap, this);
 		return newID;
 	}
 	

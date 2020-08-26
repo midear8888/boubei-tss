@@ -18,7 +18,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -223,12 +222,11 @@ public class ParamAction extends BaseActionSupport {
         return SQLExcutor.queryL(sql);
     }
 	
-	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/init/save", method = RequestMethod.POST)
 	@ResponseBody
 	public void saveParams(HttpServletRequest request) throws Exception {
 		Map<String, String> params = DMUtil.parseRequestParams(request, false);
-		List<Map<String, Object>> list = new ObjectMapper().readValue(params.get("json"), List.class);
+		List<Map<String, Object>> list = EasyUtils.json2List(params.get("json"));
 		paramService.saveParams(list); 	
     }
 	
@@ -247,16 +245,21 @@ public class ParamAction extends BaseActionSupport {
 	/** 获取下拉类型/树型参数列表  */
 	@RequestMapping(value = "/json/combo/{code}", method = RequestMethod.GET)
 	@ResponseBody
-	public Object getComboParam2Json(@PathVariable("code") String code, boolean KV) {
+	public Object getComboParam2Json(HttpServletRequest request, 
+			@PathVariable("code") String code, boolean KV) {
+		
 		List<Object> result = new ArrayList<Object>();
 		List<Param> list = paramService.getComboParam(code);
 		if(list == null) return result;
 		
 		for (Param param : list) {
 			if( KV ) {
-				Map<String, String> item = new HashMap<String, String>();
+				String valField = request.getParameter("valField");
+				valField = (String) EasyUtils.checkNull(valField, "value");
+				
+				Map<String, Object> item = new HashMap<String, Object>();
 				item.put("text", param.getText());
-				item.put("value", param.getValue());
+				item.put("value", param.getAttributes4XForm().get(valField));
 				result.add(item);
 			} 
 			else {

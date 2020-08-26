@@ -18,6 +18,7 @@ import javax.persistence.Table;
 
 /**
  * 用户角色关系表(包括继承的组的角色)
+ * ALTER TABLE `xxx`.`um_roleusermapping`  DROP PRIMARY KEY;
  */
 @Entity
 @Table(name = "um_roleusermapping")

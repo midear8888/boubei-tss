@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.dom4j.Document;
 
 import com.boubei.tss.EX;
@@ -37,26 +36,34 @@ import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.record.Record;
+import com.boubei.tss.dm.record.RecordEvent;
+import com.boubei.tss.dm.record.RecordEventN;
 import com.boubei.tss.dm.record.permission.RecordPermission;
 import com.boubei.tss.dm.record.permission.RecordResource;
 import com.boubei.tss.dm.record.workflow.WFStatus;
 import com.boubei.tss.dm.record.workflow.WFUtil;
 import com.boubei.tss.dm.report.log.AccessLogRecorder;
 import com.boubei.tss.framework.exception.BusinessException;
-import com.boubei.tss.framework.sso.Anonymous;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.web.display.grid.GridTemplet;
-import com.boubei.tss.modules.log.BusinessLogger;
 import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.modules.sn.SerialNOer;
+import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.permission.PermissionHelper;
+import com.boubei.tss.util.BeanUtil;
+import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
+import com.boubei.tss.util.MacrocodeCompiler;
 import com.boubei.tss.util.XMLDocUtil;
 
 public abstract class _Database {
 	
 	static Logger log = Logger.getLogger(_Database.class);
+	
+	public final static String _CACHE_KEY(Long recordId) {
+		return "_db_record_" + recordId + "_" + Environment.getDomain() + "_" + Environment.getUserCode();
+	}
 	
 	public Long recordId;
 	public String recordName;
@@ -65,17 +72,22 @@ public abstract class _Database {
 	public String customizeTJ;  // 1=1<#if 1=0>showCUV & ignoreDomain</#if>
 	public String wfDefine;
 	
+	public boolean isWorkflow;
 	public boolean logicDel;
 	public boolean needFile;
 	
-	private boolean needLog;
+	public  boolean needLog;
 	private boolean needQLog;
 	public  boolean showCreator;
     private boolean ignoreDomain;
+    public  boolean makePublic;
 	
+    protected RecordEvent rcEvent;
 	public String remark;
 	
-	List<Map<Object, Object>> fields;
+	List<Map<String, Object>> fields;
+	Map<String, Map<String, Object>> fieldMap = new HashMap<>();
+	
 	public List<String> fieldCodes;
 	public List<String> fieldTypes;
 	public List<String> fieldPatterns;
@@ -97,6 +109,9 @@ public abstract class _Database {
 	public Map<String, String> creg = new HashMap<String, String>();     // code -- checkReg
 	public Map<String, String> csql = new HashMap<String, String>();     // code -- valSQL
 	public Map<String, String> cmatch = new HashMap<String, String>();   // code -- Match partter 严格匹配，不允许模糊查询
+	public Map<String, String> csort = new HashMap<String, String>();    // code -- sort asc | desc
+	public Map<String, String> coptions = new HashMap<String, String>(); // code -- option 下拉列表（生成Excel导出模板有用）
+	
 	
 	public String toString() {
 		return "【" + this.datasource + "." + this.recordName + "】";
@@ -117,10 +132,13 @@ public abstract class _Database {
 		this.logicDel = ParamConstants.TRUE.equals(record.getLogicDel());
 		this.showCreator = ParamConstants.TRUE.equals(record.getShowCreator());
 		this.ignoreDomain = ParamConstants.TRUE.equals(record.getIgnoreDomain());
+		this.makePublic = ParamConstants.TRUE.equals(record.getMakePublic());
 		this.remark = record.getRemark();
+		this.rcEvent = getRcEvent();
 		
 		this.initFieldCodes();
 		this.wfDefine = record.getWorkflow();
+		this.isWorkflow = WFUtil.checkWorkFlow(this.wfDefine);
 	}
 	
 	protected void initFieldCodes() {
@@ -138,9 +156,10 @@ public abstract class _Database {
 		cnm.put("creator", "创建人");
 		cnm.put("createtime", "创建时间");
 		
-		for(Map<Object, Object> fDefs : this.fields) {
+		for(Map<String, Object> fDefs : this.fields) {
 			String code = (String) fDefs.get("code");
 			this.fieldCodes.add(code);
+			fieldMap.put(code, fDefs);
 			
 			String label = (String) fDefs.get("label");
 			this.fieldNames.add(label);
@@ -153,7 +172,7 @@ public abstract class _Database {
 			
 			String pattern = (String) fDefs.get("pattern");
 			if( _Field.TYPE_NUMBER.equalsIgnoreCase(type) ) {
-				pattern = (String) EasyUtils.checkNull(pattern, "##,##0.00");  //  类GridNode会对数据进行格式化
+				pattern = (String) EasyUtils.checkNull(pattern, "##,##0.00");  //  类GridNode会对数据进行格式化，默认3位小数
             }
 			this.fieldPatterns.add( pattern ); 
 			cpattern.put(code, pattern);
@@ -164,10 +183,20 @@ public abstract class _Database {
 			
 			cerr.put(code, (String) fDefs.get("errorMsg"));
 			cnull.put(code, (String) fDefs.get("nullable"));
-			cuni.put(code, (String) fDefs.get("unique"));
+			cuni.put(code, (String) EasyUtils.checkNull(fDefs.get("unique_"), fDefs.get("unique")));
 			creg.put(code, (String) fDefs.get("checkReg"));
 			csql.put(code, (String) fDefs.get("valSQL"));
 			cmatch.put(code, (String) fDefs.get("match"));
+			
+			Map<?, ?> options = (Map<?, ?>) fDefs.get("options");
+			if( options != null ) {
+				coptions.put(code, (String) EasyUtils.checkNull(options.get("codes"), options.get("names")));
+			}
+			
+			Object sort = fDefs.get("sort");
+			if( !EasyUtils.isNullOrEmpty(sort) ) {
+				csort.put(code, code + " " + sort);
+			}
 			
 			String role2 = (String) fDefs.get("role2");
 			this.fieldRole2s.add(role2);
@@ -178,21 +207,29 @@ public abstract class _Database {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
-	protected List<Map<Object, Object>> parseJson(String define) {
+	protected List<Map<String, Object>> parseJson(String define) {
 		if(EasyUtils.isNullOrEmpty(define)) {
-			return new ArrayList<Map<Object,Object>>();
+			return new ArrayList<Map<String, Object>>();
 		}
 		
-		define = define.replaceAll("'", "\"");
-		List<String> labels = new ArrayList<String>();
-		List<String> codes = new ArrayList<String>( Arrays.asList("creator", "createTime", "updator", "updateTime", "version") ); // domain
+		// 获取自定义字段
+		String domain = Environment.getDomain();
+		String userCode = Environment.getUserCode();
+		String sql = "select code,label, IFNULL(type, 'string') type, nullable,unique_,readonly,role1,role2,cwidth,align,options,defaultValue,checkReg from dm_record_field ";
+		List<Map<String, Object>> _fields1 = SQLExcutor.queryL(sql + " where tbl is null and domain = ?", domain);
+		List<Map<String, Object>> _fields2 = SQLExcutor.queryL(sql + " where ? in (tbl,udf1) and domain = ? and user is null", this.table, domain);
+		List<Map<String, Object>> _fields3 = SQLExcutor.queryL(sql + " where ? in (tbl,udf1) and domain = ? and user = ?", this.table, domain, userCode);
+		Map<?, Map<?, Object>> map = EasyUtils.list2Map("code", _fields1, _fields2, _fields3);
 		
+		define = define.replaceAll("'", "\"");
+		List<String> remainCodes = Arrays.asList("creator", "createTime", "updator", "updateTime", "version", "id");  // domain
+		List<String> labels = new ArrayList<String>();
+		List<String> codes = new ArrayList<String>();
 		try {  
-   			List<Map<Object, Object>> list = new ObjectMapper().readValue(define, List.class);  
+   			List<Map<String, Object>> list = EasyUtils.json2List(define);  
    			Pattern pattern = Pattern.compile("^[a-zA-Z][a-zA-Z0-9_]*$"); // code：字母、数字、下划线
    			for(int i = 0; i < list.size(); i++) {
-   	        	Map<Object, Object> fDefs = list.get(i);
+   	        	Map<String, Object> fDefs = list.get(i);
    	        	int index = i + 1;
    	        	
    				String code = (String) fDefs.get("code");
@@ -200,9 +237,29 @@ public abstract class _Database {
    				code = (codeVaild ? code : _Field.COLUMN + index).toLowerCase().trim();
    				fDefs.put("code", code);
    				
+   				// 覆盖自定义字段）
+   				if( map.containsKey(code) )	{
+   					Map<?, Object> attrs = map.get(code);
+   					for(Object key : attrs.keySet()) {
+   						Object val = attrs.get(key);
+						if( val == null ) continue;
+						
+						if( "options".equals(key) ) { // 空格分隔的选项列表
+							Map<String, String> mVal = new HashMap<>();
+							mVal.put("codes", val.toString().replaceAll(" ", "|"));
+							val = mVal;
+						}
+						key = key.toString().replaceFirst("defaultvalue", "defaultValue").replaceFirst("checkreg", "checkReg");
+						fDefs.put(key.toString(), val);
+   					}
+   				}
+   				
    				String label = (String) fDefs.get("label");
    				if( labels.contains(label) ) {
    					throw new BusinessException( EX.parse(EX.DM_26, label) );
+   				}
+   				if( remainCodes.contains(code) ) {
+   					throw new BusinessException( EX.parse(EX.DM_34, code) );
    				}
    				if( codes.contains(code) ) {
    					throw new BusinessException( EX.parse(EX.DM_25, code) );
@@ -214,7 +271,7 @@ public abstract class _Database {
    			return list;
    	    } 
    		catch (Exception e) {  
-			throw new BusinessException( EX.parse(EX.DM_15, recordName, e.getMessage()) );
+			throw new BusinessException( EX.parse(EX.DM_15, recordName, e.getMessage()), true );
    	    } 
 	}
 	
@@ -225,12 +282,12 @@ public abstract class _Database {
 		m.put(_Field.TYPE_DATETIME, "datetime");
 		m.put(_Field.TYPE_DATE, "date");
 		m.put(_Field.TYPE_STRING, "varchar(" + length + ")");
-		m.put(_Field.TYPE_FILE, "varchar(100)");
+		m.put(_Field.TYPE_FILE, "varchar(255)");
 		
 		return m;
 	}
 	
-	protected String getFiledDef(Map<Object, Object> fDef, boolean ignoreNullable) {
+	protected String getFiledDef(Map<String, Object> fDef, boolean ignoreNullable) {
 		
 		Map<String, String> dbFieldTypes = getDBFiledTypes( _Field.getVarcharLength(fDef) );
 		dbFieldTypes.put(_Field.TYPE_HIDDEN, "varchar(255)");
@@ -279,7 +336,7 @@ public abstract class _Database {
 	 * 如果表已经存在，重复创建索引将会报错，此处直接try catch掉
 	 */
 	public void createUniqueAndIndex() {
-   		for(Map<Object, Object> fDefs : fields) {
+   		for(Map<String, Object> fDefs : fields) {
    			String code = (String) fDefs.get("code");
    			String unique = (String) fDefs.get("unique");
    			String isparam = (String) fDefs.get("isparam");
@@ -335,11 +392,12 @@ public abstract class _Database {
 		this.logicDel = ParamConstants.TRUE.equals(_new.getLogicDel());
 		this.showCreator = ParamConstants.TRUE.equals(_new.getShowCreator());
 		this.ignoreDomain = ParamConstants.TRUE.equals(_new.getIgnoreDomain());
+		this.makePublic = ParamConstants.TRUE.equals(_new.getMakePublic());
 		
 		this.wfDefine = _new.getWorkflow(); // 更新流程配置
 		
 		// 比较新旧字段定义的异同（新增的和删除的，暂时只关心新增的）
-		List<Map<Object, Object>> newFields = parseJson(_new.getDefine());
+		List<Map<String, Object>> newFields = parseJson(_new.getDefine());
 				
 		if(!newDS.equals(this.datasource) || !table.equals(this.table)) {
 			this.datasource = newDS;
@@ -354,21 +412,23 @@ public abstract class _Database {
 		}
 		
 		// 新增加的字段
-		for(Map<Object, Object> fDefs1 : newFields) { // new
+		for(Map<String, Object> fDefs1 : newFields) { // new
 			String code = (String) fDefs1.get("code");
 			fDefs1.put("code", code);
 			
 			boolean exsited = false;
-        	for(Map<Object, Object> fDefs0 : this.fields ) { // old
+        	for(Map<String, Object> fDefs0 : this.fields ) { // old
         		if(code.equals(fDefs0.get("code"))) {
         			exsited = true; 
         			
         			String[] ddlSQLs = getSQLs(code);
         			
-        			// 进一步判断字段类型及长度，及是否可空等有无发生变化。注：如果表已有数据，null-->not null可能出错
+        			// 进一步判断字段类型及长度，及是否可空等有无发生变化。注：如果表已有数据，null-->not null可能出错 （注：只是修改type为hidden则忽略）
         			String fieldDef0 = getFiledDef(fDefs0, false);
         			String fieldDef1 = getFiledDef(fDefs1, false);
-        			if( !fieldDef1.equalsIgnoreCase(fieldDef0) ) {
+        			if( !fieldDef1.equalsIgnoreCase(fieldDef0) 
+        					&& !_Field.TYPE_HIDDEN.equals(fDefs1.get("type")) && !_Field.TYPE_HIDDEN.equals(fDefs0.get("type")) ) {
+        				
         				try {
         					SQLExcutor.excute( ddlSQLs[4] + " " + fieldDef1.replace(code, ""), newDS);
             			} catch(Exception e1) {
@@ -423,10 +483,10 @@ public abstract class _Database {
 		}
 		
 		// 被删除的字段（原来有的，在新的定义里没有了）
-		for(Map<Object, Object> fDefs2 : this.fields ) {
+		for(Map<String, Object> fDefs2 : this.fields ) {
 			Object oldCode = fDefs2.get("code");
 			boolean exsited = false;
-    		for(Map<Object, Object> fDefs1 : newFields) {
+    		for(Map<String, Object> fDefs1 : newFields) {
     			String code = (String) fDefs1.get("code");
  
 				if(code.equals(oldCode)) {
@@ -458,7 +518,7 @@ public abstract class _Database {
 		Map<Integer, Object> paramsMap = buildInsertParams(valuesMap);
 		SQLExcutor.excute(createInsertSQL(), paramsMap, this.datasource);
 		
-		logCUD("", "create", " add a new row: " + valuesMap);
+		rcEvent.afterInsert(null, valuesMap, this);
 	}
 	
 	public Long insertRID(Map<String, String> valuesMap) {
@@ -469,11 +529,15 @@ public abstract class _Database {
 		}
 		
 		Long rID = SQLExcutor.excuteInsert(createInsertSQL(), params, this.datasource);
-		logCUD(rID, "create", " add a new row: " + valuesMap);
+		
+		rcEvent.afterInsert(rID, valuesMap, this);
 		return rID;
 	}
 
 	protected Map<Integer, Object> buildInsertParams(Map<String, String> valuesMap) {
+		
+		rcEvent.beforeInsert(valuesMap);
+		
 		Map<Integer, Object> paramsMap = new LinkedHashMap<Integer, Object>();
 		int index = 0;
 		
@@ -487,13 +551,13 @@ public abstract class _Database {
 			String defaultVal = this.fieldValues.get(index);
 			if( EasyUtils.isNullOrEmpty(value) &&  _Field.isAutoSN(defaultVal) ) {
 				String domain = (String) EasyUtils.checkNull(pointedDomain, Environment.getDomainOrign()); // ETL时，输入数据指定好了域
-				value = new SerialNOer().create(domain, defaultVal, 1).get(0);
+				value = SerialNOer.create(domain, defaultVal, 1, 0).get(0);
 			}
 			
 			paramsMap.put(++index, value);
 		}
 		
-		String creator= (String) EasyUtils.checkNull(Environment.getUserCode(), Anonymous._CODE);
+		String creator= Environment.getNotnullUserCode();
 		String domain = (String) EasyUtils.checkNull( pointedDomain, Environment.getDomainOrign() );
 		paramsMap.put(++index, domain); 
 		paramsMap.put(++index, new Timestamp(new Date().getTime())); 
@@ -514,7 +578,7 @@ public abstract class _Database {
 		
 		SQLExcutor.excuteBatch(createInsertSQL(), paramsList , this.datasource);
 		
-		logCUD("batch", "create", " add some rows: " + valuesMaps);
+		RecordEventN.log("batch", "create", " add some rows: " + valuesMaps, this);
 	}
 	
 	protected String createInsertSQL() {
@@ -545,10 +609,7 @@ public abstract class _Database {
 	}
 
 	public void update(Long id, Map<String, String> valuesMap) {
-		Map<String, Object> old = get(id);
-		if( old == null ) {
-			throw new BusinessException(EX.DM_16);
-		}
+		Map<String, Object> old = rcEvent.beforeUpdate(id, valuesMap, this);
 		
 		// 如果_version值不为空，则用其实现乐观锁控制
 		String _version = (String) EasyUtils.checkNull(valuesMap.remove("_version"), valuesMap.remove("version"));
@@ -579,7 +640,7 @@ public abstract class _Database {
 		String updateSQL = "update " + this.table + " set " + tags + "updatetime=?, updator=?, version=version+1 where id=?";
 		SQLExcutor.excute(updateSQL, paramsMap, this.datasource);
 		
-		logCUD(id, "update", "\n begin: " + old + " \n after: " + get(id));
+		rcEvent.afterUpdate(id, old, this);
 	}
 	
 	public void updateBatch(String ids, String field, String value) {
@@ -599,9 +660,9 @@ public abstract class _Database {
 		
 		String[] idArray = ids.split(",");
 		for(String _id : idArray) {
-			logCUD(_id, "update", field + "=" + value);
+			RecordEventN.log(_id, "update", field + "=" + value, this);
 		}
-		logCUD(ids, "update batch", field + "=" + value);
+		RecordEventN.log(ids, "update batch", field + "=" + value, this);
 	}
 
 	public Map<String, Object> get(Long id) {
@@ -626,13 +687,12 @@ public abstract class _Database {
 	public void delete(Long id) {
 		if(id == null) return;
 		
-		Map<String, Object> old = get(id);
+		Map<String, Object> old = rcEvent.beforeDelete(id, this);
 		
 		String updateSQL = "delete from " + this.table + " where id=" + id;
 		SQLExcutor.excute(updateSQL, this.datasource);
 		
-		// 记录删除日志
-        logCUD(id, "delete", Environment.getUserCode() + " deleted one row：" + old);
+        rcEvent.afterDelete(id, old, this);
 	}
 	
 	public static final String deletedTag = "@--";
@@ -640,20 +700,20 @@ public abstract class _Database {
 	public void logicDelete(Long id) {
 		if(id == null) return;
 		
-		Map<String, Object> old = get(id);
+		Map<String, Object> old = rcEvent.beforeDelete(id, this);
+		
 		String domain = EasyUtils.obj2String(old.get("domain")) + deletedTag;
 		
 		String userCode = Environment.getUserCode();
 		String updateSQL = "update " + this.table + " set domain = '" +domain+ "', updator = '" +userCode+ "' where id=" + id;
 		SQLExcutor.excute(updateSQL, this.datasource);
 		
-		if( WFUtil.checkWorkFlow(this.wfDefine) ) {
+		if( this.isWorkflow ) {
 			updateSQL = "update dm_workflow_status set currentStatus = '" +WFStatus.REMOVED+ "' where tableId = " +this.recordId+ " and itemId=" + id;
 			SQLExcutor.excute(updateSQL, this.datasource);
 		}
 		
-		// 记录删除日志
-        logCUD(id, "logicDelete", userCode + " deleted one row：" + old);
+        rcEvent.afterLogicDelete(id, old, this);
 	}
 	
 	// 还原数据
@@ -666,19 +726,13 @@ public abstract class _Database {
 		String updateSQL = "update " + this.table + " set domain = '" +domain+ "' where id=" + id;
 		SQLExcutor.excute(updateSQL, this.datasource);
 		
-		if( WFUtil.checkWorkFlow(this.wfDefine) ) {
+		if( this.isWorkflow ) {
 			updateSQL = "update dm_workflow_status set currentStatus = '" +WFStatus.NEW+ "' where tableId = " +this.recordId+ " and itemId=" + id;
 			SQLExcutor.excute(updateSQL, this.datasource);
 		}
 		
 		// 记录还原日志
-        logCUD(id, "restore", Environment.getUserCode() + " restored one row：" + old);
-	}
-	
-	public void logCUD(Object id, String opeartion, String logMsg) {
-		if( this.needLog ) {
-			BusinessLogger.log(recordName, opeartion + ", " + id, logMsg);
-		}
+        RecordEventN.log(id, "restore", Environment.getUserCode() + " restored one row：" + old, this);
 	}
 	
 	/**
@@ -693,7 +747,8 @@ public abstract class _Database {
         	}
         	
             String fieldRole2 = crole.get(fieldCode);
-            if( PermissionHelper.checkRole(fieldRole2) ) {
+            String type = ctype.get(fieldCode);
+            if( PermissionHelper.checkRole(fieldRole2) && !_Field.TYPE_HIDDEN.equals(type) ) {
             	result.add( needName ? cnm.get(fieldCode) : fieldCode);
             }
         }
@@ -713,7 +768,10 @@ public abstract class _Database {
 	 * 1、fields               查询结果字段
 	 * 2、params + strictQuery 查询参数及匹配方式
 	 * 3、groupby              汇总维度字段
-	 * 4、sortField + sortType 排序结果 
+	 * 4、sortField + sortType 排序结果， 如果没有指定，按字段定义里排序字段进行排序
+	 * 
+	 * 支持 or 查询：
+	 * eg: code|name|desc='关键字'
 	 * 
 	 * @param page
 	 * @param pagesize
@@ -726,11 +784,13 @@ public abstract class _Database {
 	public SQLExcutor select(int page, int pagesize, Map<String, String> params, boolean isApprover) {
 		long start = System.currentTimeMillis();
 		Map<Integer, Object> paramsMap = new HashMap<Integer, Object>();
-		paramsMap.put(1, EasyUtils.checkNull(Environment.getUserCode(), Anonymous._CODE));
+		paramsMap.put(1, Environment.getNotnullUserCode());
 		
 		if(params == null) {
 			params = new HashMap<String, String>();
 		}
+		rcEvent.beforeSelect(params, this);
+		
 		String strictQuery = params.remove(_Field.STRICT_QUERY); // 是否精确查询
 		String _fields = params.remove("fields"); // eg: /tss/xdata/price_list?fields=name,fee as value
 		
@@ -738,6 +798,8 @@ public abstract class _Database {
 		String defaultFields = EasyUtils.list2Str( visiableFields )+",domain,createtime,creator,updatetime,updator,version,id";
 		String fields = (String) EasyUtils.checkNull(_fields, defaultFields);
 		boolean noPointed = EasyUtils.isNullOrEmpty(_fields);
+		
+		String _customizeTJ = (String) EasyUtils.checkNull(this.customizeTJ, " 1=1 ");
 		
 		// 对fields进行SQL注入检查
 		fields = DMUtil.checkSQLInject( fields );
@@ -753,16 +815,17 @@ public abstract class _Database {
 		// 增加权限控制，针对有編輯权限的允許查看他人录入数据, '000' <> ? <==> 忽略创建人这个查询条件
 		boolean visible = Environment.isAdmin() || Environment.isRobot() || isApprover, anonymousVisiable = false;
 		try {
-			List<String> permissions = PermissionHelper.getInstance().getOperationsByResource(recordId,
-	                RecordPermission.class.getName(), RecordResource.class);
-			boolean _visible = permissions.contains(Record.OPERATION_VDATA) || permissions.contains(Record.OPERATION_EDATA);
-			visible = visible || _visible;
-			anonymousVisiable = Environment.isAnonymous() && _visible; // 匿名用户可浏览
+			PermissionHelper ph = PermissionHelper.getInstance();
+			List<String> permissions = ph.getOperationsByResource(recordId, RecordPermission.class.getName(), RecordResource.class); // 用户对资源节点的权限
+			visible = visible || permissions.contains(Record.OPERATION_VDATA) || permissions.contains(Record.OPERATION_EDATA);
+			
+			List<?> permissions_a = ph.getOperationsByResourceAndRole(RecordPermission.class.getName(), recordId, UMConstants.ANONYMOUS_ROLE_ID);
+			anonymousVisiable = permissions_a.contains(Record.OPERATION_VDATA) || permissions_a.contains(Record.OPERATION_EDATA); // 匿名用户可浏览
 		} 
 		catch(Exception e) { }
 		
 		// 审批表: 提交模式下，只能查询本人提交的流程; 如果其指定了其它“创建人”作为查询条件，将什么都查不到
-		if( WFUtil.checkWorkFlow(this.wfDefine) && !isApprover && !Environment.isAdmin()) {
+		if( this.isWorkflow && !isApprover && !Environment.isAdmin()) {
 			params.put("creator", Environment.getUserCode());
 		}
 		
@@ -778,9 +841,11 @@ public abstract class _Database {
 		for(String _key : params.keySet()) {
 			String _valueStr = params.get(_key);
 			String key = _key.toLowerCase();  // code默认都是小写
-			if( EasyUtils.isNullOrEmpty(_valueStr) ) continue;
 			
-			if( ("creator".equals(key) || "updator".equals(key)) && !params.containsKey("id") ) {
+			String $key = MacrocodeCompiler.createMacroCode(key);  // 被自定义过滤条件引用到的参数不再单独过滤
+			if( EasyUtils.isNullOrEmpty(_valueStr) || _customizeTJ.indexOf($key) >= 0) continue;
+			
+			if( "creator,updator,wf_next_processor".indexOf(key) >= 0 && !params.containsKey("id") ) {
 				// 支持按姓名、账号、电话、email等查询 录入表
 				String sql = "select loginName v from um_user where ? in (loginName,userName,telephone,email)";
 				_valueStr = (String) EasyUtils.checkNull(SQLExcutor.queryVL(sql, "v", _valueStr), _valueStr);
@@ -788,7 +853,7 @@ public abstract class _Database {
 			
 			// 对paramValue进行检测，防止SQL注入
 			_valueStr = DMUtil.fmParse(_valueStr);
-			String valueStr = DMUtil.checkSQLInject(_valueStr);
+			String valueStr = DMUtil.checkSQLInject(_valueStr).replaceAll("，", ",");
 			
 			if( "creator".equals(key) && visible) {
 				paramsMap.put(1, valueStr);  // 替换登录账号，允许查询其它人创建的数据; 
@@ -803,10 +868,12 @@ public abstract class _Database {
 			
 			if("createtime".equals(key) || "updatetime".equals(key)) {
 				String[] vals = DMUtil.preTreatScopeValue(valueStr); // 是否查询条件为：从和到	
+				if(vals.length == 1) {
+					vals = new String[] { vals[0],  DateUtil.formatCare2Second( DateUtil.addDays(DateUtil.today(), 1) )};
+				}
 				condition += " and " + key + " >= ?  and " + key + " <= ? ";
 				paramsMap.put(paramsMap.size() + 1, DMUtil.preTreatValue(vals[0], _Field.TYPE_DATE));
 				paramsMap.put(paramsMap.size() + 1, DMUtil.preTreatValue(vals[1], _Field.TYPE_DATE));
-				
 				continue;
 			}
 			
@@ -819,15 +886,49 @@ public abstract class _Database {
 				continue;
 			}
 			
-			if( "id".equals(key) ) {
-				if( valueStr.indexOf(",") > 0 ) {  
-					condition += " and id in (" + valueStr + ") ";
+			if( "id".equals(key) || "ids".equals(key) ) {
+				if( valueStr.indexOf(",") >= 0 ) {  
+					condition += " and id in (" + EasyUtils.filterEmptyItem(valueStr) + ") ";
 				} else {
 					condition += " and id = ? ";
 					valueStr = valueStr.replace("_copy", "");
 					paramsMap.put(paramsMap.size() + 1, EasyUtils.obj2Long(valueStr));
 				}
+				pointedDomain = true;
 				continue;
+			}
+
+			if( isWorkflow ) {
+				String sql_wf = "select itemId from dm_workflow_status where tableId = " +this.recordId;
+				Object domain_wf = EasyUtils.checkTrue(Environment.isAdmin(), "", " and domain = '" +Environment.getDomain()+ "'");
+				
+				if( "wf_status".equals(key) ) { // 按流程状态查询
+					condition += " and id";
+					if( WFStatus.DRAFT.equals(valueStr) ) {
+						condition += " not in (" +sql_wf;
+					} else {
+						condition += " in (" +sql_wf+ " and currentStatus='" +valueStr+ "' ";
+					}
+					condition += domain_wf + ")" ;
+					continue;
+				}
+				
+				if( "wf_next_processor".equals(key) ) {
+					condition += " and id in (" +sql_wf+ " and nextProcessor='" +valueStr+ "' " + domain_wf + ")" ;
+					continue;
+				}
+				
+				if("wf_process_time".equals(key)) {
+					String[] vals = DMUtil.preTreatScopeValue(valueStr); // 是否查询条件为：从和到	
+					if(vals.length == 1) {
+						vals = new String[] { vals[0],  DateUtil.formatCare2Second( DateUtil.addDays(DateUtil.today(), 1) )};
+					}
+					
+					condition += " and id in (" +sql_wf + " and lastProcessTime >= ? and lastProcessTime <= ?" + domain_wf + ")" ;
+					paramsMap.put(paramsMap.size() + 1, DMUtil.preTreatValue(vals[0], _Field.TYPE_DATE));
+					paramsMap.put(paramsMap.size() + 1, DMUtil.preTreatValue(vals[1], _Field.TYPE_DATE));
+					continue;
+				}
 			}
 			
 			// eg: othercondition = "and curdate() between c3 and c4";
@@ -836,6 +937,7 @@ public abstract class _Database {
 				continue;
 			}
 			
+			// 录入表字段过滤
 			int fieldIndex = this.fieldCodes.indexOf(key);
 			if(fieldIndex >= 0) {
 				String paramType = this.fieldTypes.get(fieldIndex);
@@ -853,7 +955,7 @@ public abstract class _Database {
 					else {
 						String val_ = EasyUtils.obj2String(vals[0]).trim().toLowerCase();
 						if( val_.startsWith("is ") && val_.endsWith(" null") ) {
-							condition += " and " + key + " " + val_;
+							condition += " and " + key + " " + val_;  // is null | is not null
 						}
 						else { 
 							Object val = DMUtil.preTreatValue(vals[0], paramType);
@@ -875,6 +977,24 @@ public abstract class _Database {
 					paramsMap.put(paramsMap.size() + 1, DMUtil.preTreatValue(vals[1], paramType));
 				}
 			}
+			else { // or 或查询 eg: code|name = 'xx'
+				String[] orFields = EasyUtils.split(key, "|");
+				if( orFields.length > 1 ) {
+					condition += " and ( 1=0 ";
+					for(String field : orFields) {
+						if( !this.fieldCodes.contains(field) ) continue;
+						
+						if( "false".equals(strictQuery) ) { 
+							condition += " or " + field + " like ? ";
+							valueStr = "%"+valueStr+"%";
+						} else {
+							condition += " or " + field + " = ? ";
+						}
+						paramsMap.put(paramsMap.size() + 1, valueStr);
+					}
+					condition += " ) ";
+				}
+			}
 		}
 		
 		/* 
@@ -882,8 +1002,11 @@ public abstract class _Database {
 		 * 只有单机部署的BI允许无域；SAAS部署必须每个组都要有域，每个人必属于某个域。Admin不属于任何域。
 		 * 注：部分全局基础表需要忽略域限制：比如行政区划等，customizeTJ: <#if 1=0>ignoreDomain</#if>
 		 */
-		String _customizeTJ = (String) EasyUtils.checkNull(this.customizeTJ, " 1=1 ");
-		if( !(this.ignoreDomain || _customizeTJ.indexOf("ignoreDomain") > 0) && !pointedDomain && !anonymousVisiable) {  // 匿名用户可浏览，则无需过滤域
+		boolean _ignoreDomain = this.ignoreDomain || _customizeTJ.indexOf("ignoreDomain") > 0;
+		if( _ignoreDomain || pointedDomain || (anonymousVisiable && Environment.isAnonymous()) ) {  
+			// 匿名用户可浏览，则无需过滤域
+		}
+		else {
 			_customizeTJ += DMConstants.DOMAIN_CONDITION;
 		}
 		
@@ -926,7 +1049,8 @@ public abstract class _Database {
 			}
 		}
 		if( noPointed ) {
-			sortFieldList.add( "id desc"); // 始终加上ID排序，保证查询结果排序方式唯一
+			sortFieldList.addAll( csort.values() ); // 如果查询时没有指定排序字段，则按字段定义里排序字段（eg: 'sort':'asc'）进行排序
+			sortFieldList.add( "id desc");          // 始终加上ID排序，保证查询结果排序方式唯一
 		}
 		
 		String orderby = "";
@@ -965,6 +1089,7 @@ public abstract class _Database {
 			AccessLogRecorder.outputAccessLog("record-" + recordId, recordName, tag, params, start);
 		}
 		
+		rcEvent.afterSelect(ex, this);
 		return ex;
 	}
 
@@ -992,13 +1117,25 @@ public abstract class _Database {
             
             boolean isHidden = "hidden".equals( fieldTypes.get(index) );
             if( PermissionHelper.checkRole(fieldRole2) && !isHidden ) {
+            	// 如果是下拉列表，把下拉列表放到 values 和 texts 里
+            	Map<String, Object> fDefs = this.fieldMap.get(fieldCode);
+            	String _options = "";
+            	@SuppressWarnings("unchecked")
+				Map<String, String> options = (Map<String, String>) fDefs.get("options");
+            	if( options != null && options.containsKey("codes") ) {
+            		String values = options.get("codes");
+            		String texts = options.get("names");
+            		_options = " values=\"" + values + "\" texts=\"" + EasyUtils.checkNull(texts, values) + "\" ";
+            		fieldType = _Field.TYPE_STRING; 
+            	}
+            	
             	sb.append("<column name=\"" + fieldCode + "\" mode=\"" + fieldType + "\" pattern=\"" + fieldPattern 
-            			+ "\" caption=\"" + fieldName + "\" align=\"" + fieldAlign + "\" " + fieldWidth + " />").append("\n");
+            			+ "\" caption=\"" + fieldName + "\" align=\"" + fieldAlign + "\" " + fieldWidth + _options + " />").append("\n");
             }
             index++;
         }
         
-        if( WFUtil.checkWorkFlow(this.wfDefine) ) {
+        if( this.isWorkflow ) {
         	sb.append("<column name=\"wfstatus\" mode=\"string\" caption=\"流程状态\" sortable=\"true\" width=\"35px\"/>").append("\n");
         	sb.append("<column name=\"wfapplier\" mode=\"string\" caption=\"发起人\" sortable=\"true\" width=\"30px\"/>").append("\n");
         	sb.append("<column name=\"wfapplyTime\" mode=\"date\" format=\"yyyy-mm-dd\" caption=\"发起时间\" width=\"40px\"/>").append("\n");
@@ -1033,7 +1170,7 @@ public abstract class _Database {
     	return XMLDocUtil.dataXml2Doc(sb.toString());
 	}
 	
-	public List<Map<Object, Object>> getFields() {
+	public List<Map<String, Object>> getFields() {
 		return this.fields;
 	}
 	
@@ -1091,5 +1228,19 @@ public abstract class _Database {
 		else {
 			return new _H2(record);
 		}
+	}
+	
+	public RecordEvent getRcEvent() {
+		RecordEvent ev = null;
+		try {
+			String rcEventClazz = DMUtil.getExtendAttr(this.remark, "rcEventClass");
+			if( rcEventClazz != null ) {
+				ev = (RecordEvent) BeanUtil.newInstanceByName(rcEventClazz);
+			}
+		} catch(Exception e) {
+			log.error("init " + this.recordName + " event error : ", e);
+		}
+		
+		return (RecordEvent) EasyUtils.checkNull(ev, new RecordEventN());
 	}
 }

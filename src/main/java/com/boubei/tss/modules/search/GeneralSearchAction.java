@@ -11,6 +11,7 @@
 package com.boubei.tss.modules.search;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,8 +24,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.framework.sso.SSOConstants;
 import com.boubei.tss.framework.web.display.grid.GridDataEncoder;
 import com.boubei.tss.framework.web.display.tree.DefaultTreeNode;
 import com.boubei.tss.framework.web.display.tree.ITreeNode;
@@ -35,16 +38,18 @@ import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.entity.Group;
 import com.boubei.tss.um.entity.Role;
 import com.boubei.tss.um.entity.User;
+import com.boubei.tss.um.helper.dto.OperatorDTO;
 import com.boubei.tss.um.service.IGroupService;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.um.service.IRoleService;
 import com.boubei.tss.util.EasyUtils;
+import com.boubei.tss.util.StringUtil;
 
 /**
  *  安全性控制: 按组、角色、域获取用户信息时，必须对组、角色、域有查看权限
  */
 @Controller
-@RequestMapping( {"/auth/search", "/auth/service"} )
+@RequestMapping( {"/auth/search", "/auth/service", "/api/service"} )
 public class GeneralSearchAction extends BaseActionSupport {
 	
 	@Autowired private GeneralSearchService service;
@@ -54,19 +59,30 @@ public class GeneralSearchAction extends BaseActionSupport {
 	@Autowired private ILoginService loginService;
 	
 	/**
-	 * 检索数据表、报表、菜单、用户组等，无权限过滤。打开资源时需单独过滤权限。
+	 * 检索数据表、报表、菜单、用户组等，带权限过滤。打开资源时再单独过滤权限。
+	 * TODO Group 还需要过滤用户域;
 	 */
 	@RequestMapping("/resource")
     @ResponseBody
 	public List<?> searchResource(String resource, String key) {
+		
 		key = "%" +key+ "%";
-		String condition = "";
-		if("Report,Record".indexOf(resource) >= 0) {
-			condition = " and type=1 ";
+		String condition = "o.name like ?";
+		
+		// record、report检索需要更多的关键字
+		if( "Report".equals(resource) ) { 
+			condition = "(o.name like ? or o.param like '" +key+ "' or o.remark like '" +key+ "') and o.name not like '$%' and o.type=1 ";
+		}
+		if( "Record".equals(resource) ) { 
+			condition = "(o.name||o.define like ? or o.remark like '" +key+ "') and o.name not like '$%' and o.type=1 ";
 		}
 		
-		String hql = "select id, name, decode from " +resource+ " o where o.name like ? and disabled = 0 " + condition;
+		String permissionTable = resource + "Permission";
+		String hql = "select distinct o.id, o.name, o.decode from " +resource+ " o, " +permissionTable+ " p " +
+				" where " +condition+ " and disabled = 0 " +
+				"   and p.resourceId = o.id and p.roleId in (" +Environment.getInSession(SSOConstants.USER_RIGHTS_S)+ ") ";
 		String hql2 = "select name from " +resource+ " o where ? like o.decode||'%' and id <> ? order by o.decode";
+		
 		List<?> result = commonService.getList(hql, key);
 		for(Object obj : result) {
 			Object[] objs = (Object[]) obj;
@@ -111,7 +127,7 @@ public class GeneralSearchAction extends BaseActionSupport {
 	}
 	
 	/**
-	 * 获取当前用户有查看权限的角色，用于前台生成角色下拉列表
+	 * 获取当前用户有【查看权限】的角色，用于前台生成角色下拉列表
 	 */
 	@RequestMapping(value = "/roles", method = RequestMethod.GET)
 	@ResponseBody
@@ -126,6 +142,27 @@ public class GeneralSearchAction extends BaseActionSupport {
 				returnList.add(new Object[]{ role.getId(), role.getName() });
 			}
 		}
+		
+		returnList.add(new Object[]{ UMConstants.ANONYMOUS_ROLE_ID, UMConstants.ANONYMOUS_ROLE });
+		return returnList;
+	}
+	
+	@RequestMapping(value = "/roles2", method = RequestMethod.GET)
+	@ResponseBody
+	public List<Object> getEditableRoles() {
+		List<Role> list = groupService.findEditableRoles();;
+		List<Object> returnList = new ArrayList<Object>();
+		for(Role role : list) {
+			boolean isRole = ParamConstants.FALSE.equals(role.getIsGroup());
+			boolean enable = ParamConstants.FALSE.equals(role.getDisabled());
+			if( isRole && enable && role.getId() > 0 ) {
+				Map<String, Object> m = new HashMap<>();
+				m.put("id", role.getId());
+				m.put("name", role.getName());
+				returnList.add(m);
+			}
+		}
+		
 		return returnList;
 	}
 	
@@ -142,6 +179,10 @@ public class GeneralSearchAction extends BaseActionSupport {
         print("RoleTree", treeEncoder);
     }
 	
+	/**
+	 * https://www.boudata.com/tss/auth/service/rusers/-1
+	 * 可直接用作下拉列表，返回值里有 text/value 属性
+	 */
 	@RequestMapping(value = "/rusers/{roleId}", method = RequestMethod.GET)
 	@ResponseBody
 	public List<Object> getUsersByRoleId(@PathVariable Long roleId) {
@@ -155,6 +196,10 @@ public class GeneralSearchAction extends BaseActionSupport {
 		return buildUserList(list2);
 	}
 	
+	/**
+	 * https://www.boudata.com/tss/auth/service/gusers/-8
+	 * 可直接用作下拉列表，返回值里有 text/value 属性
+	 */
 	@RequestMapping(value = "/gusers/{groupId}", method = RequestMethod.GET)
 	@ResponseBody
 	public List<Object> getUsersByGroupId(@PathVariable Long groupId) {
@@ -173,6 +218,27 @@ public class GeneralSearchAction extends BaseActionSupport {
 		return loginService.getUsersByDomain(domain, field, -0L);
 	}
 	
+	@RequestMapping(value = "/domaingroups")
+	@ResponseBody
+	public List<?> getDomainGroups() {
+		String sql = "select id, name, parentId as pid from um_group g where g.domain = ? order by decode";
+		List<Map<String, Object>> list = SQLExcutor.queryL(sql, Environment.getDomain());
+		Map<Object, Object> m = new HashMap<Object, Object>();
+		int index = 0;
+		for(Map<String, Object> row : list) {
+			Object id = row.get("id");
+			if( index++ == 0 ) {
+				row.put("name", "-");
+			}
+			Object name = row.get("name");
+			m.put(id, name);
+			row.put("pname", m.get( row.get("pid") ));
+			row.put("text", EasyUtils.obj2String(row.get("pname")) + "/" + name );
+			row.put("value", id);
+		}
+		return list;
+	}
+	
 	@RequestMapping(value = "/domains", method = RequestMethod.GET)
 	@ResponseBody
 	public List<?> getDomains() {
@@ -180,7 +246,7 @@ public class GeneralSearchAction extends BaseActionSupport {
 		List<?> groups = groupService.getVisibleSubGroups(UMConstants.MAIN_GROUP_ID);
 		for(Object temp : groups) {
 			Group g = (Group) temp;
-			if( g.getLevelNo() == 4 && g.getDomain() != null) {
+			if( g.isDomainGroup() ) {
 				result.add(g);
 			}
 		}
@@ -206,11 +272,35 @@ public class GeneralSearchAction extends BaseActionSupport {
 			map.remove("authToken");
 			
 			// 用于制作用户下拉列表（Easyui、tssJS的combobox）
-			map.put("text", user.getUserName() + "(" +user.getGroupName()+ ")");
-			map.put("value", user.getLoginName());
+			String group = user.getGroupName();
+			String text = user.getUserName() + EasyUtils.checkTrue(group == null , "" , "(" +group+ ")" );
+			String value = user.getLoginName();
+			map.put("text", text);
+			map.put("value", value);
+			map.put("name", text);
+			map.put("code", value);
 			
 			returnList.add(map);
 		}
 		return returnList;
+	}
+	
+	/**
+	 * 获取自己所在组下的用户及父组的用户
+	 */
+	@RequestMapping(value = "/domain/role/users")
+	@ResponseBody
+	public List<?> getDomainUsersByRole(String role) {
+		String[] roles = StringUtil.split(role);
+		List<OperatorDTO> temp = new ArrayList<>();
+		for( String _role : roles ) {
+			if( EasyUtils.isDigit(_role) ) {
+				temp.addAll( loginService.getUsersByRoleId(EasyUtils.obj2Long(_role), Environment.getDomain()) );
+			}
+			else {
+				temp.addAll( loginService.getUsersByRole(_role, Environment.getDomain()) );
+			}
+		}
+		return temp;
 	}
 }

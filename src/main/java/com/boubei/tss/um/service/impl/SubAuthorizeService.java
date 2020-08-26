@@ -18,7 +18,10 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.boubei.tss.EX;
+import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.um.dao.IGroupDao;
 import com.boubei.tss.um.dao.IRoleDao;
 import com.boubei.tss.um.entity.RoleGroup;
@@ -38,14 +41,36 @@ public class SubAuthorizeService implements ISubAuthorizeService {
 		String hql = " from SubAuthorize where ? in (creatorId, buyerId) and endDate >= ? and disabled = 0 ";
 		return roleDao.getEntities(hql, creatorId, new Date());
 	}
+	
+	// 检查当前操作人是否有权限
+	private void checkPermission(SubAuthorize strategy) {
+		if( !Environment.isAdmin() && !Environment.getUserId().equals(strategy.getCreatorId()) ) {
+			throw new BusinessException(EX.U_48);
+		}
+	}
+	
+	// 检查转授人是否对角色拥有权限
+	private void checkPermission(Long roleId) {
+		List<?> ownerRoles = roleDao.getSubAuthorizeableRoles( Environment.getUserId() );
+		List<Object> ownerRoleIds =  EasyUtils.objAttr2List(ownerRoles, "id");
+		if( !ownerRoleIds.contains(roleId) ) {
+			throw new BusinessException(EX.U_48);
+		}
+	}
 
 	public void deleteSubauth(Long id) {
-		roleDao.deleteStrategy((SubAuthorize) roleDao.getEntity(SubAuthorize.class, id));
+		SubAuthorize strategy = (SubAuthorize) roleDao.getEntity(SubAuthorize.class, id);
+		checkPermission(strategy);
+		roleDao.deleteStrategy(strategy);
 	}
 
 	public void disable(Long id, Integer disabled) {
 		SubAuthorize strategy = (SubAuthorize) roleDao.getEntity(SubAuthorize.class, id);
-		strategy.setEndDate( DateUtil.addDays(new Date(), 1) );
+		checkPermission(strategy);
+		
+		if( ParamConstants.TRUE.equals(disabled) ) {
+			strategy.setEndDate( DateUtil.today() );
+		}
 		strategy.setDisabled(disabled);
 		roleDao.update(strategy);
 	}
@@ -88,7 +113,7 @@ public class SubAuthorizeService implements ISubAuthorizeService {
 		else {
 		    roleDao.update(strategy);
 		}
-        
+		
 		// 在角色用户关系表中保存 策略对用户，策略对角色的信息 在角色用户组关系表中保存 策略对用户组，策略对角色的信息
         saveRule2Group(strategy, roleIds, groupIds);
         saveRule2User(strategy, roleIds, userIds);
@@ -126,16 +151,18 @@ public class SubAuthorizeService implements ISubAuthorizeService {
         roleDao.deleteAll(historyMap.values());
     }
     
-    private void saveRoleUser(Map<String, RoleUser> historyMap, String roleId, String userId, SubAuthorize sa){
+    private void saveRoleUser(Map<String, RoleUser> historyMap, String roleId, String userId, SubAuthorize sa) {
         // 如果老的转授记录里面有，则从历史记录中移出
         RoleUser roleUser = historyMap.remove(roleId + "_" + userId); 
         
-        //如果老的转授记录里面没有，则新增 (如果是购买产生的策略，则不再创建新的roleUser)
+        // 如果老的转授记录里面没有，则新增 (注：如果是购买产生的策略，则不再创建新的roleUser)
         if (roleUser == null && sa.getBuyerId() == null) { 
             roleUser = new RoleUser();
             roleUser.setRoleId(Long.valueOf(roleId));
             roleUser.setUserId(Long.valueOf(userId));
             roleUser.setStrategyId(sa.getId());
+            
+            checkPermission( roleUser.getRoleId() );
             roleDao.createObject(roleUser);
         } 
     }
@@ -181,6 +208,8 @@ public class SubAuthorizeService implements ISubAuthorizeService {
             roleGroup.setRoleId(Long.valueOf(roleId));
             roleGroup.setGroupId(Long.valueOf(groupId));
             roleGroup.setStrategyId(strategy.getId());
+            
+            checkPermission( roleGroup.getRoleId() );
             roleDao.createObject(roleGroup);
         } 
     }

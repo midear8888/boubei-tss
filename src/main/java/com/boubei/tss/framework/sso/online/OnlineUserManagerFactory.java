@@ -16,7 +16,6 @@ import org.apache.commons.logging.LogFactory;
 import com.boubei.tss.framework.Config;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.sso.SSOConstants;
-import com.boubei.tss.framework.sso.context.Context;
 
 /** 
  * <p>
@@ -34,8 +33,7 @@ public class OnlineUserManagerFactory {
             String onlineManager = Config.getAttribute(SSOConstants.ONLINE_MANAGER);
         	manager = (IOnlineUserManager) Global.getBean(onlineManager);
             
-            String currentAppCode = Context.getApplicationContext().getCurrentAppCode();
-			log.info("应用【" + currentAppCode + "】里在线用户库【" + manager.getClass().getName() + "】初始化成功！");
+			log.info("在线用户库【" + manager.getClass().getName() + "】初始化成功！");
         }
         
         return manager;

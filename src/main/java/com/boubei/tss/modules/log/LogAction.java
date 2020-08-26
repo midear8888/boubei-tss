@@ -61,7 +61,6 @@ public class LogAction extends BaseActionSupport {
     
     /**
      * http://localhost:9000/tss/log/json/1?operationCode=update, 04
-     * TODO 为数据表定制一个适合业务人员查看的日志界面，在每个数据表的全局JS里定制定义展示方法
      */
     @RequestMapping("/json")
     @ResponseBody

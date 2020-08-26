@@ -76,18 +76,17 @@ public class JobAction {
 	@RequestMapping(value = "/refresh", method = RequestMethod.POST)
 	@ResponseBody
 	public Object refresh() {
-		Global.schedulerBean.refresh(false);
-		
-		return "Success";
+		SchedulerBean schedulerBean = Global.schedulerBean;
+		schedulerBean.refresh(false);
+		return schedulerBean.listExcutingJobs();
 	}
 	
 	@RequestMapping(method = RequestMethod.GET)
 	@ResponseBody
 	public List<Map<String, Object>> listJobs(String tag) {
-		tag = EasyUtils.obj2String(tag);
-		
 		String sql = "select id, id as value, name from component_job_def " +
-				" where disabled = 0 and jobClassName like '%etl%' and jobClassName like '%" +tag+ "%' order by name";
+				" where disabled = 0 and jobClassName like '%etl%' and jobClassName like '%" +EasyUtils.obj2String(tag)+ "%' " + 
+				" order by name";
 		return SQLExcutor.queryL(sql);
 	}
 }

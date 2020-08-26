@@ -30,6 +30,7 @@ public interface RecordService {
     
     Long getRecordID(String nameOrTable, int type, boolean auth);
     
+    _Database _getDB(Long recordId); // 带缓存
     _Database getDB(Long recordId);
     
     List<Record> getAllRecords();

@@ -23,7 +23,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 
 import com.boubei.tss.framework.Global;
-import com.boubei.tss.framework.exception.BusinessServletException;
 import com.boubei.tss.framework.sso.Anonymous;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.portal.entity.ReleaseConfig;
@@ -55,42 +54,38 @@ public class PortalDispatcher extends HttpServlet {
     Logger log = Logger.getLogger(this.getClass());
     
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        try {
-            String requestURI = request.getRequestURI();
-			ReleaseConfig issueInfo = getIssueInfo(requestURI);
-			if(issueInfo == null) {
-				response.sendRedirect(THE_404_URL);
-				return;
-			}
-			
-			// 检测相应门户是否可以使用匿名用户访问
-			Long portalId = issueInfo.getPortal().getId(), pageId = null;
-			if(issueInfo.getPage() != null) {
-				pageId = issueInfo.getPage().getId();
-			}
+        String requestURI = request.getRequestURI();
+		ReleaseConfig issueInfo = getIssueInfo(requestURI);
+		if(issueInfo == null) {
+			response.sendRedirect(THE_404_URL);
+			return;
+		}
+		
+		// 检测相应门户是否可以使用匿名用户访问
+		Long portalId = issueInfo.getPortal().getId(), pageId = null;
+		if(issueInfo.getPage() != null) {
+			pageId = issueInfo.getPage().getId();
+		}
 
-			if ( canPortalBrowseByAnonymous(portalId, pageId) ) {
-				String redirectPage = getRedirectPath(issueInfo);
-	            log.debug("访问门户发布地址被转向至真实地址:" + redirectPage );
+		if ( canPortalBrowseByAnonymous(portalId, pageId) ) {
+			String redirectPage = getRedirectPath(issueInfo);
+            log.debug("访问门户发布地址被转向至真实地址:" + redirectPage );
 
-	            RequestDispatcher rd = request.getRequestDispatcher(redirectPage);
-	            rd.forward(request, response); // 控制权转发
-			}
-			else {
-				response.sendRedirect(THE_LOGIN_URL);
-			}
-			 
-            /* 
-             * RequestDispatcher.forward()方法和HttpServletResponse.sendRedirect()方法的区别是：
-             * 前者仅是容器中控制权的转向，在客户端浏览器地址栏中不会显示出转向后的地址；
-             * 后者则是完全的跳转，浏览器将会得到跳转的地址，并重新发送请求链接，这样，从浏览器的地址栏中可以看到跳转后的链接地址。
-             * 所以，前者更加高效，在前者可以满足需要时，尽量使用Request Dispatcher.forward()方法，并且，
-             * 这样也有助于隐藏实际的链接。在有些情况下，比如，需要跳转到一个其它服务器上的资源，则必须使用 
-             * HttpServletResponse.sendRedirect()方法。
-             */
-        } catch (Exception e) {
-            throw new BusinessServletException(e);
-        }
+            RequestDispatcher rd = request.getRequestDispatcher(redirectPage);
+            rd.forward(request, response); // 控制权转发
+		}
+		else {
+			response.sendRedirect(THE_LOGIN_URL);
+		}
+		 
+        /* 
+         * RequestDispatcher.forward()方法和HttpServletResponse.sendRedirect()方法的区别是：
+         * 前者仅是容器中控制权的转向，在客户端浏览器地址栏中不会显示出转向后的地址；
+         * 后者则是完全的跳转，浏览器将会得到跳转的地址，并重新发送请求链接，这样，从浏览器的地址栏中可以看到跳转后的链接地址。
+         * 所以，前者更加高效，在前者可以满足需要时，尽量使用Request Dispatcher.forward()方法，并且，
+         * 这样也有助于隐藏实际的链接。在有些情况下，比如，需要跳转到一个其它服务器上的资源，则必须使用 
+         * HttpServletResponse.sendRedirect()方法。
+         */
     }
     
     /**

@@ -13,8 +13,6 @@ package com.boubei.tss.portal.engine.model;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import com.boubei.tss.framework.exception.BusinessException;
-
 public abstract class AbstractNode implements Node {
 
     protected Long    id;      //节点编号（门户结构节点编号）
@@ -49,10 +47,12 @@ public abstract class AbstractNode implements Node {
     }
     
     public Object clone() {
+    	Object clone = null;
+    	
         try {
-            return super.clone();
+        	clone = super.clone();
         } catch (CloneNotSupportedException e) {
-            throw new BusinessException("clone " + this.getClass().getName() + " object error", e);
         }
+    	return clone;
     }
 }

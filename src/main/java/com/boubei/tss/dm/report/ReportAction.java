@@ -102,7 +102,10 @@ public class ReportAction extends BaseActionSupport {
 	    		String name = report.getName();
 				Long pid = report.getParentId();
 				String icon = report.getIcon();
-				result.add(new Object[] { id, name, pid, report.getType(), "report", icon });
+				String pageHelp = DMUtil.getExtendAttr(report.getRemark(), "page_help");
+				String pageCode = DMUtil.getExtendAttr(report.getRemark(), "page_code");
+				String pageUrl = null; // report.getDisplayUri();
+				result.add(new Object[] { id, name, pid, report.getType(), "report", icon, 0, pageHelp, pageCode, pageUrl}); // 和record的一致
 			}
     	}
     	

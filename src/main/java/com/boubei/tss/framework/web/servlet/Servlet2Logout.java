@@ -18,9 +18,8 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
-import com.boubei.tss.framework.sso.Environment;
-import com.boubei.tss.framework.sso.online.OnlineUserManagerFactory;
 import com.boubei.tss.framework.web.display.SuccessMessageEncoder;
 
 /**
@@ -38,12 +37,9 @@ public class Servlet2Logout extends HttpServlet {
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	Long userId = Environment.getUserId();
-    	if(userId != null) {
-    		OnlineUserManagerFactory.getManager().logout(userId);
-    	}
     	
-    	request.getSession().invalidate(); // 销毁session 
+    	HttpSession session = request.getSession();
+		session.invalidate(); // 销毁session, 会自动触发 SessionDestroyedListener， 执行logout
         
         response.setContentType("text/html;charset=UTF-8");
         PrintWriter out = response.getWriter();

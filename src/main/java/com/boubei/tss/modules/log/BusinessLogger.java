@@ -56,13 +56,12 @@ public class BusinessLogger extends OutputRecordsManager implements IBusinessLog
     }
     
     protected int getMaxSize() {
+    	int maxSize = super.getMaxSize();
         try {
-            String configValue = ParamConfig.getAttribute(PX.LOG_FLUSH_MAX_SIZE);
-            return Integer.parseInt(configValue);
-        } 
-        catch(Exception e) {
-            return super.getMaxSize(); 
+        	maxSize = Integer.parseInt( ParamConfig.getAttribute(PX.LOG_FLUSH_MAX_SIZE) );
+        } catch(Exception e) { 
         }
+        return maxSize; 
     }
     
     public static void log(String opTable, String opCode, Object content) {

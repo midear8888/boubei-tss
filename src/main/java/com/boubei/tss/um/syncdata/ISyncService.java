@@ -11,6 +11,10 @@
 package com.boubei.tss.um.syncdata;
 
 import java.util.Map;
+
+import com.boubei.tss.um.entity.Group;
+import com.boubei.tss.um.entity.User;
+import com.boubei.tss.um.helper.dto.UserDTO;
  
 public interface ISyncService {
 
@@ -23,5 +27,5 @@ public interface ISyncService {
      */
     Map<String, Object> getCompleteSyncGroupData(Long mainGroupId);
  
-
+    void updateUser(User user, Group nowGroup, UserDTO userDto);
 }

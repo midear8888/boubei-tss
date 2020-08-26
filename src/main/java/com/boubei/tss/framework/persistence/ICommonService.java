@@ -14,15 +14,13 @@ import java.util.List;
 
 public interface ICommonService {
 
-	void createWithLog(IEntity entity);
-	
 	void create(IEntity entity);
-	
 	void update(IEntity entity);
-
-	void updateWithLog(IEntity entity);
-
 	void delete(Class<?> entityClass, Long id);
+	
+	void createWithLog(IEntity entity);
+	void updateWithLog(IEntity entity);
+	void deleteWithLog(Class<?> entityClass, Long id);
 
 	List<?> getList(String hql, Object...params);
 	

@@ -18,7 +18,6 @@ import org.dom4j.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.boubei.tss.framework.Config;
 import com.boubei.tss.framework.persistence.IEntity;
 import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.dao.IApplicationDao;
@@ -219,19 +218,7 @@ public class ResourceService implements IResourceService{
         }       
         
         /*****************************  对外部已经注册的资源进行补全操作 ************************************/
-        
-        // 初始化资源类型          
-        for (ResourceType resourceType : resourceTypeList) {
-            /* 保存资源类型，同时还要为该类型资源建立一个根节点，以资源类型名字作为根节点名字 */  
-            String resourceTypeId = resourceType.getResourceTypeId();
-            String permissionTable = resourceTypeDao.getPermissionTable(applicationId, resourceTypeId);
-            
-            String initPermission = Config.getAttribute("initPermission");
-            if(Config.TRUE.equalsIgnoreCase(initPermission)) {
-                permissionService.clearPermissionData(permissionTable);    
-            }
-        }
-        
+
         // 初始化权限选项
         for (Operation operation : operationList) {         
             /* 让管理员角色拥有新添加的权限选项，即:让管理员拥有对资源 根节点 有permissionState=2的权限 */

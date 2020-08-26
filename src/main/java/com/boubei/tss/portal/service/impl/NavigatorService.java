@@ -12,8 +12,10 @@ package com.boubei.tss.portal.service.impl;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.dom4j.Element;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Service;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.sso.appserver.AppServer;
 import com.boubei.tss.framework.sso.context.Context;
+import com.boubei.tss.modules.cloud.CloudService;
 import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.portal.PortalConstants;
 import com.boubei.tss.portal.dao.INavigatorDao;
@@ -33,6 +36,7 @@ import com.boubei.tss.util.MacrocodeCompiler;
 @Service("NavigatorService")
 public class NavigatorService implements INavigatorService {
 
+	@Autowired CloudService cloudService;
 	@Autowired private INavigatorDao dao;
 
     public List<?> getAllNavigator(){
@@ -120,9 +124,23 @@ public class NavigatorService implements INavigatorService {
 		}
 		return MacrocodeCompiler.run(node.asXML(), macros, true);
 	}
+    
+    public List<Navigator> getMenuItems(Long id) {
+		return dao.getMenuItems(id, Environment.getUserId());
+	}
 	
 	public List<MenuDTO> getMenuTree(Long id) {
-		List<Navigator> list = dao.getMenuItems(id, Environment.getUserId());
+		List<Navigator> list = getMenuItems(id);
+		
+		// Module 白名单过滤
+		Set<Long> limits = cloudService.limitMenus();
+		for(Iterator<Navigator> it = list.iterator(); it.hasNext(); ) {
+			Navigator m = it.next();
+			if( !limits.contains(m.getId()) ) {
+				it.remove();
+			}
+		}
+		
 		return MenuDTO.buildTree(id, list);
 	}
 }

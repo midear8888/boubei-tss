@@ -11,7 +11,7 @@
 package com.boubei.tss.framework.persistence.pagequery;
 
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -61,14 +61,25 @@ public abstract class PaginationQuery {
         
         // 过滤空参数、无效参数对应的宏代码 
         Map<String, Object> macrocodes = condition.getConditionMacrocodes();
-        for (  Iterator<String> it = macrocodes.keySet().iterator(); it.hasNext(); ) {
-            String key = it.next();
+        Map<String, Object> _macrocodes = new HashMap<String, Object>();
+        for (  String key : macrocodes.keySet() ) {
+            Object regex = macrocodes.get(key);
+            
             if (key.startsWith("${") && key.endsWith("}")) {
                 String name = key.substring(2, key.length() - 1);
                 Object value = properties.get(name);
-                if ( !"domain".equals(name) && isValueNullOrEmpty(value) ) { // 查询条件字段值为空，则移除该条件
-                	it.remove();
+                
+                // 查询条件字段值为空，则移除该条件
+                if ( !isValueNullOrEmpty(value) ) { 
+                	_macrocodes.put(key, regex);
                 }
+            } else { // 如果条件表达式是确定的，则用 #{xxx}，eg: #{domain} = "and o.createId in (1,2,3)"
+            	String _key = (String) EasyUtils.checkTrue( key.indexOf("{") > 0, key, MacrocodeCompiler.createMacroCode(key) );
+            	String _key$ = key.replace("#", "$");
+            	if( !_macrocodes.containsKey(_key$) ) {
+            		_macrocodes.put(_key, regex);
+            		_macrocodes.put(_key$, regex);
+            	}
             }
         }
         
@@ -76,7 +87,7 @@ public abstract class PaginationQuery {
         appendOrderBy();
         
         // 解析带了宏定义的QL语句
-        String queryQl = MacrocodeCompiler.run(ql, macrocodes, false);
+        String queryQl = MacrocodeCompiler.run(ql, _macrocodes, false);
  
         PageInfo page = condition.getPage();
         page.setItems(null); // 清空上次的查询结果，一个condition多次被用来查询的情况
@@ -134,7 +145,7 @@ public abstract class PaginationQuery {
      * @return Integer 总记录数
      */
     protected Integer getTotalRows(String ql, Map<String, Object> properties)  {
-    	// 生成对应的总记录数统计QL语句
+    	// 生成对应的总记录数统计QL语句（不能含有子查询）
     	int fromIndex = ql.toLowerCase().indexOf("from ");
     	int toIndex = ql.toLowerCase().lastIndexOf(" order by ");
     	if(toIndex <= 0) {

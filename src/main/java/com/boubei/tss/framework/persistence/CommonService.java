@@ -40,6 +40,10 @@ public class CommonService implements ICommonService {
 		commonDao.delete(entityClass, id);
 	}
 
+	public void deleteWithLog(Class<?> entityClass, Long id) {
+		commonDao.deleteWithLog(entityClass, id);
+	}
+
 	public List<?> getList(String hql, Object...params) {
 		return commonDao.getEntities(hql, params);
 	}

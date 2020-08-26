@@ -51,6 +51,7 @@ import com.boubei.tss.um.permission.PermissionHelper;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
+import com.boubei.tss.util.StringUtil;
 import com.boubei.tss.util.URLUtil;
 
 public class DMUtil {
@@ -117,14 +118,14 @@ public class DMUtil {
     	params.remove("jsonpCallback"); // jsonp__x,其名也是唯一的
     	params.remove("appCode");      // 其它系统向当前系统转发请求
     	params.remove("ac");
-    	
+ 
     	return params;
     }
     public static Map<String, String> getRequestMap(HttpServletRequest request, boolean isGet) {
     	return parseRequestParams(request, isGet);
     }
 	
-	public static String getExportPath() {
+	public static String getAttachPath() {
 		return getConfigedPath(PX.ATTACH_PATH).replaceAll("\n", "");
 	}
 	
@@ -190,28 +191,19 @@ public class DMUtil {
 	
   	public static Object preTreatValue(String value, Object type) {
   		
-  		if(value == null) return null;
+  		if( EasyUtils.isNullOrEmpty(value) ) return null;
   		
-  		type = EasyUtils.checkNull(type, _Field.TYPE_STRING);
-  		type = type.toString().toLowerCase();
+  		type = EasyUtils.checkNull(type, _Field.TYPE_STRING).toString().toLowerCase();
   		value = value.trim();
   		
-  		if(_Field.TYPE_NUMBER.equals(type) || _Field.TYPE_INT.equals(type)) {
-  			if( EasyUtils.isNullOrEmpty(value) ) return null;
-  			
-  			try {
-  				if(value.indexOf(".") >= 0) {
-  					value = value.replace("$", "").replace("￥", "").replaceAll(",|，", ""); // 金额
-  	  				return EasyUtils.obj2Double(value);
-  	  			}
-  	  			return EasyUtils.obj2Long(value);
-  			} catch(Exception e) {
-				return null; // 如果输入的是空字符串等，会有异常
-			}
+  		if(_Field.TYPE_NUMBER.equals(type)) {
+			value = value.replace("$", "").replace("￥", "").replaceAll(",|，", ""); // 金额
+			return EasyUtils.obj2Double(value);
+  		}
+  		else if( _Field.TYPE_INT.equals(type) ) {
+  			return EasyUtils.obj2Long(value);
   		}
   		else if(_Field.TYPE_DATE.equals(type) || _Field.TYPE_DATETIME.equals(type)) {
-  			if( EasyUtils.isNullOrEmpty(value) ) return null;
-  			
   			Date dateObj = DateUtil.parse(value);
   			if(dateObj == null) {
   				throw new BusinessException( EX.parse(EX.DM_01, value) );
@@ -219,18 +211,32 @@ public class DMUtil {
   			return new Timestamp(dateObj.getTime());
   		}
   		else {
-  			// 过滤掉emoj表情符号 TODO 有待验证
-  			value = value.replaceAll("[\\ud83c\\udc00-\\ud83c\\udfff]|[\\ud83d\\udc00-\\ud83d\\udfff]|[\\u2600-\\u27ff]", "*");
-  			return EasyUtils.obj2String(value); // "null"、"undefined"均为空字符串处理
+  			// 过滤掉emoj表情符号
+  			value = StringUtil.replaceEmoji(value);
+  			return EasyUtils.obj2String(value);   // "null"、"undefined"均为空字符串处理
   		}
   	} 
+  	
+  	 // 获取用户自定义的Freemarker解析参数
+  	public static Map<String, String> getUserDefineParams(){
+        Map<String, String> paramsMap = new HashMap<String, String>();
+        try{
+            List<Param> params = ParamManager.getComboParam(PX.USER_DEFINED_PARAMS);
+            for( Param p : params ){
+                paramsMap.put(p.getText(), p.getValue());
+            }
+        } catch(Exception e) {
+            //do nothing
+        }
+        return paramsMap;
+    }
   	
 	public static Map<String, Object> getFreemarkerDataMap() {
     	Map<String, Object> fmDataMap = new HashMap<String, Object>();
         
       	// 加入登陆用户的信息
-    	fmDataMap.put( "_" + DMConstants.USER_ID, Environment.getUserId());
-      	fmDataMap.put(DMConstants.USER_ID, EasyUtils.obj2String(Environment.getUserId()));
+    	fmDataMap.put(DMConstants.USER_ID_L, Environment.getUserId());
+      	fmDataMap.put(DMConstants.USER_ID_S, EasyUtils.obj2String(Environment.getUserId()));
       	fmDataMap.put(DMConstants.USER_CODE, Environment.getUserCode());
 		fmDataMap.put(DMConstants.FROM_USER_ID, Environment.getUserInfo(DMConstants.FROM_USER_ID));
 		
@@ -246,13 +252,16 @@ public class DMUtil {
 		fmDataMap.put(DMConstants.FILTER_BY_GROUP, DMConstants.GROUP_CONDITION);
 		fmDataMap.put(DMConstants.FILTER_BY_GROUP_DEEP, DMConstants.GROUP_DEEP_CONDITION);
 		
+		// 加入定义在系统参数里全局性FM片段
+		fmDataMap.putAll( getUserDefineParams() );
+		
 		/* 往dataMap里放入Session里的用户权限、角色、组织等信息，作为宏代码解析。 */
     	try {
     		HttpSession session = Context.getRequestContext().getRequest().getSession();
     		Enumeration<String> keys = session.getAttributeNames();
     		while(keys.hasMoreElements()) {
     			String key = keys.nextElement();
-    			fmDataMap.put(key, session.getAttribute(key).toString());
+    			fmDataMap.put(key, session.getAttribute(key));
     		}
     	} catch(Exception e) { }
 		
@@ -328,6 +337,8 @@ public class DMUtil {
 	      		Long recordId = (Long) table[0];
 	      		String tableName = (String) table[1];
 	      		
+	      		if( script.toLowerCase().indexOf("${" +tableName.toLowerCase()+ "}") <= 0 ) continue;
+	      		
 	      		try {
 					boolean visible = permissions.contains(recordId); // 浏览|编辑
 					String filterS = wrapTable(tableName, visible, Environment.isAdmin());  // 默认按录入wrap
@@ -341,7 +352,8 @@ public class DMUtil {
 		
 		script = _customizeParse(script, data);
 		
-		if( script.indexOf("${") >=0 ) {
+		if( script.indexOf("${") >= 0 && !data.containsKey("secondParse") ) {
+			data.put("secondParse", "true");
 			script = DMUtil.fmParse(script, data, withRCTable); // 再解析一次
       	}
       	
@@ -369,7 +381,7 @@ public class DMUtil {
 		String sqlKeyword = "exec|alter|drop|create|insert|select|delete|update|from|like|master|truncate|declare"; // and|or|chr|mid|char|
 		String[] sqlKeywords = sqlKeyword.split("\\|");
 		for (String keyword : sqlKeywords) {
-			if (_pVal.indexOf(keyword + " ") >=0 || _pVal.indexOf(" " + keyword) >=0 ) {
+			if (_pVal.indexOf(keyword + " ") >= 0 || _pVal.indexOf(" " + keyword) >= 0 ) {
 				return "inject-word:" + keyword; 
 			}
 		}
@@ -402,6 +414,8 @@ public class DMUtil {
      * 2、允许在录入表备注里配置导入模板的列
      *  import_tl_fields:=车牌号,经度,纬度,速度
      *  import_tl_ignores:=gps时刻,航向速度
+     *  
+     * 3、帮助页：help_html:=https://boubei.com/help.html
      */
 	public static String getExtendAttr(String remark, String attr) {
 		String[] infos = EasyUtils.split(remark + "", "\n");

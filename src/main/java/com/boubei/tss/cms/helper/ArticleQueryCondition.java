@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.Set;
 
 import com.boubei.tss.framework.persistence.pagequery.MacrocodeQueryCondition;
+import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.modules.param.ParamConfig;
 
 /** 
  * 文章列表的查询条件
@@ -54,6 +56,9 @@ public class ArticleQueryCondition extends MacrocodeQueryCondition {
         map.put("${createTime}", " and o.createTime > :createTime");
         
         map.put("${channelId}",  " and o.channel.id = :channelId");
+        
+        String publicDomains = ParamConfig.getAttribute("PUBLIC_DOMAINS", "'无域','BD'");
+        map.put("#{domainOrNoDomain}", " and o.domain in (" +publicDomains+ ",'" +Environment.getDomain()+ "')");
 
         return map;
     }

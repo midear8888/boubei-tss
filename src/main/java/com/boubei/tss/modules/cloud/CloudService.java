@@ -19,9 +19,6 @@ public interface CloudService {
 
 	CloudOrder createOrder(CloudOrder mo);
 
-	CloudOrder calMoney(CloudOrder mo);
-
-	
 	List<?> listAvaliableModules();
 
 	List<?> listSelectedModules(Long user);
@@ -37,4 +34,8 @@ public interface CloudService {
 	Set<Long> limitReports();
 	
 	Set<Long> limitRecords();
+	
+	Set<Long> limitMenus();
+	
+	void fastCreateModuleUser(String user_name, String phone, Long moduleId,Long logistics_id);
 }

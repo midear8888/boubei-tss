@@ -35,7 +35,7 @@ public class LogQueryCondition extends MacrocodeQueryCondition {
     
 	public Map<String, Object> getConditionMacrocodes() {
 		Map<String, Object> map = super.getConditionMacrocodes(); ;
-        map.put("${operateTable}",  " and o.operateTable  like :operateTable");
+        map.put("${operateTable}",  " and o.operateTable  = :operateTable");
         map.put("${operationCode}", " and o.operationCode like :operationCode");
         map.put("${operatorName}",  " and o.operatorName  = :operatorName");
         map.put("${operatorIP}",    " and o.operatorIP    = :operatorIP");
@@ -46,10 +46,6 @@ public class LogQueryCondition extends MacrocodeQueryCondition {
         map.put("${content}",   " and o.content like :content");
         
         return map;
-	}
-	
-	protected String getCreatorIdField() {
-		return "o.operatorId";
 	}
  
     public String getOperatorName() {
@@ -96,7 +92,7 @@ public class LogQueryCondition extends MacrocodeQueryCondition {
     }
 
     public String getOperateTable() {
-        return wrapLike(operateTable);
+        return operateTable;
     }
 
     public void setOperateTable(String operateTable) {

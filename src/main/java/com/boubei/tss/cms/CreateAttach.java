@@ -46,6 +46,6 @@ public class CreateAttach implements AfterUpload {
 		String fileExt = attachObj.getFileExt();
 		
 		return "parent.addAttachments(" + seqNo + ", '" + fileName + "', '" 
-				+ fileExt + "', '" + orignFileName + "', '" + downloadUrl + "', '" + relationUrl + "')";
+				+ fileExt + "', '" + orignFileName + "', '" + downloadUrl + "', '" + relationUrl + "');";
 	}
 }

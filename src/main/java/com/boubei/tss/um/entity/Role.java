@@ -35,6 +35,7 @@ import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.permission.IResource;
 import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.DateUtil;
+import com.boubei.tss.util.EasyUtils;
 
 /**
  * 角色域对象
@@ -75,7 +76,7 @@ public class Role extends OperateInfo implements IDecodable, IXForm, IResource {
 	}
  
 	public String getDescription() {
-		return description;
+		return EasyUtils.obj2String(description);
 	}
  
 	public void setDescription(String description) {
@@ -135,7 +136,7 @@ public class Role extends OperateInfo implements IDecodable, IXForm, IResource {
 	}
  
 	public void setStartDate(Date startDate) {
-		this.startDate = startDate;
+		this.startDate = DateUtil.noHMS(startDate);
 	}
  
 	public TreeAttributesMap getAttributes() {
@@ -145,6 +146,7 @@ public class Role extends OperateInfo implements IDecodable, IXForm, IResource {
 		map.put("isGroup", isGroup);
 		map.put("disabled", disabled);
 		map.put("resourceTypeId", getResourceType());
+		map.put("description", this.description);
 
 		if (ParamConstants.FALSE.equals(isGroup)) { // 角色
 			map.put("icon", UMConstants.ROLE_TREENODE_ICON + disabled + ".gif");
@@ -152,7 +154,7 @@ public class Role extends OperateInfo implements IDecodable, IXForm, IResource {
 		else { // 角色组
 			map.put("icon", UMConstants.GROUP_ROLE_TREENODE_ICON + disabled + ".gif");
 		}
-		map.put("_open", String.valueOf( (this.description+"").indexOf("open") >= 0 || this.levelNo <= 2) );
+		map.put("_open", String.valueOf( (this.description+"").indexOf("open") >= 0 || EasyUtils.obj2Int(this.levelNo) <= 2) );
 		 
 		return map;
 	}

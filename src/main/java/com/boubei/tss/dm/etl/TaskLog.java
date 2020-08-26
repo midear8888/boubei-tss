@@ -41,7 +41,7 @@ public class TaskLog implements IEntity {
 	private Date excuteTime;
 	private long runningMS;
 
-	@Column(nullable = false, length = 2000)
+	@Column(length = 2000)
 	private String detail;
 
 	private String exception; // yes|no

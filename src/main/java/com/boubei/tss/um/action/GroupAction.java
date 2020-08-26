@@ -37,7 +37,6 @@ import com.boubei.tss.um.entity.User;
 import com.boubei.tss.um.helper.GroupTreeParser;
 import com.boubei.tss.um.permission.PermissionHelper;
 import com.boubei.tss.um.service.IGroupService;
-import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.um.syncdata.ISyncService;
 import com.boubei.tss.util.EasyUtils;
  
@@ -47,7 +46,6 @@ public class GroupAction extends ProgressActionSupport {
 
 	@Autowired private IGroupService service;
 	@Autowired private ISyncService  syncService;
-	@Autowired private ILoginService loginService;
 
 	@RequestMapping("/list")
 	public void getAllGroup2Tree(HttpServletResponse response) {
