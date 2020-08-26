@@ -27,4 +27,4 @@
   <li>模块化的SAAS服务可下载复制，二次开发，充分满足定制化需求</li>
 </ul>
 
-更多详情请访问[https://www.boubei.com/] https://www.boubei.com
+更多详情请访问[https://www.boubei.com/]
